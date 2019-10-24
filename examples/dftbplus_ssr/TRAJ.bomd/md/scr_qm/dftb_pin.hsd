@@ -1,0 +1,130 @@
+Geometry = GenFormat {
+6 C
+C H
+1   1  -6.7426071000E-01   1.5192080000E-02  -5.6580870000E-02
+2   1   6.2821339000E-01  -1.3455290000E-02  -6.5609560000E-02
+3   2  -1.2152720400E+00   9.2203683000E-01  -1.2013988000E-01
+4   2  -1.2049655900E+00  -9.4531076000E-01   1.3710390000E-01
+5   2   1.2020512000E+00   9.0630477000E-01  -1.5193940000E-02
+6   2   1.2094054800E+00  -8.7372608000E-01   1.5303406000E-01
+}
+Hamiltonian = DFTB {
+  SCC = Yes
+  SCCTolerance = 1e-06
+  MaxSCCIterations = 10000
+  SpinConstants = {
+    ShellResolvedSpin = Yes
+    C = {
+-0.031 -0.025 -0.025 -0.023
+    }
+    H = {
+-0.072
+    }
+  }
+  RangeSeparated = LC {
+    Screening = MatrixBased {}
+  }
+  OnsiteCorrection = {
+    Cuu = {
+0.00000 0.04973 0.04973 -0.01203
+    }
+    Huu = {
+0.00000
+    }
+    Cud = {
+0.00000 0.10512 0.10512 0.02643
+    }
+    Hud = {
+0.00000
+    }
+  }
+  Charge = 0.0
+  MaxAngularMomentum = {
+    C = 'p'
+    H = 's'
+  }
+  SlaterKosterFiles = Type2FileNames {
+    Prefix = '/home/islee/program/dftb/slko/ob2-1-1/base/'
+    Separator = '-'
+    Suffix = '.skf'
+    LowerCaseTypeName = No
+  }
+  PolynomialRepulsive = {}
+  ShellResolvedSCC = No
+  OldSKInterpolation = No
+  ReadInitialCharges = No
+  InitialCharges = {}
+  Mixer = Broyden {
+    MixingParameter = 0.200000000000000
+    InverseJacobiWeight = 1.000000000000000E-002
+    MinimalWeight = 1.00000000000000
+    MaximalWeight = 100000.000000000
+    WeightFactor = 1.000000000000000E-002
+  }
+  HCorrection = None {}
+  SpinPolarisation = {}
+  ElectricField = {}
+  Filling = Fermi {
+    Temperature = 0.00000000000000
+  }
+  Solver = RelativelyRobust {}
+  Dispersion = {}
+  ThirdOrder = No
+  ThirdOrderFull = No
+  Differentiation = FiniteDiff {
+    Delta = 1.220703125000000E-004
+  }
+  ForceEvaluation = "Traditional"
+}
+Analysis = {
+  CalculateForces = Yes
+  WriteBandOut = Yes
+  WriteEigenvectors = Yes
+  MullikenAnalysis = Yes
+  ProjectStates = {}
+  AtomResolvedEnergies = No
+  EigenvectorsAsTxt = No
+}
+Options = {
+  WriteDetailedXml = Yes
+  WriteDetailedOut = Yes
+  TimingVerbosity = -1
+  WriteAutotestTag = No
+  WriteResultsTag = No
+  RestartFrequency = 20
+  RandomSeed = 0
+  WriteHS = No
+  WriteRealHS = No
+  MinimiseMemoryUsage = No
+  ShowFoldedCoords = No
+  WriteChargesAsText = No
+}
+REKS = SSR22 {
+  EnergyFunctional = 2
+  EnergyLevel = 1
+  useSSRstate = 1
+  TargetState = 1
+  TargetStateL = 0
+  InitialGuess = 1
+  FONmaxIter = 50
+  shift = 1.0
+  GradientLevel = 1
+  CGmaxIter = 100
+  GradientTolerance = 1e-08
+  RelaxedDensity = No
+  NonAdiabaticCoupling = No
+  PrintLevel = 1
+  MemoryLevel = 2
+  SpinTuning = {}
+  TransitionDipole = No
+  AdjustInitialMO = No
+}
+ParserOptions = {
+  ParserVersion = 7
+  WriteHSDInput = Yes
+  WriteXMLInput = No
+  StopAfterParsing = No
+  IgnoreUnprocessedNodes = No
+}
+Driver = {}
+ExcitedState = {}

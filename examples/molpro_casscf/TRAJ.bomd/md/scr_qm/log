@@ -1,0 +1,361 @@
+
+ Primary working directories    : int
+ Secondary working directories  : int
+ Wavefunction directory         : /home/islee/unixmd-develop/39-unixmd-new_code_structure-change_mqc_structure/examples/molpro_casscf/TRAJ.bomd/unixmd/scr_qm/wfu/
+ Main file repository           : /home/islee/unixmd-develop/39-unixmd-new_code_structure-change_mqc_structure/examples/molpro_casscf/TRAJ.bomd/unixmd/scr_qm/int/
+
+ SHA1      : e0c7f9aab6313248a7a7ade58897d3f3adec42d9
+ NAME      : 2015.1.15
+ ARCHNAME  : linux/x86_64
+ FC        : /opt/intel/composer_xe_2015.1.133/bin/intel64/ifort
+ BLASLIB   : -Wl,-_start-group /opt/intel/mkl/lib/intel64/libmkl_intel_ilp64.a /opt/intel/mkl/lib/intel64/libmkl_intel_thread.a /opt/intel/mkl/lib/intel64/libmkl_core.a -Wl,-_end-group
+ id        : csmmolpro
+
+ Nodes     nprocs
+ thor         1
+
+ Using customized tuning parameters: mindgm=1; mindgv=20; mindgc=4; mindgr=1; noblas=0; minvec=7
+ default implementation of scratch files=df  
+
+ file,1,int.int,delete
+ file,2,wf.wfu,unknown
+ restart,2
+ 
+ geometry={angstrom
+ Including file /home/islee/unixmd-develop/39-unixmd-new_code_structure-change_mqc_structure/examples/molpro_casscf/TRAJ.bomd/unixmd/scr_qm/geometry.xyz
+ >6
+ >C       -0.70201560     0.01035658    -0.03390254
+ >C        0.66232661    -0.00493252    -0.04543707
+ >H       -1.27035955     0.93271072    -0.13856190
+ >H       -1.29874194    -0.92184524    -0.09023248
+ >H        1.23111980     0.92992096    -0.07550312
+ >H        1.25343653    -0.97542006    -0.05151100
+ }
+ 
+ symmetry nosym
+ basis=6-31G
+ 
+ {mcscf,maxit=20,energy=1e-08,gradient=1e-06,step=0.01
+ frozen,0
+ closed,7
+ occ,9
+ start,2140.2
+ orbital,2140.2
+ wf,16,1,0
+ state,2
+ cpmcscf,grad,1.1,spin=0,accu=1e-07,record=5100.3
+ }
+ en(1) = ENERGY(1)
+ en(2) = ENERGY(2)
+ 
+ 
+ {force
+ samc,5100.3
+ }
+ 
+
+ Variables initialized (889), CPU time= 0.01 sec
+ Commands  initialized (702), CPU time= 0.01 sec, 572 directives.
+ Default parameters read. Elapsed time= 0.07 sec
+
+ Checking input...
+ Passed
+1
+
+
+                                         ***  PROGRAM SYSTEM MOLPRO  ***
+                                       Copyright, TTI GmbH Stuttgart, 2015
+                                    Version 2015.1 linked Jan  2 2017 18:18:08
+
+
+ **********************************************************************************************************************************
+ LABEL *                                                                                 
+  64 bit serial version                                                                  DATE: 22-Oct-19          TIME: 09:32:30  
+ **********************************************************************************************************************************
+
+ SHA1:             e0c7f9aab6313248a7a7ade58897d3f3adec42d9
+ **********************************************************************************************************************************
+
+ Variable memory set to  500000000 words,  buffer space   230000 words
+
+
+
+ Temporary file  1  int.int  assigned.  Implementation=df  
+ Permanent file  2  wf.wfu   assigned.  Implementation=df  
+
+ PROGRAM * RESTART 
+
+
+
+ **********************************************************************************************************************************
+ DATASETS  * FILE   NREC   LENGTH (MB)   RECORD NAMES
+              2       1        0.03       500   
+                                          VAR  
+
+ PROGRAMS   *        TOTAL   RESTART
+ CPU TIMES  *         0.14      0.00
+ REAL TIME  *         0.15 SEC
+ DISK USED  *         0.03 MB      
+ **********************************************************************************************************************************
+
+Geometry recognized as XYZ
+
+ SETTING BASIS          =    6-31G
+
+
+ Recomputing integrals since basis changed
+
+
+ Using spherical harmonics
+
+ Library entry C      S 6-31G                selected for orbital group  1
+ Library entry C      P 6-31G                selected for orbital group  1
+ Library entry H      S 6-31G                selected for orbital group  2
+
+
+ PROGRAM * SEWARD (Integral evaluation for generally contracted gaussian basis sets)     Author: Roland Lindh, 1990
+
+ Geometry written to block  1 of record 700
+
+
+ Point group  C1  
+
+
+
+ ATOMIC COORDINATES
+
+ NR  ATOM    CHARGE       X              Y              Z
+
+   1  C       6.00   -1.326617219    0.019571100   -0.064066516
+   2  C       6.00    1.251615898   -0.009321112   -0.085863618
+   3  H       1.00   -2.400631629    1.762567814   -0.261844042
+   4  H       1.00   -2.454266573   -1.742035033   -0.170514675
+   5  H       1.00    2.326479249    1.757295932   -0.142680218
+   6  H       1.00    2.368651756   -1.843276770   -0.097341682
+
+ Bond lengths in Bohr (Angstrom)
+
+ 1-2  2.578487130  1-3  2.056856935  1-4  2.094320998  2-5  2.068694063  2-6  2.147392421
+     ( 1.364476628)     ( 1.088441816)     ( 1.108266944)     ( 1.094705755)     ( 1.136351132)
+
+ Bond angles
+
+  1-2-5  120.67698909   1-2-6  121.98829344   2-1-3  122.05911270   2-1-4  121.90579851
+
+  3-1-4  115.26133675   5-2-6  117.31634875
+
+ NUCLEAR CHARGE:                   16
+ NUMBER OF PRIMITIVE AOS:          60
+ NUMBER OF SYMMETRY AOS:           60
+ NUMBER OF CONTRACTIONS:           26   (  26A   )
+ NUMBER OF CORE ORBITALS:           2   (   2A   )
+ NUMBER OF VALENCE ORBITALS:       12   (  12A   )
+
+
+ NUCLEAR REPULSION ENERGY   32.63149027
+
+ Eigenvalues of metric
+
+         1 0.107E-01 0.202E-01 0.415E-01 0.520E-01 0.784E-01 0.253E+00 0.255E+00 0.286E+00
+
+
+ Contracted 2-electron integrals neglected if value below      1.0D-11
+ AO integral compression algorithm  1   Integral accuracy      1.0D-11
+
+     0.524 MB (compressed) written to integral file ( 84.5%)
+
+
+ NUMBER OF SORTED TWO-ELECTRON INTEGRALS:      61776.     BUFFER LENGTH:  32768
+ NUMBER OF SEGMENTS:   1  SEGMENT LENGTH:      61776      RECORD LENGTH: 524288
+
+ Memory used in sort:       0.62 MW
+
+ SORT1 READ       85775. AND WROTE       60132. INTEGRALS IN      1 RECORDS. CPU TIME:     0.00 SEC, REAL TIME:     0.00 SEC
+ SORT2 READ       60132. AND WROTE       61776. INTEGRALS IN      2 RECORDS. CPU TIME:     0.01 SEC, REAL TIME:     0.01 SEC
+
+ FILE SIZES:   FILE 1:    19.7 MBYTE,  FILE 4:     4.2 MBYTE,   TOTAL:     23.9 MBYTE
+
+ OPERATOR DM      FOR CENTER  0  COORDINATES:    0.000000    0.000000    0.000000
+
+
+ **********************************************************************************************************************************
+ DATASETS  * FILE   NREC   LENGTH (MB)   RECORD NAMES
+              1      19       19.49       500      610      700      900      950      970     1000      129      960     1100   
+                                          VAR    BASINP    GEOM    SYMINP    ZMAT    AOBASIS   BASIS     P2S    ABASIS      S 
+                                         1400     1410     1200     1210     1080     1600     1650     1300     1700   
+                                           T        V       H0       H01     AOSYM     SMH    MOLCAS    ERIS     OPER   
+
+              2       5        1.48       500      610      700     1000      520   
+                                          VAR    BASINP    GEOM     BASIS   MCVARS    
+
+ PROGRAMS   *        TOTAL       INT   RESTART
+ CPU TIMES  *         0.37      0.22      0.00
+ REAL TIME  *         0.60 SEC
+ DISK USED  *        25.45 MB      
+ **********************************************************************************************************************************
+
+
+ PROGRAM * MULTI (Direct Multiconfiguration SCF)       Authors: P.J. Knowles, H.-J. Werner (1984)     S.T. Elbert (1988)
+
+
+ Number of closed-shell orbitals:   7 (   7 )
+ Number of active  orbitals:        2 (   2 )
+ Number of external orbitals:      17 (  17 )
+
+ State symmetry 1
+
+ Number of electrons:     2    Spin symmetry=Singlet   Space symmetry=1
+ Number of states:        2
+ Number of CSFs:          3   (4 determinants, 4 intermediate states)
+
+ Orbital guess generated from atomic densities. Full valence occupancy:    8
+
+ Wavefunction dump at record             2140.2
+
+ Convergence thresholds  0.10E-05 (gradient)  0.10E-07 (energy)  0.10E-01 (step length)
+
+ Weight factors for state symmetry  1:    0.50000   0.50000
+
+ Number of orbital rotations:      167   (    14 Core/Active    119 Core/Virtual   0 Active/Active     34 Active/Virtual)
+ Total number of variables:        175
+
+
+ ITER. MIC  NCI  NEG     ENERGY(VAR)     ENERGY(PROJ)   ENERGY CHANGE     GRAD(0)  GRAD(ORB)   GRAD(CI)     STEP       TIME
+
+   1   27    7    0     -77.81097240     -77.83102574   -0.02005334    0.19470182 0.00008605 0.00000000  0.14D+00      0.08
+   2   35   13    0     -77.83137294     -77.83141436   -0.00004142    0.00699303 0.00000000 0.00000000  0.16D-01      0.10
+   3   28   13    0     -77.83141457     -77.83141458   -0.00000001    0.00007098 0.00000001 0.00000000  0.31D-03      0.13
+   4   21   13    0     -77.83141458     -77.83141458   -0.00000000    0.00000105 0.00000006 0.00000000  0.25D-05      0.15
+   5   20   10    0     -77.83141458     -77.83141458   -0.00000000    0.00000006 0.00000001 0.00000000  0.11D-06      0.17
+
+ ** WVFN ****  CONVERGENCE REACHED, FINAL GRADIENT:  0.13D-07
+
+ Solving MCSCF z-vector equations for state  1.1, requested accuracy=      0.10D-06
+ Convergence reached in  18 iterations ( 18 expansion vectors), accuracy=  0.34D-07
+
+ SA-Gradient information saved on record      5100.3
+
+
+
+ Results for state 1.1
+ =====================
+
+ !MCSCF STATE 1.1 Energy              -78.020312431118
+ Nuclear energy                        32.63149027
+ Kinetic energy                        77.83673163
+ One electron energy                 -168.58383432
+ Two electron energy                   57.93203162
+ Virial ratio                           2.00235854
+
+ !MCSCF STATE 1.1 Dipole moment         0.00345048     0.00882448    -0.06967279
+ Dipole moment /Debye                   0.00876966     0.02242813    -0.17707896
+
+ Results for state 2.1
+ =====================
+
+ !MCSCF STATE 2.1 Energy              -77.642516731878
+ Nuclear energy                        32.63149027
+ Kinetic energy                        77.96387140
+ One electron energy                 -167.99298777
+ Two electron energy                   57.71898077
+ Virial ratio                           1.99587816
+
+ !MCSCF STATE 2.1 Dipole moment        -0.02195436     0.00559707    -0.12299668
+ Dipole moment /Debye                  -0.05579877     0.01422540    -0.31260591
+
+ State-averaged charge density matrix saved on record  2140.2 (density set 1)
+
+ !MCSCF expec         <1.1|DMX|1.1>     0.003450476700 au =     0.008769662572 Debye
+ !MCSCF trans         <2.1|DMX|1.1>    -1.535489555424 au =    -3.902569544276 Debye
+ !MCSCF expec         <2.1|DMX|2.1>    -0.021954361943 au =    -0.055798767226 Debye
+
+ !MCSCF expec         <1.1|DMY|1.1>     0.008824482463 au =     0.022428128138 Debye
+ !MCSCF trans         <2.1|DMY|1.1>     0.016073291013 au =     0.040851554974 Debye
+ !MCSCF expec         <2.1|DMY|2.1>     0.005597071274 au =     0.014225404408 Debye
+
+ !MCSCF expec         <1.1|DMZ|1.1>    -0.069672787296 au =    -0.177078962735 Debye
+ !MCSCF trans         <2.1|DMZ|1.1>     0.047866846752 au =     0.121657420368 Debye
+ !MCSCF expec         <2.1|DMZ|2.1>    -0.122996682813 au =    -0.312605909104 Debye
+
+
+ Natural orbital dump (state averaged) at molpro section  2140.2    (Orbital set 2)
+
+
+
+ **********************************************************************************************************************************
+ DATASETS  * FILE   NREC   LENGTH (MB)   RECORD NAMES
+              1      20       19.88       500      610      700      900      950      970     1000      129      960     1100   
+                                          VAR    BASINP    GEOM    SYMINP    ZMAT    AOBASIS   BASIS     P2S    ABASIS      S 
+                                         1400     1410     1200     1210     1080     1600     1650     1300     1700     1380   
+                                           T        V       H0       H01     AOSYM     SMH    MOLCAS    ERIS     OPER     JKOP   
+
+              2       6        4.02       500      610      700     1000      520     2140   
+                                          VAR    BASINP    GEOM     BASIS   MCVARS    MCSCF   
+
+              3       2        0.05      1000     5100   
+                                         BASIS   CPSAMC    
+
+ PROGRAMS   *        TOTAL     MCSCF       INT   RESTART
+ CPU TIMES  *         0.56      0.19      0.22      0.00
+ REAL TIME  *         0.90 SEC
+ DISK USED  *        28.84 MB      
+ **********************************************************************************************************************************
+ SETTING EN(1)          =       -78.02031243  HARTREE                         
+ SETTING EN(2)          =       -77.64251673  HARTREE                         
+
+
+ PROGRAM * FORCE (Gradient of the energy)
+
+ SA-MCSCF information from    5100.3
+ Orbitals from record         2140.2
+
+ Number of closed-shell orbitals:  7 (  7 )
+ Number of active orbitals:        2 (  2 )
+ Number of occupied orbitals:      9 (  9 )
+
+ Number of electrons= 16     Singlet     Space symmetry=1      Wavefunction type: SA-MCSCF
+
+
+ End of calculation of the energy gradient  ,IREST=   0
+
+
+ SA-MC GRADIENT FOR STATE 1.1
+
+ Atom          dE/dx               dE/dy               dE/dz
+
+   1        -0.002353384         0.011136143         0.026807520
+   2        -0.000758131         0.021687353         0.003308972
+   3        -0.006736788         0.008689350        -0.015402690
+   4        -0.014787229        -0.019617442        -0.006462153
+   5         0.005204491         0.014674718         0.000040913
+   6         0.019431042        -0.036570123        -0.008292561
+
+ Nuclear force contribution to virial =         0.259408108
+
+
+ **********************************************************************************************************************************
+ DATASETS  * FILE   NREC   LENGTH (MB)   RECORD NAMES
+              1      20       19.88       500      610      700      900      950      970     1000      129      960     1100   
+                                          VAR    BASINP    GEOM    SYMINP    ZMAT    AOBASIS   BASIS     P2S    ABASIS      S 
+                                         1400     1410     1200     1210     1080     1600     1650     1300     1700     1380   
+                                           T        V       H0       H01     AOSYM     SMH    MOLCAS    ERIS     OPER     JKOP   
+
+              2       6        4.02       500      610      700     1000      520     2140   
+                                          VAR    BASINP    GEOM     BASIS   MCVARS    MCSCF   
+
+              3       2        0.05      1000     5100   
+                                         BASIS   CPSAMC    
+
+ PROGRAMS   *        TOTAL     FORCE     MCSCF       INT   RESTART
+ CPU TIMES  *         0.71      0.15      0.19      0.22      0.00
+ REAL TIME  *         1.07 SEC
+ DISK USED  *        28.84 MB      
+ **********************************************************************************************************************************
+
+ MCSCF/6-31G energy=    -77.642516731878
+
+        MCSCF   
+    -78.02031243
+ **********************************************************************************************************************************
+ Molpro calculation terminated
+ Variable memory released
