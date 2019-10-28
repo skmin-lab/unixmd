@@ -1,0 +1,469 @@
+Startfile from command line: input.tcin
+
+
+       ***********************************************************
+       *                    TeraChem v1.99-Dev                   *
+       *                 Hg Version: 7f19a3bb8334                *
+       *                   Production Version                    *
+       *                Compiled without textures                *
+       *           Chemistry at the Speed of Graphics!           *
+       ***********************************************************
+       * This program may only be used in connection with        *
+       * a valid license from PetaChem, LLC. Use of this program *
+       * or results thereof indicates acceptance of all terms    *
+       * and conditions stated in the license and that a valid   *
+       * license agreement between the user and PetaChem, LLC    *
+       * exists. PetaChem, LLC does not warrant the correctness  *
+       * of results or their suitability for any purpose.        *
+       * Please email bugs, suggestions, and comments to         *
+       *                  help@petachem.com                      *
+       *                                                         *
+       ***********************************************************
+
+
+       ***********************************************************
+       *  Compiled by toddmtz      Mon May 29 16:34:51 PDT 2017  *
+       *  Supported architectures: sm_30 sm_50 sm_60             *
+       *  Cuda compilation tools, release 8.0, V8.0.44           *
+       ***********************************************************
+
+
+ Job started   Thu Oct 24 02:07:49 2019
+ On freya2 (available memory: 501168 MB)
+
+######################################### RUNTIME INFO ##########################################
+/home/filatov/terachem/bin/terachem input.tcin 
+
+NVRM version: NVIDIA UNIX x86_64 Kernel Module  384.69  Wed Aug 16 19:34:54 PDT 2017
+GCC version:  gcc version 4.4.7 20120313 (Red Hat 4.4.7-17) (GCC) 
+
+	linux-vdso.so.1 =>  (0x00007ffea5afd000)
+	libcurl.so.4 => /usr/lib64/libcurl.so.4 (0x0000003375200000)
+	libintbox.so.1 => /opt/TeraChem//lib/libintbox.so.1 (0x00002b00c1a8e000)
+	libthcbox.so.1 => /opt/TeraChem//lib/libthcbox.so.1 (0x00002b00e169c000)
+	libgridbox.so.1 => /opt/TeraChem//lib/libgridbox.so.1 (0x00002b00e3206000)
+	libdftbox.so.1 => /opt/TeraChem//lib/libdftbox.so.1 (0x00002b00e36f8000)
+	libcublas.so.8.0 => /opt/TeraChem//lib/libcublas.so.8.0 (0x00002b00e3a09000)
+	libcufft.so.8.0 => /opt/TeraChem//lib/libcufft.so.8.0 (0x00002b00e63b9000)
+	libcuda.so.1 => /usr/lib64/libcuda.so.1 (0x00002b00ef208000)
+	libcudart.so.8.0 => /opt/TeraChem//lib/libcudart.so.8.0 (0x00002b00f0083000)
+	libm.so.6 => /lib64/libm.so.6 (0x000000335fa00000)
+	libcilkrts.so.5 => /opt/TeraChem//lib/libcilkrts.so.5 (0x00002b00f02ea000)
+	libstdc++.so.6 => /usr/lib64/libstdc++.so.6 (0x0000003365600000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x0000003365200000)
+	libpthread.so.0 => /lib64/libpthread.so.0 (0x000000335f200000)
+	libdl.so.2 => /lib64/libdl.so.2 (0x000000335f600000)
+	libc.so.6 => /lib64/libc.so.6 (0x000000335ee00000)
+	/lib64/ld-linux-x86-64.so.2 (0x000000335e600000)
+	libidn.so.11 => /lib64/libidn.so.11 (0x000000336f600000)
+	libldap-2.4.so.2 => /lib64/libldap-2.4.so.2 (0x0000003372e00000)
+	librt.so.1 => /lib64/librt.so.1 (0x000000335fe00000)
+	libgssapi_krb5.so.2 => /lib64/libgssapi_krb5.so.2 (0x0000003367a00000)
+	libkrb5.so.3 => /lib64/libkrb5.so.3 (0x0000003367600000)
+	libk5crypto.so.3 => /lib64/libk5crypto.so.3 (0x0000003367200000)
+	libcom_err.so.2 => /lib64/libcom_err.so.2 (0x0000003366600000)
+	libz.so.1 => /lib64/libz.so.1 (0x000000335ea00000)
+	libssl3.so => /usr/lib64/libssl3.so (0x0000003370c00000)
+	libsmime3.so => /usr/lib64/libsmime3.so (0x0000003371600000)
+	libnss3.so => /usr/lib64/libnss3.so (0x0000003370000000)
+	libnssutil3.so => /usr/lib64/libnssutil3.so (0x000000336ea00000)
+	libplds4.so => /lib64/libplds4.so (0x000000336f200000)
+	libplc4.so => /lib64/libplc4.so (0x000000336ee00000)
+	libnspr4.so => /lib64/libnspr4.so (0x000000336fc00000)
+	libssh2.so.1 => /usr/lib64/libssh2.so.1 (0x0000003375a00000)
+	libnvidia-fatbinaryloader.so.384.69 => /usr/lib64/libnvidia-fatbinaryloader.so.384.69 (0x00002b00f0532000)
+	liblber-2.4.so.2 => /lib64/liblber-2.4.so.2 (0x0000003372a00000)
+	libresolv.so.2 => /lib64/libresolv.so.2 (0x0000003360a00000)
+	libsasl2.so.2 => /usr/lib64/libsasl2.so.2 (0x0000003372600000)
+	libkrb5support.so.0 => /lib64/libkrb5support.so.0 (0x0000003366e00000)
+	libkeyutils.so.1 => /lib64/libkeyutils.so.1 (0x0000003366a00000)
+	libssl.so.10 => /usr/lib64/libssl.so.10 (0x0000003368a00000)
+	libcrypto.so.10 => /usr/lib64/libcrypto.so.10 (0x0000003365a00000)
+	libcrypt.so.1 => /lib64/libcrypt.so.1 (0x000000336d600000)
+	libselinux.so.1 => /lib64/libselinux.so.1 (0x0000003360200000)
+	libfreebl3.so => /lib64/libfreebl3.so (0x000000336da00000)
+#################################################################################################
+
+Cannot find license.dat file in the TeraChem installation directory /opt/TeraChem/
+
+
+TRYING THE NETWORK LICENSE...
+Connecting to license server '172.20.1.200' port '8080'...
+Connected!
+Checking your license...
+
+***********************************************************
+  Greetings, Seung Kyu Min! You have 2 licenses in total
+  IN USE: 2
+  AVAILABLE: 0
+***********************************************************
+
+Scratch directory: ./scr
+Random number seed: 1560221828
+
+XYZ coordinates geometry.xyz
+Molden File Output: ./scr/geometry.molden
+Using basis set: 6-31gs
+==REKS== Gradient of all states (SA-state, GSS/1st state, OSS/2nd state,                          and coupling term if it is SI-SA REKS calculation) will be calculated!
+CG threshold for solving CPREKS equation:1.0e-06
+Spin multiplicity: 1
+DIIS will use up to 10 vectors.
+WF convergence threshold: 1.00e-01
+Using DIIS algorithm to converge WF
+Maximum number of SCF iterations: 300
+Incremental fock with rebuild every 8 iterations
+Will switch to conventional Fock if diffuse functions are detected
+X-matrix tolerance: 1.00e-04
+PRECISION: DYNAMIC
+DFT Functional requested: wpbeh
+Method: wPBEh
+  wPBE exchange functional:   0.80 
+  LR Hartree-Fock exchange:   0.80 
+  Range correction scaling:   0.200 a.u.
+  Full range H-F exchange:    0.20 
+  PBE correlation functional: 1.0 
+Wavefunction: RESTRICTED
+DFT grid type: 1
+Using dynamic DFT grids.
+Initial guess generated by maximum overlap
+
+********************************************
+**** SINGLE POINT GRADIENT CALCULATIONS ****
+********************************************
+SCF:   Initial guess is taken from previous step
+
+using 2 out of 8 CUDA devices
+   Device 0:  GeForce GTX 1080 Ti, 11172MB, CC 6.1 -- IDLE
+   Device 1:  GeForce GTX 1080 Ti, 11172MB, CC 6.1 -- IDLE
+   Device 2:  GeForce GTX 1080 Ti, 11172MB, CC 6.1 -- IDLE
+   Device 3:  GeForce GTX 1080 Ti, 11172MB, CC 6.1 -- IDLE
+   Device 4:  GeForce GTX 1080 Ti, 11172MB, CC 6.1 -- IDLE
+   Device 5:  GeForce GTX 1080 Ti, 11172MB, CC 6.1 -- IDLE
+   Device 6:  GeForce GTX 1080 Ti, 11172MB, CC 6.1 -- CPU THREAD 0
+   Device 7:  GeForce GTX 1080 Ti, 11172MB, CC 6.1 -- CPU THREAD 1
+-------------------------------------------------------------------
+Compiled with MAGMA support.  MAGMA parameters:
+    Matrices larger than 5000 square will be treated with MAGMA
+       (Change by setting the MagmaMinN environment variable)
+    Magma will use 1 out of 2 GPUs
+       (Change by setting the MagmaNGPUs environment variable)
+-------------------------------------------------------------------
+ CPU Memory Available: 64615.88 MegaWords 
+ GPU Memory Available: 1140.55 MegaWords 
+ Maximum recommended basis set size: 12200 basis functions
+ (limited by GPU memory)
+-------------------------------------------------------------------
+Using d-functions. Configuring GPUs accordingly. 
+0: CUBLAS initialized, available GPU memory: 8269MB
+1: CUBLAS initialized, available GPU memory: 8269MB
+
+****** QM coordinates ******
+C        -0.7220716400        -0.0226827200        -0.0802560900  
+C         0.6802870000         0.0072640100        -0.0503102700  
+H        -1.4365704400         0.7511245100        -0.4511921500  
+H        -1.3351592900        -0.5941134900         0.6645391600  
+H         1.2901592900         0.6735529500         0.6304165100  
+H         1.4219977700        -0.6168332100        -0.5891497600  
+
+Basis set:       6-31gs
+Total atoms:     6
+Total charge:    0
+Total electrons: 16 (8-alpha, 8-beta)
+Number electrons modeled by ECPs: 0
+Total orbitals:  38
+Total AO shells: 20 (14 S-shells; 4 P-shells; 2 D-shells; 0 F-shells; 0 G-shells)
+Spin multiplicity: 1
+Nuclear repulsion energy (QM atoms): 31.854386704786 a.u.
+
+Setting up the DFT grid...
+time to set the grid = 0.01 s
+DFT grid points: 6183 (1030 points/atom)
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 17177 (2862 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 5.33e-15 <<<
+THRESPDP set to 1.00e+00
+                >>> SWITCHING TO GRID 1 <<<
+   1     0.4265203219     -77.8258080489    16.0000058661    -7.9510774223     -77.8258080489     0.08  
+                >>> SWITCHING TO GRID 0 <<<
+   2     0.2529167383      -0.3933884642    16.0000302622    -8.6012897450     -78.2191965132     0.05  
+   3     0.0549885208      -0.1270035939    16.0000407314    -8.3523586476     -78.3462001070     0.05  
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -78.3462001070 a.u.
+CENTER OF MASS: {-0.020030, 0.001084, -0.046740} ANGS
+DIPOLE MOMENT: {0.457116, 0.130156, 0.375440} (|D| = 0.605682) DEBYE
+
+Running Mulliken population analysis...
+
+Running state-averaged REKS
+Number of basis functions:  38
+Number of core electrons:   7
+Number of active electrons: 2
+Convergence threshold 5e-06 within maximum of 10000 iterations
+DIIS will use up to 10 vectors
+DIIS is restarted, if large expansion coefficients (>   100.00) are encountered
+
+                      *** Start REKS Iterations ***
+
+   Iter  XReks_    reks diis error   Energy change      reks Energy      level shift     Time(s)
+----------------------------------------------------------------------------------------------------
+Initial THRESPDP set to:        1
+                >>> SWITCHING TO GRID 1 <<<
+     0  0.713118     0.03753497     -78.3271815705     -78.3271815705       1.0000           0.43
+     1  0.692710     0.02097280      -0.0069882235     -78.3341697940       1.0000           0.40
+     2  0.687546     0.01529522      -0.0017065236     -78.3358763176       1.0000           0.47
+     3  0.685724     0.01138950      -0.0008546136     -78.3367309312       1.0000           0.52
+     4  0.684969     0.00833424      -0.0005033998     -78.3372343309       1.0000           0.46
+     5  0.684879     0.00611017      -0.0003028100     -78.3375371409       1.0000           0.43
+     6  0.684920     0.00446180      -0.0001827264     -78.3377198674       1.0000           0.46
+     7  0.685003     0.00341218      -0.0001138632     -78.3378337305       1.0000           0.44
+     8  0.685088     0.00262362      -0.0000731482     -78.3379068787       1.0000           0.37
+     9  0.685134     0.00202190      -0.0000482895     -78.3379551682       1.0000           0.37
+    10  0.685163     0.00155425      -0.0000317848     -78.3379869530       1.0000           0.49
+    11  0.685193     0.00119304      -0.0000233231     -78.3380102761       1.0000           0.39
+    12  0.685186     0.00106549      -0.0000148393     -78.3380251155       1.0000           0.50
+    13  0.685172     0.00095021      -0.0000128610     -78.3380379765       1.0000           0.50
+    14  0.685115     0.00084581      -0.0000084137     -78.3380463901       1.0000           0.46
+    15  0.685064     0.00075233      -0.0000063124     -78.3380527025       1.0000           0.46
+    16  0.685004     0.00066980      -0.0000054077     -78.3380581102       1.0000           0.39
+    17  0.684955     0.00059408      -0.0000037256     -78.3380618358       1.0000           0.41
+    18  0.684904     0.00053015      -0.0000034854     -78.3380653212       1.0000           0.42
+    19  0.684853     0.00047170      -0.0000025523     -78.3380678734       1.0000           0.40
+    20  0.684809     0.00042050      -0.0000017124     -78.3380695858       1.0000           0.41
+    21  0.684761     0.00037435      -0.0000019199     -78.3380715057       1.0000           0.42
+    22  0.684726     0.00033369      -0.0000005917     -78.3380720975       1.0000           0.43
+    23  0.684684     0.00029663      -0.0000011083     -78.3380732057       1.0000           0.42
+    24  0.684649     0.00026351      -0.0000020163     -78.3380752220       1.0000           0.42
+    25  0.684606     0.00023367      -0.0000003473     -78.3380755693       1.0000           0.42
+    26  0.684571     0.00020814      -0.0000013565     -78.3380769258       1.0000           0.42
+    27  0.684539     0.00018478      -0.0000001798     -78.3380771057       1.0000           0.41
+    28  0.684503     0.00016394      +0.0000001046     -78.3380770010       1.0000           0.41
+    29  0.684469     0.00014549      -0.0000007088     -78.3380777098       1.0000           0.42
+THRESPDP set to 6.15e-03
+    30  0.684441     0.00012966      +0.0000028655     -78.3380748443       1.0000           0.43
+    31  0.684412     0.00011521      -0.0000003194     -78.3380751637       1.0000           0.42
+    32  0.684386     0.00010256      -0.0000003447     -78.3380755084       1.0000           0.43
+    33  0.684362     0.00009115      -0.0000002484     -78.3380757568       1.0000           0.42
+    34  0.684340     0.00008092      -0.0000002201     -78.3380759768       1.0000           0.42
+    35  0.684318     0.00007599      -0.0000001963     -78.3380761731       1.0000           0.43
+    36  0.684298     0.00007158      -0.0000002015     -78.3380763746       1.0000           0.43
+    37  0.684279     0.00006738      -0.0000001311     -78.3380765056       1.0000           0.42
+    38  0.684262     0.00006395      -0.0000001663     -78.3380766719       1.0000           0.43
+    39  0.684247     0.00006037      -0.0000000999     -78.3380767718       1.0000           0.42
+    40  0.684233     0.00005718      -0.0000000999     -78.3380768717       1.0000           0.40
+    41  0.684220     0.00005434      -0.0000001019     -78.3380769736       1.0000           0.41
+    42  0.684208     0.00005151      -0.0000000517     -78.3380770253       1.0000           0.39
+    43  0.684197     0.00004894      -0.0000000725     -78.3380770977       1.0000           0.39
+    44  0.684187     0.00004651      -0.0000000647     -78.3380771624       1.0000           0.42
+    45  0.684178     0.00004424      -0.0000000340     -78.3380771964       1.0000           0.45
+    46  0.684169     0.00004199      -0.0000000616     -78.3380772580       1.0000           0.44
+    47  0.684160     0.00003977      -0.0000000277     -78.3380772858       1.0000           0.42
+    48  0.684152     0.00003796      -0.0000000570     -78.3380773428       1.0000           0.42
+    49  0.684145     0.00003623      -0.0000000459     -78.3380773887       1.0000           0.41
+    50  0.684138     0.00003448      +0.0000000208     -78.3380773678       1.0000           0.41
+    51  0.684132     0.00003294      -0.0000000738     -78.3380774416       1.0000           0.42
+    52  0.684126     0.00003158      -0.0000000036     -78.3380774453       1.0000           0.42
+    53  0.684121     0.00003046      +0.0000000059     -78.3380774394       1.0000           0.42
+    54  0.684115     0.00002920      -0.0000000052     -78.3380774446       1.0000           0.42
+    55  0.684111     0.00002794      -0.0000000572     -78.3380775019       1.0000           0.41
+    56  0.684106     0.00002677      -0.0000000191     -78.3380775210       1.0000           0.42
+    57  0.684102     0.00002555      -0.0000000067     -78.3380775277       1.0000           0.42
+    58  0.684098     0.00002445      -0.0000000378     -78.3380775655       1.0000           0.42
+    59  0.684093     0.00002328      -0.0000000229     -78.3380775884       1.0000           0.42
+    60  0.684089     0.00002200      -0.0000000043     -78.3380775927       1.0000           0.42
+    61  0.684085     0.00002071      -0.0000000012     -78.3380775939       1.0000           0.42
+    62  0.684081     0.00001968      +0.0000000169     -78.3380775770       1.0000           0.42
+    63  0.684078     0.00001878      -0.0000000153     -78.3380775924       1.0000           0.41
+    64  0.684075     0.00001816      -0.0000000049     -78.3380775973       1.0000           0.40
+    65  0.684073     0.00001749      -0.0000000253     -78.3380776226       1.0000           0.39
+    66  0.684070     0.00001683      +0.0000000175     -78.3380776052       1.0000           0.39
+    67  0.684068     0.00001607      -0.0000000152     -78.3380776204       1.0000           0.40
+    68  0.684065     0.00001542      -0.0000000098     -78.3380776302       1.0000           0.40
+    69  0.684063     0.00001476      +0.0000000316     -78.3380775985       1.0000           0.39
+    70  0.684061     0.00001411      +0.0000000045     -78.3380775940       1.0000           0.41
+    71  0.684059     0.00001361      -0.0000000321     -78.3380776262       1.0000           0.44
+    72  0.684057     0.00001312      -0.0000000310     -78.3380776572       1.0000           0.42
+    73  0.684055     0.00001266      +0.0000000010     -78.3380776561       1.0000           0.42
+    74  0.684054     0.00001216      +0.0000000121     -78.3380776440       1.0000           0.50
+    75  0.684052     0.00001171      -0.0000000008     -78.3380776448       1.0000           0.48
+    76  0.684051     0.00001131      -0.0000000220     -78.3380776668       1.0000           0.40
+    77  0.684049     0.00001102      +0.0000000127     -78.3380776541       1.0000           0.39
+    78  0.684048     0.00001075      +0.0000000093     -78.3380776448       1.0000           0.39
+    79  0.684047     0.00001054      -0.0000000202     -78.3380776650       1.0000           0.40
+    80  0.684046     0.00001016      +0.0000000108     -78.3380776542       1.0000           0.39
+    81  0.684045     0.00000964      +0.0000000163     -78.3380776378       1.0000           0.40
+    82  0.684044     0.00000919      -0.0000000486     -78.3380776864       1.0000           0.51
+    83  0.684042     0.00000869      +0.0000000195     -78.3380776669       1.0000           0.51
+    84  0.684041     0.00000817      -0.0000000144     -78.3380776813       1.0000           0.41
+    85  0.684040     0.00000779      +0.0000000083     -78.3380776730       1.0000           0.40
+    86  0.684038     0.00000733      -0.0000000139     -78.3380776870       1.0000           0.43
+    87  0.684037     0.00000686      +0.0000000277     -78.3380776592       1.0000           0.42
+    88  0.684036     0.00000643      -0.0000000539     -78.3380777131       1.0000           0.41
+    89  0.684035     0.00000601      +0.0000000354     -78.3380776777       1.0000           0.41
+    90  0.684034     0.00000563      -0.0000000129     -78.3380776906       1.0000           0.42
+    91  0.684032     0.00000532      +0.0000000146     -78.3380776760       1.0000           0.42
+    92  0.684031     0.00000503      +0.0000000180     -78.3380776579       1.0000           0.42
+    93  0.684030     0.00000480      -0.0000000127     -78.3380776707       1.0000           0.41
+----------------------------------------------------------------------------------------------------
+
+REKS calculation converged!
+Final THRESPDP: 6.15e-03
+FINAL REKS energy:           -78.338077670681 a.u.
+CENTER OF MASS: {-0.020030, 0.001084, -0.046740} ANGS
+DIPOLE MOMENT: {0.045757, 0.178849, 0.366273} (|D| = 0.410166) DEBYE
+===================================================
+SA-REKS(2,2):  FON(1) = 1.368061 FON(2) = 0.631939
+
+Triplet:                          -78.380921168206
+Doubly excited singlet (DES):     -78.287157733640
+Open Shell Singlet (OSS):         -78.295864920301
+Ground State Singlet (GSS):       -78.380290421062
+
+Lagrangian Wrs:                     0.002191159448
+=================================================================
+SSR: 2SI-2SA-REKS states
+                     E_k               C_{GSS}         C_{OSS}
+-----------------------------------------------------------------
+SSR state 0     -78.380298404484     -0.99995273      0.00972337
+SSR state 1     -78.295856936878     -0.00972337     -0.99995273
+-----------------------------------------------------------------
+SSR unrelaxed occupation numbers (for relaxed occupations, see the gradient output):
+               FON(1) = 0.000000 FON(2) = 0.000000
+
+Transition dipole between the eigenstates:
+Transition dipole: {-0.780987, -0.024998, -0.135661} (|D| = 0.793076) DEBYE
+=================================================================
+
+Calculating State-averaged energy gradient...
+SA state gradient finished
+Calculating GSS state gradient...
+ Generating 2nd functional diffs
+ Generating 2nd functional diffs
+Solve CP-REKS with default cg mode:the response matrix A is not stored. Only A*Z product is built
+Building X...
+Iterative preconditioned Conjugate Gradient
+          convergence criterion =   0.0000010000
+          Max CG iteration = 10000
+======================================================================================
+  Iter    CG residue           μ            τ      Time      tJ        tK        tDFT
+--------------------------------------------------------------------------------------
+    1    0.040731249     0.000000     0.000000     0.394     0.014     0.109     0.271
+    2    0.020176024     1.615284     0.000000     0.385     0.014     0.108     0.263
+    3    0.006559389     0.959984     0.065688     0.388     0.014     0.105     0.269
+    4    0.003566638     1.012792     0.178294     0.375     0.013     0.097     0.265
+    5    0.002484307     1.474972     0.272905     0.389     0.013     0.096     0.279
+    6    0.001455130     1.701428     0.387171     0.383     0.013     0.095     0.275
+    7    0.000576629     0.859771     0.271484     0.377     0.013     0.094     0.269
+    8    0.000122167     1.032414     0.131057     0.387     0.013     0.094     0.279
+    9    0.000041803     1.056455     0.058927     0.387     0.013     0.093     0.281
+   10    0.000005703     1.080664     0.066621     0.370     0.013     0.092     0.265
+   11    0.000000872     1.194670     0.011920     0.385     0.013     0.090     0.282
+======================================================================================
+CPREKS Converged!
+---------------------------------------------------
+Getting unrelaxed density for the SI-SA eigenstate 1
+Getting unrelaxed density for the Gss state
+Getting unrelaxed density for the Oss state
+Unrelaxed dipole moment of 1st eigen state:
+CENTER OF MASS: {-0.020030, 0.001084, -0.046740} ANGS
+DIPOLE MOMENT: {0.086785, 0.166941, 0.383685} (|D| = 0.427335) DEBYE
+
+---------------------------------------------------
+Calculate relaxed dipole moment of 1st eigen state from relaxed density
+CENTER OF MASS: {-0.020030, 0.001084, -0.046740} ANGS
+DIPOLE MOMENT: {0.041628, 0.129491, 0.300235} (|D| = 0.329609) DEBYE
+---------------------------------------------------
+GSS state gradient finished
+Calculating OSS state gradient...
+OSS state gradient finished
+Calculating Coupling gradient...
+ Generating 2nd functional diffs
+ Generating 2nd functional diffs
+Solve CP-REKS with default cg mode:the response matrix A is not stored. Only A*Z product is built
+CP-REKS: Zero norm of Z vector; skipping the A*Z product.
+Iterative preconditioned Conjugate Gradient
+          convergence criterion =   0.0000010000
+          Max CG iteration = 10000
+======================================================================================
+  Iter    CG residue           μ            τ      Time      tJ        tK        tDFT
+--------------------------------------------------------------------------------------
+    1    0.184924450     0.000000     0.000000     0.000     0.004     0.020     0.281
+    2    0.105512226     0.786770     0.000000     0.405     0.014     0.116     0.274
+    3    0.056484850     1.774092     0.289983     0.407     0.014     0.113     0.280
+    4    0.018608824     1.931881     0.400913     0.407     0.014     0.112     0.280
+    5    0.005955826     1.259907     0.048537     0.409     0.014     0.106     0.290
+    6    0.001265215     1.056949     0.087955     0.387     0.013     0.097     0.276
+    7    0.000433969     0.920860     0.052631     0.396     0.013     0.095     0.287
+    8    0.000132751     0.884849     0.135203     0.386     0.013     0.094     0.278
+    9    0.000027734     0.980262     0.063355     0.372     0.013     0.093     0.265
+   10    0.000005304     1.131668     0.055091     0.363     0.013     0.092     0.258
+   11    0.000001112     1.224959     0.015358     0.361     0.013     0.090     0.258
+   12    0.000000202     1.324721     0.046744     0.364     0.012     0.088     0.263
+======================================================================================
+CPREKS Converged!
+---------------------------------------------------
+Coupling gradient finished
+Summary of SI-SA-REKS gradient calculation:
+SA state gradient
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0159301414    -0.0032493529    -0.0174043138
+   -0.0179000726    -0.0103562246    -0.0076859369
+   -0.0185502652    -0.0010174567     0.0026923149
+   -0.0122859304     0.0084904220     0.0119841561
+    0.0165775061     0.0006798595     0.0118483643
+    0.0162286205     0.0054527531    -0.0014345844
+---------------------------------------------------
+Eigen state 1 gradient
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+    0.0539581502    -0.0018860912    -0.0175401611
+   -0.0556008549    -0.0134791338    -0.0104143314
+   -0.0239365747    -0.0048869172    -0.0032357554
+   -0.0153262840     0.0137597280     0.0189479967
+    0.0203813354    -0.0039483900     0.0189599026
+    0.0205242279     0.0104408039    -0.0067176517
+---------------------------------------------------
+Eigen state 2 gradient
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+   -0.0220978674    -0.0046126147    -0.0172684665
+    0.0198007097    -0.0072333154    -0.0049575424
+   -0.0131639557     0.0028520038     0.0086203852
+   -0.0092455768     0.0032211161     0.0050203154
+    0.0127736767     0.0053081090     0.0047368259
+    0.0119330131     0.0004647023     0.0038484829
+---------------------------------------------------
+Coupling gradient
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+   -0.0025895256    -0.0030604752    -0.0057234456
+   -0.0036573533     0.0014980177     0.0035610771
+    0.0015134484     0.0004683109     0.0029943413
+    0.0018105278     0.0010751944    -0.0002146572
+    0.0020601491     0.0015080595    -0.0003196594
+    0.0008627537    -0.0014891075    -0.0002976562
+---------------------------------------------------
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+   -0.0025895256    -0.0030604752    -0.0057234456
+   -0.0036573533     0.0014980177     0.0035610771
+    0.0015134484     0.0004683109     0.0029943413
+    0.0018105278     0.0010751944    -0.0002146572
+    0.0020601491     0.0015080595    -0.0003196594
+    0.0008627537    -0.0014891075    -0.0002976562
+---------------------------------------------------
+Net gradient:  1.188177e-10 -1.416037e-10  3.392300e-11
+Net torque:   -1.583620e-06 -3.844476e-06  6.078917e-08
+
+Total processing time: 60.65 sec 
+
+ Job finished: Thu Oct 24 02:08:57 2019
+

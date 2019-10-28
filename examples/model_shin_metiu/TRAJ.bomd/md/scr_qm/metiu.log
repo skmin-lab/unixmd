@@ -1,0 +1,38 @@
+ Model Hamiltonian
+ Nuclear position?
+ # of BO states?
+   19.0000000000000        3.10000000000000        4.00000000000000     
+   5.00000000000000     
+
+**ENTERING PJDREVCOM************************************
+
+Computing the smallest eigenvalue(s)
+------------------------------------
+
+- Setting up a new ILU preconditioner ------------------
+ fill-in factor:      1.33 (=nnz(LU)/nnz(A))
+   used droptol:   1.00000E-03
+     used shift:  -1.69519E+01
+   ILU computed:      0.00[sec]
+--------------------------------------------------------
+
+            Eigenvalue     Res. norm    Error est.   No(Cluster)
+  -2.1582399651392E-01       6.6E-11       3.7E-20        1(---)
+  -9.8727209440454E-02       9.5E-11       1.0E-19        2(---) (*)
+
+ (Warning: error estimates are subject to several limitations,
+  see documentation for details; for (*), error estimate is indicative only)
+
+  Number of MATVEC needed:    265 ;  Estimated gap: 9.01E-02 ;  INFO:  0
+
+CPU time for eigenvalue computation:      0.01[sec]
+       CPU time for preconditioning:      0.00[sec]
+                     Total CPU time:      0.01[sec]
+
+ (Suggested SHIFT   if restart needed:-3.33E-01)
+ (Suggested DROPTOL if restart needed: 1.00E-03)
+
+**LEAVING PJDREVCOM*************************************
+
+ NORM 1:    1.00000000000000     
+ NORM 2:    1.00000000000000     
