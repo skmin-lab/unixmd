@@ -1,0 +1,87 @@
+|===============================================================================
+|
+|  DFTB+ release 19.1
+|
+|  Copyright (C) 2006 - 2019  DFTB+ developers group
+|
+|===============================================================================
+|
+|  When publishing results obtained with DFTB+, please cite the following
+|  reference:
+|
+|  * B. Aradi, B. Hourahine and T. Frauenheim,
+|    DFTB+, a Sparse Matrix-Based Implementation of the DFTB Method,
+|    J. Phys. Chem. A, 111 5678 (2007).  [doi: 10.1021/jp070186p]
+|
+|  You should also cite additional publications crediting the parametrization
+|  data you use. Please consult the documentation of the SK-files for the
+|  references.
+|
+|===============================================================================
+
+Reading input file 'dftb_in.hsd'
+Parser version: 7
+
+--------------------------------------------------------------------------------
+Reading SK-files:
+Done.
+
+
+Processed input in HSD format written to 'dftb_pin.hsd'
+
+Starting initialization...
+--------------------------------------------------------------------------------
+OpenMP threads:              1
+Chosen random seed:          1912828441
+Mode:                        Static calculation
+Self consistent charges:     Yes
+SCC-tolerance:                 0.100000E-05
+Max. scc iterations:                    300
+Shell resolved Hubbard:      No
+Spin polarisation:           No
+Nr. of up electrons:             6.000000
+Nr. of down electrons:           6.000000
+Periodic boundaries:         No
+Electronic solver:           Relatively robust
+Mixer:                       Broyden mixer
+Mixing parameter:                  0.200000
+Maximal SCC-cycles:                     300
+Nr. of chrg. vec. in memory:              0
+Electronic temperature:        0.100000E-07 H      0.272114E-06 eV
+Initial charges:             Set automatically (system chrg:   0.000E+00)
+Included shells:             C:  s, p
+                             H:  s
+Extra options:
+                             Mulliken analysis
+                             Force calculation
+Force type                   original
+                             Eigenvector printing
+
+--------------------------------------------------------------------------------
+
+***  Geometry step: 0
+
+ iSCC Total electronic   Diff electronic      SCC error    
+    1   -0.48690281E+01    0.00000000E+00    0.23116201E+00
+    2   -0.48694699E+01   -0.44181781E-03    0.17001884E+00
+    3   -0.48699971E+01   -0.52718353E-03    0.16969228E-02
+    4   -0.48699972E+01   -0.85453300E-07    0.10967651E-02
+    5   -0.48699972E+01   -0.49677516E-07    0.13278773E-03
+    6   -0.48699972E+01   -0.22215323E-08    0.11074882E-04
+    7   -0.48699972E+01   -0.51176841E-11    0.63357156E-05
+    8   -0.48699972E+01   -0.22479796E-11    0.71644743E-06
+>> Charges saved for restart in charges.bin
+ 
+Total Energy:                       -4.6540930195 H         -126.6443 eV
+Extrapolated to 0:                  -4.8933775731 H         -133.1556 eV
+Total Mermin free energy:           -4.6540930195 H         -126.6443 eV
+Force related energy:               -4.8933775731 H         -133.1556 eV
+ 
+--------------------------------------------------------------------------------
+DFTB+ running times                          cpu [s]             wall clock [s]
+--------------------------------------------------------------------------------
+SCC                                    +     0.01  ( 64.5%)      0.02  ( 65.9%)
+--------------------------------------------------------------------------------
+Missing                                +     0.01  ( 35.5%)      0.01  ( 34.1%)
+Total                                  =     0.02  (100.0%)      0.03  (100.0%)
+--------------------------------------------------------------------------------

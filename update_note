@@ -1,0 +1,14 @@
+
+[ver 1.1.9]
+1. roll back: load misc.data in molecule.py for getting atomic mass.
+2. logical for model system added. (used in charge, # of el, dof branch)
+3. bo/ filetree reorganized.
+4. path for metiu.x is set in running script not in bo script.
+
+[ver 1.2.0]
+1. change overall code structure: make 'unixmd' directory and mqc part
+                                  make 'examples' directory
+2. provide run.py.template: users can modify 'capital character' part
+3. Ehrenfest dynamics debugging: multiply 2 in force calculation part
+
+

@@ -1,0 +1,29 @@
+file,1,int.int,delete
+file,2,wf.wfu,unknown
+restart,2
+
+geometry={angstrom
+include,geometry.xyz,echo
+}
+
+symmetry nosym
+basis=6-31G
+
+{mcscf,maxit=20,energy=1e-08,gradient=1e-06,step=0.01
+frozen,0
+closed,7
+occ,9
+start,2140.2
+orbital,2140.2
+wf,16,1,0
+state,2
+cpmcscf,grad,1.1,spin=0,accu=1e-07,record=5100.3
+}
+en(1) = ENERGY(1)
+en(2) = ENERGY(2)
+
+
+{force
+samc,5100.3
+}
+
