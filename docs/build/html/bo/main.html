@@ -1,0 +1,319 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>MOLPRO &mdash; UNI-XMD  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Examples" href="../examples/main.html" />
+    <link rel="prev" title="BOMD" href="../methods/main.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../unixmd.html" class="icon icon-home"> UNI-XMD
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/getstarted.html">Build</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/getstarted.html#code-flow-and-program-structure">Code Flow and Program Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/getstarted.html#quick-start">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/getstarted.html#references">References</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Methods</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methods/main.html">BOMD</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methods/main.html#eherenfest">Eherenfest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methods/main.html#fewest-switch-surface-hopping">Fewest Switch Surface Hopping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methods/main.html#dish-xf">DISH-XF</a></li>
+</ul>
+<p class="caption"><span class="caption-text">BO Interface</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MOLPRO</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#casscf">CASSCF</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#gaussian09">Gaussian09</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#td-dft">(TD)DFT</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#terachem">Terachem</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dft-reks">DFT-REKS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dft-sa-reks">DFT-SA-REKS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dft-si-sa-reks-2-2">DFT-SI-SA-REKS(2,2)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#dftb">DFTB+</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dftb-reks">DFTB-REKS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dftb-sa-reks">DFTB-SA-REKS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dftb-si-sa-reks-2-2">DFTB-SI-SA-REKS(2,2)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#model">Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#shin-metiu">Shin-Metiu</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#do-it-yourself">Do It Yourself</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#template-blah-blah">template ~~~ blah blah</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/main.html">Examples</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules/main.html">I am module</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../unixmd.html">UNI-XMD</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../unixmd.html">Docs</a> &raquo;</li>
+        
+      <li>MOLPRO</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/bo/main.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="molpro">
+<h1>MOLPRO<a class="headerlink" href="#molpro" title="Permalink to this headline">¶</a></h1>
+<p>version, theory,…</p>
+<div class="section" id="casscf">
+<h2>CASSCF<a class="headerlink" href="#casscf" title="Permalink to this headline">¶</a></h2>
+<p>bomd, sh, eh, dish-xf</p>
+</div>
+</div>
+<div class="section" id="gaussian09">
+<h1>Gaussian09<a class="headerlink" href="#gaussian09" title="Permalink to this headline">¶</a></h1>
+<p>version, theory,…</p>
+<div class="section" id="td-dft">
+<h2>(TD)DFT<a class="headerlink" href="#td-dft" title="Permalink to this headline">¶</a></h2>
+<p>bomd</p>
+</div>
+</div>
+<div class="section" id="terachem">
+<h1>Terachem<a class="headerlink" href="#terachem" title="Permalink to this headline">¶</a></h1>
+<p>availability for each,…</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">naming :(</p>
+</div>
+<div class="section" id="dft-reks">
+<h2>DFT-REKS<a class="headerlink" href="#dft-reks" title="Permalink to this headline">¶</a></h2>
+<p>bomd</p>
+</div>
+<div class="section" id="dft-sa-reks">
+<h2>DFT-SA-REKS<a class="headerlink" href="#dft-sa-reks" title="Permalink to this headline">¶</a></h2>
+<p>bomd, sh</p>
+</div>
+<div class="section" id="dft-si-sa-reks-2-2">
+<h2>DFT-SI-SA-REKS(2,2)<a class="headerlink" href="#dft-si-sa-reks-2-2" title="Permalink to this headline">¶</a></h2>
+<p>bomd, sh, eh</p>
+</div>
+</div>
+<div class="section" id="dftb">
+<h1>DFTB+<a class="headerlink" href="#dftb" title="Permalink to this headline">¶</a></h1>
+<p>version,…</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">naming :(</p>
+</div>
+<div class="section" id="dftb-reks">
+<h2>DFTB-REKS<a class="headerlink" href="#dftb-reks" title="Permalink to this headline">¶</a></h2>
+<p>bomd</p>
+</div>
+<div class="section" id="dftb-sa-reks">
+<h2>DFTB-SA-REKS<a class="headerlink" href="#dftb-sa-reks" title="Permalink to this headline">¶</a></h2>
+<p>bomd, sh</p>
+</div>
+<div class="section" id="dftb-si-sa-reks-2-2">
+<h2>DFTB-SI-SA-REKS(2,2)<a class="headerlink" href="#dftb-si-sa-reks-2-2" title="Permalink to this headline">¶</a></h2>
+<p>bomd, sh, eh</p>
+</div>
+</div>
+<div class="section" id="model">
+<h1>Model<a class="headerlink" href="#model" title="Permalink to this headline">¶</a></h1>
+<p>…………..?</p>
+<div class="section" id="shin-metiu">
+<h2>Shin-Metiu<a class="headerlink" href="#shin-metiu" title="Permalink to this headline">¶</a></h2>
+<p>huhuh..</p>
+</div>
+</div>
+<div class="section" id="do-it-yourself">
+<h1>Do It Yourself<a class="headerlink" href="#do-it-yourself" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="template-blah-blah">
+<h2>template ~~~ blah blah<a class="headerlink" href="#template-blah-blah" title="Permalink to this headline">¶</a></h2>
+<p>template..~~? idunno</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../examples/main.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../methods/main.html" class="btn btn-neutral float-left" title="BOMD" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, mingroup
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
