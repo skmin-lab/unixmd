@@ -23,6 +23,8 @@ class SH(MQC):
         self.acc_prob = np.zeros(molecule.nst + 1)
 
         self.l_hop = False
+        self.force_hop = False
+        self.rho_threshold = 1E-10
 
     def run(self, molecule, theory, thermostat, input_dir="./", \
         save_QMlog=False, save_scr=True):
@@ -110,15 +112,26 @@ class SH(MQC):
         """
         # reset surface hopping variables
         self.l_hop = False
+        self.force_hop = False
         self.rstate_old = self.rstate
         self.prob = np.zeros(molecule.nst)
         self.acc_prob = np.zeros(molecule.nst + 1)
 
         accum = 0.
+
+       
+        if (molecule.rho.real[self.rstate, self.rstate] < self.rho_threshold):
+            self.force_hop = True
+ 
+
         for ist in range(molecule.nst):
             if (ist != self.rstate):
-                self.prob[ist] = - 2. * molecule.rho.real[ist, self.rstate] * \
-                    molecule.nacme[ist, self.rstate] * self.dt / molecule.rho.real[self.rstate, self.rstate]
+                if (self.force_hop == True):
+                    self.prob[ist] = molecule.rho.real[ist, ist] / (1. - self.rho_threshold) 
+
+                else:
+                    self.prob[ist] = - 2. * molecule.rho.real[ist, self.rstate] * \
+                        molecule.nacme[ist, self.rstate] * self.dt / molecule.rho.real[self.rstate, self.rstate]
 
                 if (self.prob[ist] < 0.):
                     self.prob[ist] = 0.
