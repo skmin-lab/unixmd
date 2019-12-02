@@ -1,0 +1,231 @@
+ operating system is UNIX !
+ hostname is         thor01
+
+ grad (thor01) : TURBOMOLE V6.4 2 Apr 2012 at 15:30:49
+ Copyright (C) 2012 TURBOMOLE GmbH, Karlsruhe
+
+
+    2019-12-02 14:10:08.960 
+
+
+
+                             g r a d - program
+
+                reinhart ahlrichs, hans horn & ansgar schaefer
+                 density functional version : oliver treutler
+
+
+                          quantum chemistry group
+                          universitaet  karlsruhe
+                                   germany
+
+
+
+
+                                                 
+                                 References:     
+                                                 
+          Density Functional:                              
+              O. Treutler and R. Ahlrichs                      
+              Efficient Molecular Numerical Integration Schemes
+              J. chem. Phys. 102: 346 (1995)                   
+          Parallel Version:                                
+              Performance of parallel TURBOMOLE for Density    
+              Functional Calculations                          
+              M. v.Arnim and R. Ahlrichs                      
+              J. comp. Chem. 19: 1746 (1998)                   
+                                         
+
+
+
+ integral neglect threshold       :  0.52E-09
+ integral storage threshold THIZE :  0.10E-04
+ integral storage threshold THIME :         5
+
+
+ symmetry group of the molecule :   c1 
+
+ the group has the following generators :
+   c1(z)
+
+    1 symmetry operations found
+
+ there are 1 real representations :   a   
+
+ maximum number of shells which are related by symmetry :  1
+
+
+    mo occupation :
+   irrep   mo's   occupied
+    a       62        8
+ 
+ number of basis functions   :           62
+ number of occupied orbitals :            8
+ 
+
+ number of off-diagonal lagrangians expected :  0
+  MOs are in ASCII format !
+
+
+ reading orbital data $scfmo  from file mos . 
+
+ orbital characterization : scfconv=6
+ 
+
+         --------------------------------------------------------------
+                   checking mo's by calculating trace(D*S)
+
+              number of electrons : 
+                 from trace(D*S)         :   15.999999999970
+                 from occupation numbers :   16.000000000000
+
+              molecular charge           :    0.000000000000
+         --------------------------------------------------------------
+
+ time elapsed for calculating density matrices :   0.000 sec
+
+  grad preliminaries : cpu elapsed         0.013 s
+                       wall                0.016 s
+  
+           ------------------
+           density functional
+           ------------------
+ Becke-3-Parameter hybrid functional: B3-LYP
+ exchange:    0.8*LDA + 0.72*B88 + 0.2*HF
+ correlation: 0.19*LDA(VWN) + 0.81*LYP
+ iterations will be done with small grid
+  
+ spherical integration : Lebedev's spherical grid
+ spherical gridsize    :           3
+    i.e. gridpoints    :         302
+ value for diffuse not defined
+ radial integration    : Chebyshev 2nd kind (scaling 3)
+ radial gridsize       :           3
+ integration cells     :           6
+ partition function    : becke
+ partition sharpness   :           3
+  
+ 
+ Derivatives of quadrature weights will be included
+ 
+
+ <rddim> : input of entry tasksize
+           from data group '$pardft' failed !
+
+               Default values taken
+
+ <rddim> : input of entry memdiv
+           from data group '$pardft' failed !
+
+               Default values taken
+
+
+
+                    and now featuring
+                             the super-duper gradient    ..... wow .....
+
+
+ ------------------------------------------------------------------------------
+
+            SCF ENERGY GRADIENT with respect to NUCLEAR COORDINATES            
+
+ ------------------------------------------------------------------------------
+
+
+
+    ----------------------------------------
+     S+T+V CONTRIBUTIONS TO ENERGY GRADIENT 
+    ----------------------------------------
+
+ 1e-integral 1st. derivatives will be neglected if expon. factor < 0.100000E-10
+
+
+  .... end of 1e gradient ....
+  cpu time for 1e-part of gradient :      0.01 sec
+
+
+    -----------------------------------------------
+     TWO ELECTRON CONTRIBUTIONS TO ENERGY GRADIENT 
+    -----------------------------------------------
+           6 nftnft /=           0 nftnft_common
+ nftnft calculated /= nftnft_common <jkder>!
+ setting nftnft_common <jkder>!
+
+ biggest 1-particle AO density matrix element is expected to be    0.8278613278
+
+ core memory to be involved in 2e-gradient :
+   symmetry shell pair data              :         1
+   one and two particle density          :      3971
+   derivative integrals                  :      8496
+   ij-primitive data                     :       324
+   derivative integral bound             :      1785
+   totally                               :     14576
+
+
+ setting up bound for integral derivative estimation
+
+ increment for numerical differentiation : 0.00050000
+
+ biggest AO integral is expected to be     5.725698708
+ biggest cartesian 1st derivative AO integral is expected to be    10.738714413
+
+ 2e-integral 1st. derivatives will be neglected if expon. factor < 0.100000E-06
+ outer boundary for 2e-integral derivative neglection is 0.243183E-07
+
+
+  .... end of 2e gradient ....
+  cpu time for 2e-part of gradient :      0.00 min
+
+          Overall gridpoints after grid construction =         27126
+ Ordering of quadrature gridpoints disabled.
+
+ Integrated ground state density     :   15.99999506072025    
+
+
+          ------------------------------------------------
+           cartesian gradient of the energy (hartree/bohr)
+          ------------------------------------------------
+
+  ATOM      1 c           2 c           3 h           4 h           5 h 
+ dE/dx -0.1779878D-02 0.1602818D-01 0.8721088D-02-0.5349110D-02-0.1123112D-01
+ dE/dy  0.1825344D-01-0.2085012D-01-0.5521143D-02-0.6668823D-02 0.2184780D-02
+ dE/dz -0.1385724D-01 0.6805997D-02 0.3896337D-02 0.5496131D-02-0.3844983D-03
+
+  ATOM      6 h 
+ dE/dx -0.6389156D-02
+ dE/dy  0.1260187D-01
+ dE/dz -0.1956724D-02
+ 
+ resulting FORCE  (fx,fy,fz) = (0.611D-09,0.615D-09,-.108D-09)
+ resulting MOMENT (mx,my,mz) = (0.929D-04,-.400D-05,-.640D-05)
+
+
+ exx =      -0.022743 eyy =      -0.014969 ezz =       0.001416
+ eyz =       0.000106 exz =      -0.001515 exy =       0.014387
+
+
+ **********************************************************************
+  |maximum component of gradient| : 0.20850120E-01  (atom  2 c )       
+   gradient norm                  : 0.42730113E-01
+ **********************************************************************
+
+ <getgrd> : data group $grad  is missing 
+
+   ***  cartesian gradients written onto <gradient>  ***
+
+
+     --- calculation of the energy gradient finished ---
+
+
+
+    ------------------------------------------------------------------------
+         total  cpu-time :   0.41 seconds
+         total wall-time :   0.46 seconds
+    ------------------------------------------------------------------------
+
+
+   ****  grad : all done  ****
+
+
+    2019-12-02 14:10:09.417 
+
