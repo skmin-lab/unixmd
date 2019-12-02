@@ -24,7 +24,6 @@ class SH(MQC):
 
         self.l_hop = False
         self.force_hop = False
-        self.rho_threshold = 1E-10
 
     def run(self, molecule, theory, thermostat, input_dir="./", \
         save_QMlog=False, save_scr=True):
@@ -119,16 +118,13 @@ class SH(MQC):
 
         accum = 0.
 
-       
-        if (molecule.rho.real[self.rstate, self.rstate] < self.rho_threshold):
+        if (molecule.rho.real[self.rstate, self.rstate] < eps):
             self.force_hop = True
- 
 
         for ist in range(molecule.nst):
             if (ist != self.rstate):
                 if (self.force_hop == True):
-                    self.prob[ist] = molecule.rho.real[ist, ist] / (1. - self.rho_threshold) 
-
+                    self.prob[ist] = molecule.rho.real[ist, ist] / (1. - eps) 
                 else:
                     self.prob[ist] = - 2. * molecule.rho.real[ist, self.rstate] * \
                         molecule.nacme[ist, self.rstate] * self.dt / molecule.rho.real[self.rstate, self.rstate]
@@ -168,8 +164,9 @@ class SH(MQC):
         """
         pot_diff = molecule.states[self.rstate].energy - molecule.states[self.rstate_old].energy
         if (molecule.ekin < pot_diff):
-            self.l_hop = False
-            self.rstate = self.rstate_old
+            if (not self.force_hop):
+                self.l_hop = False
+                self.rstate = self.rstate_old
         else:
             if (molecule.ekin < eps):
                 raise ValueError ("Too small kinetic energy!")
