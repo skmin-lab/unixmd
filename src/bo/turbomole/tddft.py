@@ -9,7 +9,7 @@ class TDDFT(Turbomole):
     """
     def __init__(self, molecule, functional="b-lyp", basis_set="", memory="", \
         max_iter=50, scf_tol=1E-8, qm_path="/", qm_bin_path="/", qm_scripts_path="./", \
-        nthreads=4, version=6.4):
+        nthreads=1, version=6.4):
         #Initialize
         super().__init__(functional, basis_set, memory, qm_path, nthreads, version)
 
@@ -22,7 +22,7 @@ class TDDFT(Turbomole):
         
         #os.environ["PARA_ARCH"] = "SMP"
         #os.environ["PARNODES"] = f"{self.nthreads}"
-        os.environ["TURBODIR"]="/opt/TURBOMOLE"
+        os.environ["TURBODIR"] = qm_path
         
         # TURBOMOLE can provide NAC except NAC between ground state and first excited state.
         #
