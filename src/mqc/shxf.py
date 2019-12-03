@@ -179,7 +179,7 @@ class SHXF(MQC):
 
         for ist in range(molecule.nst):
             if (ist != self.rstate):
-                if (self.force_hop == True):
+                if (self.force_hop):
                     self.prob[ist] = molecule.rho.real[ist, ist] / (1. - eps) 
                 else: 
                     self.prob[ist] = - 2. * molecule.rho.real[ist, self.rstate] * \
