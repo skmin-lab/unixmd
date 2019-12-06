@@ -2,8 +2,8 @@ from __future__ import division
 import numpy as np
 import random, os, shutil
 from mqc.mqc import MQC
-from fileio import unixmd_init, write_md_output, write_final_xyz, typewriter
-from misc import eps
+from fileio import touch_file, write_md_output, write_final_xyz, typewriter
+from misc import eps, au_to_K
 from mqc.el_prop.el_propagator import *
  
 class SH(MQC):    
@@ -18,7 +18,8 @@ class SH(MQC):
         # Initialize SH variables
         self.rstate = istate
         self.rstate_old = self.rstate  
-
+        
+        self.rand = 0.0
         self.prob = np.zeros(molecule.nst)
         self.acc_prob = np.zeros(molecule.nst + 1)
 
@@ -48,13 +49,17 @@ class SH(MQC):
         os.chdir(base_dir)
         bo_list = [self.rstate]
         theory.calc_coupling = True
-        unixmd_init(molecule, theory.calc_coupling, self.propagation, \
+
+        touch_file(molecule, theory.calc_coupling, self.propagation, \
             unixmd_dir, SH_chk=True)
+        self.print_init(molecule, theory, thermostat)
 
         # calculate initial input geometry at t = 0.0 s
+        self.print_process(1)
         theory.get_bo(molecule, base_dir, -1, bo_list, calc_force_only=False)
         if (not molecule.l_nacme):
             molecule.get_nacme()
+        self.print_process(2)
 
         self.hop_prob(molecule, -1, unixmd_dir)
         self.hop_check(molecule, bo_list, -1, unixmd_dir)
@@ -66,19 +71,22 @@ class SH(MQC):
         write_md_output(molecule, theory.calc_coupling, -1, \
             self.propagation, unixmd_dir)
 
+        self.print_step(molecule, -1)
+
         # main MD loop
         for istep in range(self.nsteps):
 
             self.cl_update_position(molecule)
 
             molecule.backup_bo()
+            self.print_process(1)
             theory.get_bo(molecule, base_dir, istep, bo_list, calc_force_only=False)
+            self.print_process(2)
 
             if (not molecule.l_nacme):
                 molecule.adjust_nac()
 
             self.cl_update_velocity(molecule)
-
             if (not molecule.l_nacme):
                 molecule.get_nacme()
 
@@ -95,6 +103,7 @@ class SH(MQC):
 
             self.update_energy(molecule)
 
+            self.print_step(molecule, istep)
             write_md_output(molecule, theory.calc_coupling, istep, \
                 self.propagation, unixmd_dir)
             if (istep == self.nsteps - 1):
@@ -146,11 +155,11 @@ class SH(MQC):
     def hop_check(self, molecule, bo_list, istep, unixmd_dir):
         """ Routine to check hopping occurs with random number
         """
-        rand = random.random()
+        self.rand = random.random()
         for ist in range(molecule.nst):
             if (ist == self.rstate):
                 continue
-            if (rand > self.acc_prob[ist] and rand <= self.acc_prob[ist + 1]):
+            if (self.rand > self.acc_prob[ist] and self.rand <= self.acc_prob[ist + 1]):
                 self.l_hop = True
                 self.rstate = ist
                 bo_list[0] = self.rstate
@@ -219,5 +228,59 @@ class SH(MQC):
         else:
             raise ValueError ("Other propagators Not Implemented")
 
+    def print_step(self, molecule, istep):
+        """ Routine to print each steps infomation about dynamics
+        """
+        if(istep == -1):
+          INFO = f"INFO {istep+1:7d}{self.rstate:9d}{0.0:14.8f}({self.rstate}->{self.rstate}){self.rand:15.8f}"
+        else:
+          max_prob = max(self.prob)
+          hstate = np.where(self.prob == max_prob)[0][0]
+          INFO = f"INFO {istep+1:7d}{self.rstate:9d}{max_prob:14.8f}({self.rstate}->{hstate}){self.rand:15.8f}"
+        
+        INFO += f"{molecule.ekin:16.8f}{molecule.epot:16.8f}{molecule.etot:16.8f}"
 
+        ctemp = molecule.ekin * 2 / float(molecule.dof) * au_to_K
+        INFO += f"{ctemp:18.6f}"
+        
+        norm = 0.0
+        for ist in range(molecule.nst):
+          norm += molecule.rho.real[ist,ist]
+        INFO += f"{norm:18.8f}"
+        print(INFO, flush=True)
 
+        if(self.rstate != self.rstate_old):
+            print(f"Hopping {self.rstate_old} -> {self.rstate}", flush=True)
+        
+        #if(self.
+
+    def print_process(self, process_num):
+        """ Routine to print current process
+        """
+        # 1 -> start BO calculation
+        if(process_num == 1):
+            print(f"Start BO calculation...", flush=True)
+
+        # 2 -> End BO calculation & getting BO information such as energy, force
+        elif(process_num == 2):
+            print("End of BO calculation...", flush=True)
+        
+        # 
+        elif(process_num == 3):
+            print("Get hopping prob.", flush=True)
+        
+        # 
+        elif(process_num == 4):
+            print("", flush=True)
+        
+        # 
+        elif(process_num == 5):
+            print("", flush=True)
+        
+        # 
+        elif(process_num == 6):
+            print("", flush=True)
+        
+        # 
+        elif(process_num == 7):
+            print("", flush=True)
