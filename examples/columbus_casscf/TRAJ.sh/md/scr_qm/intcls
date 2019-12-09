@@ -1,0 +1,21 @@
+ 
+ 
+ 
+ 
+  please enter one option at a time,
+  if there are more then one.
+  NOTE! if 6 is one of your options, be sure it is
+  the very last option put in.
+ 
+  1. (default) offset forces produced by 4-21(*)
+  2. offset forces produced by 6-31G*
+  3. no offset forces at all will be punched
+  4. no force constants will be punched
+  5. blowing up all radii uniformly
+  6. changing individual radii
+  7. proceed
+ 
+ which option do you need? <7.> 
+  the input intcin has been written.
+ 
+TEXAS                                                                           

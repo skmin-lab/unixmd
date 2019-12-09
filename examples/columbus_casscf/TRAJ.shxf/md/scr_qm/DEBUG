@@ -1,0 +1,17 @@
+ nsym=  1
+getvector : 7
+getvector2 : 1, 7,   1,  1 
+getvector : 2
+getvector2 : 1, 2,   1,  1 
+groups of 2 elements,  / doubly occupied orbitals ,  13 
+locstr:1:1:1:2:1:3:1:4:1:5:1:6:1:7
+groups of 2 elements,  ,  3 
+locstr:1:8:1:9
+groups of 2 elements, / active orbitals ,  -1 
+locstr:
+groups of 1 elements,  / occmin ,  1 
+locstr:0:2
+groups of 1 elements,  / occmax ,  1 
+locstr:2:2
+entering prodmcscfin\ngroups of 3 elements,  ,  5 
+locstr:1:8:20:1:9:20

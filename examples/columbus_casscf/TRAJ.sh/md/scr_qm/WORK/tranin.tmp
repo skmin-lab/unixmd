@@ -1,0 +1,8 @@
+ &input
+  denopt=1,
+  freeze = 1,
+  nsymao= 1
+  naopsy=   36,
+ ldamax=8191 
+ tr1e=1
+ &end 

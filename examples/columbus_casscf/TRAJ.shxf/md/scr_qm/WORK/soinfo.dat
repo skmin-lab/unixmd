@@ -1,0 +1,88 @@
+GTOSCALE      1.0000000888
+GTOSCALE      1.0000000722
+GTOSCALE      1.0000000000
+GTOSCALE      0.9999999360
+GTOSCALE      1.0000000000
+GTOSCALE      1.0000000000
+GTOSCALE      0.9999999858
+GTOSCALE      1.0000000000
+ATOMINFO: C  1     -1.4165094100      0.0261996700      0.0532323000
+ATOMINFO: C  2      1.2752627400      0.0914142300     -0.0648086900
+ATOMINFO: H  1     -1.7192232000      0.4351672400     -1.9063976400
+ATOMINFO: H  2     -2.2276067600     -1.8500448200     -0.0135828800
+ATOMINFO: H  3      2.4993930200      1.2465773600      1.0236847600
+ATOMINFO: H  4      2.0770538800     -1.1764990900     -1.4247174600
+CAOINFO:  1C  1 11s     1
+CAOINFO:  1C  1 11s     1
+CAOINFO:  1C  1 11s     1
+CAOINFO:  1C  1 12px    2
+CAOINFO:  1C  1 12py    3
+CAOINFO:  1C  1 12pz    4
+CAOINFO:  1C  1 12px    2
+CAOINFO:  1C  1 12py    3
+CAOINFO:  1C  1 12pz    4
+CAOINFO:  1C  1 13d2-   5
+CAOINFO:  1C  1 13d1-   6
+CAOINFO:  1C  1 13d0    7
+CAOINFO:  1C  1 13d1+   8
+CAOINFO:  1C  1 13d2+   9
+CAOINFO:  2C  2 11s     1
+CAOINFO:  2C  2 11s     1
+CAOINFO:  2C  2 11s     1
+CAOINFO:  2C  2 12px    2
+CAOINFO:  2C  2 12py    3
+CAOINFO:  2C  2 12pz    4
+CAOINFO:  2C  2 12px    2
+CAOINFO:  2C  2 12py    3
+CAOINFO:  2C  2 12pz    4
+CAOINFO:  2C  2 13d2-   5
+CAOINFO:  2C  2 13d1-   6
+CAOINFO:  2C  2 13d0    7
+CAOINFO:  2C  2 13d1+   8
+CAOINFO:  2C  2 13d2+   9
+CAOINFO:  3H  1 11s     1
+CAOINFO:  3H  1 11s     1
+CAOINFO:  4H  2 11s     1
+CAOINFO:  4H  2 11s     1
+CAOINFO:  5H  3 11s     1
+CAOINFO:  5H  3 11s     1
+CAOINFO:  6H  4 11s     1
+CAOINFO:  6H  4 11s     1
+  36   1
+  Symmetry  A  ( 1)
+  1    1
+  1    2
+  1    3
+  1    4
+  1    5
+  1    6
+  1    7
+  1    8
+  1    9
+  1   10
+  1   11
+  1   12
+  1   13
+  1   14
+  1   15
+  1   16
+  1   17
+  1   18
+  1   19
+  1   20
+  1   21
+  1   22
+  1   23
+  1   24
+  1   25
+  1   26
+  1   27
+  1   28
+  1   29
+  1   30
+  1   31
+  1   32
+  1   33
+  1   34
+  1   35
+  1   36

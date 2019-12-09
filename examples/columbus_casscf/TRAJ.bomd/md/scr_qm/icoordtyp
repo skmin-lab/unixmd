@@ -1,0 +1,12 @@
+   1.     C 2  =  C 1   STRE  sc=.8600
+   2.     H 3  -  C 1   STRE  sc=.9000
+   3.     H 4  -  C 1   STRE  sc=.9000
+   4.     H 5  -  C 2   STRE  sc=.9000
+   5.     H 6  -  C 2   STRE  sc=.9000
+   6. pXY2,2-1-1,X= C 1 SCIS  sc=.8000
+   7. pXY2, 1-1, X= C 1 ROCK  sc=.8000
+   8. pXY2, oop, X= C 1 WAGG  sc=.8000
+   9. pXY2,2-1-1,X= C 2 SCIS  sc=.8000
+  10. pXY2, 1-1, X= C 2 ROCK  sc=.8000
+  11. pXY2, oop, X= C 2 WAGG  sc=.8000
+  12. torsion  C 2- C 1 TORS  sc=.8000

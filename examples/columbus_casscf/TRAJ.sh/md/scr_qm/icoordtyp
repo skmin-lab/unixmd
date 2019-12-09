@@ -1,0 +1,12 @@
+   1.     C 2  -  C 1   STRE  sc=.9200
+   2.     H 3  -  C 2   STRE  sc=.9000
+   3.     H 4  -  C 1   STRE  sc=.9000
+   4.     H 5  -  C 2   STRE  sc=.9000
+   5.     H 6  -  C 2   STRE  sc=.9000
+   6. pXY,  C 2 H 4 C 1 BEND  sc=.8000
+   7. prim XY3 , X= C 2 SDEF  sc=.8000
+   8. prim XY3 , X= C 2 ADEFa sc=.8000
+   9. prim XY3 , X= C 2 ADEFb sc=.8000
+  10. prim XY3 , X= C 2 ROCKa sc=.8000
+  11. prim XY3 , X= C 2 ROCKb sc=.8000
+  12. torsion  C 2- C 1 TORS  sc=.8000

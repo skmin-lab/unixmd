@@ -1,0 +1,17 @@
+                                                                          
+                                                                          
+Point group: C1 
+  Number of atom types:     2
+  Total number of atoms:    6
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  C  1        1       6      27      14      [10s4p1d|3s2p1d]                             
+  C  2        1       6      27      14      [10s4p1d|3s2p1d]                             
+  H  1        1       1       4       2      [4s|2s]                                      
+  H  2        1       1       4       2      [4s|2s]                                      
+  H  3        1       1       4       2      [4s|2s]                                      
+  H  4        1       1       4       2      [4s|2s]                                      
+  total:      6      16      70      36
+
+  Spherical harmonic basis used.

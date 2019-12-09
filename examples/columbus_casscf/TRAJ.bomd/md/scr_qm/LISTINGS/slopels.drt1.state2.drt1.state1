@@ -1,0 +1,142 @@
+
+&& iteration number 1 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+        -------------------------------------
+                     SLOPE                  
+         Orthogonalization and analysis of  
+           nonadiabatic coupling vectors    
+       -------------------------------------
+       Author: M. Barbatti, 2005.          
+  
+ References:
+ -----------
+ Linear approximation: D.R. Yarkony, J. Chem. Phys. 114, 2601 (2001).
+ Orhogonalization:     D.R. Yarkony, J. Chem. Phys. 112, 2111 (2000).
+ Implementation:       M. Barbatti, A.J.A. Aquino and H. Lischka, J. Phys. Chem.
+  A 109, 5168 (2005).
+  
+ Input parameters:
+ -----------------
+ Criterium for orthog.     CRIT = 0.0000
+ Orthog. Method        ORT_TYPE = Y
+ Gradient state 1        GRAD1F = cartgrd.drt1.state1                     
+ Gradient state 2        GRAD2F = cartgrd.drt1.state2                     
+ Nonadiab. coupling       COUPF = cartgrd_total_times_DE                  
+  
+ Gradient 1 (a.u.)
+   0.13003  -0.01404  -0.01490
+  -0.13957   0.01546  -0.00053
+  -0.00406   0.02220   0.01252
+  -0.01298  -0.01672  -0.00189
+   0.01378   0.02268  -0.00648
+   0.01280  -0.02957   0.01127
+  
+ Gradient 2 (a.u.)
+   0.01049  -0.01778   0.02487
+  -0.01437   0.02505  -0.00546
+  -0.00342   0.02037  -0.01509
+  -0.01493  -0.01628  -0.00324
+   0.01253   0.02090   0.00395
+   0.00970  -0.03226  -0.00503
+  
+ Nonadiabatic coupling vector (a.u.)
+   0.10710   0.00035  -0.02615
+   0.10751   0.00115   0.00659
+  -0.00412   0.00073  -0.00245
+  -0.00512  -0.00061   0.00730
+  -0.00459  -0.00114   0.00046
+  -0.00434   0.00067   0.00993
+  
+ Sum gradient
+   0.07026  -0.01591   0.00499
+  -0.07697   0.02025  -0.00300
+  -0.00374   0.02128  -0.00129
+  -0.01395  -0.01650  -0.00256
+   0.01316   0.02179  -0.00126
+   0.01125  -0.03092   0.00312
+  
+ Difference gradient
+  -0.05977  -0.00187   0.01988
+   0.06260   0.00480  -0.00247
+   0.00032  -0.00092  -0.01381
+  -0.00097   0.00022  -0.00068
+  -0.00062  -0.00089   0.00522
+  -0.00155  -0.00134  -0.00815
+  
+ Othogonalized g vector
+  -0.06139  -0.00187   0.02028
+   0.06096   0.00478  -0.00257
+   0.00038  -0.00093  -0.01377
+  -0.00089   0.00023  -0.00079
+  -0.00055  -0.00087   0.00521
+  -0.00149  -0.00135  -0.00830
+  
+ Othogonalized h vector
+   0.10618   0.00032  -0.02585
+   0.10845   0.00122   0.00655
+  -0.00412   0.00072  -0.00266
+  -0.00513  -0.00060   0.00729
+  -0.00460  -0.00115   0.00054
+  -0.00436   0.00065   0.00980
+  
+ Norm and orthog. information:
+ -----------------------------
+ g=(g2-g1)/2; s=(g2+g1)/2
+ g*h    =  -0.0002. Original value.
+ g*hort =  -0.0005   . New g and h obtained via Yarkony orthogonaliz.
+  
+ Frobenius norm of g, h and s vectors (hartree/a0): 
+ |g|    =   0.0906       |gort|   =   0.0907
+ |h|    =   0.1549       |hort|   =   0.1549
+ |s|    =   0.1193
+  
+ Parameters analysis:
+ --------------------
+ The linear adiabatic energies in the unscaled-orthogonal x-y space are:
+ Ea = sx*x+sy*y -/+dgh*[(x**2+y**2)/2+Delta_gh*(x**2-y**2)/2]**(1/2)
+  
+ Atomic units: 
+ Inclination: d_gh (hartree/a0) =    0.17948
+ Cylindrical: Delta_gh          =   -0.48948
+ Tilt g:      s_x (hartree/a0)  =   -0.09701
+ Tilt h:      s_y (hartree/a0)  =   -0.00674
+  
+ eV,Angstrom units: 
+ Inclination: d_gh (eV/A) =             9.23
+ Cylindrical: Delta_gh    =            -0.49
+ Tilt g:      s_x (eV/A)  =            -4.99
+ Tilt h:      s_y (eV/A)  =            -0.35
+  
+ sigma_x=s_x/d_gh; sigma_y=s_y/d_gh
+ Tilt g:      sigma_x     =           -0.541
+ Tilt h:      sigma_y     =           -0.038
+  
+ MAPLE output
+ ------------
+ Atomic units 
+ dgh:= 0.17948;
+ Delta:=-0.48948;
+ sx:=-0.09701;
+ sy:=-0.00674;
+ Esup:=sx*x+sy*y+dgh*((x^2+y^2)/2+Delta*(x^2-y^2)/2)^(1/2);
+ Einf:=sx*x+sy*y-dgh*((x^2+y^2)/2+Delta*(x^2-y^2)/2)^(1/2);
+  
+ eV, Angstrom units 
+ dgh:=  9.23;
+ Delta:= -0.49;
+ sx:= -4.99;
+ sy:= -0.35;
+ Esup:=sx*x+sy*y+dgh*((x^2+y^2)/2+Delta*(x^2-y^2)/2)^(1/2);
+ Einf:=sx*x+sy*y-dgh*((x^2+y^2)/2+Delta*(x^2-y^2)/2)^(1/2);
+  
+ MOLDEN output
+ -------------
+ Written to molden.nad (arbitrary value of freq.):
+ Vibration 1: g1
+ Vibration 2: g2
+ Vibration 3: s 
+ Vibration 4: g (original)
+ Vibration 5: h (original)
+ Vibration 6: g (orthogonal)
+ Vibration 7: h (orthogonal)
+ Wrinting Molden with DE =   0.372035682999993     

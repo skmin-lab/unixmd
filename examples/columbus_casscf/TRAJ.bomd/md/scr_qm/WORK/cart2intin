@@ -1,0 +1,7 @@
+ &input
+ calctype='cart2int',
+ intgradout=1,
+ gradfl='cartgrd.nad.drt1.state2.drt1.state1',
+ forceinau=0,
+ intgradfl='intgrd.nad.drt1.state2.drt1.state1',
+/&end

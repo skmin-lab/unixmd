@@ -1,0 +1,28 @@
+  1 /input the spin multiplicity
+ 16 /input the total number of electrons
+  1 /input the number of irreps (1-8)
+Y /enter symmetry labels:
+ a  
+  1 /input the molecular spatial symmetry (irrep 1:nsym)
+ 1 1 1 2 1 3 1 4 1 5 1 6 1 7
+  /input the list of doubly-occupied orbitals (sym(i),rmo(i),i=1,ndot)
+ 1 8 1 9
+  /input the active orbitals (sym(i),rmo(i),i=1,nact)
+ 0 2
+ 2 2
+ 0 0
+ 2 2
+ 1111 1111
+  0 /input the number of vertices to be deleted
+N /are any arcs to be manually removed?
+ 0 2
+N /keep all of these walks?
+N /apply orbital-group occupation restrictions?
+N /apply reference occupation restrictions?
+N /manually select individual walks?
+ -1  4
+  0 /input walk number (0 to end)
+ title                                                                          
+mcdrtfl                                                                         
+Y /write the drt file?
+Y /include step(*) vectors?

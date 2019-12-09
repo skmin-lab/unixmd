@@ -1,0 +1,466 @@
+
+&& iteration number 1 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  program cigrd
+
+ effective density and fock matrix construction for analytic energy
+ gradient evaluation for general mrci wave functions
+
+ programmed by: ron shepard and hans lischka
+
+ references:  r. shepard, int. j. quantum chem. 31, 33 (1987).
+
+              r. shepard, i. shavitt, r. m. pitzer, d. c. comeau, m. pepper,
+                   h. lischka, p. g. szalay, r. ahlrichs, f. b. brown,
+                   and j.-g. zhao, int. j. quantum chem. s22, 149 (1988).
+
+              h. lischka, r. shepard, r. m. pitzer, i. shavitt, m. dallos, t.
+                   muller, p. g. szalay, m. seth, g. s. kedziora, s. yabushita,
+                   and z. zhang, phys. chem. chem. phys. 3, 664-673 (2001).
+
+ version date: 13-aug-01
+
+ state-averag modifications:
+    X.1999, by: Michal Dallos
+    University Vienna, Austria
+
+
+     ******************************************
+     **    PROGRAM:              CIGRD       **
+     **    PROGRAM VERSION:      5.4.2b      **
+     **    DISTRIBUTION VERSION: 5.9.a       **
+     ******************************************
+
+
+ This Version of Program cigrd is Maintained by:
+     Thomas Mueller
+     Juelich Supercomputing Centre (JSC)
+     Institute of Advanced Simulation (IAS)
+     D-52425 Juelich, Germany 
+     Email: th.mueller@fz-juelich.de
+
+
+ workspace allocation information: lencor=    65536000 mem1=               0 ifirst=               1
+
+ ===echo of the user input===============================================
+  &input                                                                         
+  nmiter= 100, print=0, fresdd=1,                                                
+  fresaa=1, fresvv=1,                                                            
+  mdir=1,                                                                        
+  cdir=1,                                                                        
+  rtol=1e-6, dtol=1e-6,                                                          
+  wndtol=1e-7,wnatol=1e-7,wnvtol=1e-7                                            
+   nadcalc=0                                                                     
+  samcflag=1                                                                     
+  assume_fc=0                                                                    
+  &end                                                                           
+ ========================================================================
+
+ input parameters:
+ cigopt(*)=   0  1  1  1  1  0  0  0  0  0
+ ldamin=     511 ldamax=    4095 ldainc=      64
+ lenm1e=    2047 n1embf=    1636 lenm2e=    2047 n2embf=    1364
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+      1       6    cigrdls                                                     
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+      2       5    cigrdin                                                     
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+      3      10    cidrtfl                                                     
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+      4      11    moints                                                      
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+      5      12    cid1fl                                                      
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+      6      13    cid2fl                                                      
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+      7      14    mcdrtfl                                                     
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+      8      15    mcd1fl                                                      
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+      9      16    mcd2fl                                                      
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     10      17    mcdrtfl.*                                                   
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     11      36    civout.xx                                                   
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     12      19    restart                                                     
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     13      20    mchess                                                      
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     14      21    effd1fl                                                     
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     15      22    effd2fl                                                     
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     16      23    nocoef_cigrd                                                
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     17      50    mcscr2                                                      
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     18      51    hdiagf                                                      
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     19      24    mcscfin                                                     
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     20      25    moints2                                                     
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     21      63    mciscr                                                      
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     22      33    cid1trfl                                                    
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     23      35    mcdftfl.*                                                   
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     24      34    mcoftfl.*                                                   
+
+  Calculation mode:
+  MR-CISD/MR_AQCC calculation.
+
+
+ MCSCF user input information:
+
+ ======== echo of the mcscf input ========
+ ------------------------------------------------------------------------
+  &input
+   niter=100,
+   nmiter=50,
+   nciitr=300,
+   tol(3)=1.e-4,
+   tol(2)=1.e-4,
+   tol(1)=1.e-8,
+   NSTATE=0,
+   npath=1,3,9,10,13,17,19,21,-11,12, 2,30
+   ncoupl=5,
+   tol(9)=1.e-3,
+   FCIORB=  1,8,20,1,9,20
+   NAVST(1) = 2,
+   WAVST(1,1)=1 ,
+   WAVST(1,2)=1 ,
+  &end
+ ------------------------------------------------------------------------
+
+ ***  State averaging information: ***
+
+ MCSCF calculation performed for  1 DRT.
+
+ DRT  first state   no.of aver. states   weights
+  1   ground state          2             0.500 0.500
+
+ listing file: fortran unit= 6, name( 1)=/home/swmoon/work/unixmd-fixcol/src/TRAJ.shxf/md/scr_qm/WORK
+
+ input file: fortran unit= 5, name( 2)=/home/swmoon/work/unixmd-fixcol/src/TRAJ.shxf/md/scr_qm/WORK
+
+ input file: fortran unit=24, name(19)=/home/swmoon/work/unixmd-fixcol/src/TRAJ.shxf/md/scr_qm/WORK
+
+ mo integrals file: fortran unit=11, name( 4)=/home/swmoon/work/unixmd-fixcol/src/TRAJ.shxf/md/scr_qm/WORK
+ moint file header information
+   ntitle =   1     nsym =   1     nmot =  36
+    ninfo =   6   nenrgy =   1
+  A     36
+ info(*)=    1 8192 6552 8192 5460    0
+ labels(:)=
+   1: tout:001   2: tout:002   3: tout:003   4: tout:004   5: tout:005   6: tout:006   7: tout:007   8: tout:008
+   9: tout:009  10: tout:010  11: tout:011  12: tout:012  13: tout:013  14: tout:014  15: tout:015  16: tout:016
+  17: tout:017  18: tout:018  19: tout:019  20: tout:020  21: tout:021  22: tout:022  23: tout:023  24: tout:024
+  25: tout:025  26: tout:026  27: tout:027  28: tout:028  29: tout:029  30: tout:030  31: tout:031  32: tout:032
+  33: tout:033  34: tout:034  35: tout:035  36: tout:036
+ moint file header information
+ SIFS file created by program tran.      odin              17:46:14.502 09-Dec-19
+ moint core energy(*) values:
+ energy( 1)=  3.278508429890E+01, ietype=   -1,    core energy of type: Nuc.Rep.
+
+    total mo core energy =   3.278508429890E+01
+ 
+  1-e CI density read from file:
+ cid1fl                                                      
+  2-e CI density read from file:
+ cid2fl                                                      
+
+ ci 1-particle density file: fortran unit=12, name( 5)=/home/swmoon/work/unixmd-fixcol/src/TRAJ.shxf/md/scr_qm/WORK
+
+ ci density file header information:
+ symm. mcscf dens. mat. (mcscf.x), DRT 1, state 01                               
+ (isym:nbpsy)  1: 36
+ energy( 1)= -7.788680795433E+01, ietype=-1025,   total energy of type: MCSCF   
+ energy( 2)= -7.788680795433E+01, ietype=-1025,   total energy of type: MCSCF   
+ energy( 3)=  3.278508429890E+01, ietype=   -1,    core energy of type: Nuc.Rep.
+ SA-MCSCF: skipping consistency check with cidrtfl
+
+   ******  MCSCF DRT info section  ******
+
+ Information for MCSCF DRT number  1
+
+ mcscf drt header information:
+  title                                                                          
+ Molecular symmetry group:    a  
+ Total number of electrons:   16
+ Spin multiplicity:            1
+ Number of doubly occ.orbital  7
+ Number of active orbitals:    2
+ Number of active electrons:   2
+ Total number of CSFs:         3
+
+ mapml(*)   8   9
+
+ doub(*)    1   2   3   4   5   6   7
+
+ mcscf restart file: fortran unit=19, name(12)=/home/swmoon/work/unixmd-fixcol/src/TRAJ.shxf/md/scr_qm/WORK
+docc:                 7
+active:               2
+internal:             9
+virtual:             27
+
+ mcscf 1-particle density file: fortran unit=15, name( 8)=/home/swmoon/work/unixmd-fixcol/src/TRAJ.shxf/md/scr_qm/WORK
+ energy( 1)=  3.278508429890E+01, ietype=   -1,    core energy of type: Nuc.Rep.
+ energy( 2)= -7.785331207312E+01, ietype=-1025,   total energy of type: MCSCF   
+ energy( 3)=  1.599318011358E-09, ietype=-2050, cnvginf energy of type: MC-D.E. 
+ energy( 4)=  6.020738149302E-07, ietype=-2051, cnvginf energy of type: MC-Wnorm
+ energy( 5)=  4.779539959402E-08, ietype=-2052, cnvginf energy of type: MC-Knorm
+ energy( 6)=  1.398090923179E-14, ietype=-2053, cnvginf energy of type: MC-ApxDE
+
+ mcscf density file header information:
+ NO-coefficients from mcscf.x                                                    
+ elast:     -7.785331207311827E+01 hartree.
+ total number of irreps: 1
+ (isym:nipsy)  1:  9
+ (isym:nmpsy)  1: 36
+ nonzero mcres(*) orbital masks:
+ orbital=   8 mask=  00000020
+ orbital=   9 mask=  00000020
+ mo-to-internal mapping vector [i:mo(i)]:
+    1:  1    2:  2    3:  3    4:  4    5:  5    6:  6    7:  7    8:  8    9:  9   10:  0
+   11:  0   12:  0   13:  0   14:  0   15:  0   16:  0   17:  0   18:  0   19:  0   20:  0
+   21:  0   22:  0   23:  0   24:  0   25:  0   26:  0   27:  0   28:  0   29:  0   30:  0
+   31:  0   32:  0   33:  0   34:  0   35:  0   36:  0
+ mcd1fl header information read
+
+ faar:   0 active-active rotations allowed out of:   1 possible.
+
+ lenbfsdef=                 32767  lenbfs=                   729
+  number of integrals per class 1:11 (cf adda 
+ class  1 (pq|rs):         #           6
+ class  2 (pq|ri):         #          42
+ class  3 (pq|ia):         #         567
+ class  4 (pi|qa):         #         756
+ class  5 (pq|ra):         #         162
+ class  6 (pq|ij)/(pi|qj): #         231
+ class  7 (pq|ab):         #        1134
+ class  8 (pa|qb):         #        2187
+ class  9 p(bp,ai)         #       10206
+ class 10p(ai,jp):        #        2646
+ class 11p(ai,bj):        #       20412
+
+ Size of orbital-Hessian matrix B:                    36354
+  1. B[ad,ad]            147
+  2. B[aa,ad]              0
+  3. B[aa,aa]              0
+  4. B[vd,ad]           2646
+  5. B[vd,aa]              0
+  6. B[vd,vd]          20412
+  7. B[va,ad]            756
+  8. B[va,aa]              0
+  9. B[va,vd]          10206
+  10.B[va,va]           2187
+
+ Size of the orbital-state Hessian matrix C:              0
+  11.C[csf,ad]              0
+  12.C[csf,aa]              0
+  13.C[csf,vd]              0
+  14.C[csf,va]              0
+
+ Total size of the state Hessian matrix M:                0
+ Size of HESSIAN-matrix for quadratic conv.:          36354
+
+ one electron hamiltonian and overlap integrals read
+   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20
+  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36
+
+          d1 array block   1
+
+                MO   1         MO   2         MO   3         MO   4         MO   5         MO   6         MO   7         MO   8
+   MO   1    2.00000    
+   MO   2    0.00000        2.00000    
+   MO   3    0.00000        0.00000        2.00000    
+   MO   4    0.00000        0.00000        0.00000        2.00000    
+   MO   5    0.00000        0.00000        0.00000        0.00000        2.00000    
+   MO   6    0.00000        0.00000        0.00000        0.00000        0.00000        2.00000    
+   MO   7    0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        2.00000    
+   MO   8    0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        1.00014    
+   MO   9    0.00000        0.00000        0.00000        0.00000        0.00000        0.00000        0.00000      -1.645793E-02
+
+                MO   9         MO  10         MO  11         MO  12         MO  13         MO  14         MO  15         MO  16
+   MO   9   0.999862    
+
+                MO  17         MO  18         MO  19         MO  20         MO  21         MO  22         MO  23         MO  24
+
+                MO  25         MO  26         MO  27         MO  28         MO  29         MO  30         MO  31         MO  32
+
+                MO  33         MO  34         MO  35         MO  36
+
+ dalen: da sorting parameters, nbuk=   1 lendar=    4095 nvpbk=        2729 nvpsg=      191808
+getmosize:+labels=     1330668
+ beginning two-electron integral sort...
+ sort1: nvals=     58626 nvlout=     99954
+
+ ci 2-particle density file: fortran unit=13, name( 6)=/home/swmoon/work/unixmd-fixcol/src/TRAJ.shxf/md/scr_qm/WORK
+ beginning two-particle density matrix sort...
+ sort1: nvals=        97 nvlout=       149
+ SA-MCSCF: fockmatrix construction only over non-zero matrices
+ IOSRES:wnatol  1.000000000000000E-007
+
+   Block resolution info:
+ numaa  =     0
+ numado =     0
+ numaf  =     0
+ qfresd = F
+ qfresa = F
+ qfresv = F
+ qresaf = F
+ mcd1fl and fock matrices read
+ IOSRES:wnatol  1.000000000000000E-007
+ essential virtual-active rotations
+
+ mcscf restart file: fortran unit=19, name(12)=/home/swmoon/work/unixmd-fixcol/src/TRAJ.shxf/md/scr_qm/WORK
+ lenm2e_mc =  4096
+ n2embf_mc =  2730
+ ifmt,ifmtin:                     0                     0
+
+ mosort: allocated sort2 space, avc2is=    65487142 available sort2 space, avcisx=    65487142
+
+ mcscf hessian file: fortran unit=20, name(13)=/home/swmoon/work/unixmd-fixcol/src/TRAJ.shxf/md/scr_qm/WORK
+
+ ************************************************************
+
+   Solution of the Linear System of Equations:
+
+     Desired residual norm convergence = 1.0000E-06
+     Minimum denominater value: dtol = 1.0000E-06
+     Maximum subspace dimension for r vector =  50
+     Maximum subspace dimension for s vector =   5
+     Maximum number of iterations: nmiter = 100
+     Dimension of Lambda[orb]: 257
+     Dimension of Lambda[csf]:     6
+
+ miter=  1 |orbl|= 6.1471E-02 |csfl|= 0.0000E+00 rznorm= 3.4469E-01 rpnorm= 1.3151E-03 noldr=  1 nnewr=  2 nolds=  0 nnews=  1
+ miter=  2 |orbl|= 1.1674E-01 |csfl|= 7.0091E-03 rznorm= 4.2980E-02 rpnorm= 1.3679E-03 noldr=  2 nnewr=  3 nolds=  1 nnews=  2
+ miter=  3 |orbl|= 1.2587E-01 |csfl|= 1.4410E-02 rznorm= 1.2211E-02 rpnorm= 6.7503E-04 noldr=  3 nnewr=  4 nolds=  2 nnews=  3
+ miter=  4 |orbl|= 1.2731E-01 |csfl|= 2.2956E-02 rznorm= 3.1894E-03 rpnorm= 4.0163E-04 noldr=  4 nnewr=  5 nolds=  3 nnews=  4
+ miter=  5 |orbl|= 1.2734E-01 |csfl|= 2.0189E-02 rznorm= 9.9897E-04 rpnorm= 1.4765E-15 noldr=  5 nnewr=  6 nolds=  4 nnews=  4
+ miter=  6 |orbl|= 1.2729E-01 |csfl|= 2.0482E-02 rznorm= 2.3297E-04 rpnorm= 1.4799E-15 noldr=  6 nnewr=  7 nolds=  4 nnews=  4
+ miter=  7 |orbl|= 1.2730E-01 |csfl|= 2.0560E-02 rznorm= 3.7919E-05 rpnorm= 1.4804E-15 noldr=  7 nnewr=  8 nolds=  4 nnews=  4
+ miter=  8 |orbl|= 1.2730E-01 |csfl|= 2.0563E-02 rznorm= 5.4859E-06 rpnorm= 1.4805E-15 noldr=  8 nnewr=  9 nolds=  4 nnews=  4
+ miter=  9 |orbl|= 1.2730E-01 |csfl|= 2.0562E-02 rznorm= 1.1488E-06 rpnorm= 1.4809E-15 noldr=  9 nnewr= 10 nolds=  4 nnews=  4
+ lmicro: final convergence values.
+ miter= 10 |orbl|= 1.2730E-01 |csfl|= 2.0562E-02 rznorm= 2.1971E-07 rpnorm= 1.4806E-15 noldr= 10 nnewr= 10 nolds=  4 nnews=  4
+
+ ************************************************************
+
+ mcscf hessian file read and processed
+
+ mcscf 2-particle density file: fortran unit=16, name( 9)=/home/swmoon/work/unixmd-fixcol/src/TRAJ.shxf/md/scr_qm/WORK
+
+ effective 1-particle density file: fortran unit=21, name(14)=/home/swmoon/work/unixmd-fixcol/src/TRAJ.shxf/md/scr_qm/WORK
+ icd(44):                     1                192474
+ icd(45):                     1                  4095
+ icd(46):                     1                  2729
+ icd(47):                     1                  2730
+ mcscf restart read
+
+ wrnat: orbital occupations and coefficents for the effective density matrix d1_eff(:,:) were written.
+
+ effno and effocc file : fortran unit=23, name(16)=/home/swmoon/work/unixmd-fixcol/src/TRAJ.shxf/md/scr_qm/WORK
+ beginning effective two-particle density matrix sort...
+ sort1: nvals=      5016 nvlout=      9987
+ SA-MCSCF: fockmatrix construction only over non-zero matrices
+
+ ************************************************************
+
+        ***  RESULTS:  ***
+
+     norm of Lambda(orb) =      0.12729548
+     norm of Lambda(csf) =      0.01541155
+
+     isym= 1   tr(d1(eff)*h) - tr(d1*h)=      -0.641896475894
+tr(d1(eff)*h)=     -168.6882614486
+tr(d1*h)     =     -168.6240718010
+tr((d1(eff)-d1)*h)=       -0.0641896476
+
+      eci = tr(d1*h) + tr(d2*g) + repnuc =                     -77.886807954329
+      eci(eff) = tr(d1eff * h) + tr(d2eff * g) + repnuc =      -77.886807983765
+      eci(mcscf.x)              =                              -77.886807954329
+
+      abs(eci - eci(eff))       =  2.9436E-08
+
+      abs(eci(mcscf.x)-eci)=  0.0000E+00
+
+      abs(eci(mcscf.x)-eci(eff))=  2.9436E-08
+
+ effective 1-particle density file: fortran unit=21, name(14)=/home/swmoon/work/unixmd-fixcol/src/TRAJ.shxf/md/scr_qm/WORK

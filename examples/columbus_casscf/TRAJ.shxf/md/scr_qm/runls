@@ -1,0 +1,270 @@
+===========================================================
+===                   runc                              ===
+===           version 7.0 beta , Jan 2011               ===
+===          requires COLUMBUS version COL_7.0_beta     ===
+===                                                     ===
+===   written by: Thomas Mueller                        ===
+===   gradient ext. by: Michal Dallos                   ===
+===               Institute for Theoretical Chemistry   ===
+===               University of Vienna                  ===
+===               Waehringerstr. 17                     ===
+===               A-1090 Vienna, Austria                ===
+===   in revision by: Thomas Mueller, JSC, FZ Juelich   ===
+===               Felix Plasser, University of Vienna   ===
+===========================================================
+
+
+coremem. (seq.): 500 MB,  coremem. (par.): 500 MB
+Vdisk size: 0 DP
+Reading job control file control.run ...   done 
+Creating various directories ... 
+ done 
+Checking for illegal keywords and keyword combinations ... done 
+
+ nadcoupl with slope, gdiis or polyhes: computing all gradients
+
+ Nonadiabatic coupling term calculation type: DCI+DCSF
+  States involved in calcualtion:
+   DRT1,state2;  DRT1,state1
+
+Additional gradients computed:
+   DRT1,state2
+   DRT1,state1
+
+Checking for complete set of input files ... done
+
+ ++++++++++++++++++ input file generation +++++++++++++ 
+ runc start: 2019. 12. 09. (월) 17:46:14 KST
+ 
+  runc start: 2019. 12. 09. (월) 17:46:14 KST
+ 
+ starting unik.gets.x > unikls at 2019. 12. 09. (월) 17:46:14 KST
+
+ -------------------- unik.gets.x ------------------------
+ --------------------------------------------------- 
+ starting hernew.x at 2019. 12. 09. (월) 17:46:14 KST
+
+ -------------------- hernew.x ------------------------
+ --------------------------------------------------- 
+ ++++++++++++++++++++ ao integral calculation ++++++++++++++++
+starting dalton.x -m 500 > hermitls at 2019. 12. 09. (월) 17:46:14 KST
+
+ -------------------- dalton.x ------------------------
+  Nuclear repulsion energy:       32.7850842989
+
+ Irred. repr. : A       
+ # orbitals  :  36 
+ --------------------------------------------------- 
+ ++++++++++++++++++++ SCF calculation +++++++++++++++
+starting scfpq.x -m 500 at 2019. 12. 09. (월) 17:46:14 KST
+
+ -------------------- scfpq.x ------------------------
+  nuclear repulsion energy         32.7850842989
+  kinetic energy                   78.0263273884
+  potential energy               -155.7318920803
+  total energy                    -77.7055646919
+  virial theorem                    2.0041279244
+ --------------------------------------------------- 
+  >>>>>>>>>>>>> info: preparing drt no 1 out of 1 <<<<<<
+starting mcdrt.x -m 500 < mcdrtin > mcdrtls at 2019. 12. 09. (월) 17:46:14 KST
+
+ -------------------- mcdrt.x ------------------------
+  Spin multiplicity: singlet 
+  Spatial symmetry (#): 1
+  Number of Configurations:          3 
+  --------------------------------------------------- 
+ starting mcuft.x at 2019. 12. 09. (월) 17:46:14 KST
+
+ -------------------- mcuft.x ------------------------
+ --------------------------------------------------- 
+ ++++++++++++++++++++ MCSCF calculation +++++++++++++++
+adding flag 30 to mcscfin
+Writing mcdenin files for mcscf.x for 1 DRTs
+starting mcscf.x -m 500 at 2019. 12. 09. (월) 17:46:14 KST
+
+ -------------------- mcscf.x ------------------------
+ Individual total energies for all states: 
+    DRT #1 state # 1 wt 0.500 total energy=      -77.886807954, rel. (eV)=   0.000000
+    DRT #1 state # 2 wt 0.500 total energy=      -77.819816192, rel. (eV)=   1.822939
+  --------------------------------------------------- 
+ starting mcpc.x -m 500 < mcpcin > mcpcls at 2019. 12. 09. (월) 17:46:14 KST
+
+ -------------------- mcpc.x ------------------------
+ --------------------------------------------------- 
+ starting mcpc.x -m 500 < mcpcin > mcpcls at 2019. 12. 09. (월) 17:46:14 KST
+
+ -------------------- mcpc.x ------------------------
+ --------------------------------------------------- 
+ 
+
+ +++++++++++ STARTING GRADIENTS AND NAD. COUPLINGS CALCULATION +++++++++++ 
+
+ Density matrices are taken from mcscf.x 
+ Copying the MCSCF MOs ... 
+---- Computing 2 gradient(s)  ----
+
+ --- Computing gradient for DRT:1, State; 2
+
+starting cigrd.x -m 500 at 2019. 12. 09. (월) 17:46:14 KST
+
+ -------------------- cigrd.x ------------------------
+ Total energy (ciudg) :   -77.819816191908 
+  Effective energy     :   -77.819816162472 
+  Delta E              :    -0.000000029436 
+  --------------------------------------------------- 
+ starting tran.x -m 500  at 2019. 12. 09. (월) 17:46:14 KST
+
+ -------------------- tran.x ------------------------
+ --------------------------------------------------- 
+ starting dalton.x -m 500 > abacusls at 2019. 12. 09. (월) 17:46:14 KST
+
+ -------------------- dalton.x ------------------------
+  Nuclear repulsion energy:       32.7850842989
+
+ Irred. repr. : A       
+ # orbitals  :  36 
+ --------------------------------------------------- 
+ 
+ === Gradient of DRT 1, state 2 === 
+  -0.253247D-01  -0.286527D-01  -0.525701D-01
+   0.726130D-01   0.401705D-01   0.146096D-01
+   0.191602D-02  -0.130529D-01   0.358333D-01
+  -0.862299D-02   0.150603D-01   0.248997D-02
+  -0.997083D-02  -0.148453D-01  -0.325989D-02
+  -0.306105D-01   0.132013D-02   0.289711D-02
+===================================
+ Found intcfl file, performing internal coordinate analysis.
+starting cart2int.x at 2019. 12. 09. (월) 17:46:14 KST
+
+ -------------------- cart2int.x ------------------------
+ --------------------------------------------------- 
+  --- Computing gradient for DRT:1, State; 1
+
+starting cigrd.x -m 500 at 2019. 12. 09. (월) 17:46:14 KST
+
+ -------------------- cigrd.x ------------------------
+ Total energy (ciudg) :   -77.886807954329 
+  Effective energy     :   -77.886807983765 
+  Delta E              :     0.000000029436 
+  --------------------------------------------------- 
+ starting tran.x -m 500  at 2019. 12. 09. (월) 17:46:14 KST
+
+ -------------------- tran.x ------------------------
+ --------------------------------------------------- 
+ starting dalton.x -m 500 > abacusls at 2019. 12. 09. (월) 17:46:14 KST
+
+ -------------------- dalton.x ------------------------
+  Nuclear repulsion energy:       32.7850842989
+
+ Irred. repr. : A       
+ # orbitals  :  36 
+ --------------------------------------------------- 
+ 
+ === Gradient of DRT 1, state 1 === 
+  -0.517716D-02   0.325341D-01   0.597964D-01
+  -0.279137D-01   0.244380D-02  -0.277811D-01
+   0.366879D-01  -0.343155D-01   0.887934D-02
+   0.882155D-02   0.321021D-02  -0.369961D-01
+  -0.518845D-02  -0.434855D-02  -0.582022D-02
+  -0.723017D-02   0.475907D-03   0.192177D-02
+===================================
+ Found intcfl file, performing internal coordinate analysis.
+starting cart2int.x at 2019. 12. 09. (월) 17:46:15 KST
+
+ -------------------- cart2int.x ------------------------
+ --------------------------------------------------- 
+ 
+---- Computing 1 couplings ---- 
+
+
+ -------- NAD. COUPLING for DRT:1 STATE:2 AND DRT:1 STATE:1 --------
+extracted: energy1=       -77.819816192   energy2=      -77.886807954   deltae=0.0669917620000007
+starting cigrd.x -m 500 at 2019. 12. 09. (월) 17:46:15 KST
+
+ -------------------- cigrd.x ------------------------
+ Total energy (ciudg) :    -0.000000000000 
+  Effective energy     :    -0.000000000087 
+  Delta E              :     0.000000000087 
+  --------------------------------------------------- 
+ starting tran.x -m 500  at 2019. 12. 09. (월) 17:46:15 KST
+
+ -------------------- tran.x ------------------------
+ --------------------------------------------------- 
+ starting dalton.x -m 500 > abacusls at 2019. 12. 09. (월) 17:46:15 KST
+
+ -------------------- dalton.x ------------------------
+  Nuclear repulsion energy:       32.7850842989
+
+ Irred. repr. : A       
+ # orbitals  :  36 
+ --------------------------------------------------- 
+ 
+ Calculating the Dx(r,s) term of D[CSF] nonadiabatic coupling term.
+starting tran.x -m 500  at 2019. 12. 09. (월) 17:46:15 KST
+
+ -------------------- tran.x ------------------------
+ --------------------------------------------------- 
+ starting dalton.x -m 500 > abacusls at 2019. 12. 09. (월) 17:46:15 KST
+
+ -------------------- dalton.x ------------------------
+  Nuclear repulsion energy:       32.7850842989
+
+ Irred. repr. : A       
+ # orbitals  :  36 
+ --------------------------------------------------- 
+ 
+ === Non-adiabatic coupling for DRT 1 STATE 2 and DRT 1 STATE 1 === 
+   4.992971E-02   1.159563E-01  -8.579712E-02
+  -3.168801E-02   1.843103E-01   5.549779E-02
+   3.165854E-01  -5.886493E-01  -2.249589E-01
+  -3.266187E-01   2.088376E-01   3.346816E-01
+   3.378317E-02  -2.411790E-01   2.327488E-01
+  -4.543489E-02   3.265602E-01  -3.192621E-01
+===================================
+
+ Norm of the nonadiabatic coupling vector: 
+ |h(drt1.state2,drt1.state1)|= 1.07010032140644 
+ Found intcfl file, performing internal coordinate analysis.
+starting cart2int.x at 2019. 12. 09. (월) 17:46:15 KST
+
+ -------------------- cart2int.x ------------------------
+ --------------------------------------------------- 
+ 
+ Calling the slope program: 
+starting slope.x at 2019. 12. 09. (월) 17:46:15 KST
+
+ -------------------- slope.x ------------------------
+ --------------------------------------------------- 
+ Phase correction of h vector
+No cartgrd.nad.drt1.state2.drt1.state1.old, cannot perform phase correction
+
+
+============== timings ===================
+
+   unik.gets.x    
+   hernew.x       
+   dalton.x       
+   scfpq.x        
+   mcdrt.x        
+   mcuft.x        
+   mcscf.x        
+   mcpc.x         
+   mcpc.x         
+   cigrd.x        
+   tran.x         
+   dalton.x       
+   cart2int.x     
+   cigrd.x        
+   tran.x         
+   dalton.x       
+   cart2int.x     
+   cigrd.x        
+   tran.x         
+   dalton.x       
+   tran.x         
+   dalton.x       
+   cart2int.x     
+   slope.x        
+
+==========================================
+
