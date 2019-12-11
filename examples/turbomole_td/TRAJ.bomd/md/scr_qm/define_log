@@ -1,19 +1,19 @@
 
- define (thor01) : TURBOMOLE V6.4 2 Apr 2012 at 15:30:49
+ define (thor) : TURBOMOLE V6.4 2 Apr 2012 at 15:30:49
  Copyright (C) 2012 TURBOMOLE GmbH, Karlsruhe
 
 
-    2019-12-02 14:10:07.425 
+    2019-12-11 12:59:47.432 
 
              OPERATING SYSTEM = unix
-                    HOST NAME = thor01
-   STANDARD BASIS SET LIBRARY = /opt/TURBOMOLE/basen/
-  ALTERNATE BASIS SET LIBRARY = /opt/TURBOMOLE/basold/
- LIBRARY FOR RI-J  BASIS SETS = /opt/TURBOMOLE/jbasen/
- LIBRARY FOR RI-JK BASIS SETS = /opt/TURBOMOLE/jkbasen/
- LIBRARY FOR RIMP2/RICC2 SETS = /opt/TURBOMOLE/cbasen/
- LIBRARY FOR RIR12 BASIS SETS = /opt/TURBOMOLE/cabasen/
-            STRUCTURE LIBRARY = /opt/TURBOMOLE/structures/
+                    HOST NAME = thor
+   STANDARD BASIS SET LIBRARY = /opt/TURBOMOLE//basen/
+  ALTERNATE BASIS SET LIBRARY = /opt/TURBOMOLE//basold/
+ LIBRARY FOR RI-J  BASIS SETS = /opt/TURBOMOLE//jbasen/
+ LIBRARY FOR RI-JK BASIS SETS = /opt/TURBOMOLE//jkbasen/
+ LIBRARY FOR RIMP2/RICC2 SETS = /opt/TURBOMOLE//cbasen/
+ LIBRARY FOR RIR12 BASIS SETS = /opt/TURBOMOLE//cabasen/
+            STRUCTURE LIBRARY = /opt/TURBOMOLE//structures/
 
  
  ***********************************************************
@@ -259,12 +259,12 @@
 
 
               ATOMIC COORDINATES              ATOM SHELLS CHARGE PSEUDO MASS
-    -1.29042413    0.01133477   -0.11694453    c      9      6.     0 12.011
-     1.21985870   -0.03307149   -0.07310910    c      9      6.     0 12.011
-    -2.20316174    1.81316783   -0.24513318    h      4      1.     0  1.008
-    -2.48102435   -1.64937349    0.25258845    h      4      1.     0  1.008
-     2.08180929    1.80174364   -0.34015671    h      4      1.     0  1.008
-     2.38975141   -1.64982916    0.13843582    h      4      1.     0  1.008
+    -1.41242657   -0.02149153    0.01698410    c      9      6.     0 12.011
+     1.33215541    0.02538745    0.01024931    c      9      6.     0 12.011
+    -1.92781795    1.25244207   -1.58661217    h      4      1.     0  1.008
+    -2.72997587   -1.59831689    0.13893176    h      4      1.     0  1.008
+     2.61017477    1.61455944    0.19629388    h      4      1.     0  1.008
+     1.95064771   -1.25841690   -1.53209042    h      4      1.     0  1.008
  
 
  we will work with the  1s 3p 5d  7f  9g basis set
@@ -293,7 +293,7 @@
  to provide at least basis functions for the AO's :   2s  1p  0d  0f
 
 
- reading orbital data 3P(DZ)  from file /opt/TURBOMOLE/basen/c . 
+ reading orbital data 3P(DZ)  from file /opt/TURBOMOLE//basen/c . 
 
  
 
@@ -303,7 +303,7 @@
  to provide at least basis functions for the AO's :   1s  0p  0d  0f
 
 
- reading orbital data 2S(DZ)  from file /opt/TURBOMOLE/basen/h . 
+ reading orbital data 2S(DZ)  from file /opt/TURBOMOLE//basen/h . 
 
  
 
@@ -328,21 +328,25 @@
 
  AUTOMATIC OCCUPATION NUMBER ASSIGNMENT ESTABLISHED !
  FOUND CLOSED SHELL SYSTEM !
- HOMO/LUMO-SEPARATION :  0.228696
+ HOMO/LUMO-SEPARATION :  0.042733
  ORBITAL  SYMMETRY      ENERGY     DEFAULT 
  (SHELL)    TYPE                 OCCUPATION 
-     5     5a          -0.60631      2
-     6     6a          -0.51404      2
-     7     7a          -0.50677      2
-     8     8a          -0.49953      2
-     9     9a          -0.27083      0
-    10    10a           0.42901      0
-    11    11a           0.60204      0
+     5     5a          -0.58233      2
+     6     6a          -0.55960      2
+     7     7a          -0.53154      2
+     8     8a          -0.40344      2
+     9     9a          -0.36071      0
+    10    10a           0.33167      0
+    11    11a           0.52467      0
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!! WARNING ! HOMO/LUMO-SEPARATION LOWER THAN 0.05 AU !!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
  DO YOU ACCEPT THIS OCCUPATION ?  DEFAULT=y 
 
 
- projection quality sqrt{sum[1-<i|i>]}/korb irrep a    :  0.55D-02
+ projection quality sqrt{sum[1-<i|i>]}/korb irrep a    :  0.56D-02
 
  PROVIDING  'derivative'  DEFAULT PARAMETERS ...
 
@@ -540,17 +544,17 @@ STATUS OF DFT_OPTIONS:
 
 
               atomic coordinates              atom shells charge pseudo isotop
-    -1.29042413    0.01133477   -0.11694453    c      9    6.000    0     0
-     1.21985870   -0.03307149   -0.07310910    c      9    6.000    0     0
-    -2.20316174    1.81316783   -0.24513318    h      4    1.000    0     0
-    -2.48102435   -1.64937349    0.25258845    h      4    1.000    0     0
-     2.08180929    1.80174364   -0.34015671    h      4    1.000    0     0
-     2.38975141   -1.64982916    0.13843582    h      4    1.000    0     0
+    -1.41242657   -0.02149153    0.01698410    c      9    6.000    0     0
+     1.33215541    0.02538745    0.01024931    c      9    6.000    0     0
+    -1.92781795    1.25244207   -1.58661217    h      4    1.000    0     0
+    -2.72997587   -1.59831689    0.13893176    h      4    1.000    0     0
+     2.61017477    1.61455944    0.19629388    h      4    1.000    0     0
+     1.95064771   -1.25841690   -1.53209042    h      4    1.000    0     0
  
 
-     center of nuclear mass  :   -0.03785147    0.00203684   -0.08834964
+     center of nuclear mass  :   -0.03785151    0.00203692   -0.08834893
 
-     center of nuclear charge:   -0.03975113    0.01158053   -0.08341171
+     center of nuclear charge:   -0.03616239    0.00210270   -0.16375478
 
 
               +--------------------------------------------------+
@@ -685,13 +689,13 @@ STATUS OF DFT_OPTIONS:
 
 
     ------------------------------------------------------------------------
-         total  cpu-time :   0.06 seconds
-         total wall-time :   0.14 seconds
+         total  cpu-time :   0.07 seconds
+         total wall-time :   0.08 seconds
     ------------------------------------------------------------------------
 
 
    ****  define : all done  ****
 
 
-    2019-12-02 14:10:07.562 
+    2019-12-11 12:59:47.513 
 

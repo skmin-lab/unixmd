@@ -66,12 +66,6 @@ $scfinstab rpas
 $soes
  a            1
 $denconv 1d-7
-$last step     grad
-$orbital_max_rnorm 0.19328581310639E-05
-$last SCF energy change = -78.560209
-$charge from dscf
-          0.000 (not to be modified here)
-$dipole from dscf
-  x     0.00668754012215    y     0.01430648537951    z     0.03594074018568    a.u.
-   | dipole | =    0.0997828552  debye
+$actual step      dscf
+$restart  dscf  twoint
 $end
