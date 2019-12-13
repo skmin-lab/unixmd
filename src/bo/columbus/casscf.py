@@ -32,6 +32,7 @@ class CASSCF(columbus):
         self.closed_orb = int((int(molecule.nelec) - self.active_elec) / 2)
         self.occ_orb = int(self.closed_orb + self.active_orb)
 
+        os.environ["COLUMBUS"] = qm_path
         # set 'l_nacme' with respect to the computational method
         # CASSCF can produce NACs, so we do not need to get NACME from CIoverlap
         # CASSCF can compute the gradient of several states simultaneously,
@@ -72,12 +73,10 @@ class CASSCF(columbus):
             closeshell = "no"
             DOCC1 = int((int(molecule.nelec) - 1 ) / 2  )
 
-        DOCC2 = int((molecule.nelec - self.active_elec) / 2 )
-
         nelec = int(molecule.nelec) 
    
         stdin = f"\ny\n1\nn\nno\n2\n{closeshell}\n{DOCC1}\nyes\nno\n\n"
-        stdin += f"3\nn\n3\n1\n{nelec}\n1\n1\n0\n0\n{DOCC2}\n{self.active_orb}\nn\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n"
+        stdin += f"3\nn\n3\n1\n{nelec}\n1\n1\n0\n0\n{self.closed_orb}\n{self.active_orb}\nn\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n"
         stdin += f"5\n1\n1\n2\n3\n11\n1\ny\n\n3\ny\n8\n4\n7\n\n"
         
         f = open("geom", "r")
@@ -156,7 +155,7 @@ class CASSCF(columbus):
         
         with open("stdin", "w") as f:
             f.write(stdin)
-        os.system("colinp < stdin")
+        os.system(f"{self.qm_path}/colinp < stdin")
        
         f = open("mcscfin", "r")
         mcscfin = f.readlines()
