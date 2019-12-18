@@ -151,11 +151,11 @@ class CASSCF(columbus):
         with open("prepin", "w") as f:
             f.write(prepin)
         
-        os.system("./prepinp_fix < prepin")
+        os.system("./prepinp_fix < prepin > prepout")
         
         with open("stdin", "w") as f:
             f.write(stdin)
-        os.system(f"{self.qm_path}/colinp < stdin")
+        os.system(f"{self.qm_path}/colinp < stdin > stdout")
        
         f = open("mcscfin", "r")
         mcscfin = f.readlines()
