@@ -2,7 +2,7 @@ from __future__ import division
 import numpy as np
 import os, shutil
 from mqc.mqc import MQC
-from fileio import unixmd_init, write_md_output, write_final_xyz
+from fileio import touch_file, write_md_output, write_final_xyz
 
 class BOMD(MQC):    
     """ born-oppenheimer molecular dynamics

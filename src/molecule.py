@@ -1,5 +1,6 @@
 from __future__ import division
 import numpy as np
+import textwrap
 from misc import data, A_to_au, eps
 
 class State(object):
@@ -194,3 +195,31 @@ class Molecule(object):
 
         self.nelec -= self.charge
 
+    def print_init(self):
+        """ print initial information about molecule.py
+        """
+        geom_info = textwrap.dedent(f"""\
+        {'-'*118}
+        {'Initial coordinate and velocity':>69}
+        {'-'*118}
+        {'':>8}{'X':^18}{'Y':^12}{'Z':^18}{'Vel_X':^12}{'Vel_Y':^18}{'Vel_Z':^12}{'Mass(H)':^20}
+        """)
+        for nth, atoms in enumerate(self.symbols):
+            geom_info += f"{atoms:^6s}"
+            for isp in range(self.nsp):
+                geom_info += f"{self.pos[nth][isp]:15.8f}"
+            for isp in range(self.nsp):
+                geom_info += f"{self.vel[nth][isp]:15.8f}"
+            geom_info += f"{self.mass[nth]:18.8f}\n"
+        geom_info += f"{'-'*118}\n"
+        print(geom_info, flush=True)
+        
+        molecule_info = textwrap.dedent(f"""\
+        Charge  = {int(self.charge)}
+        Total number of atoms   = {self.nat}
+        Total number of states  = {self.nst}
+
+        Model   = {self.model}
+        Degrees of freedom   = {self.dof}
+        """)
+        print(molecule_info, flush=True)

@@ -1,11 +1,31 @@
 from __future__ import division
 from misc import au_to_A
+import textwrap
 import os
 
-def unixmd_init(molecule, calc_coupling, propagation, unixmd_dir, SH_chk):
+def touch_file(molecule, calc_coupling, propagation, unixmd_dir, SH_chk):
     write_init_base(molecule, unixmd_dir)
     if (calc_coupling):
         write_init_coupling(molecule, propagation, unixmd_dir, SH_chk)
+
+    # Print UNIXMD version
+    prog_info = textwrap.dedent(f"""\
+    -------------------
+       UNI-XMD
+       version 19.1
+    -------------------
+    Developers:
+    Seung Kyu Min,
+    In Seong Lee, Jong-Kwon Ha,
+    Dae Ho Han, Kicheol Kim,
+    Tae-In Kim, Seong Wook Moon
+    
+    Please cite UNI-XMD as follows:
+    This is article
+
+    UNI-XMD begins on what day is today? what time is it now?
+    """)
+    print(prog_info, flush=True)
 
 def write_init_base(molecule, unixmd_dir):
     """ Header for non-coupling output files

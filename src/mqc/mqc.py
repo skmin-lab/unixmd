@@ -56,30 +56,56 @@ class MQC(object):
         """
         pass
 
+    #def print_init(self, molecule, theory, thermostat, debug):
     def print_init(self, molecule, theory, thermostat):
         """ Routine to print the initial information of dynamics
         """
         molecule.print_init()
-
+         
         qm_prog = str(theory.__class__).split('.')[1]
         qm_method = theory.__class__.__name__
-        print(f"QM_prog       = {qm_prog}", flush=True)
-        print(f"QM_method     = {qm_method}", flush=True)
-        
         mdtype = self.__class__.__name__
-        print(f"MD_type     = {mdtype}", flush=True)
+        if(mdtype == 'SH'):
+          method = 'FSSH'
+        elif(mdtype == 'EH'):
+          method = 'Ehrenfest dynamics'
+        elif(mdtype == 'SHXF'):
+          method = 'SHXF'
         
-        # print initial infomation of dynamics
         dynamics_info = textwrap.dedent(f"""\
-        nsteps      = {self.nsteps} 
-        nesteps     = {self.nesteps}
-        dt          = {self.dt}
-        propagation = {self.propagation}
-        istate      = {self.istate}
+        {'-'*118}
+        {'Dynamics information':>69}
+        {'-'*118}
+        Electronic structure calculation is performed by \"{qm_method}\", which is implemented in \"{qm_prog}\"
+        
+        MQC method  = {method}
+        
+        Nuclei propation    = {self.nsteps} Step
+        Electron propagtion = {self.nesteps} Step
+        Time interval       = {self.dt} fs
+        Initial state       = {self.istate} 
+        propagation         = {self.propagation}
         """)
         print(dynamics_info, flush=True) 
         
+        print(f"{'-'*118}",flush=True)
+        print(f"{'Thermostat information':>69}",flush=True)
+        print(f"{'-'*118}",flush=True)
         thermostat.print_init()
+        
+        print(f"{'-'*118}",flush=True)
+        print(f"{'Start dynamics':>69}",flush=True)
+        print(f"{'-'*118}",flush=True)
         INIT = f"#INFO{'STEP':^10}{'State':^10}{'Max_prob':>12}{'rand':>15}{'Kinetic(H)':>20}{'Potential(H)':>17}{'Total(H)':>14}{'Temperature(K)':>22}{'norm':>15}"
         state = 0
         print(INIT, flush=True)
+        
+        # print potential energies of all adiabatic states
+        #if(debug=1): 
+        debug1 = f"#DEBUG1{'STEP':^8}"
+        for ist in range(molecule.nst):
+            debug1 += f"{'Potential(H)':>17}{ist}" 
+        print(debug1, flush=True) 
+    
+        debug2 = f"#DEBUG2{'STEP':^8}{'Hopping Prob.':^10}"
+        print(debug2, flush=True) 

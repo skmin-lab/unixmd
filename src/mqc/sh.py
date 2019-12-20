@@ -55,11 +55,9 @@ class SH(MQC):
         self.print_init(molecule, theory, thermostat)
 
         # calculate initial input geometry at t = 0.0 s
-        self.print_process(1)
         theory.get_bo(molecule, base_dir, -1, bo_list, calc_force_only=False)
         if (not molecule.l_nacme):
             molecule.get_nacme()
-        self.print_process(2)
 
         self.hop_prob(molecule, -1, unixmd_dir)
         self.hop_check(molecule, bo_list, -1, unixmd_dir)
@@ -79,9 +77,7 @@ class SH(MQC):
             self.cl_update_position(molecule)
 
             molecule.backup_bo()
-            self.print_process(1)
             theory.get_bo(molecule, base_dir, istep, bo_list, calc_force_only=False)
-            self.print_process(2)
 
             if (not molecule.l_nacme):
                 molecule.adjust_nac()
@@ -228,15 +224,16 @@ class SH(MQC):
         else:
             raise ValueError ("Other propagators Not Implemented")
 
+    #def print_step(self, molecule, istep, debug=0):
     def print_step(self, molecule, istep):
         """ Routine to print each steps infomation about dynamics
         """
         if(istep == -1):
-          INFO = f"INFO {istep+1:7d}{self.rstate:9d}{0.0:14.8f}({self.rstate}->{self.rstate}){self.rand:15.8f}"
+            INFO = f"INFO {istep+1:7d}{self.rstate:9d}{0.0:14.8f}({self.rstate}->{self.rstate}){self.rand:15.8f}"
         else:
-          max_prob = max(self.prob)
-          hstate = np.where(self.prob == max_prob)[0][0]
-          INFO = f"INFO {istep+1:7d}{self.rstate:9d}{max_prob:14.8f}({self.rstate}->{hstate}){self.rand:15.8f}"
+            max_prob = max(self.prob)
+            hstate = np.where(self.prob == max_prob)[0][0]
+            INFO = f"INFO {istep+1:7d}{self.rstate:9d}{max_prob:14.8f}({self.rstate}->{hstate}){self.rand:15.8f}"
         
         INFO += f"{molecule.ekin:16.8f}{molecule.epot:16.8f}{molecule.etot:16.8f}"
 
@@ -245,42 +242,23 @@ class SH(MQC):
         
         norm = 0.0
         for ist in range(molecule.nst):
-          norm += molecule.rho.real[ist,ist]
+            norm += molecule.rho.real[ist,ist]
         INFO += f"{norm:18.8f}"
         print(INFO, flush=True)
 
         if(self.rstate != self.rstate_old):
             print(f"Hopping {self.rstate_old} -> {self.rstate}", flush=True)
         
-        #if(self.
+        if(self.force_hop):
+            print(f"Force hop {self.rstate_old} -> {self.rstate}", flush=True)
+        
+        #if(debug=1):
+        debug1 = f"DEBUG1 {istep+1:5d}"
+        for ist in range(molecule.nst):
+            debug1 += f"{molecule.states[ist].energy:15.8f}"
+        print(debug1, flush=True)
 
-    def print_process(self, process_num):
-        """ Routine to print current process
-        """
-        # 1 -> start BO calculation
-        if(process_num == 1):
-            print(f"Start BO calculation...", flush=True)
-
-        # 2 -> End BO calculation & getting BO information such as energy, force
-        elif(process_num == 2):
-            print("End of BO calculation...", flush=True)
-        
-        # 
-        elif(process_num == 3):
-            print("Get hopping prob.", flush=True)
-        
-        # 
-        elif(process_num == 4):
-            print("", flush=True)
-        
-        # 
-        elif(process_num == 5):
-            print("", flush=True)
-        
-        # 
-        elif(process_num == 6):
-            print("", flush=True)
-        
-        # 
-        elif(process_num == 7):
-            print("", flush=True)
+        debug2 = f"DEBUG2 {istep+1:5d}"
+        for ist in range(molecule.nst): 
+          debug2 += f"{self.prob[ist]:14.8f}({self.rstate}->{ist})"
+        print(debug2, flush=True)
