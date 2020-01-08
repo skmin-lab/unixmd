@@ -128,7 +128,12 @@ class CASSCF(Columbus):
         # mcscf input setting in colinp script of Columbus
         stdin += f"3\nn\n3\n1\n{int(molecule.nelec)}\n1\n1\n0\n0\n{self.closed_orb}\n{self.active_orb}\nn\n" + "\t" * 14 + "\n"
         # job control setting in colinp script of Columbus
-        stdin += "5\n1\n1\n2\n3\n11\n1\nn\n\n3\nn\n8\n4\n7\n\n"
+        if (calc_force_only):
+            # start from 'mocoef' file
+            stdin += "5\n1\n1\n3\n11\n1\nn\n\n3\nn\n8\n4\n7\n\n"
+        else:
+            # start from SCF calculation
+            stdin += "5\n1\n1\n2\n3\n11\n1\nn\n\n3\nn\n8\n4\n7\n\n"
 
         file_name = "stdin"
         with open(file_name, "w") as f:
