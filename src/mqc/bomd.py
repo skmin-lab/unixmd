@@ -2,6 +2,7 @@ from __future__ import division
 import numpy as np
 import os, shutil
 from mqc.mqc import MQC
+from misc import au_to_K
 from fileio import touch_file, write_md_output, write_final_xyz
 
 class BOMD(MQC):    
@@ -34,14 +35,17 @@ class BOMD(MQC):
         os.chdir(base_dir)
         bo_list = [self.istate]
         theory.calc_coupling = False
-        unixmd_init(molecule, theory.calc_coupling, None, unixmd_dir, SH_chk=False)
+        touch_file(molecule, theory.calc_coupling, None, unixmd_dir, SH_chk=False)
+        self.print_init(molecule, theory, thermostat)
 
         # calculate initial input geometry at t = 0.0 s
         theory.get_bo(molecule, base_dir, -1, bo_list, calc_force_only=False)
 
         self.update_energy(molecule)
 
+        self.print_step(molecule, -1)
         write_md_output(molecule, theory.calc_coupling, -1, None, unixmd_dir)
+        
 
         # main MD loop
         for istep in range(self.nsteps):
@@ -56,6 +60,7 @@ class BOMD(MQC):
 
             self.update_energy(molecule)
 
+            self.print_step(molecule, istep)
             write_md_output(molecule, theory.calc_coupling, istep, None, unixmd_dir)
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, istep, unixmd_dir)

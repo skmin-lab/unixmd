@@ -260,5 +260,5 @@ class SH(MQC):
 
         debug2 = f"DEBUG2 {istep+1:5d}"
         for ist in range(molecule.nst): 
-          debug2 += f"{self.prob[ist]:14.8f}({self.rstate}->{ist})"
+          debug2 += f"{self.acc_prob[ist]:14.8f}({self.rstate}->{ist})"
         print(debug2, flush=True)

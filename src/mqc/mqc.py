@@ -65,12 +65,14 @@ class MQC(object):
         qm_prog = str(theory.__class__).split('.')[1]
         qm_method = theory.__class__.__name__
         mdtype = self.__class__.__name__
-        if(mdtype == 'SH'):
-          method = 'FSSH'
-        elif(mdtype == 'EH'):
-          method = 'Ehrenfest dynamics'
-        elif(mdtype == 'SHXF'):
-          method = 'SHXF'
+        if(mdtype == "SH"):
+            method = "FSSH"
+        elif(mdtype == "Eh"):
+            method = "Ehrenfest dynamics"
+        elif(mdtype == "SHXF"):
+            method = "SHXF"
+        elif(mdtype == "BOMD"):
+            mehtod = "BOMD"
         
         dynamics_info = textwrap.dedent(f"""\
         {'-'*118}
@@ -80,10 +82,9 @@ class MQC(object):
         
         MQC method  = {method}
         
-        Nuclei propation    = {self.nsteps} Step
-        Electron propagtion = {self.nesteps} Step
+        Nuclei propation    = {self.nsteps}   Electron propagtion = {self.nesteps} 
         Time interval       = {self.dt} fs
-        Initial state       = {self.istate} 
+        Initial state       = {self.istate} (0:GS)
         propagation         = {self.propagation}
         """)
         print(dynamics_info, flush=True) 
@@ -96,16 +97,21 @@ class MQC(object):
         print(f"{'-'*118}",flush=True)
         print(f"{'Start dynamics':>69}",flush=True)
         print(f"{'-'*118}",flush=True)
-        INIT = f"#INFO{'STEP':^10}{'State':^10}{'Max_prob':>12}{'rand':>15}{'Kinetic(H)':>20}{'Potential(H)':>17}{'Total(H)':>14}{'Temperature(K)':>22}{'norm':>15}"
-        state = 0
+        if(method == "FSSH" or method == "SHXF"):
+            INIT = f"#INFO{'STEP':^10}{'State':^10}{'Max_prob':>12}{'rand':>15}{'Kinetic(H)':>20}{'Potential(H)':>17}{'Total(H)':>14}{'Temperature(K)':>22}{'norm':>15}"
+            debug2 = f"#DEBUG2{'STEP':^8}{'Acc. Hopping Prob.':^10}"
+        elif(method == "Ehrenfest dynamics"):
+            INIT = f"#INFO{'STEP':^10}{'Kinetic(H)':>12}{'Potential(H)':>17}{'Total(H)':>14}{'Temperature(K)':>22}{'norm':>15}"
+            debug2 = ""
+        elif(method == "SHXF"):
+            INIT = f"#INFO{'STEP':^10}{'State':^10}{'Max_prob':>12}{'rand':>15}{'Kinetic(H)':>20}{'Potential(H)':>17}{'Total(H)':>14}{'Temperature(K)':>22}{'norm':>15}"
+        elif(method == "BOMD"):
+            INIT = f"#INFO{'STEP':^10}{'State':^10}{'Kinetic(H)':>20}{'Potential(H)':>17}{'Total(H)':>14}{'Temperature(K)':>22}{'norm':>15}"
         print(INIT, flush=True)
-        
-        # print potential energies of all adiabatic states
-        #if(debug=1): 
+    
         debug1 = f"#DEBUG1{'STEP':^8}"
         for ist in range(molecule.nst):
             debug1 += f"{'Potential(H)':>17}{ist}" 
         print(debug1, flush=True) 
-    
-        debug2 = f"#DEBUG2{'STEP':^8}{'Hopping Prob.':^10}"
         print(debug2, flush=True) 
+        

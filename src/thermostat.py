@@ -20,6 +20,10 @@ class none(thermo):
     def run(self, molecule, md):
         pass
 
+    def print_init(self):
+        print("NVE: Total energy is conserved!\n", flush=True)
+        #print(f"Temp = {self.temp}", flush=True)
+
 class rescale1(thermo):
     """ rescale the velocities with every nrescale step
     """
@@ -46,7 +50,10 @@ class rescale1(thermo):
             md.aux.vel *= alpha
             md.aux.vel_old *= alpha
 
-        #print(f"{p_name} CTEMP {ctemp} TARGET {self.temp}")
+    def print_init(self):
+        print("NVT: rescale type 1", flush=True)
+        print(f"Temperature is rescaled as \"{self.temp} K\" at each \"{self.nrescale} step\"!\n", flush=True)
+        #print(f"nrescale = {self.nrescale}", flush=True)
 
 class rescale2(thermo):
     """ rescale the velocities when the temerature
@@ -72,6 +79,10 @@ class rescale2(thermo):
                 md.aux.vel *= alpha
                 md.aux.vel_old *= alpha
 
-        #print(f"{p_name} CTEMP {ctemp} TARGET {self.temp}")
+    def print_init(self):
+        print("NVT: rescale type 2", flush=True)
+        print(f"Temperature is rescaled as \"{self.temp} K\" when temp. is ouf of range \"[{self.temp}-{self.dtemp},{self.temp}-{self.dtemp}]\"!\n", flush=True)
+        #print(f"dT   = {self.dtemp}", flush=True)
+
 
 
