@@ -84,4 +84,23 @@ class BOMD(MQC):
         molecule.epot = molecule.states[self.istate].energy
         molecule.etot = molecule.epot + molecule.ekin
 
+    def print_step(self, molecule, istep):
+        """ Routine to print each steps infomation about dynamics
+        """
+        ctemp = molecule.ekin * 2. / float(molecule.dof) * au_to_K
+
+        # print INFO for each step
+        INFO = f" INFO{istep + 1:>9d}{self.istate:>5d} "
+        INFO += f"{molecule.ekin:14.8f}{molecule.epot:15.8f}{molecule.etot:15.8f}"
+        INFO += f"{ctemp:13.6f}"
+        print (INFO, flush=True)
+
+        # print DEBUG1 for each step
+        # TODO : if (debug=1):
+        DEBUG1 = f" DEBUG1{istep + 1:>7d}"
+        for ist in range(molecule.nst):
+            DEBUG1 += f"{molecule.states[ist].energy:17.8f} "
+        print (DEBUG1, flush=True)
+
+
 

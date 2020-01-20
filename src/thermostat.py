@@ -2,6 +2,7 @@ from __future__ import division
 from misc import au_to_K, eps
 from mqc.shxf import SHXF
 import numpy as np
+import textwrap
 
 # In a model example, a specific routine should be devised separately.
 class thermo(object):
@@ -21,8 +22,17 @@ class none(thermo):
         pass
 
     def print_init(self):
-        print("NVE: Total energy is conserved!\n", flush=True)
-        #print(f"Temp = {self.temp}", flush=True)
+        thermostat_info = textwrap.dedent(f"""\
+        {"-" * 68}
+        {"Thermostat Information":>44s}
+        {"-" * 68}
+          Thermostat               = {"no thermostat":>16s}
+        """)
+        print (thermostat_info, flush=True)
+
+        # TODO : efficient method for printing thermostat information
+#        print ("NVE: Total energy is conserved!\n", flush=True)
+#        print (f"Temp = {self.temp}", flush=True)
 
 class rescale1(thermo):
     """ rescale the velocities with every nrescale step
@@ -51,9 +61,20 @@ class rescale1(thermo):
             md.aux.vel_old *= alpha
 
     def print_init(self):
-        print("NVT: rescale type 1", flush=True)
-        print(f"Temperature is rescaled as \"{self.temp} K\" at each \"{self.nrescale} step\"!\n", flush=True)
-        #print(f"nrescale = {self.nrescale}", flush=True)
+        thermostat_info = textwrap.dedent(f"""\
+        {"-" * 68}
+        {"Thermostat Information":>44s}
+        {"-" * 68}
+          Thermostat               = {"rescale ver. 1":>16s}
+          Target Temperature (K)   = {self.temp:>16.3f}
+          Rescale Step             = {self.nrescale:>16d}
+        """)
+        print (thermostat_info, flush=True)
+
+        # TODO : efficient method for printing thermostat information
+#        print ("NVT: rescale type 1", flush=True)
+#        print (f"Temperature is rescaled as \"{self.temp} K\" at each \"{self.nrescale} step\"!\n", flush=True)
+#        print (f"nrescale = {self.nrescale}", flush=True)
 
 class rescale2(thermo):
     """ rescale the velocities when the temerature
@@ -80,9 +101,20 @@ class rescale2(thermo):
                 md.aux.vel_old *= alpha
 
     def print_init(self):
-        print("NVT: rescale type 2", flush=True)
-        print(f"Temperature is rescaled as \"{self.temp} K\" when temp. is ouf of range \"[{self.temp}-{self.dtemp},{self.temp}-{self.dtemp}]\"!\n", flush=True)
-        #print(f"dT   = {self.dtemp}", flush=True)
+        thermostat_info = textwrap.dedent(f"""\
+        {"-" * 68}
+        {"Thermostat Information":>44s}
+        {"-" * 68}
+          Thermostat               = {"rescale ver. 2":>16s}
+          Target Temperature (K)   = {self.temp:>16.3f}
+          Temperature Range (K)    = {self.dtemp:>16.3f}
+        """)
+        print (thermostat_info, flush=True)
+
+        # TODO : efficient method for printing thermostat information
+#        print ("NVT: rescale type 2", flush=True)
+#        print (f"Temperature is rescaled as \"{self.temp} K\" when temp. is ouf of range \"[{self.temp}-{self.dtemp},{self.temp}-{self.dtemp}]\"!\n", flush=True)
+#        print (f"dT   = {self.dtemp}", flush=True)
 
 
 

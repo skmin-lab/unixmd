@@ -1,31 +1,34 @@
 from __future__ import division
 from misc import au_to_A
-import textwrap
-import os
+import os, textwrap, datetime
 
 def touch_file(molecule, calc_coupling, propagation, unixmd_dir, SH_chk):
+    """ Open the UNIXMD output files
+    """
     write_init_base(molecule, unixmd_dir)
     if (calc_coupling):
         write_init_coupling(molecule, propagation, unixmd_dir, SH_chk)
 
     # Print UNIXMD version
+    cur_time = datetime.datetime.now()
+    cur_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
     prog_info = textwrap.dedent(f"""\
-    -------------------
-       UNI-XMD
-       version 19.1
-    -------------------
-    Developers:
-    Seung Kyu Min,
-    In Seong Lee, Jong-Kwon Ha,
-    Dae Ho Han, Kicheol Kim,
-    Tae-In Kim, Seong Wook Moon
-    
-    Please cite UNI-XMD as follows:
-    This is article
+    {"-" * 68}
 
-    UNI-XMD begins on what day is today? what time is it now?
+    {"UNI-XMD version 19.1":>43s}
+
+    {"< Developers >":>40s}
+    {" " * 4}Seung Kyu Min,  In Seong Lee,  Jong-Kwon Ha,  Dae Ho Han,
+    {" " * 4}Kicheol Kim,  Tae-In Kim,  Sung Wook Moon
+
+    {"-" * 68}
+
+    {" " * 4}Please cite UNI-XMD as follows:
+    {" " * 4}This is article
+
+    {" " * 4}UNI-XMD begins on {cur_time}
     """)
-    print(prog_info, flush=True)
+    print (prog_info, flush=True)
 
 def write_init_base(molecule, unixmd_dir):
     """ Header for non-coupling output files
@@ -93,7 +96,7 @@ def write_md_output(molecule, calc_coupling, istep, propagation, unixmd_dir):
             typewriter(tmp, unixmd_dir, "BOCOEF")
 
         # write NACME file
-        tmp =  f'{istep + 1:10d}' + "".join([f'{molecule.nacme[ist, jst]:15.8f}' \
+        tmp = f'{istep + 1:10d}' + "".join([f'{molecule.nacme[ist, jst]:15.8f}' \
             for ist in range(molecule.nst) for jst in range(ist + 1, molecule.nst)])
         typewriter(tmp, unixmd_dir, "NACME")
 

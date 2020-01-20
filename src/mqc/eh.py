@@ -125,24 +125,23 @@ class Eh(MQC):
     def print_step(self, molecule, istep):
         """ Routine to print each steps infomation about dynamics
         """
-        INFO = f"INFO {istep+1:7d}"
-        pot = 0.0
+        ctemp = molecule.ekin * 2. / float(molecule.dof) * au_to_K
+        norm = 0.
         for ist in range(molecule.nst):
-          pot += molecule.states[ist].energy * molecule.rho.real[ist,ist]
-        INFO += f"{molecule.ekin:16.8f}{molecule.epot:16.8f}{molecule.etot:16.8f}"
+            norm += molecule.rho.real[ist, ist]
 
-        ctemp = molecule.ekin * 2 / float(molecule.dof) * au_to_K
-        INFO += f"{ctemp:18.6f}"
-        
-        norm = 0.0
-        for ist in range(molecule.nst):
-            norm += molecule.rho.real[ist,ist]
-        INFO += f"{norm:18.8f}"
-        print(INFO, flush=True)
+        # print INFO for each step
+        INFO = f" INFO{istep + 1:>9d} "
+        INFO += f"{molecule.ekin:14.8f}{molecule.epot:15.8f}{molecule.etot:15.8f}"
+        INFO += f"{ctemp:13.6f}"
+        INFO += f"{norm:11.5f}"
+        print (INFO, flush=True)
 
-        #if(debug=1):
-        debug1 = f"DEBUG1 {istep+1:5d}"
+        # print DEBUG1 for each step
+        # TODO : if (debug=1):
+        DEBUG1 = f" DEBUG1{istep + 1:>7d}"
         for ist in range(molecule.nst):
-            debug1 += f"{molecule.states[ist].energy:15.8f}"
-        print(debug1, flush=True)
+            DEBUG1 += f"{molecule.states[ist].energy:17.8f} "
+        print (DEBUG1, flush=True)
+
 

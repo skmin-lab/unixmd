@@ -228,37 +228,43 @@ class SH(MQC):
     def print_step(self, molecule, istep):
         """ Routine to print each steps infomation about dynamics
         """
-        if(istep == -1):
-            INFO = f"INFO {istep+1:7d}{self.rstate:9d}{0.0:14.8f}({self.rstate}->{self.rstate}){self.rand:15.8f}"
+        if (istep == -1):
+            max_prob = 0.
+            hstate = self.rstate
         else:
             max_prob = max(self.prob)
             hstate = np.where(self.prob == max_prob)[0][0]
-            INFO = f"INFO {istep+1:7d}{self.rstate:9d}{max_prob:14.8f}({self.rstate}->{hstate}){self.rand:15.8f}"
-        
-        INFO += f"{molecule.ekin:16.8f}{molecule.epot:16.8f}{molecule.etot:16.8f}"
 
-        ctemp = molecule.ekin * 2 / float(molecule.dof) * au_to_K
-        INFO += f"{ctemp:18.6f}"
-        
-        norm = 0.0
+        ctemp = molecule.ekin * 2. / float(molecule.dof) * au_to_K
+        norm = 0.
         for ist in range(molecule.nst):
-            norm += molecule.rho.real[ist,ist]
-        INFO += f"{norm:18.8f}"
-        print(INFO, flush=True)
+            norm += molecule.rho.real[ist, ist]
 
-        if(self.rstate != self.rstate_old):
-            print(f"Hopping {self.rstate_old} -> {self.rstate}", flush=True)
-        
-        if(self.force_hop):
-            print(f"Force hop {self.rstate_old} -> {self.rstate}", flush=True)
-        
-        #if(debug=1):
-        debug1 = f"DEBUG1 {istep+1:5d}"
+        # print INFO for each step
+        INFO = f" INFO{istep + 1:>9d}{self.rstate:>5d}{max_prob:11.5f} ({self.rstate}->{hstate}){self.rand:11.5f}"
+        INFO += f"{molecule.ekin:14.8f}{molecule.epot:15.8f}{molecule.etot:15.8f}"
+        INFO += f"{ctemp:13.6f}"
+        INFO += f"{norm:11.5f}"
+        print (INFO, flush=True)
+
+        # print DEBUG1 for each step
+        # TODO : if (debug=1):
+        DEBUG1 = f" DEBUG1{istep + 1:>7d}"
         for ist in range(molecule.nst):
-            debug1 += f"{molecule.states[ist].energy:15.8f}"
-        print(debug1, flush=True)
+            DEBUG1 += f"{molecule.states[ist].energy:17.8f} "
+        print (DEBUG1, flush=True)
 
-        debug2 = f"DEBUG2 {istep+1:5d}"
-        for ist in range(molecule.nst): 
-          debug2 += f"{self.acc_prob[ist]:14.8f}({self.rstate}->{ist})"
-        print(debug2, flush=True)
+        # print DEBUG2 for each step
+        DEBUG2 = f" DEBUG2{istep + 1:>7d}"
+        for ist in range(molecule.nst):
+            DEBUG2 += f"{self.acc_prob[ist]:12.5f}({self.rstate}->{ist})"
+        print (DEBUG2, flush=True)
+
+        # print event in surface hopping
+        if (self.rstate != self.rstate_old):
+            print (f" Hopping {self.rstate_old} -> {self.rstate}", flush=True)
+
+        if (self.force_hop):
+            print (f" Force hop {self.rstate_old} -> {self.rstate}", flush=True)
+
+
