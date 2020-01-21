@@ -15,10 +15,10 @@ def touch_file(molecule, calc_coupling, propagation, unixmd_dir, SH_chk):
     prog_info = textwrap.dedent(f"""\
     {"-" * 68}
 
-    {"UNI-XMD version 19.1":>43s}
+    {"UNI-XMD version 20.1":>43s}
 
     {"< Developers >":>40s}
-    {" " * 4}Seung Kyu Min,  In Seong Lee,  Jong-Kwon Ha,  Dae Ho Han,
+    {" " * 4}Seung Kyu Min,  In Seong Lee,  Jong-Kwon Ha,  Daeho Han,
     {" " * 4}Kicheol Kim,  Tae-In Kim,  Sung Wook Moon
 
     {"-" * 68}
