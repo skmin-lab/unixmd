@@ -15,6 +15,34 @@ Compile Cython
     
         $ python3 setup.py build_ext -b ./src/mqc/el_prop
 
+Compile Manual with Sphinx
+
+  [Prerequisite]
+        Sphinx
+        sphinx_rtd_theme
+
+
+
+        if you don't have Sphinx
+
+        $ pip install -U Sphinx
+
+        if you don't have sphinx_rtd_theme
+
+        $ pip install sphinx_rtd_theme
+
+  [Build]
+    
+        Change to [unixmd_directory]/docs before compilation
+
+        $ make html
+
+  [Test Run]
+    
+        Change to [unixmd_directory]/docs/build/html
+
+        $ firefox unixmd.html
+
 Test Run
 
   Shin-Metiu model and dftb+ ssr binary files are included in this package so that users can test UNI-xMD program. 
