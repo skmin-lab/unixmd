@@ -2,7 +2,7 @@ from __future__ import division
 from bo.bo_calculator import BO_calculator
 
 class Molpro(BO_calculator):
-    """ Class for Molpro program
+    """ Class for common parts of Molpro program
     """
     def __init__(self, basis_set, memory, qm_path, nthreads, version):
         # Initialize Molpro common variables
