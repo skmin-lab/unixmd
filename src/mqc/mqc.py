@@ -85,13 +85,13 @@ class MQC(object):
           QM Method                = {qm_method:>16s}
 
           MQC Method               = {method:>16s}
-          Time Interval (au)       = {self.dt:16.6f}
+          Time Interval (fs)       = {self.dt / fs_to_au:16.6f}
           Initial State (0:GS)     = {self.istate:>16d}
-          Nucleus Propagation      = {self.nsteps:>16d}
+          Nuclear Step             = {self.nsteps:>16d}
         """)
         if (method != "BOMD"):
-            dynamics_info += f"  Electron Propagation     = {self.nesteps:>16d}\n"
-            dynamics_info += f"  Propagation              = {self.propagation:>16s}\n"
+            dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
+            dynamics_info += f"  Propagation Scheme       = {self.propagation:>16s}\n"
         print (dynamics_info, flush=True)
 
         # print thermostat information
