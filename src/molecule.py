@@ -1,5 +1,6 @@
 from __future__ import division
 import numpy as np
+import textwrap
 from misc import data, A_to_au, eps
 
 class State(object):
@@ -193,4 +194,49 @@ class Molecule(object):
             self.nelec += float(sym_list.index(self.symbols[iat]))
 
         self.nelec -= self.charge
+
+    def print_init(self):
+        """ print initial information about molecule.py
+        """
+        geom_info = textwrap.dedent(f"""\
+        {"-" * 68}
+        {"Initial Coordinate (au)":>45s}
+        {"-" * 68}
+        {"X":>16s}{"Y":>15s}{"Z":>15s}{"Mass":>16s}
+        """)
+
+        for nth, atoms in enumerate(self.symbols):
+            geom_info += f"  {atoms:3s}"
+            for isp in range(self.nsp):
+                geom_info += f"{self.pos[nth, isp]:15.8f}"
+            geom_info += f"{self.mass[nth]:15.5f}\n"
+        print (geom_info, flush=True)
+       
+        vel_info = textwrap.dedent(f"""\
+        {"-" * 68}
+        {"Initial Velocity (au)":>44s}
+        {"-" * 68}
+        {"X":>16s}{"Y":>15s}{"Z":>15s}
+        """)
+
+        for nth, atoms in enumerate(self.symbols):
+            vel_info += f"  {atoms:3s}"
+            for isp in range(self.nsp):
+                vel_info += f"{self.vel[nth, isp]:15.8f}"
+            vel_info += f"\n"
+        print (vel_info, flush=True)
+        
+        ### TODO: multiplicity
+        molecule_info = textwrap.dedent(f"""\
+        {"-" * 68}
+        {"Molecule Information":>43s}
+        {"-" * 68}
+          Number of Atoms          = {self.nat:>16d}
+          Degrees of Freedom       = {int(self.dof):>16d}
+          Charge                   = {int(self.charge):>16d}   
+          Number of States         = {self.nst:>16d}
+        """)
+        ### TODO: Model case
+        print (molecule_info, flush=True)
+
 

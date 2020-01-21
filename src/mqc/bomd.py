@@ -2,7 +2,8 @@ from __future__ import division
 import numpy as np
 import os, shutil
 from mqc.mqc import MQC
-from fileio import unixmd_init, write_md_output, write_final_xyz
+from misc import au_to_K
+from fileio import touch_file, write_md_output, write_final_xyz
 
 class BOMD(MQC):    
     """ born-oppenheimer molecular dynamics
@@ -34,14 +35,17 @@ class BOMD(MQC):
         os.chdir(base_dir)
         bo_list = [self.istate]
         theory.calc_coupling = False
-        unixmd_init(molecule, theory.calc_coupling, None, unixmd_dir, SH_chk=False)
+        touch_file(molecule, theory.calc_coupling, None, unixmd_dir, SH_chk=False)
+        self.print_init(molecule, theory, thermostat)
 
         # calculate initial input geometry at t = 0.0 s
         theory.get_bo(molecule, base_dir, -1, bo_list, calc_force_only=False)
 
         self.update_energy(molecule)
 
+        self.print_step(molecule, -1)
         write_md_output(molecule, theory.calc_coupling, -1, None, unixmd_dir)
+        
 
         # main MD loop
         for istep in range(self.nsteps):
@@ -56,6 +60,7 @@ class BOMD(MQC):
 
             self.update_energy(molecule)
 
+            self.print_step(molecule, istep)
             write_md_output(molecule, theory.calc_coupling, istep, None, unixmd_dir)
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, istep, unixmd_dir)
@@ -78,5 +83,24 @@ class BOMD(MQC):
         molecule.update_kinetic()
         molecule.epot = molecule.states[self.istate].energy
         molecule.etot = molecule.epot + molecule.ekin
+
+    def print_step(self, molecule, istep):
+        """ Routine to print each steps infomation about dynamics
+        """
+        ctemp = molecule.ekin * 2. / float(molecule.dof) * au_to_K
+
+        # print INFO for each step
+        INFO = f" INFO{istep + 1:>9d}{self.istate:>5d} "
+        INFO += f"{molecule.ekin:14.8f}{molecule.epot:15.8f}{molecule.etot:15.8f}"
+        INFO += f"{ctemp:13.6f}"
+        print (INFO, flush=True)
+
+        # print DEBUG1 for each step
+        # TODO : if (debug=1):
+        DEBUG1 = f" DEBUG1{istep + 1:>7d}"
+        for ist in range(molecule.nst):
+            DEBUG1 += f"{molecule.states[ist].energy:17.8f} "
+        print (DEBUG1, flush=True)
+
 
 

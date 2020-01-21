@@ -2,8 +2,8 @@ from __future__ import division
 import numpy as np
 import random, os, shutil
 from mqc.mqc import MQC
-from fileio import unixmd_init, write_md_output, write_final_xyz, typewriter
-from misc import eps
+from fileio import touch_file, write_md_output, write_final_xyz, typewriter
+from misc import eps, au_to_K
 from mqc.el_prop.el_propagator import *
  
 class SH(MQC):    
@@ -18,7 +18,8 @@ class SH(MQC):
         # Initialize SH variables
         self.rstate = istate
         self.rstate_old = self.rstate  
-
+        
+        self.rand = 0.0
         self.prob = np.zeros(molecule.nst)
         self.acc_prob = np.zeros(molecule.nst + 1)
 
@@ -48,8 +49,10 @@ class SH(MQC):
         os.chdir(base_dir)
         bo_list = [self.rstate]
         theory.calc_coupling = True
-        unixmd_init(molecule, theory.calc_coupling, self.propagation, \
+
+        touch_file(molecule, theory.calc_coupling, self.propagation, \
             unixmd_dir, SH_chk=True)
+        self.print_init(molecule, theory, thermostat)
 
         # calculate initial input geometry at t = 0.0 s
         theory.get_bo(molecule, base_dir, -1, bo_list, calc_force_only=False)
@@ -66,6 +69,8 @@ class SH(MQC):
         write_md_output(molecule, theory.calc_coupling, -1, \
             self.propagation, unixmd_dir)
 
+        self.print_step(molecule, -1)
+
         # main MD loop
         for istep in range(self.nsteps):
 
@@ -78,7 +83,6 @@ class SH(MQC):
                 molecule.adjust_nac()
 
             self.cl_update_velocity(molecule)
-
             if (not molecule.l_nacme):
                 molecule.get_nacme()
 
@@ -95,6 +99,7 @@ class SH(MQC):
 
             self.update_energy(molecule)
 
+            self.print_step(molecule, istep)
             write_md_output(molecule, theory.calc_coupling, istep, \
                 self.propagation, unixmd_dir)
             if (istep == self.nsteps - 1):
@@ -146,11 +151,11 @@ class SH(MQC):
     def hop_check(self, molecule, bo_list, istep, unixmd_dir):
         """ Routine to check hopping occurs with random number
         """
-        rand = random.random()
+        self.rand = random.random()
         for ist in range(molecule.nst):
             if (ist == self.rstate):
                 continue
-            if (rand > self.acc_prob[ist] and rand <= self.acc_prob[ist + 1]):
+            if (self.rand > self.acc_prob[ist] and self.rand <= self.acc_prob[ist + 1]):
                 self.l_hop = True
                 self.rstate = ist
                 bo_list[0] = self.rstate
@@ -219,5 +224,47 @@ class SH(MQC):
         else:
             raise ValueError ("Other propagators Not Implemented")
 
+    #def print_step(self, molecule, istep, debug=0):
+    def print_step(self, molecule, istep):
+        """ Routine to print each steps infomation about dynamics
+        """
+        if (istep == -1):
+            max_prob = 0.
+            hstate = self.rstate
+        else:
+            max_prob = max(self.prob)
+            hstate = np.where(self.prob == max_prob)[0][0]
+
+        ctemp = molecule.ekin * 2. / float(molecule.dof) * au_to_K
+        norm = 0.
+        for ist in range(molecule.nst):
+            norm += molecule.rho.real[ist, ist]
+
+        # print INFO for each step
+        INFO = f" INFO{istep + 1:>9d}{self.rstate:>5d}{max_prob:11.5f} ({self.rstate}->{hstate}){self.rand:11.5f}"
+        INFO += f"{molecule.ekin:14.8f}{molecule.epot:15.8f}{molecule.etot:15.8f}"
+        INFO += f"{ctemp:13.6f}"
+        INFO += f"{norm:11.5f}"
+        print (INFO, flush=True)
+
+        # print DEBUG1 for each step
+        # TODO : if (debug=1):
+        DEBUG1 = f" DEBUG1{istep + 1:>7d}"
+        for ist in range(molecule.nst):
+            DEBUG1 += f"{molecule.states[ist].energy:17.8f} "
+        print (DEBUG1, flush=True)
+
+        # print DEBUG2 for each step
+        DEBUG2 = f" DEBUG2{istep + 1:>7d}"
+        for ist in range(molecule.nst):
+            DEBUG2 += f"{self.acc_prob[ist]:12.5f}({self.rstate}->{ist})"
+        print (DEBUG2, flush=True)
+
+        # print event in surface hopping
+        if (self.rstate != self.rstate_old):
+            print (f" Hopping {self.rstate_old} -> {self.rstate}", flush=True)
+
+        if (self.force_hop):
+            print (f" Force hop {self.rstate_old} -> {self.rstate}", flush=True)
 
 

@@ -2,7 +2,7 @@ from __future__ import division
 import numpy as np
 import random, os, shutil
 from mqc.mqc import MQC
-from fileio import unixmd_init, write_md_output, write_final_xyz, typewriter
+from fileio import touch_file, write_md_output, write_final_xyz, typewriter
 from misc import eps
 from mqc.el_prop.el_propagator import *
 

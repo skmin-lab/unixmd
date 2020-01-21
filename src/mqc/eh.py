@@ -2,7 +2,8 @@ from __future__ import division
 import numpy as np
 import os, shutil
 from mqc.mqc import MQC
-from fileio import unixmd_init, write_md_output, write_final_xyz
+from misc import au_to_K
+from fileio import touch_file, write_md_output, write_final_xyz
 from mqc.el_prop.el_propagator import *
 
 class Eh(MQC):
@@ -37,8 +38,9 @@ class Eh(MQC):
         os.chdir(base_dir)
         bo_list = [ist for ist in range(molecule.nst)]
         theory.calc_coupling = True
-        unixmd_init(molecule, theory.calc_coupling, self.propagation, \
+        touch_file(molecule, theory.calc_coupling, self.propagation, \
             unixmd_dir, SH_chk=False)
+        self.print_init(molecule, theory, thermostat)
         if (molecule.l_nacme):
             raise ValueError ("Ehrenfest requries NAC calculation")
 
@@ -49,6 +51,7 @@ class Eh(MQC):
 
         self.update_energy(molecule)
 
+        self.print_step(molecule, -1)
         write_md_output(molecule, theory.calc_coupling, -1, \
             self.propagation, unixmd_dir)
 
@@ -74,6 +77,7 @@ class Eh(MQC):
 
             self.update_energy(molecule)
 
+            self.print_step(molecule, istep)
             write_md_output(molecule, theory.calc_coupling, istep, \
                 self.propagation, unixmd_dir)
             if (istep == self.nsteps - 1):
@@ -117,5 +121,27 @@ class Eh(MQC):
             el_rho(self.nesteps, self.dt, molecule)
         else:
             raise ValueError ("Other propagators Not Implemented")
+
+    def print_step(self, molecule, istep):
+        """ Routine to print each steps infomation about dynamics
+        """
+        ctemp = molecule.ekin * 2. / float(molecule.dof) * au_to_K
+        norm = 0.
+        for ist in range(molecule.nst):
+            norm += molecule.rho.real[ist, ist]
+
+        # print INFO for each step
+        INFO = f" INFO{istep + 1:>9d} "
+        INFO += f"{molecule.ekin:14.8f}{molecule.epot:15.8f}{molecule.etot:15.8f}"
+        INFO += f"{ctemp:13.6f}"
+        INFO += f"{norm:11.5f}"
+        print (INFO, flush=True)
+
+        # print DEBUG1 for each step
+        # TODO : if (debug=1):
+        DEBUG1 = f" DEBUG1{istep + 1:>7d}"
+        for ist in range(molecule.nst):
+            DEBUG1 += f"{molecule.states[ist].energy:17.8f} "
+        print (DEBUG1, flush=True)
 
 
