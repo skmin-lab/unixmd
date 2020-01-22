@@ -11,4 +11,11 @@
 2. provide run.py.template: users can modify 'capital character' part
 3. Ehrenfest dynamics debugging: multiply 2 in force calculation part
 
+[ver 20.1]
+1. change code structure: change name 'unixmd' to 'src' directory
+2. Add new BO interfaces: Turbomole, Columbus
+3. Add standard outputs for surface hopping, Ehrenfest, adiabatic dynamics
+4. Add manual for BO interfaces: Molpro
+
+
 

@@ -1,0 +1,26 @@
+Compile Manual with Sphinx
+
+  [Prerequisite]
+        Sphinx
+        sphinx_rtd_theme
+
+
+
+        if you don't have Sphinx
+
+        $ pip install -U Sphinx
+
+        if you don't have sphinx_rtd_theme
+
+        $ pip install sphinx_rtd_theme
+
+  [Build]
+    
+        $ make html
+
+  [Test Run]
+    
+        Change to build/html
+
+        $ firefox unixmd.html
+

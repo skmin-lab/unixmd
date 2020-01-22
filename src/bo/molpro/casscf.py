@@ -5,9 +5,21 @@ import numpy as np
 import textwrap
 
 class CASSCF(Molpro):
-    """ Class for Molpro CASSCF method
-                 bomd | sh | eh | nac | re_calc
-        CASSCF :  o     o    o     T      T
+    """ Class for CASSCF method of Molpro program
+
+        :param object molecule: molecule object
+        :param string basis_set: basis set information
+        :param string memory: allocatable memory in the calculations
+        :param integer max_iter: maximum number of MCSCF iterations
+        :param double scf_en_tol: energy convergence for MCSCF iterations
+        :param double scf_grad_tol: gradient convergence for MCSCF iterations
+        :param double scf_step_tol: step length convergence for MCSCF iterations
+        :param integer active_elec: number of electrons in active space
+        :param integer active_orb: number of orbitals in active space
+        :param double cpscf_grad_tol: gradient tolerance for CP-MCSCF equations
+        :param string qm_path: path for QM binary
+        :param integer nthreads: number of threads in the calculations
+        :param double version: version of Molpro program
     """
     def __init__(self, molecule, basis_set="sto-3g", memory="500m", \
         max_iter=20, scf_en_tol=1E-8, scf_grad_tol=1E-6, scf_step_tol=1E-2, \
@@ -47,7 +59,13 @@ class CASSCF(Molpro):
         self.re_calc = True
 
     def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
-        """ Get/Extract BO information from Molpro
+        """ Extract energy, gradient and nonadiabatic couplings from CASSCF method
+
+            :param object molecule: molecule object
+            :param string base_dir: base directory
+            :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         super().get_bo(base_dir, calc_force_only)
         self.write_xyz(molecule)
@@ -58,6 +76,10 @@ class CASSCF(Molpro):
 
     def get_input(self, molecule, bo_list, calc_force_only):
         """ Generate Molpro input files: molpro.inp
+
+            :param object molecule: molecule object
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # make 'molpro.inp' file
         input_molpro = ""
@@ -144,9 +166,13 @@ class CASSCF(Molpro):
             f.write(input_molpro)
 
     def run_QM(self, base_dir, istep, bo_list):
-        """ run Molpro calculation and save the output files
+        """ Run CASSCF calculation and save the output files to QMlog directory
+
+            :param string base_dir: base directory
+            :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
         """
-        # run DFTB+ method
+        # run Molpro method
         qm_command = os.path.join(self.qm_path, "molpro")
         # openmp setting
         os.environ["OMP_NUM_THREADS"] = "1"
@@ -160,7 +186,11 @@ class CASSCF(Molpro):
             shutil.copy("log", os.path.join(tmp_dir, log_step))
 
     def extract_BO(self, molecule, bo_list, calc_force_only):
-        """ read the output files to get BO data
+        """ Read the output files to get BO information
+
+            :param object molecule: molecule object
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # read 'log' file
         file_name = "log"
