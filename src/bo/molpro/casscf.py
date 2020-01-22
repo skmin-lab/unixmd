@@ -191,8 +191,6 @@ class CASSCF(Molpro):
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation
             :param boolean calc_force_only: logical to decide whether calculate force only
-
-            :returns: **molecule.states.energy**, **molecule.state.force**, **molecule.nac**
         """
         # read 'log' file
         file_name = "log"

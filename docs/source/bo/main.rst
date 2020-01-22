@@ -7,6 +7,9 @@ calculations, designed and maintained by many authors. It comprises efficient an
 programs for standard computational chemistry applications, such as DFT or many wave function based
 methods. Among them, CASSCF method is interfaced with current version of UNI-XMD.
 
+- CASSCF is complete active space self-consistent field method. It provides analytical gradients as
+  well as nonadiabatic couplings, thus it can be used for excited state molecular dynamics.
+
 +--------+------+----+----+-----+
 |        | BOMD | SH | Eh | nac |
 +========+======+====+====+=====+
@@ -15,9 +18,6 @@ methods. Among them, CASSCF method is interfaced with current version of UNI-XMD
 
 CASSCF
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-CASSCF is complete active space self-consistent field method. It provides analytical gradients as well
-as nonadiabatic couplings, thus it can be used for excited state molecular dynamics.
 
 .. note:: Our interface script is generated with 2015.1 version of Molpro program.
    Here, you should refer to manual of Molpro program if you want to see detailed
