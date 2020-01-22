@@ -3,6 +3,12 @@ from bo.bo_calculator import BO_calculator
 
 class Molpro(BO_calculator):
     """ Class for common parts of Molpro program
+
+        :param string basis_set: basis set information
+        :param string memory: allocatable memory in the calculations
+        :param string qm_path: path for QM binary
+        :param integer nthreads: number of threads in the calculations
+        :param double version: version of Molpro program
     """
     def __init__(self, basis_set, memory, qm_path, nthreads, version):
         # Initialize Molpro common variables
