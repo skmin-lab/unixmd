@@ -57,7 +57,7 @@ Gaussian09
 
 version, theory,...
 
-(TD)DFT
+(제조법TD)DFT
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 bomd
 
@@ -105,8 +105,8 @@ Turbomole
 
 Turbomole (TM) is quantum chemical program package, initially developed in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and at the Forschungszentrum Karlsruhe. 
 (TD)DFT method is interfaced with current version of UNI-XMD. 
-In UNI-XMD, TM, which is ver. 6.4, is valid for BOMD only
 
+- (TD)DFT provides analytical gradients, thus it can be used born-oppenhiemer molecular dynamics (BOMD).
 +--------+------+----+----+-----+
 |        | BOMD | SH | Eh | nac |
 +========+======+====+====+=====+

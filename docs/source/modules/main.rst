@@ -20,13 +20,13 @@ casscf.py
 Turbomole
 -------------------------------------------
 
-molpro.py
+turbomole.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. automodule:: bo.turbomole.turbomole
    :members:
    :show-inheritance:
 
-casscf.py
+dft.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. automodule:: bo.turbomole.dft
    :members:
