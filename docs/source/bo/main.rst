@@ -88,7 +88,7 @@ Numerical calculation of the coupling elements using the CI overlap is on progre
 +----------------+------------------------------------------------+---------------+
 | nthreads       | number of threads in the calculations          | 1             |
 +----------------+------------------------------------------------+---------------+
-| version        | version of Molpro program                      | Revision A.02 |
+| version        | version of Gaussian09 program                  | Revision A.02 |
 +----------------+------------------------------------------------+---------------+
 
 =====================================
