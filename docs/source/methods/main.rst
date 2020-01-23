@@ -67,19 +67,11 @@ Fewest Switch Surface Hopping
 ================================
 DISH-XF
 ================================
-''
+Decoherence induced surface hopping based on exact factorization method is included in UNI-xMD package.
+Electronic equation of motion in DISH-XF contains "decoherence term" which is derived from exact factorization, 
+in addition to Eherenfest term.
 
-Quantum momentum
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-term
-
-Phase term
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-term
-
-Auxiliary trajectory
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-explain concept, actual evaluation of QM and f
+Detailed description of DISH-XF method is in paper J.Phys. Chem. Lett. 2018, 9, 5, 1097-1104.
 
 .. imports all other using toctree?
    ..toctree:

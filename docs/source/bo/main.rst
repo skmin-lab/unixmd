@@ -351,11 +351,19 @@ Turbomole (TM) is quantum chemical program package, initially developed in the g
 =====================================
 Model
 =====================================
-..............?
+BO interface for a few model sytems are provided in UNI-xMD package.
 
 Shin-Metiu
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-huhuh..
+Two-state 1D charge transfer model system proposed by Shin and Metiu is implemented.
+
+J. Chem. Phys. 1995, 102, 9285
+
++----------------+------------------------------------------------+---------+
+| Keywords       | Work                                           | Default |
++================+================================================+=========+
+| qm_path        | path for QM binary                             | ./      |
++----------------+------------------------------------------------+---------+
 
 =====================================
 Do It Yourself
