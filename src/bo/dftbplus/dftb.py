@@ -11,10 +11,25 @@ spin_w = {"H":"-0.072", "C":"-0.031 -0.025 -0.025 -0.023", "N":"-0.033 -0.027 -0
 max_l = {"H":"s", "C":"p", "N":"p", "O":"p"}
 
 class DFTB(DFTBplus):
-    """ Class for density-functional tight-binding (DFTB) method
-                  bomd | sh | eh | nac | re_calc
-        DFTB    :  o     x    x     F      F
-        TD-DFTB :  o     o    x     F      T
+    """ Class for (TD)DFTB method of DFTB+ program
+
+        :param object molecule: molecule object
+        :param boolean scc: include SCC scheme
+        :param double scc_tol: energy convergence for SCC iterations
+        :param integer max_scc_iter: maximum number of SCC iterations
+        :param boolean sdftb: include spin-polarisation scheme
+        :param double unpaired_e: number of unpaired electrons
+        :param double e_temp: electronic temperature for Fermi-Dirac scheme
+        :param string mixer: charge mixing method used in SCC-DFTB
+        :param string ex_symmetry: symmetry (singlet or triplet) in TD-DFTB
+        :param string sk_path: path for slater-koster files
+        :param boolean periodic: use periodicity in the calculations
+        :param double a(b, c)_axis: the length of cell lattice
+        :param string qm_path: path for QM binary
+        :param integer nthreads: number of threads in the calculations
+        :param boolean mpi: use MPI parallelization
+        :param string mpi_path: path for MPI binary
+        :param double version: version of DFTB+ program
     """
     def __init__(self, molecule, scc=True, scc_tol=1E-6, max_scc_iter=100, \
         sdftb=False, unpaired_e=0., e_temp=0., mixer="Broyden", \
@@ -55,7 +70,13 @@ class DFTB(DFTBplus):
             self.re_calc = False
 
     def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
-        """ Get/Extract BO information from DFTBplus
+        """ Extract energy, gradient and nonadiabatic couplings from (TD)DFTB method
+
+            :param object molecule: molecule object
+            :param string base_dir: base directory
+            :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         self.copy_files(molecule, istep, calc_force_only)
         super().get_bo(base_dir, calc_force_only)
@@ -66,7 +87,11 @@ class DFTB(DFTBplus):
         self.move_dir(base_dir)
 
     def copy_files(self, molecule, istep, calc_force_only):
-        """ copy necessary scratch files in previous step
+        """ Copy necessary scratch files in previous step
+
+            :param object molecule: molecule object
+            :param integer istep: current MD step
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         if (self.calc_coupling and not calc_force_only and istep >= 0 and molecule.nst > 1):
             # after T = 0.0 s
@@ -78,7 +103,12 @@ class DFTB(DFTBplus):
                 os.path.join(self.scr_qm_dir, "../XplusY.DAT.pre"))
 
     def get_input(self, molecule, istep, bo_list, calc_force_only):
-        """ Generate DFTBplus input files: geometry.gen, dftb_in.hsd
+        """ Generate DFTB+ input files: geometry.gen, dftb_in.hsd
+
+            :param object molecule: molecule object
+            :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # TODO : currently, CIoverlap is not correct -> only BOMD possible with TD-DFTB
         if (self.calc_coupling):
@@ -340,7 +370,13 @@ class DFTB(DFTBplus):
                 f.write(input_dftb)
 
     def run_QM(self, molecule, base_dir, istep, bo_list, calc_force_only):
-        """ run DFTBplus calculation and save the output files
+        """ Run (TD)DFTB calculation and save the output files to QMlog directory
+
+            :param object molecule: molecule object
+            :param string base_dir: base directory
+            :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # set run command
         qm_command = os.path.join(self.qm_path, "dftb+")
@@ -370,7 +406,13 @@ class DFTB(DFTBplus):
             shutil.copy("log", os.path.join(tmp_dir, log_step))
 
     def extract_BO(self, molecule, base_dir, istep, bo_list, calc_force_only):
-        """ read the output files to get BO data
+        """ Read the output files to get BO information
+
+            :param object molecule: molecule object
+            :param string base_dir: base directory
+            :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # read 'detailed.out' file
         # TODO: the qmmm information is written in this file
@@ -438,7 +480,11 @@ class DFTB(DFTBplus):
                         nline += 1
 
     def CIoverlap(self, molecule, base_dir):
-        """ read the necessary files and generate NACME file
+        """ Read the necessary files and generate NACME file and
+            this is an experimental feature and not used
+
+            :param object molecule: molecule object
+            :param string base_dir: base directory
         """
         # set new variable to decide the number of basis functions for atoms
         check_atom = [0]

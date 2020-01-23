@@ -1,3 +1,4 @@
+
 ===========================================
 molecule.py
 ===========================================
@@ -15,6 +16,27 @@ thermostat.py
 ===========================================
 bo
 ===========================================
+
+dftbplus
+-------------------------------------------
+
+dftbplus.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.dftbplus.dftbplus
+   :members:
+   :show-inheritance:
+
+dftb.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.dftbplus.dftb
+   :members:
+   :show-inheritance:
+
+ssr.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.dftbplus.ssr
+   :members:
+   :show-inheritance:
 
 molpro
 -------------------------------------------
@@ -44,5 +66,45 @@ dft.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. automodule:: bo.gaussian09.dft
    :members:
+   :show-inheritance:
+
+terachem
+-------------------------------------------
+
+terachem.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.terachem.terachem
+   :members:
+   :show-inheritance:
+
+ssr.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.terachem.ssr
+   :members:
+   :show-inheritance:
+
+turbomole
+-------------------------------------------
+
+turbomole.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.turbomole.turbomole
+   :members:
+   :show-inheritance:
+
+dft.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.turbomole.dft
+   :members:
+   :show-inheritance:
+
+===========================================
+mqc
+===========================================
+
+eh.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: mqc.eh
+   :members: 
    :show-inheritance:
 

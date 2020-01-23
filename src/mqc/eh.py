@@ -8,6 +8,14 @@ from mqc.el_prop.el_propagator import *
 
 class Eh(MQC):
     """ ehrenfest dynamics
+
+        :param object molecule: molecule object
+        :param integer istate: intial adiabatic state
+        :param float dt: time interval
+        :param integer nsteps: nuclear step
+        :param integer nesteps: electronic step
+        :param string propagation: propagation scheme
+        :param logical l_adjnac: logical for adjust non-adiabatic coupling
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", l_adjnac=True):
@@ -18,6 +26,13 @@ class Eh(MQC):
     def run(self, molecule, theory, thermostat, input_dir="./", \
         save_QMlog=False, save_scr=True):
         """ run MQC dynamics according to Ehrenfest dynamics
+
+            :param object molecule: molecule object
+            :param object theory: theory object containing on-the-fly calculation info.
+            :param string thermostat: thermostat type
+            :param string input_dir: location of input directory
+            :param logical save_QMlog: logical for saving QM calculation log
+            :param logical save_scr: logical for saving scratch directory
         """
         # set directory information
         input_dir = os.path.expanduser(input_dir)
@@ -91,6 +106,8 @@ class Eh(MQC):
 
     def calculate_force(self, molecule):
         """ Calculate the Ehrenfest forces
+
+            :param object molecule: molecule object
         """
         self.rforce = np.zeros((molecule.nat, molecule.nsp))
 
@@ -104,6 +121,8 @@ class Eh(MQC):
 
     def update_energy(self, molecule):
         """ Routine to update the energy of molecules in ehrenfest
+
+            :param object molecule: molecule object
         """
         # update kinetic energy
         molecule.update_kinetic()
@@ -114,6 +133,8 @@ class Eh(MQC):
 
     def el_propagator(self, molecule):
         """ Routine to propagate BO coefficients or density matrix
+
+            :param object molecule: molecule object
         """
         if (self.propagation == "coefficient"):
             el_coef(self.nesteps, self.dt, molecule)
@@ -124,6 +145,9 @@ class Eh(MQC):
 
     def print_step(self, molecule, istep):
         """ Routine to print each steps infomation about dynamics
+
+            :param object molecule: molecule object
+            :param integer istep: current time step
         """
         ctemp = molecule.ekin * 2. / float(molecule.dof) * au_to_K
         norm = 0.
