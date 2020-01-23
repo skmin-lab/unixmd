@@ -25,6 +25,16 @@ where :math:`E_{I}` is the :math:`I`-th eigenvalue and :math:`\nu` is the degree
 \t In this implementation, the eigenvalue gradient (the negative BO force) of a given target state is provided with an external electronic structure
 package or a customized Hamiltonizan, and nuclear degrees of freedom are propagated with the Velocity-Verlet algorithm.
 
++----------------+------------------------------------------------+---------+
+| Keywords       | Work                                           | Default |
++================+================================================+=========+
+| istep          | initial state                                  | 0(GS)   |
++----------------+------------------------------------------------+---------+
+| dt             | time interval (fs)                             | 0.5     |
++----------------+------------------------------------------------+---------+
+| nsteps         | Total step of nuclear propagation              | 1000    |
++----------------+------------------------------------------------+---------+
+
 =======================
 Eherenfest
 =======================
