@@ -4,6 +4,13 @@ import os
 
 class Columbus(BO_calculator):
     """ Class for Columbus program
+
+        :param object molecule: molecule object
+        :param string basis_set: basis set information
+        :param string memory: allocatable memory in the calculations
+        :param string qm_path: path for QM binary
+        :param integer nthreads: number of threads in the calculations
+        :param double version: version of Columbus program
     """
     def __init__(self, molecule, basis_set, memory, qm_path, nthreads, version):
         # Initialize Columbus common variables

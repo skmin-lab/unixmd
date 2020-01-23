@@ -26,6 +26,8 @@ class MQC(object):
 
     def cl_update_position(self, molecule):
         """ Routine to update nulcear postions
+            
+            :param object molecule: molecule object
         """
         self.calculate_force(molecule)
 
@@ -34,6 +36,8 @@ class MQC(object):
 
     def cl_update_velocity(self, molecule):
         """ Rotine to update nulcear velocities
+            
+            :param object molecule: molecule object
         """
         self.calculate_force(molecule)
 
@@ -59,6 +63,10 @@ class MQC(object):
     #def print_init(self, molecule, theory, thermostat, debug):
     def print_init(self, molecule, theory, thermostat):
         """ Routine to print the initial information of dynamics
+            
+            :param object molecule: molecule object
+            :param string theory: theory object containing on-the-fly calculation info
+            :param string thermostat: thermostat type
         """
         # print molecule information: coordinate, velocity
         molecule.print_init()
