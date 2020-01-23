@@ -6,22 +6,31 @@ import textwrap
 
 # In a model example, a specific routine should be devised separately.
 class thermo(object):
-    """ check the thermostat (NVT)
+    """ Object class for a thermostat. The type of the given thermostat is classified by its subclasses.
+
+        :param double temperature: the temperature (K) set in the NVT ensemble
     """
     def __init__(self, temperature):
         # Initialize input values
         self.temp = temperature
 
 class none(thermo):
-    """ do not rescale the velocities (i.e. NVE)
+    """ No temperature control; the NVE case
     """
     def __init__(self):
         pass
 
     def run(self, molecule, md):
+        """ do temperature control (dummy in this case)
+
+            :param object molecule: molecule object  
+            :param object md: MQC object, the MD theory
+        """
         pass
 
     def print_init(self):
+        """ print thermostat info
+        """
         thermostat_info = textwrap.dedent(f"""\
         {"-" * 68}
         {"Thermostat Information":>44s}
@@ -35,7 +44,9 @@ class none(thermo):
 #        print (f"Temp = {self.temp}", flush=True)
 
 class rescale1(thermo):
-    """ rescale the velocities with every nrescale step
+    """ rescale the velocities in a given period
+
+        :param double temperature: the temperature (K) set in the NVT ensemble
     """
     def __init__(self, temperature=300.0, nrescale=20):
         # Initialize input values
@@ -44,6 +55,11 @@ class rescale1(thermo):
         super().__init__(temperature)
 
     def run(self, molecule, md):
+        """ do temperature control
+
+            :param object molecule: molecule object  
+            :param object md: MQC object, the MD theory
+        """
         p_name = "RESCALE1"
         self.istep += 1
         if(not (self.istep + 1) % self.nrescale == 0):
@@ -61,6 +77,8 @@ class rescale1(thermo):
             md.aux.vel_old *= alpha
 
     def print_init(self):
+        """ print thermostat info
+        """
         thermostat_info = textwrap.dedent(f"""\
         {"-" * 68}
         {"Thermostat Information":>44s}
@@ -77,8 +95,10 @@ class rescale1(thermo):
 #        print (f"nrescale = {self.nrescale}", flush=True)
 
 class rescale2(thermo):
-    """ rescale the velocities when the temerature
-        gets out of target temperature by dtemperature
+    """ rescale the velocities when the temerature is out of a given range.
+
+        :param double temperature: the temperature (K) set in the NVT ensemble
+        :param double dtemperature: the trigger temperature difference (K)
     """
     def __init__(self, temperature=300.0, dtemperature=100.0):
         # Initialize input values
@@ -86,6 +106,11 @@ class rescale2(thermo):
         super().__init__(temperature)
 
     def run(self, molecule, md):
+        """ do temperature control
+
+            :param object molecule: molecule object  
+            :param object md: MQC object, the MD theory
+        """
         p_name = "RESCALE2"
 
         ctemp = molecule.ekin * 2 / float(molecule.dof) * au_to_K
@@ -101,6 +126,8 @@ class rescale2(thermo):
                 md.aux.vel_old *= alpha
 
     def print_init(self):
+        """ print thermostat info
+        """
         thermostat_info = textwrap.dedent(f"""\
         {"-" * 68}
         {"Thermostat Information":>44s}

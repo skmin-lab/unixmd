@@ -5,6 +5,12 @@ from misc import data, A_to_au, eps
 
 class State(object):
     """ Class for BO states
+
+        :param double energy: the BO energy
+        :param double energy_old: backup for the BO energy of the previous step
+        :param double,array force: the BO force
+        :param complex coef: the BO coefficient 
+        :param integer multiplicity: spin multiplicity of the BO state 
     """
     def __init__(self, nsp, nat):
         self.energy = 0.
@@ -16,10 +22,15 @@ class State(object):
 
 class Molecule(object):
     """ Class for a molecule object including State objects.
-        nsp - dimension of dynamics
-        nat - number of atoms
-        states - list of state objects
-        nstates - number of states
+
+        :param string geometry: the Cartesian coordinates for position and initial velocity in the extended xyz format
+        :param double nsp: the dimension of space where the molecule is
+        :param integer states: the number of BO states
+        :param integer dof: the degrees of freedom (if model is False, molecular dof is given)
+        :param string unit_pos: the unit of position (A = angstrom. au = atomic unit[bohr])
+        :param string unit_vel: the unit of velocity (au = atomic unit, A/ps = angstrom per ps, A/fs = angstromm per fs)
+        :param double charge: the total charge of the system
+        :param boolean model: is the system a model system?
     """
     def __init__(self, geometry, nsp=3, nstates=3, dof=None, \
         unit_pos='A', unit_vel='au', charge=0., model=False):
@@ -85,18 +96,19 @@ class Molecule(object):
         self.l_nacme = False
 
     def read_geometry(self, geometry, unit_pos, unit_vel):
-        """ Routine to read the geometry in extended xyz format.
-            Example:
-
-            geometry = '''
-                       2
-                       Hydrogen
-                       H 0.0 0.0 0.0 0.0 0.0 0.0
-                       H 0.0 0.0 0.8 0.0 0.0 0.0
-                       '''
+        """ Routine to read the geometry in extended xyz format.\n
+            Example:\n\n
+            geometry = '''\n
+                       2\n
+                       Hydrogen\n
+                       H 0.0 0.0 0.0 0.0 0.0 0.0\n
+                       H 0.0 0.0 0.8 0.0 0.0 0.0\n
+                       '''\n
             self.read_geometry( geometry )
 
-            geometry - docstring in extended xyz format
+            :param string geometry: the Cartesian coordinates for position and initial velocity in the extended xyz format
+            :param string unit_pos: the unit of position (A = angstrom. au = atomic unit[bohr])
+            :param string unit_vel: the unit of velocity (au = atomic unit, A/ps = angstrom per ps, A/fs = angstromm per fs)
         """
         f = geometry.split('\n')
         # remove any empty lines

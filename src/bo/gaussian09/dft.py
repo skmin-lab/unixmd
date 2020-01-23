@@ -6,10 +6,15 @@ from bo.gaussian09.gaussian09 import Gaussian09
 from misc import au_to_A, eV_to_au
 
 class DFT(Gaussian09):
-    """ Class for Gaussian09 (TD-)DFT method
-                  bomd | sh | eh | nac | re_calc
-        DFT    :   o     x    x     F      F
-        TD-DFT :   o     x    x     F      T
+    """ Class for the (TD-)DFT method of Gaussian09
+
+        :param object molecule: molecule object
+        :param integer nthreads: number of threads in the calculations
+        :param string memory: allocatable memory in the calculations
+        :param string functional: level of DFT theory
+        :param string basis_set: basis set information
+        :param string g09_root_path: path for Gaussian09 root
+        :param string version: version of Gaussian09 program
     """
     def __init__(self, molecule, nthreads=8, memory="4gb",\
         functional="BLYP", basis_set="STO-3G", \
@@ -30,7 +35,13 @@ class DFT(Gaussian09):
             self.re_calc = False
 
     def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
-        """ Get/Extract BO information from Gaussian09
+        """ Extract energies, gradients from the (TD)DFT method
+
+            :param object molecule: molecule object
+            :param string base_dir: base directory
+            :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         super().get_bo(base_dir, calc_force_only)
         self.get_input(molecule, istep, bo_list)
@@ -40,6 +51,10 @@ class DFT(Gaussian09):
 
     def get_input(self, molecule, istep, bo_list):
         """ Generate Gaussian09 input files: g09.inp
+
+            :param object molecule: molecule object
+            :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
         """
         if (len(bo_list) > 1):
             raise ValueError(f"Ehrenfest dynamics with g09 is not implemented yet!")
@@ -81,7 +96,11 @@ class DFT(Gaussian09):
             f.write(input_g09)
 
     def run_QM(self, base_dir, istep, bo_list):
-        """ run g09 calculation and save the output files
+        """ run DFT calculation and save the output files to QMlog directory
+
+            :param string base_dir: base directory
+            :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
         """
         # set environment variables
         os.environ["g09root"] = self.g09_root_path
@@ -107,6 +126,10 @@ class DFT(Gaussian09):
 
     def extract_BO(self, molecule, bo_list, calc_force_only):
         """ read the output files to get BO data
+
+            :param object molecule: molecule object
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         file_name = "log"
         with open(file_name, "r") as f:
