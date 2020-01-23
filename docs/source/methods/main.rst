@@ -28,6 +28,7 @@ The driving force is given by: :math:`\vec{F}=\sum_{i} \vec{F}_i + \sum_{i\neq j
 | l_adjnac       | adjust non-adiabatic coupling                  | True    |
 +----------------+------------------------------------------------+---------+
 
+================================
 Fewest Switch Surface Hopping
 ================================
 ''
