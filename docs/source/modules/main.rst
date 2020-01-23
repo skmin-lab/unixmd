@@ -98,6 +98,21 @@ dft.py
    :members:
    :show-inheritance:
 
+model
+-------------------------------------------
+
+model.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.model.model
+   :members:
+   :show-inheritance:
+
+shin_metiu.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.model.shin_metiu
+   :members:
+   :show-inheritance:
+
 ===========================================
 mqc
 ===========================================
@@ -105,6 +120,12 @@ mqc
 eh.py
 -------------------------------------------
 .. automodule:: mqc.eh
+   :members: 
+   :show-inheritance:
+
+shxf.py
+-------------------------------------------
+.. automodule:: mqc.shxf
    :members: 
    :show-inheritance:
 

@@ -6,12 +6,11 @@ from fileio import touch_file, write_md_output, write_final_xyz, typewriter
 from misc import eps
 from mqc.el_prop.el_propagator import *
 
-""" THERMOSTAT NOT IMPLEMENTED YET FOR SHXF!!!!!!!!!!!!!
-    DENSITY PROPAGATRO NOT IMPLEMENTED YET FOR SHXF!!!!!!!!!!!!!
+"""     DENSITY PROPAGATION NOT IMPLEMENTED YET FOR SHXF!!!!!!!!!!!!!
 """
 
 class Auxiliary_Molecule(object):
-    """ auxiliary trajectory class
+    """ Class for auxiliary molecule that is used for the calculation of decoherence term
     """
     def __init__(self, molecule):
         # Initialize auxiliary molecule
@@ -32,7 +31,19 @@ class Auxiliary_Molecule(object):
 
 
 class SHXF(MQC):
-    """ decoherence-indeced surface hopping based on exact factorization dynamics
+    """ Class for DISH-XF dynamics
+
+        :param object molecule: molecule object
+        :param integer istate: initial running state
+        :param double dt: time interval
+        :param integer nsteps: maximum nuclear time step
+        :param integer nesteps: electronic time step for one nuclear time step
+        :param string propagation: propagation scheme
+        :param boolean l_adjnac: logical for phase adjustment of non-adiabatic coupling
+        :param double threshold: electronic density threshold for decoherence term calculation
+        :param double wsigma: width of nuclear wave packet of auxiliary trajectory
+
+         
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", l_adjnac=True, threshold=0.01, wsigma=0.1):
@@ -245,7 +256,9 @@ class SHXF(MQC):
         molecule.etot = molecule.epot + molecule.ekin
 
     def check_coherence(self, molecule):
-        """ Check coherence and reset density
+        """ Routine to check coherence among BO states
+
+            :param object molecule: molecule object
         """
         count = 0
         for ist in range(molecule.nst):
@@ -272,7 +285,9 @@ class SHXF(MQC):
 #                print(f" TSHXF DECO F           {ist + 1}", flush=True)
 
     def check_decoherence(self, molecule):
-        """ Check coherence and reset density
+        """ Routine to check if the electronic state is decohered
+
+            :param object molecule: molecule object
         """
         if (self.l_hop):
             for ist in range(molecule.nst):
@@ -287,7 +302,9 @@ class SHXF(MQC):
                         return
 
     def aux_propagator(self, molecule):
-        """ Update auxiliary positions/velocities
+        """ Routine to propagate auxiliary molecule
+
+            :param object molecule: molecule object
         """
         self.pos_old = np.copy(molecule.pos)
         # Get auxiliary position
@@ -319,7 +336,10 @@ class SHXF(MQC):
 #            print(f"AUX_VEL {self.aux.vel[ist, 0, 0]:15.8f}            {ist + 1}", flush=True)
 
     def set_decoherence(self, molecule, one_st):
-        """ Reset densities in case of molecule got decohered
+        """ Routine to reset coefficient/density if the state is decohered
+            
+            :param object molecule: molecule object
+            :param integer one_st: state index that its population is one. 
         """
         self.phase = np.zeros((molecule.nst, molecule.nat, molecule.nsp))
         for ist in range(molecule.nst):
@@ -332,7 +352,9 @@ class SHXF(MQC):
                 molecule.states[ist].coef = 0. + 0.j
  
     def get_phase(self, molecule):
-        """ Phase calculation routine 
+        """ Routine to calculate phase term
+        
+            :param object molecule: molecule object
         """
         for ist in range(molecule.nst):
             if (self.l_coh[ist]):
@@ -347,6 +369,8 @@ class SHXF(MQC):
 
     def el_propagator(self, molecule):
         """ Routine to propagate BO coefficients or density matrix
+        
+            :param object molecule: molecule object
         """
         if (self.propagation == "coefficient"):
             el_coef_xf(self, molecule)
