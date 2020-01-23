@@ -11,7 +11,7 @@ class SH(MQC):
 
         :param object molecule: molecule object
         :param integer istate: intial adiabatic state
-        :param float dt: time interval
+        :param double dt: time interval
         :param integer nsteps: nuclear step
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
