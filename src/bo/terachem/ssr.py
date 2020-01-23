@@ -5,16 +5,31 @@ import numpy as np
 import textwrap
 
 class SSR(TeraChem):
-    """ Class for TeraChem program
-                            bomd | sh | eh | nac | re_calc
-        single-state REKS :  o     x    x     F      F
-        SA-REKS           :  o     o    x     F      T
-        SI-SA-REKS(SSR)   :  o     o    o     T      F
+    """ Class for SSR method of TeraChem program
+
+        :param object molecule: molecule object
+        :param string basis_set: basis set information
+        :param string functional: functional in the calculations
+        :param string precision: precision in the calculations
+        :param double scf_tol: energy convergence for SCF iterations
+        :param integer max_scf_iter: maximum number of SCF iterations
+        :param string reks22: use REKS(2,2) calculation?
+        :param double reks_scf_tol: energy convergence for REKS SCF iterations
+        :param integer reks_max_scf_iter: maximum number of REKS SCF iterations
+        :param string reks_diis: DIIS acceleration in REKS SCF iterations
+        :param double shift: level shifting value in REKS SCF iterations
+        :param integer use_ssr_state: calculate SSR state, if not, treat SA-REKS
+        :param double cpreks_max_tol: gradient tolerance for CP-REKS equations
+        :param integer cpreks_max_iter: maximum number of CP-REKS iterations
+        :param string qm_path: path for QM binary
+        :param integer ngpus: number of GPUs
+        :param string gpu_id: ID of used GPUs
+        :param double version: version of TeraChem program
     """
     def __init__(self, molecule, ngpus=1, gpu_id="1", precision="dynamic", \
         version=1.92, functional="hf", basis_set="sto-3g", scf_tol=1E-2, \
-	      max_scf_iter=300, reks22="yes", reks_scf_tol=1E-6, \
-	      reks_max_scf_iter=1000, reks_diis="yes", shift=0.3, use_ssr_state=1, \
+        max_scf_iter=300, reks22="yes", reks_scf_tol=1E-6, \
+        reks_max_scf_iter=1000, reks_diis="yes", shift=0.3, use_ssr_state=1, \
         cpreks_max_tol=1E-6, cpreks_max_iter=1000, qm_path="./"):
         # Initialize TeraChem common variables
         super().__init__(functional, basis_set, qm_path, ngpus, \
@@ -58,7 +73,13 @@ class SSR(TeraChem):
             self.re_calc = False
 
     def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
-        """ Get/Extract BO information from DFTB
+        """ Extract energy, gradient and nonadiabatic couplings from SSR method
+
+            :param object molecule: molecule object
+            :param string base_dir: base directory
+            :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         super().get_bo(base_dir, calc_force_only)
         self.write_xyz(molecule)
@@ -69,6 +90,10 @@ class SSR(TeraChem):
 
     def get_input(self, molecule, bo_list, calc_force_only):
         """ Generate TeraChem input files: input.tcin
+
+            :param object molecule: molecule object
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # make 'input.tcin' file
         input_terachem = ""
@@ -168,7 +193,11 @@ class SSR(TeraChem):
             f.write(input_terachem)
 
     def run_QM(self, base_dir, istep, bo_list):
-        """ run TeraChem calculation and save the output files
+        """ Run SSR calculation and save the output files to QMlog directory
+
+            :param string base_dir: base directory
+            :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
         """
         # run TeraChem method
         qm_command = os.path.join(self.qm_path, "terachem")
@@ -183,7 +212,11 @@ class SSR(TeraChem):
             shutil.copy("log", os.path.join(tmp_dir, log_step))
 
     def extract_BO(self, molecule, bo_list, calc_force_only):
-        """ read the output files to get BO data
+        """ Read the output files to get BO information
+
+            :param object molecule: molecule object
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # read 'log' file
         file_name = "log"

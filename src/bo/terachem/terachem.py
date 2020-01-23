@@ -2,7 +2,15 @@ from __future__ import division
 from bo.bo_calculator import BO_calculator
 
 class TeraChem(BO_calculator):
-    """ Class for TeraChem program
+    """ Class for common parts of TeraChem program
+
+        :param string basis_set: basis set information
+        :param string functional: functional in the calculations
+        :param string precision: precision in the calculations
+        :param string qm_path: path for QM binary
+        :param integer ngpus: number of GPUs
+        :param string gpu_id: ID of used GPUs
+        :param double version: version of TeraChem program
     """
     def __init__(self, functional, basis_set, qm_path, ngpus, \
         gpu_id, precision, version):

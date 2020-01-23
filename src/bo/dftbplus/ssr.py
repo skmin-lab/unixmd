@@ -15,11 +15,31 @@ onsite_ud = {"H":"0.00000", "C":"0.00000 0.10512 0.10512 0.02643", "N":"0.00000 
 max_l = {"H":"s", "C":"p", "N":"p", "O":"p"}
 
 class SSR(DFTBplus):
-    """ Class for density-functional tight-binding (DFTB) / SI-SA-REKS(SSR) method
-                            bomd | sh | eh | nac | re_calc
-        single-state REKS :  o     x    x     F      F
-        SA-REKS           :  o     o    x     F      T
-        SI-SA-REKS(SSR)   :  o     o    o     T      F
+    """ Class for SSR method of DFTB+ program
+
+        :param object molecule: molecule object
+        :param boolean scc: include SCC scheme
+        :param double scc_tol: energy convergence for REKS SCC iterations
+        :param integer max_scc_iter: maximum number of REKS SCC iterations
+        :param boolean sdftb: include spin-polarisation parameters
+        :param boolean lcdftb: include long-range corrected functional
+        :param string lc_method: algorithms for LC-DFTB
+        :param boolean ocdftb: include onsite correction (test option)
+        :param boolean ssr22: use REKS(2,2) calculation?
+        :param integer use_ssr_state: calculate SSR state, if not, treat SA-REKS
+        :param integer state_l: set L-th microstate as taget state
+        :param integer guess: initial guess setting for eigenvectors
+        :param double shift: level shifting value in REKS SCF iterations
+        :param double tuning: scaling factor for atomic spin constants
+        :param integer grad_level: algorithms to calculate gradients
+        :param double grad_tol: gradient tolerance for CP-REKS equations
+        :param integer mem_level: memory allocation setting, 2 is recommended
+        :param string sk_path: path for slater-koster files
+        :param boolean periodic: use periodicity in the calculations
+        :param double a(b, c)_axis: the length of cell lattice
+        :param string qm_path: path for QM binary
+        :param integer nthreads: number of threads in the calculations
+        :param double version: version of DFTB+ program
     """
     def __init__(self, molecule, scc=True, scc_tol=1E-6, max_scc_iter=1000, \
         sdftb=True, lcdftb=True, lc_method="NB", ocdftb=False, \
@@ -72,7 +92,13 @@ class SSR(DFTBplus):
             self.re_calc = False
 
     def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
-        """ Get/Extract BO information from DFTBplus
+        """ Extract energy, gradient and nonadiabatic couplings from SSR method
+
+            :param object molecule: molecule object
+            :param string base_dir: base directory
+            :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         super().get_bo(base_dir, calc_force_only)
         self.write_xyz(molecule)
@@ -82,7 +108,10 @@ class SSR(DFTBplus):
         self.move_dir(base_dir)
 
     def get_input(self, molecule, bo_list):
-        """ Generate DFTBplus input files: geometry.gen, dftb_in.hsd
+        """ Generate DFTB+ input files: geometry.gen, dftb_in.hsd
+
+            :param object molecule: molecule object
+            :param integer,list bo_list: list of BO states for BO calculation
         """
         # make 'geometry.gen' file
         os.system("xyz2gen geometry.xyz")
@@ -291,7 +320,11 @@ class SSR(DFTBplus):
             f.write(input_dftb)
 
     def run_QM(self, base_dir, istep, bo_list):
-        """ run DFTBplus calculation and save the output files
+        """ Run SSR calculation and save the output files to QMlog directory
+
+            :param string base_dir: base directory
+            :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
         """
         # run DFTBplus method
         qm_command = os.path.join(self.qm_path, "dftb+")
@@ -306,7 +339,11 @@ class SSR(DFTBplus):
             shutil.copy("log", os.path.join(tmp_dir, log_step))
 
     def extract_BO(self, molecule, bo_list, calc_force_only):
-        """ read the output files to get BO data
+        """ Read the output files to get BO information
+
+            :param object molecule: molecule object
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # read 'log' file
         file_name = "log"

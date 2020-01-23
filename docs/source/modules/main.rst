@@ -1,6 +1,28 @@
+
 ===========================================
 bo
 ===========================================
+
+dftbplus
+-------------------------------------------
+
+dftbplus.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.dftbplus.dftbplus
+   :members:
+   :show-inheritance:
+
+dftb.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.dftbplus.dftb
+   :members:
+   :show-inheritance:
+
+ssr.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.dftbplus.ssr
+   :members:
+   :show-inheritance:
 
 molpro
 -------------------------------------------
@@ -56,3 +78,4 @@ eh.py
 .. automodule:: mqc.eh
    :members: 
    :show-inheritance:
+
