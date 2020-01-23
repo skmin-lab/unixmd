@@ -17,7 +17,22 @@ casscf.py
    :members:
    :show-inheritance:
 
-Turbomole
+terachem
+-------------------------------------------
+
+terachem.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.terachem.terachem
+   :members:
+   :show-inheritance:
+
+ssr.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.terachem.ssr
+   :members:
+   :show-inheritance:
+
+turbomole
 -------------------------------------------
 
 turbomole.py
@@ -35,9 +50,6 @@ dft.py
 ===========================================
 mqc
 ===========================================
-
-Ehrenfest
--------------------------------------------
 
 eh.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
