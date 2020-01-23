@@ -310,6 +310,7 @@ Turbomole (TM) is quantum chemical program package, initially developed in the g
 (TD)DFT method is interfaced with current version of UNI-XMD. 
 
 - (TD)DFT provides analytical gradients, thus it can be used born-oppenhiemer molecular dynamics (BOMD).
+
 +--------+------+----+----+-----+
 |        | BOMD | SH | Eh | nac |
 +========+======+====+====+=====+
@@ -321,7 +322,8 @@ Turbomole (TM) is quantum chemical program package, initially developed in the g
 
 .. note:: Our interface script is generated with 6.4 version of TM program.
    Here, you should refer to manual of TM program if you want to see detailed
-   lists for **basis_set** variable.
+   lists for **basis_set**, **functional** variable.
+
 +----------------+------------------------------------------------+---------+
 | Keywords       | Work                                           | Default |
 +================+================================================+=========+
