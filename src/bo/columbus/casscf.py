@@ -8,8 +8,15 @@ from misc import data, au_to_A, A_to_au, amu_to_au
 
 class CASSCF(Columbus):
     """ Class for Columbus CASSCF method
-                 bomd | sh | eh | nac | re_calc
-        CASSCF :  o     o    o     T      T
+
+        :param object molecule: molecule object
+        :param string basis_set: basis set information
+        :param string memory: allocatable memory in the calculations
+        :param integer active_elec: number of electrons in active space
+        :param integer active_orb: number of orbitals in active space
+        :param string qm_path: path for QM binary
+        :param integer nthreads: number of threads in the calculations
+        :param double version: version of Columbus program
     """
     def __init__(self, molecule, basis_set="6-31g*", memory="500", \
         active_elec=2, active_orb=2, qm_path="./", nthreads=1, version=7.0):
@@ -50,6 +57,12 @@ class CASSCF(Columbus):
 
     def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
         """ Get/Extract BO information from Columbus
+
+            :param object molecule: molecule object
+            :param string base_dir: base directory
+            :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         super().get_bo(base_dir, calc_force_only)
         self.write_xyz(molecule)
@@ -60,6 +73,10 @@ class CASSCF(Columbus):
 
     def get_input(self, molecule, bo_list, calc_force_only):
         """ Generate Columbus input files: geom, prepin, stdin, mcscfin, transmomin, etc
+
+            :param object molecule: molecule object
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # generate 'geom' file used in Columbus
         geom = ""
@@ -189,6 +206,10 @@ class CASSCF(Columbus):
 
     def run_QM(self, base_dir, istep, bo_list):
         """ run Columbus calculation and save the output files
+
+            :param string base_dir: base directory
+            :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
         """
         # run Columbus method
         qm_command = os.path.join(self.qm_path, "runc")
@@ -202,6 +223,10 @@ class CASSCF(Columbus):
 
     def extract_BO(self, molecule, bo_list, calc_force_only):
         """ read the output files to get BO data
+
+            :param object molecule: molecule object
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # energy
         if (not calc_force_only):
