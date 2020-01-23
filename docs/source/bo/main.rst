@@ -8,8 +8,8 @@ Using DFTB+ you can carry out quantum mechanical simulations similar to density 
 theory but in an approximate way, typically gaining around two orders of magnitude in
 speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-XMD.
 
-- (TD)DFTB is time-dependent density-functional tight-binding method. It provides analytical
-  gradients, not nonadiabatic couplings. Thus, it can be used for only adiabatic dynamics.
+- (TD)DFTB is time-dependent density-functional tight-binding method. DFTB+ supports only
+  analytical gradients, not nonadiabatic couplings. Thus, it can be used for only adiabatic dynamics.
 
 - In general, spin-restricted ensemble-referenced Kohn-Sham (REKS) method can be classified
   as single-state REKS, state-averaged REKS (SA-REKS) and state-interaction SA-REKS (SSR).
@@ -142,7 +142,7 @@ calculations, designed and maintained by many authors. It comprises efficient an
 programs for standard computational chemistry applications, such as DFT or many wave function based
 methods. Among them, CASSCF method is interfaced with current version of UNI-XMD.
 
-- CASSCF is complete active space self-consistent field method. It provides analytical gradients as
+- CASSCF is complete active space self-consistent field method. Molpro supports analytical gradients as
   well as nonadiabatic couplings, thus it can be used for excited state molecular dynamics.
 
 +--------+------+----+----+-----+
