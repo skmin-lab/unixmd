@@ -204,11 +204,11 @@ Numerical calculation of the coupling elements using the CI overlap is on progre
 +---------+------+----+----+-----+
 
 
-(제조법TD)DFT
+(TD-)DFT
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note:: Our interface script is generated with Revision A.02 version of Gaussian09 program.
-   Please refer to the manual for the detailed lists for **basis_set** variable.
+   Please refer to the manual for the detailed lists for **basis_set** and **functional** variable.
 
 +----------------+------------------------------------------------+---------------+
 | Keywords       | Work                                           | Default       |
