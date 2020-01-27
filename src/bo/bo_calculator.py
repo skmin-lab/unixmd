@@ -3,13 +3,16 @@ import os, shutil
 from misc import au_to_A
 
 class BO_calculator(object):
-    """ Class for Born-Oppenheimer calculator such as QM, ML, etc
+    """ Class for Born-Oppenheimer (BO) calculator such as QM, ML, etc
     """
     def __init__(self):
         pass
 
     def get_bo(self, base_dir, calc_force_only):
-        """ Make scratch directory and copy geomtry file
+        """ Make scratch directory and copy geometry file
+
+            :param string base_dir: base directory
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # make 'scr_qm' directory
         unixmd_dir = os.path.join(base_dir, "md")
@@ -22,7 +25,9 @@ class BO_calculator(object):
         os.chdir(self.scr_qm_dir)
 
     def write_xyz(self, molecule):
-        """ make current geomtry file
+        """ Make current geometry file
+
+            :param object molecule: molecule object
         """
         file_name = "geometry.xyz"
         with open(file_name, "w") as ftj:
@@ -33,6 +38,8 @@ class BO_calculator(object):
 
     def move_dir(self, base_dir):
         """ Move to the base directory
+
+            :param string base_dir: base directory
         """
         os.chdir(base_dir)
 

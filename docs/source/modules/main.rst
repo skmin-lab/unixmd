@@ -17,6 +17,12 @@ thermostat.py
 bo
 ===========================================
 
+bo_calculator.py
+-------------------------------------------
+.. automodule:: bo.bo_calculator
+   :members:
+   :show-inheritance:
+
 dftbplus
 -------------------------------------------
 
