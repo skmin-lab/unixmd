@@ -9,7 +9,7 @@ class SSR(TeraChem):
 
         :param object molecule: molecule object
         :param string basis_set: basis set information
-        :param string functional: functional in the calculations
+        :param string functional: level of DFT theory
         :param string precision: precision in the calculations
         :param double scf_tol: energy convergence for SCF iterations
         :param integer max_scf_iter: maximum number of SCF iterations

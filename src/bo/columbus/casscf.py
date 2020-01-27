@@ -7,7 +7,7 @@ import textwrap
 from misc import data, au_to_A, A_to_au, amu_to_au
 
 class CASSCF(Columbus):
-    """ Class for Columbus CASSCF method
+    """ Class for CASSCF method of Columbus program
 
         :param object molecule: molecule object
         :param string basis_set: basis set information
@@ -56,7 +56,7 @@ class CASSCF(Columbus):
         self.re_calc = True
 
     def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
-        """ Get/Extract BO information from Columbus
+        """ Extract energy, gradient and nonadiabatic couplings from CASSCF method
 
             :param object molecule: molecule object
             :param string base_dir: base directory
@@ -92,6 +92,7 @@ class CASSCF(Columbus):
             f.write(geom)
 
         # set basis sets information
+        # TODO : move to columbus.py, this is common part
         if (self.basis_set == "cc-pvdz"):
             tmp_basis = "\n".join([f"{cc_pvdz[f'{itype}']}" for itype in self.atom_type])
         elif (self.basis_set == "cc-pvtz"):
@@ -205,7 +206,7 @@ class CASSCF(Columbus):
             shutil.copy("MOCOEFS/mocoef_mc.sp", "mocoef")
 
     def run_QM(self, base_dir, istep, bo_list):
-        """ run Columbus calculation and save the output files
+        """ Run CASSCF calculation and save the output files to QMlog directory
 
             :param string base_dir: base directory
             :param integer istep: current MD step
@@ -222,7 +223,7 @@ class CASSCF(Columbus):
             shutil.copy("runls", os.path.join(tmp_dir, log_step))
 
     def extract_BO(self, molecule, bo_list, calc_force_only):
-        """ read the output files to get BO data
+        """ Read the output files to get BO information
 
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation

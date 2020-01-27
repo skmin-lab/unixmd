@@ -1,11 +1,11 @@
 from __future__ import division
-from bo.model.model import Model
 import os, shutil, re
+from bo.model.model import Model
 import numpy as np
 
 class Shin_Metiu(Model):
     """ Class for shin-metiu model BO calculation
-        
+
         :param object molecule: molecule object
         :param string qm_path: path for Shin-Metiu 1D charge transfer model BO calculation program
     """
@@ -21,7 +21,7 @@ class Shin_Metiu(Model):
         self.re_calc = False
 
     def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
-        """ Extract energy, gradient and nonadiabatic couplings from BO calculation
+        """ Extract energy, gradient and nonadiabatic couplings from shin-metui BO calculation
 
             :param object molecule: molecule object
             :param string base_dir: base directory
