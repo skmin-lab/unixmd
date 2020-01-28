@@ -1,18 +1,23 @@
 from __future__ import division
-import numpy as np
 import textwrap
+import numpy as np
 from misc import data, A_to_au, eps
 
 class State(object):
     """ Class for BO states
 
-        :param double energy: the BO energy
-        :param double energy_old: backup for the BO energy of the previous step
-        :param double,array force: the BO force
-        :param complex coef: the BO coefficient 
-        :param integer multiplicity: spin multiplicity of the BO state 
+        :param double nsp: dimension of space where the molecule is
+        :param double nat: number of atoms
     """
     def __init__(self, nsp, nat):
+        """ Explanation of variables in State object
+
+            double energy: the BO energy
+            double energy_old: backup for the BO energy of the previous step
+            double,array force: the BO force
+            complex coef: the BO coefficient 
+            integer multiplicity: spin multiplicity of the BO state 
+        """
         self.energy = 0.
         self.energy_old = 0.
         self.force = np.zeros((nat, nsp)) 
@@ -21,15 +26,15 @@ class State(object):
 
 
 class Molecule(object):
-    """ Class for a molecule object including State objects.
+    """ Class for a molecule object including State objects
 
-        :param string geometry: the Cartesian coordinates for position and initial velocity in the extended xyz format
-        :param double nsp: the dimension of space where the molecule is
-        :param integer states: the number of BO states
-        :param integer dof: the degrees of freedom (if model is False, molecular dof is given)
-        :param string unit_pos: the unit of position (A = angstrom. au = atomic unit[bohr])
-        :param string unit_vel: the unit of velocity (au = atomic unit, A/ps = angstrom per ps, A/fs = angstromm per fs)
-        :param double charge: the total charge of the system
+        :param string geometry: Cartesian coordinates for position and initial velocity in the extended xyz format
+        :param double nsp: dimension of space where the molecule is
+        :param integer nstates: number of BO states
+        :param integer dof: degrees of freedom (if model is False, molecular dof is given)
+        :param string unit_pos: unit of position (A = angstrom, au = atomic unit [bohr])
+        :param string unit_vel: unit of velocity (au = atomic unit, A/ps = angstrom per ps, A/fs = angstromm per fs)
+        :param double charge: total charge of the system
         :param boolean model: is the system a model system?
     """
     def __init__(self, geometry, nsp=3, nstates=3, dof=None, \
@@ -106,9 +111,9 @@ class Molecule(object):
                        '''\n
             self.read_geometry( geometry )
 
-            :param string geometry: the Cartesian coordinates for position and initial velocity in the extended xyz format
-            :param string unit_pos: the unit of position (A = angstrom. au = atomic unit[bohr])
-            :param string unit_vel: the unit of velocity (au = atomic unit, A/ps = angstrom per ps, A/fs = angstromm per fs)
+            :param string geometry: Cartesian coordinates for position and initial velocity in the extended xyz format
+            :param string unit_pos: unit of position (A = angstrom, au = atomic unit[bohr])
+            :param string unit_vel: unit of velocity (au = atomic unit, A/ps = angstrom per ps, A/fs = angstromm per fs)
         """
         f = geometry.split('\n')
         # remove any empty lines
@@ -151,7 +156,7 @@ class Molecule(object):
         self.vel = np.array(self.vel) * fac_vel
 
     def adjust_nac(self):
-        """ Adjust phase of NACs
+        """ Adjust phase of nonadiabatic couplings
         """
         p_name = "ADJUST_NAC"
         for ist in range(self.nst):
@@ -181,24 +186,24 @@ class Molecule(object):
         self.nac_old = np.copy(self.nac) 
 
     def get_nacme(self):
-        """ get NACME from NACs
+        """ Get NACME from nonadiabatic couplings
         """
         self.nacme = np.sum(np.multiply(self.nac, self.vel), axis = (2, 3))
 
     def update_kinetic(self):
-        """ get kinetic energy
+        """ Get kinetic energy
         """
         self.ekin = np.sum(0.5 * self.mass * np.sum(self.vel ** 2, axis=1))
 
     def backup_bo(self):
-        """ backup BO energies and couplings
+        """ Backup BO energies and nonadiabatic couplings
         """
         for states in self.states:
             states.energy_old = states.energy
         self.nacme_old = np.copy(self.nacme)
 
     def get_nr_electrons(self):
-        """ get the number of electrons
+        """ Get the number of electrons
         """
         sym_list = list(data.keys())
         self.nelec = 0.
@@ -208,7 +213,7 @@ class Molecule(object):
         self.nelec -= self.charge
 
     def print_init(self):
-        """ print initial information about molecule.py
+        """ Print initial information about molecule.py
         """
         geom_info = textwrap.dedent(f"""\
         {"-" * 68}
