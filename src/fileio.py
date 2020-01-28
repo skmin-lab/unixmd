@@ -4,6 +4,12 @@ import os, textwrap, datetime
 
 def touch_file(molecule, calc_coupling, propagation, unixmd_dir, SH_chk):
     """ Open the UNIXMD output files
+
+        :param object molecule: molecule object
+        :param boolean calc_coupling: check the dynamics includes coupling calculation
+        :param string propagation: propagation scheme
+        :param string unixmd_dir: unixmd directory
+        :param boolean SH_chk: check the dynamics is surface hopping for initial file header 
     """
     write_init_base(molecule, unixmd_dir)
     if (calc_coupling):
@@ -32,6 +38,9 @@ def touch_file(molecule, calc_coupling, propagation, unixmd_dir, SH_chk):
 
 def write_init_base(molecule, unixmd_dir):
     """ Header for non-coupling output files
+
+        :param object molecule: molecule object
+        :param string unixmd_dir: unixmd directory
     """
     # energy information file header
     tmp = f'{"#":5s}{"Step":9s}{"Kinetic(H)":15s}{"Potential(H)":15s}{"Total(H)":15s}' + \
@@ -40,6 +49,11 @@ def write_init_base(molecule, unixmd_dir):
 
 def write_init_coupling(molecule, propagation, unixmd_dir, SH_chk):
     """ Header for coupling output files
+
+        :param object molecule: molecule object
+        :param string propagation: propagation scheme
+        :param string unixmd_dir: unixmd directory
+        :param boolean SH_chk: check the dynamics is surface hopping for initial file header 
     """
     # surface hopping running state and hopping probabilities file header
     if (SH_chk):
@@ -67,6 +81,12 @@ def write_init_coupling(molecule, propagation, unixmd_dir, SH_chk):
 
 def write_md_output(molecule, calc_coupling, istep, propagation, unixmd_dir):
     """ Writting output files
+
+        :param object molecule: molecule object
+        :param boolean calc_coupling: check the dynamics includes coupling calculation
+        :param integer istep: current MD step 
+        :param string propagation: propagation scheme
+        :param string unixmd_dir: unixmd directory
     """
     # write MOVIE.xyz file including positions and velocities
     tmp = f'{molecule.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)'
@@ -102,6 +122,10 @@ def write_md_output(molecule, calc_coupling, istep, propagation, unixmd_dir):
 
 def write_final_xyz(molecule, istep, unixmd_dir):
     """ Write final positions and velocities
+
+        :param object molecule: molecule object
+        :param integer istep: current MD step 
+        :param string unixmd_dir: unixmd directory
     """
     # write FINAL.xyz file including positions and velocities
     tmp = f'{molecule.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)'
@@ -114,6 +138,10 @@ def write_final_xyz(molecule, istep, unixmd_dir):
 
 def typewriter(string, dir_name, filename):
     """ funtion to write any string in dir_name/filename
+
+        :param string string: text string for input file
+        :param string dir_name: directory of input file
+        :param string filename: filename of input file
     """
     tmp_name = os.path.join(dir_name, filename)
     with open(tmp_name, "a") as f:
