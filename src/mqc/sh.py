@@ -7,15 +7,15 @@ from misc import eps, au_to_K
 from mqc.el_prop.el_propagator import *
  
 class SH(MQC):    
-    """ surface hopping dynamics
+    """ Class for surface hopping dynamics
 
         :param object molecule: molecule object
-        :param integer istate: intial adiabatic state
+        :param integer istate: initial adiabatic state
         :param double dt: time interval
         :param integer nsteps: nuclear step
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
-        :param logical l_adjnac: logical for adjust non-adiabatic coupling
+        :param logical l_adjnac: logical to adjust nonadiabatic coupling
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", l_adjnac=True):
@@ -39,7 +39,7 @@ class SH(MQC):
         """ run MQC dynamics according to surface hopping dynamics
 
             :param object molecule: molecule object
-            :param object theory: theory object containing on-the-fly calculation info.
+            :param object theory: theory object containing on-the-fly calculation infomation
             :param string thermostat: thermostat type
             :param string input_dir: location of input directory
             :param logical save_QMlog: logical for saving QM calculation log
@@ -172,7 +172,7 @@ class SH(MQC):
 
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation
-            :param integer istep: current dynamics step
+            :param integer istep: current MD step
             :param string unixmd_dir: unixmd directory
         """
         self.rand = random.random()
@@ -235,7 +235,7 @@ class SH(MQC):
         self.rforce = np.copy(molecule.states[self.rstate].force)
 
     def update_energy(self, molecule):
-        """ Routine to update the energy of molecules in surface hopping
+        """ Routine to update the energy of molecules in surface hopping dynamics
 
             :param object molecule: molecule object
         """

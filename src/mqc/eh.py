@@ -2,20 +2,20 @@ from __future__ import division
 import numpy as np
 import os, shutil
 from mqc.mqc import MQC
-from misc import au_to_K
 from fileio import touch_file, write_md_output, write_final_xyz
+from misc import au_to_K
 from mqc.el_prop.el_propagator import *
 
 class Eh(MQC):
-    """ ehrenfest dynamics
+    """ Class for Ehrenfest dynamics
 
         :param object molecule: molecule object
-        :param integer istate: intial adiabatic state
-        :param float dt: time interval
+        :param integer istate: initial adiabatic state
+        :param double dt: time interval
         :param integer nsteps: nuclear step
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
-        :param logical l_adjnac: logical for adjust non-adiabatic coupling
+        :param logical l_adjnac: logical to adjust nonadiabatic coupling
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", l_adjnac=True):
@@ -25,10 +25,10 @@ class Eh(MQC):
 
     def run(self, molecule, theory, thermostat, input_dir="./", \
         save_QMlog=False, save_scr=True):
-        """ run MQC dynamics according to Ehrenfest dynamics
+        """ Run MQC dynamics according to Ehrenfest dynamics
 
             :param object molecule: molecule object
-            :param object theory: theory object containing on-the-fly calculation info.
+            :param object theory: theory object containing on-the-fly calculation infomation
             :param string thermostat: thermostat type
             :param string input_dir: location of input directory
             :param logical save_QMlog: logical for saving QM calculation log
@@ -105,7 +105,7 @@ class Eh(MQC):
                 shutil.rmtree(tmp_dir)
 
     def calculate_force(self, molecule):
-        """ Calculate the Ehrenfest forces
+        """ Calculate the Ehrenfest force
 
             :param object molecule: molecule object
         """
@@ -120,7 +120,7 @@ class Eh(MQC):
                     * (molecule.states[ist].energy - molecule.states[jst].energy)
 
     def update_energy(self, molecule):
-        """ Routine to update the energy of molecules in ehrenfest
+        """ Routine to update the energy of molecules in Ehrenfest dynamics
 
             :param object molecule: molecule object
         """
@@ -147,7 +147,7 @@ class Eh(MQC):
         """ Routine to print each steps infomation about dynamics
 
             :param object molecule: molecule object
-            :param integer istep: current time step
+            :param integer istep: current MD step
         """
         ctemp = molecule.ekin * 2. / float(molecule.dof) * au_to_K
         norm = 0.

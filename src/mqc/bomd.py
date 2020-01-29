@@ -2,11 +2,16 @@ from __future__ import division
 import numpy as np
 import os, shutil
 from mqc.mqc import MQC
-from misc import au_to_K
 from fileio import touch_file, write_md_output, write_final_xyz
+from misc import au_to_K
 
 class BOMD(MQC):    
-    """ born-oppenheimer molecular dynamics
+    """ Class for born-oppenheimer molecular dynamics (BOMD)
+
+        :param object molecule: molecule object
+        :param integer istate: initial adiabatic state
+        :param double dt: time interval
+        :param integer nsteps: nuclear step
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000):
         # Initialize input values
@@ -15,6 +20,13 @@ class BOMD(MQC):
     def run(self, molecule, theory, thermostat, input_dir="./", \
         save_QMlog=False, save_scr=True):
         """ run MQC dynamics according to BOMD
+
+            :param object molecule: molecule object
+            :param object theory: theory object containing on-the-fly calculation infomation
+            :param string thermostat: thermostat type
+            :param string input_dir: location of input directory
+            :param logical save_QMlog: logical for saving QM calculation log
+            :param logical save_scr: logical for saving scratch directory
         """
         # set directory information
         input_dir = os.path.expanduser(input_dir)
@@ -73,11 +85,15 @@ class BOMD(MQC):
 
     def calculate_force(self, molecule):
         """ Routine to calculate the forces
+
+            :param object molecule: molecule object
         """
         self.rforce = np.copy(molecule.states[self.istate].force)
 
     def update_energy(self, molecule):
         """ Routine to update the energy of molecules in BOMD
+
+            :param object molecule: molecule object
         """
         # update kinetic energy
         molecule.update_kinetic()
@@ -86,6 +102,9 @@ class BOMD(MQC):
 
     def print_step(self, molecule, istep):
         """ Routine to print each steps infomation about dynamics
+
+            :param object molecule: molecule object
+            :param integer istep: current MD step
         """
         ctemp = molecule.ekin * 2. / float(molecule.dof) * au_to_K
 

@@ -41,7 +41,7 @@ package or a customized Hamiltonizan, and nuclear degrees of freedom are propaga
 +----------------+------------------------------------------------+---------+
 | Keywords       | Work                                           | Default |
 +================+================================================+=========+
-| istep          | initial state                                  | 0(GS)   |
+| istate         | initial state                                  | 0(GS)   |
 +----------------+------------------------------------------------+---------+
 | dt             | time interval (fs)                             | 0.5     |
 +----------------+------------------------------------------------+---------+
@@ -59,7 +59,7 @@ The driving force is given by: :math:`\vec{F}=\sum_{i} \vec{F}_i + \sum_{i\neq j
 +----------------+------------------------------------------------+---------+
 | Keywords       | Work                                           | Default |
 +================+================================================+=========+
-| istep          | initial state                                  | 0(GS)   |
+| istate         | initial state                                  | 0(GS)   |
 +----------------+------------------------------------------------+---------+
 | dt             | time interval (fs)                             | 0.5     |
 +----------------+------------------------------------------------+---------+
@@ -69,14 +69,14 @@ The driving force is given by: :math:`\vec{F}=\sum_{i} \vec{F}_i + \sum_{i\neq j
 +----------------+------------------------------------------------+---------+
 | propagation    | propagation scheme                             | density |
 +----------------+------------------------------------------------+---------+
-| l_adjnac       | adjust non-adiabatic coupling                  | True    |
+| l_adjnac       | adjust nonadiabatic coupling                   | True    |
 +----------------+------------------------------------------------+---------+
 
 ================================
-Fewest Switch Surface Hopping
+Surface Hopping
 ================================
 
-Surface hopping dynamics, often called as Tully's fewest switches surface hopping dynamics(FSSH) is basic method
+Surface hopping dynamics, often called as Tully's fewest switches surface hopping dynamics (FSSH) is basic method
 for propagate of artificial wavepackets through time. It was introduced by Tully, J. C. in 1990, and many other
 augmented has been introduced up to now. The basic algorism of FSSH has been implemented in the UNI_xMD with
 following equations.
@@ -94,11 +94,25 @@ vector d. Using this coefficient we can structure hopping probability express as
 :math:`P^{(I)}_{L{rightarrow}K}[t,t+{delta}t} =`
 
 :math:`{H}` is Heaviside function and :math:`{rho}` represents electronic density matrix. In this algorism, hopping probability
-to running state to all other states are considered(including running state) and roll a random dice to select next
+to running state to all other states are considered (including running state) and roll a random dice to select next
 running state. If coupling is strong enough to transit to other state, the probability will be increase, and the overall
 trajectories will be transit to that state in stochastical behavior.
 
-
++----------------+------------------------------------------------+---------+
+| Keywords       | Work                                           | Default |
++================+================================================+=========+
+| istate         | initial state                                  | 0(GS)   |
++----------------+------------------------------------------------+---------+
+| dt             | time interval (fs)                             | 0.5     |
++----------------+------------------------------------------------+---------+
+| nsteps         | Total step of nuclear propagation              | 1000    |
++----------------+------------------------------------------------+---------+
+| nesteps        | Total step of electronic propagation           | 10000   |
++----------------+------------------------------------------------+---------+
+| propagation    | propagation scheme                             | density |
++----------------+------------------------------------------------+---------+
+| l_adjnac       | adjust nonadiabatic coupling                   | True    |
++----------------+------------------------------------------------+---------+
 
 ================================
 DISH-XF
@@ -107,13 +121,25 @@ Decoherence induced surface hopping based on exact factorization method is inclu
 Electronic equation of motion in DISH-XF contains "decoherence term" which is derived from exact factorization, 
 in addition to Eherenfest term.
 
-Detailed description of DISH-XF method is in paper J.Phys. Chem. Lett. 2018, 9, 5, 1097-1104.
+Detailed description of DISH-XF method is in paper J. Phys. Chem. Lett. 2018, 9, 5, 1097-1104.
 
-.. imports all other using toctree?
-   ..toctree:
-     :~~:
-     molecule
-     misc
-     mqc/main
-     bo/main
-     thermostat
++----------------+------------------------------------------------------+---------+
+| Keywords       | Work                                                 | Default |
++================+======================================================+=========+
+| istate         | initial state                                        | 0(GS)   |
++----------------+------------------------------------------------------+---------+
+| dt             | time interval (fs)                                   | 0.5     |
++----------------+------------------------------------------------------+---------+
+| nsteps         | Total step of nuclear propagation                    | 1000    |
++----------------+------------------------------------------------------+---------+
+| nesteps        | Total step of electronic propagation                 | 10000   |
++----------------+------------------------------------------------------+---------+
+| propagation    | propagation scheme                                   | density |
++----------------+------------------------------------------------------+---------+
+| l_adjnac       | adjust nonadiabatic coupling                         | True    |
++----------------+------------------------------------------------------+---------+
+| threshold      | electronic density threshold for decoherence term    | 0.01    |
++----------------+------------------------------------------------------+---------+
+| wsigma         | width of nuclear wave packet of auxiliary trajectory | 0.1     |
++----------------+------------------------------------------------------+---------+
+

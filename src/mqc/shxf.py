@@ -11,6 +11,8 @@ from mqc.el_prop.el_propagator import *
 
 class Auxiliary_Molecule(object):
     """ Class for auxiliary molecule that is used for the calculation of decoherence term
+
+        :param object molecule: molecule object
     """
     def __init__(self, molecule):
         # Initialize auxiliary molecule
@@ -34,16 +36,14 @@ class SHXF(MQC):
     """ Class for DISH-XF dynamics
 
         :param object molecule: molecule object
-        :param integer istate: initial running state
+        :param integer istate: initial adiabatic state
         :param double dt: time interval
-        :param integer nsteps: maximum nuclear time step
-        :param integer nesteps: electronic time step for one nuclear time step
+        :param integer nsteps: nuclear step
+        :param integer nesteps: electronic step
         :param string propagation: propagation scheme
-        :param boolean l_adjnac: logical for phase adjustment of non-adiabatic coupling
+        :param logical l_adjnac: logical to adjust nonadiabatic coupling
         :param double threshold: electronic density threshold for decoherence term calculation
         :param double wsigma: width of nuclear wave packet of auxiliary trajectory
-
-         
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", l_adjnac=True, threshold=0.01, wsigma=0.1):
@@ -81,6 +81,13 @@ class SHXF(MQC):
     def run(self, molecule, theory, thermostat, input_dir="./", \
         save_QMlog=False, save_scr=True):
         """ run MQC dynamics according to decoherence-induced surface hopping dynamics
+
+            :param object molecule: molecule object
+            :param object theory: theory object containing on-the-fly calculation infomation
+            :param string thermostat: thermostat type
+            :param string input_dir: location of input directory
+            :param logical save_QMlog: logical for saving QM calculation log
+            :param logical save_scr: logical for saving scratch directory
         """
         # TODO: current SHXF with thermostat Not Implemented -> should be removed
         #thermotype = thermostat.__class__.__name__
@@ -175,6 +182,10 @@ class SHXF(MQC):
 
     def hop_prob(self, molecule, istep, unixmd_dir):
         """ Routine to calculate hopping probabilities
+
+            :param object molecule: molecule object
+            :param integer istep: current MD step
+            :param string unixmd_dir: unixmd directory
         """
         # reset surface hopping variables
         self.l_hop = False
@@ -212,6 +223,11 @@ class SHXF(MQC):
 
     def hop_check(self, molecule, bo_list, istep, unixmd_dir):
         """ Routine to check hopping occurs with random number
+
+            :param object molecule: molecule object
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param integer istep: current MD step
+            :param string unixmd_dir: unixmd directory
         """
         rand = random.random()
         for ist in range(molecule.nst):
@@ -228,6 +244,8 @@ class SHXF(MQC):
 
     def evaluate_hop(self, molecule):
         """ Routine to evaluate hopping and velocity rescaling
+
+            :param object molecule: molecule object
         """
         pot_diff = molecule.states[self.rstate].energy - molecule.states[self.rstate_old].energy
         if (molecule.ekin < pot_diff):
@@ -244,11 +262,15 @@ class SHXF(MQC):
 
     def calculate_force(self, molecule):
         """ Routine to calculate the forces
+
+            :param object molecule: molecule object
         """
         self.rforce = np.copy(molecule.states[self.rstate].force)
 
     def update_energy(self, molecule):
-        """ Routine to update the energy of molecules in surface hopping
+        """ Routine to update the energy of molecules in surface hopping dynamics
+
+            :param object molecule: molecule object
         """
         # update kinetic energy
         molecule.update_kinetic()
