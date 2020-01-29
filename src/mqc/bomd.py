@@ -23,10 +23,10 @@ class BOMD(MQC):
 
             :param object molecule: molecule object
             :param object theory: theory object containing on-the-fly calculation infomation
-            :param string thermostat: thermostat type
+            :param object thermostat: thermostat type
             :param string input_dir: location of input directory
-            :param logical save_QMlog: logical for saving QM calculation log
-            :param logical save_scr: logical for saving scratch directory
+            :param boolean save_QMlog: logical for saving QM calculation log
+            :param boolean save_scr: logical for saving scratch directory
         """
         # set directory information
         input_dir = os.path.expanduser(input_dir)

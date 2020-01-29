@@ -12,7 +12,7 @@ class MQC(object):
         :param integer nsteps: nuclear step
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
-        :param logical l_adjnac: logical to adjust nonadiabatic coupling
+        :param boolean l_adjnac: logical to adjust nonadiabatic coupling
     """
     def __init__(self, molecule, istate, dt, nsteps, nesteps, \
         propagation, l_adjnac):
@@ -73,8 +73,8 @@ class MQC(object):
         """ Routine to print the initial information of dynamics
             
             :param object molecule: molecule object
-            :param string theory: theory object containing on-the-fly calculation infomation
-            :param string thermostat: thermostat type
+            :param object theory: theory object containing on-the-fly calculation infomation
+            :param object thermostat: thermostat type
         """
         # print molecule information: coordinate, velocity
         molecule.print_init()

@@ -21,7 +21,7 @@ class none(thermo):
         pass
 
     def run(self, molecule, md):
-        """ do temperature control (dummy in this case)
+        """ Control the temperature (dummy in this case)
 
             :param object molecule: molecule object  
             :param object md: MQC object, the MD theory
@@ -29,7 +29,7 @@ class none(thermo):
         pass
 
     def print_init(self):
-        """ print thermostat info
+        """ Print information about thermostat
         """
         thermostat_info = textwrap.dedent(f"""\
         {"-" * 68}
@@ -44,9 +44,10 @@ class none(thermo):
 #        print (f"Temp = {self.temp}", flush=True)
 
 class rescale1(thermo):
-    """ rescale the velocities in a given period
+    """ Rescale the velocities in a given period
 
         :param double temperature: the temperature (K) set in the NVT ensemble
+        :param integer nrescale: period for rescaling step
     """
     def __init__(self, temperature=300.0, nrescale=20):
         # Initialize input values
@@ -55,7 +56,7 @@ class rescale1(thermo):
         super().__init__(temperature)
 
     def run(self, molecule, md):
-        """ do temperature control
+        """ Control the temperature
 
             :param object molecule: molecule object  
             :param object md: MQC object, the MD theory
@@ -77,7 +78,7 @@ class rescale1(thermo):
             md.aux.vel_old *= alpha
 
     def print_init(self):
-        """ print thermostat info
+        """ Print information about thermostat
         """
         thermostat_info = textwrap.dedent(f"""\
         {"-" * 68}
@@ -95,7 +96,7 @@ class rescale1(thermo):
 #        print (f"nrescale = {self.nrescale}", flush=True)
 
 class rescale2(thermo):
-    """ rescale the velocities when the temerature is out of a given range.
+    """ Rescale the velocities when the temerature is out of a given range
 
         :param double temperature: the temperature (K) set in the NVT ensemble
         :param double dtemperature: the trigger temperature difference (K)
@@ -106,7 +107,7 @@ class rescale2(thermo):
         super().__init__(temperature)
 
     def run(self, molecule, md):
-        """ do temperature control
+        """ Control the temperature
 
             :param object molecule: molecule object  
             :param object md: MQC object, the MD theory
@@ -126,7 +127,7 @@ class rescale2(thermo):
                 md.aux.vel_old *= alpha
 
     def print_init(self):
-        """ print thermostat info
+        """ Print information about thermostat
         """
         thermostat_info = textwrap.dedent(f"""\
         {"-" * 68}

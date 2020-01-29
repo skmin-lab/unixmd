@@ -6,8 +6,8 @@ from misc import data, A_to_au, eps
 class State(object):
     """ Class for BO states
 
-        :param double nsp: dimension of space where the molecule is
-        :param double nat: number of atoms
+        :param integer nsp: dimension of space where the molecule is
+        :param integer nat: number of atoms
     """
     def __init__(self, nsp, nat):
         """ Explanation of variables in State object
@@ -29,7 +29,7 @@ class Molecule(object):
     """ Class for a molecule object including State objects
 
         :param string geometry: Cartesian coordinates for position and initial velocity in the extended xyz format
-        :param double nsp: dimension of space where the molecule is
+        :param integer nsp: dimension of space where the molecule is
         :param integer nstates: number of BO states
         :param integer dof: degrees of freedom (if model is False, molecular dof is given)
         :param string unit_pos: unit of position (A = angstrom, au = atomic unit [bohr])

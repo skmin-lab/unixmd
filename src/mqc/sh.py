@@ -15,7 +15,7 @@ class SH(MQC):
         :param integer nsteps: nuclear step
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
-        :param logical l_adjnac: logical to adjust nonadiabatic coupling
+        :param boolean l_adjnac: logical to adjust nonadiabatic coupling
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", l_adjnac=True):
@@ -40,10 +40,10 @@ class SH(MQC):
 
             :param object molecule: molecule object
             :param object theory: theory object containing on-the-fly calculation infomation
-            :param string thermostat: thermostat type
+            :param object thermostat: thermostat type
             :param string input_dir: location of input directory
-            :param logical save_QMlog: logical for saving QM calculation log
-            :param logical save_scr: logical for saving scratch directory
+            :param boolean save_QMlog: logical for saving QM calculation log
+            :param boolean save_scr: logical for saving scratch directory
         """
         # set directory information
         input_dir = os.path.expanduser(input_dir)

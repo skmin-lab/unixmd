@@ -41,7 +41,7 @@ class SHXF(MQC):
         :param integer nsteps: nuclear step
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
-        :param logical l_adjnac: logical to adjust nonadiabatic coupling
+        :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param double threshold: electronic density threshold for decoherence term calculation
         :param double wsigma: width of nuclear wave packet of auxiliary trajectory
     """
@@ -84,10 +84,10 @@ class SHXF(MQC):
 
             :param object molecule: molecule object
             :param object theory: theory object containing on-the-fly calculation infomation
-            :param string thermostat: thermostat type
+            :param object thermostat: thermostat type
             :param string input_dir: location of input directory
-            :param logical save_QMlog: logical for saving QM calculation log
-            :param logical save_scr: logical for saving scratch directory
+            :param boolean save_QMlog: logical for saving QM calculation log
+            :param boolean save_scr: logical for saving scratch directory
         """
         # TODO: current SHXF with thermostat Not Implemented -> should be removed
         #thermotype = thermostat.__class__.__name__
