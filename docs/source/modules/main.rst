@@ -1,10 +1,4 @@
 
-fileio.py
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: fileio
-   :members:
-   :show-inheritance:
-
 ===========================================
 molecule.py
 ===========================================
@@ -16,6 +10,13 @@ molecule.py
 thermostat.py
 ===========================================
 .. automodule:: thermostat
+   :members:
+   :show-inheritance:
+
+===========================================
+fileio.py
+===========================================
+.. automodule:: fileio
    :members:
    :show-inheritance:
 
