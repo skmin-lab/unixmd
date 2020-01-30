@@ -10,14 +10,7 @@ class State(object):
         :param integer nat: number of atoms
     """
     def __init__(self, nsp, nat):
-        """ Explanation of variables in State object
-
-            double energy: the BO energy
-            double energy_old: backup for the BO energy of the previous step
-            double,array force: the BO force
-            complex coef: the BO coefficient 
-            integer multiplicity: spin multiplicity of the BO state 
-        """
+        # Initialize variables
         self.energy = 0.
         self.energy_old = 0.
         self.force = np.zeros((nat, nsp)) 
