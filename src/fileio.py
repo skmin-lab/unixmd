@@ -1,15 +1,15 @@
 from __future__ import division
-from misc import au_to_A
 import os, textwrap, datetime
+from misc import au_to_A
 
 def touch_file(molecule, calc_coupling, propagation, unixmd_dir, SH_chk):
     """ Open the UNIXMD output files
 
         :param object molecule: molecule object
-        :param boolean calc_coupling: check the dynamics includes coupling calculation
+        :param boolean calc_coupling: check whether the dynamics includes coupling calculation
         :param string propagation: propagation scheme
         :param string unixmd_dir: unixmd directory
-        :param boolean SH_chk: check the dynamics is surface hopping for initial file header 
+        :param boolean SH_chk: check whether the dynamics is surface hopping for initial file header 
     """
     write_init_base(molecule, unixmd_dir)
     if (calc_coupling):
@@ -53,7 +53,7 @@ def write_init_coupling(molecule, propagation, unixmd_dir, SH_chk):
         :param object molecule: molecule object
         :param string propagation: propagation scheme
         :param string unixmd_dir: unixmd directory
-        :param boolean SH_chk: check the dynamics is surface hopping for initial file header 
+        :param boolean SH_chk: check whether the dynamics is surface hopping for initial file header 
     """
     # surface hopping running state and hopping probabilities file header
     if (SH_chk):
@@ -83,7 +83,7 @@ def write_md_output(molecule, calc_coupling, istep, propagation, unixmd_dir):
     """ Writting output files
 
         :param object molecule: molecule object
-        :param boolean calc_coupling: check the dynamics includes coupling calculation
+        :param boolean calc_coupling: check whether the dynamics includes coupling calculation
         :param integer istep: current MD step 
         :param string propagation: propagation scheme
         :param string unixmd_dir: unixmd directory
