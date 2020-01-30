@@ -78,7 +78,7 @@ Fewest Switch Surface Hopping
 
 Surface hopping dynamics, often called as Tully's fewest switches surface hopping dynamics(FSSH) is basic method
 for propagate of artificial wavepackets through time. It was introduced by Tully, J. C. in 1990, and many other
-augmented has been introduced up to now. The basic algorism of FSSH has been implemented in the UNI_xMD with
+augmented has been introduced up to now. The basic algorithm of FSSH has been implemented in the UNI_xMD with
 following equations.
 
 :math:`M_{v}R^{I}_{v}(t) =`
@@ -93,7 +93,7 @@ vector d. Using this coefficient we can structure hopping probability express as
 
 :math:`P^{(I)}_{L{rightarrow}K}[t,t+{delta}t} =`
 
-:math:`{H}` is Heaviside function and :math:`{rho}` represents electronic density matrix. In this algorism, hopping probability
+:math:`{H}` is Heaviside function and :math:`{rho}` represents electronic density matrix. In this algorithm, hopping probability
 to running state to all other states are considered(including running state) and roll a random dice to select next
 running state. If coupling is strong enough to transit to other state, the probability will be increase, and the overall
 trajectories will be transit to that state in stochastical behavior.
