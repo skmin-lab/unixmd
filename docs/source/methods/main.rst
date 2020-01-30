@@ -94,7 +94,7 @@ vector d. Using this coefficient we can structure hopping probability express as
 :math:`P^{(I)}_{L{rightarrow}K}[t,t+{delta}t} =`
 
 :math:`{H}` is Heaviside function and :math:`{rho}` represents electronic density matrix. In this algorism, hopping probability
-to running state to all other states are considered (including running state) and roll a random dice to select next
+to running state to all other states are considered(including running state) and roll a random dice to select next
 running state. If coupling is strong enough to transit to other state, the probability will be increase, and the overall
 trajectories will be transit to that state in stochastical behavior.
 
