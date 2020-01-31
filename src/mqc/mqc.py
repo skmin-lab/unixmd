@@ -1,10 +1,18 @@
 from __future__ import division
 import numpy as np
-from misc import fs_to_au
 import textwrap
+from misc import fs_to_au
 
 class MQC(object):
     """ Class for nuclear/electronic propagator used in MQC dynamics
+
+        :param object molecule: molecule object
+        :param integer istate: initial adiabatic state
+        :param double dt: time interval
+        :param integer nsteps: nuclear step
+        :param integer nesteps: electronic step
+        :param string propagation: propagation scheme
+        :param boolean l_adjnac: logical to adjust nonadiabatic coupling
     """
     def __init__(self, molecule, istate, dt, nsteps, nesteps, \
         propagation, l_adjnac):
@@ -25,7 +33,9 @@ class MQC(object):
         molecule.rho[self.istate, self.istate] = 1. + 0.j
 
     def cl_update_position(self, molecule):
-        """ Routine to update nulcear postions
+        """ Routine to update nulcear positions
+            
+            :param object molecule: molecule object
         """
         self.calculate_force(molecule)
 
@@ -34,6 +44,8 @@ class MQC(object):
 
     def cl_update_velocity(self, molecule):
         """ Rotine to update nulcear velocities
+            
+            :param object molecule: molecule object
         """
         self.calculate_force(molecule)
 
@@ -59,6 +71,10 @@ class MQC(object):
     #def print_init(self, molecule, theory, thermostat, debug):
     def print_init(self, molecule, theory, thermostat):
         """ Routine to print the initial information of dynamics
+            
+            :param object molecule: molecule object
+            :param object theory: theory object containing on-the-fly calculation infomation
+            :param object thermostat: thermostat type
         """
         # print molecule information: coordinate, velocity
         molecule.print_init()

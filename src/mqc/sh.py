@@ -7,7 +7,15 @@ from misc import eps, au_to_K
 from mqc.el_prop.el_propagator import *
  
 class SH(MQC):    
-    """ surface hopping dynamics
+    """ Class for surface hopping dynamics
+
+        :param object molecule: molecule object
+        :param integer istate: initial adiabatic state
+        :param double dt: time interval
+        :param integer nsteps: nuclear step
+        :param integer nesteps: electronic step
+        :param string propagation: propagation scheme
+        :param boolean l_adjnac: logical to adjust nonadiabatic coupling
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", l_adjnac=True):
@@ -29,6 +37,13 @@ class SH(MQC):
     def run(self, molecule, theory, thermostat, input_dir="./", \
         save_QMlog=False, save_scr=True):
         """ run MQC dynamics according to surface hopping dynamics
+
+            :param object molecule: molecule object
+            :param object theory: theory object containing on-the-fly calculation infomation
+            :param object thermostat: thermostat type
+            :param string input_dir: location of input directory
+            :param boolean save_QMlog: logical for saving QM calculation log
+            :param boolean save_scr: logical for saving scratch directory
         """
         # set directory information
         input_dir = os.path.expanduser(input_dir)
@@ -113,6 +128,10 @@ class SH(MQC):
 
     def hop_prob(self, molecule, istep, unixmd_dir):
         """ Routine to calculate hopping probabilities
+
+            :param object molecule: molecule object
+            :param integer istep: current MD step
+            :param string unixmd_dir: unixmd directory
         """
         # reset surface hopping variables
         self.l_hop = False
@@ -150,6 +169,11 @@ class SH(MQC):
 
     def hop_check(self, molecule, bo_list, istep, unixmd_dir):
         """ Routine to check hopping occurs with random number
+
+            :param object molecule: molecule object
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param integer istep: current MD step
+            :param string unixmd_dir: unixmd directory
         """
         self.rand = random.random()
         for ist in range(molecule.nst):
@@ -166,6 +190,8 @@ class SH(MQC):
 
     def evaluate_hop(self, molecule):
         """ Routine to evaluate hopping and velocity rescaling
+
+            :param object molecule: molecule object
         """
         pot_diff = molecule.states[self.rstate].energy - molecule.states[self.rstate_old].energy
         if (molecule.ekin < pot_diff):
@@ -203,11 +229,15 @@ class SH(MQC):
 
     def calculate_force(self, molecule):
         """ Routine to calculate the forces
+
+            :param object molecule: molecule object
         """
         self.rforce = np.copy(molecule.states[self.rstate].force)
 
     def update_energy(self, molecule):
-        """ Routine to update the energy of molecules in surface hopping
+        """ Routine to update the energy of molecules in surface hopping dynamics
+
+            :param object molecule: molecule object
         """
         # update kinetic energy
         molecule.update_kinetic()
@@ -216,6 +246,8 @@ class SH(MQC):
 
     def el_propagator(self, molecule):
         """ Routine to propagate BO coefficients or density matrix
+
+            :param object molecule: molecule object
         """
         if (self.propagation == "coefficient"):
             el_coef(self.nesteps, self.dt, molecule)
@@ -227,6 +259,9 @@ class SH(MQC):
     #def print_step(self, molecule, istep, debug=0):
     def print_step(self, molecule, istep):
         """ Routine to print each steps infomation about dynamics
+
+            :param object molecule: molecule object
+            :param integer istep: current MD step
         """
         if (istep == -1):
             max_prob = 0.

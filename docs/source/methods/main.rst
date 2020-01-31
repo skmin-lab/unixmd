@@ -1,3 +1,16 @@
+
+=======================
+MQC
+=======================
+Mixed quantum-classical(MQC) dynamics is general method for explaining the variation of molecule including
+electronic state through time propagation. This can be exactly solved by time-dependent Schrodinger equation
+for all particles, but this solution requires enormous cost for numerical calculation so it is restricted for
+very small system. MQC tried to describe larger system by consider nuclear as classical particle which follows
+classical equation of motion.
+
+UNI-xMD mainly targeted on MQC, and whole dynamics implemented in current version of UNI-xMD are subclass of
+MQC class. In the MQC class, there are functions for update classical properties of nuclear.
+
 =======================
 BOMD
 =======================
@@ -30,7 +43,7 @@ package or a customized Hamiltonizan, and nuclear degrees of freedom are propaga
 +----------------+------------------------------------------------+---------+
 | Keywords       | Work                                           | Default |
 +================+================================================+=========+
-| istep          | initial state                                  | 0(GS)   |
+| istate         | initial state                                  | 0(GS)   |
 +----------------+------------------------------------------------+---------+
 | dt             | time interval (fs)                             | 0.5     |
 +----------------+------------------------------------------------+---------+
@@ -41,14 +54,24 @@ package or a customized Hamiltonizan, and nuclear degrees of freedom are propaga
 Eherenfest
 =======================
 Ehrenfest dynamics, which is mean-field dynamics, evolves nuclei on averaging potential energy surfaces,
-:math:`E(\underline{\underline{\bf R}}(t))=\sum_{i}\vert c_i \vert^2E_i`,
-here, :math:`E_i` is i-th adiabatic energy.
-The driving force is given by: :math:`\vec{F}=\sum_{i} \vec{F}_i + \sum_{i\neq j} c_ic_j(E_i-E_j)d_{ij}`, where :math:`d_{ij}` is non-adiabatic couping between i-th and j-th adiabatic state.
+
+.. math::
+
+   E(\underline{\underline{\bf R}}(t))=\sum_{i}\vert c_i \vert^2E_i,
+
+where :math:`E_i` is i-th adiabatic energy and
+the driving force is given by: 
+
+.. math::
+
+   \vec{F}=\sum_{i} \vec{F}_i + \sum_{i\neq j} c_ic_j(E_i-E_j)d_{ij},
+
+where :math:`d_{ij}` is non-adiabatic couping between i-th and j-th adiabatic state.
 
 +----------------+------------------------------------------------+---------+
 | Keywords       | Work                                           | Default |
 +================+================================================+=========+
-| istep          | initial state                                  | 0(GS)   |
+| istate         | initial state                                  | 0(GS)   |
 +----------------+------------------------------------------------+---------+
 | dt             | time interval (fs)                             | 0.5     |
 +----------------+------------------------------------------------+---------+
@@ -58,36 +81,84 @@ The driving force is given by: :math:`\vec{F}=\sum_{i} \vec{F}_i + \sum_{i\neq j
 +----------------+------------------------------------------------+---------+
 | propagation    | propagation scheme                             | density |
 +----------------+------------------------------------------------+---------+
-| l_adjnac       | adjust non-adiabatic coupling                  | True    |
+| l_adjnac       | adjust nonadiabatic coupling                   | True    |
 +----------------+------------------------------------------------+---------+
 
 ================================
-Fewest Switch Surface Hopping
+Surface Hopping
 ================================
-''
+
+Surface hopping dynamics, often called as Tully's fewest switches surface hopping dynamics (FSSH) is basic method
+for propagate of artificial wavepackets through time. It was introduced by Tully, J. C. in 1990, and many other
+augmented has been introduced up to now. The basic algorithm of FSSH has been implemented in the UNI_xMD with
+following equations.
+
+:math:`M_{v}R^{I}_{v}(t) =`
+
+Nuclear equation of motion is expressed by Newtonian equation, F = ma. It is expressed fully with classical.
+However, the electronic degrees of freedom are represented just as follows.
+
+:math:`C^{(I)}_K(t) =`
+
+BO coefficient for electronic propagator is derived from force acting on each surface and nonadiabatic coupling
+vector d. Using this coefficient we can structure hopping probability express as follows.
+
+:math:`P^{(I)}_{L{rightarrow}K}[t,t+{delta}t} =`
+
+:math:`{H}` is Heaviside function and :math:`{rho}` represents electronic density matrix. In this algorithm, hopping probability
+to running state to all other states are considered(including running state) and roll a random dice to select next
+running state. If coupling is strong enough to transit to other state, the probability will be increase, and the overall
+trajectories will be transit to that state in stochastical behavior.
+
++----------------+------------------------------------------------+---------+
+| Keywords       | Work                                           | Default |
++================+================================================+=========+
+| istate         | initial state                                  | 0(GS)   |
++----------------+------------------------------------------------+---------+
+| dt             | time interval (fs)                             | 0.5     |
++----------------+------------------------------------------------+---------+
+| nsteps         | Total step of nuclear propagation              | 1000    |
++----------------+------------------------------------------------+---------+
+| nesteps        | Total step of electronic propagation           | 10000   |
++----------------+------------------------------------------------+---------+
+| propagation    | propagation scheme                             | density |
++----------------+------------------------------------------------+---------+
+| l_adjnac       | adjust nonadiabatic coupling                   | True    |
++----------------+------------------------------------------------+---------+
 
 ================================
 DISH-XF
 ================================
-''
+Decoherence induced surface hopping based on exact factorization method is included in UNI-xMD package.
+Electronic equation of motion in DISH-XF contains "decoherence term" which is derived from exact factorization, 
+in addition to Eherenfest term, i.e.
 
-Quantum momentum
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-term
+.. math::
 
-Phase term
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-term
+    \dot C^{(I)}_K(t) =& -\frac{i}{\hbar}E^{(I)}_K(t)C^{(I)}_K(t) 
+    - \sum_J\sum_\nu{\bf d}^{(I)}_{KJ\nu}(t)\cdot\dot{\bf R}^{(I)}_\nu(t)C^{(I)}_J(t) \nonumber\\
+    &+\sum_J\sum_\nu\frac{1}{M_\nu}\frac{\nabla_\nu|\chi|}{|\chi|}\Bigg|_{\underline{\underline{\bf R}}^{(I)}(t)}
+    \cdot\left\{{\bf f}^{(I)}_{J\nu}(t)-{\bf f}^{(I)}_{K\nu}(t)\right\}|C^{(I)}_J(t)|^2 C^{(I)}_K(t)
 
-Auxiliary trajectory
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-explain concept, actual evaluation of QM and f
+Detailed description of DISH-XF method is in paper J. Phys. Chem. Lett. 2018, 9, 5, 1097-1104.
 
-.. imports all other using toctree?
-   ..toctree:
-     :~~:
-     molecule
-     misc
-     mqc/main
-     bo/main
-     thermostat
++----------------+------------------------------------------------------+---------+
+| Keywords       | Work                                                 | Default |
++================+======================================================+=========+
+| istate         | initial state                                        | 0(GS)   |
++----------------+------------------------------------------------------+---------+
+| dt             | time interval (fs)                                   | 0.5     |
++----------------+------------------------------------------------------+---------+
+| nsteps         | Total step of nuclear propagation                    | 1000    |
++----------------+------------------------------------------------------+---------+
+| nesteps        | Total step of electronic propagation                 | 10000   |
++----------------+------------------------------------------------------+---------+
+| propagation    | propagation scheme                                   | density |
++----------------+------------------------------------------------------+---------+
+| l_adjnac       | adjust nonadiabatic coupling                         | True    |
++----------------+------------------------------------------------------+---------+
+| threshold      | electronic density threshold for decoherence term    | 0.01    |
++----------------+------------------------------------------------------+---------+
+| wsigma         | width of nuclear wave packet of auxiliary trajectory | 0.1     |
++----------------+------------------------------------------------------+---------+
+

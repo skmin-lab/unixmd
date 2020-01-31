@@ -1,3 +1,48 @@
+=====================================
+Columbus
+=====================================
+
+Columbus[ref] is one of famous free software for high-level ab initio quantum calculation. Similar with
+other software, it can do various types of fundamental quantum calculation. However, the major
+competitiveness of Columbus compare to other software is, it is mainly designed for calculate
+multi-reference calculations on electonic ground and excited states. This feature is indeed well suited
+for dynamics in UNI-xMD, it is implemented for various types of dynamics. In the current version of UNI-xMD,
+only CASSCF method is available.
+
+- CASSCF is complete active space self-consistent field method. It provides analytical gradients as
+  well as nonadiabatic couplings, thus it can be used for excited state molecular dynamics.
+
++--------+------+----+----+-----+
+|        | BOMD | SH | Eh | nac |
++========+======+====+====+=====+
+| CASSCF | o    | o  | o  | o   |
++--------+------+----+----+-----+
+
+CASSCF
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note:: Our interface script is generated with 7.0 version of Columbus program.
+   Here, you should refer to manual of Columbus program if you want to see detailed
+   lists for **basis_set** variable.
+
++----------------+------------------------------------------------+---------+
+| Keywords       | Work                                           | Default |
++================+================================================+=========+
+| basis_set      | basis set information                          | 6-31g*  |
++----------------+------------------------------------------------+---------+
+| memory         | allocatable memory in the calculations         | 500     |
++----------------+------------------------------------------------+---------+
+| active_elec    | number of electrons in active space            | 2       |
++----------------+------------------------------------------------+---------+
+| active_orb     | number of orbitals in active space             | 2       |
++----------------+------------------------------------------------+---------+
+| qm_path        | path for QM binary                             | ./      |
++----------------+------------------------------------------------+---------+
+| nthreads       | number of threads in the calculations          | 1       |
++----------------+------------------------------------------------+---------+
+| version        | version of Molpro program                      | 7.0     |
++----------------+------------------------------------------------+---------+
+
 
 =====================================
 DFTBplus
@@ -186,6 +231,9 @@ CASSCF
 | version        | version of Molpro program                      | 2015.1  |
 +----------------+------------------------------------------------+---------+
 
+
+
+
 =====================================
 Gaussian09
 =====================================
@@ -351,11 +399,28 @@ Turbomole (TM) is quantum chemical program package, initially developed in the g
 =====================================
 Model
 =====================================
-..............?
+BO interface for a few model sytems are provided in UNI-xMD package.
 
 Shin-Metiu
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-huhuh..
+1D charge transfer model system proposed by Shin and Metiu (J. Chem. Phys. 1995, 102, 9285) is implemented.
+
+.. math::
+
+   \hat{H}_{BO}(r;R) = -\frac{1}{2}\frac{\partial^2}{\partial r^2} 
+   +\frac{1}{|\frac{L}{2}-R|}&+\frac{1}{|\frac{L}{2}+R|}\nonumber\\
+   -\frac{\text{erf}\left(|R-r|/R_c\right)}{|R-r|}
+   -\frac{\text{erf}\left(|r-\frac{L}{2}|/R_r\right)}{|r-\frac{L}{2}|}
+   &-\frac{\text{erf}\left(|r+\frac{L}{2}|/R_r\right)}{|r+\frac{L}{2}|}
+
+Parameters :math:`L`, :math:`R_l`, :math:`R_r`, and :math:`R_c` are set to 19.0, 3.1, 4.0, 
+and 5.0 in atomic units, respectively. Only lowest two BO states are calculated at a given nuclear configuration. 
+
++----------------+------------------------------------------------+---------+
+| Keywords       | Work                                           | Default |
++================+================================================+=========+
+| qm_path        | path for QM binary                             | ./      |
++----------------+------------------------------------------------+---------+
 
 =====================================
 Do It Yourself

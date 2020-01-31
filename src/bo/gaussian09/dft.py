@@ -1,12 +1,12 @@
 from __future__ import division
 import os, shutil, re, subprocess
+from bo.gaussian09.gaussian09 import Gaussian09
 import numpy as np
 import textwrap
-from bo.gaussian09.gaussian09 import Gaussian09
 from misc import au_to_A, eV_to_au
 
 class DFT(Gaussian09):
-    """ Class for the (TD-)DFT method of Gaussian09
+    """ Class for the (TD)DFT method of Gaussian09 program
 
         :param object molecule: molecule object
         :param integer nthreads: number of threads in the calculations
@@ -35,7 +35,7 @@ class DFT(Gaussian09):
             self.re_calc = False
 
     def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
-        """ Extract energies, gradients from the (TD)DFT method
+        """ Extract energy, gradient from (TD)DFT method
 
             :param object molecule: molecule object
             :param string base_dir: base directory
@@ -96,7 +96,7 @@ class DFT(Gaussian09):
             f.write(input_g09)
 
     def run_QM(self, base_dir, istep, bo_list):
-        """ run DFT calculation and save the output files to QMlog directory
+        """ Run (TD)DFT calculation and save the output files to QMlog directory
 
             :param string base_dir: base directory
             :param integer istep: current MD step
@@ -125,7 +125,7 @@ class DFT(Gaussian09):
             shutil.copy("log", os.path.join(tmp_dir, log_step))
 
     def extract_BO(self, molecule, bo_list, calc_force_only):
-        """ read the output files to get BO data
+        """ Read the output files to get BO information
 
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation

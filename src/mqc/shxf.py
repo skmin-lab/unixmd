@@ -6,12 +6,13 @@ from fileio import touch_file, write_md_output, write_final_xyz, typewriter
 from misc import eps
 from mqc.el_prop.el_propagator import *
 
-""" THERMOSTAT NOT IMPLEMENTED YET FOR SHXF!!!!!!!!!!!!!
-    DENSITY PROPAGATRO NOT IMPLEMENTED YET FOR SHXF!!!!!!!!!!!!!
+"""     DENSITY PROPAGATION NOT IMPLEMENTED YET FOR SHXF!!!!!!!!!!!!!
 """
 
 class Auxiliary_Molecule(object):
-    """ auxiliary trajectory class
+    """ Class for auxiliary molecule that is used for the calculation of decoherence term
+
+        :param object molecule: molecule object
     """
     def __init__(self, molecule):
         # Initialize auxiliary molecule
@@ -32,7 +33,17 @@ class Auxiliary_Molecule(object):
 
 
 class SHXF(MQC):
-    """ decoherence-indeced surface hopping based on exact factorization dynamics
+    """ Class for DISH-XF dynamics
+
+        :param object molecule: molecule object
+        :param integer istate: initial adiabatic state
+        :param double dt: time interval
+        :param integer nsteps: nuclear step
+        :param integer nesteps: electronic step
+        :param string propagation: propagation scheme
+        :param boolean l_adjnac: logical to adjust nonadiabatic coupling
+        :param double threshold: electronic density threshold for decoherence term calculation
+        :param double wsigma: width of nuclear wave packet of auxiliary trajectory
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", l_adjnac=True, threshold=0.01, wsigma=0.1):
@@ -70,6 +81,13 @@ class SHXF(MQC):
     def run(self, molecule, theory, thermostat, input_dir="./", \
         save_QMlog=False, save_scr=True):
         """ run MQC dynamics according to decoherence-induced surface hopping dynamics
+
+            :param object molecule: molecule object
+            :param object theory: theory object containing on-the-fly calculation infomation
+            :param object thermostat: thermostat type
+            :param string input_dir: location of input directory
+            :param boolean save_QMlog: logical for saving QM calculation log
+            :param boolean save_scr: logical for saving scratch directory
         """
         # TODO: current SHXF with thermostat Not Implemented -> should be removed
         #thermotype = thermostat.__class__.__name__
@@ -164,6 +182,10 @@ class SHXF(MQC):
 
     def hop_prob(self, molecule, istep, unixmd_dir):
         """ Routine to calculate hopping probabilities
+
+            :param object molecule: molecule object
+            :param integer istep: current MD step
+            :param string unixmd_dir: unixmd directory
         """
         # reset surface hopping variables
         self.l_hop = False
@@ -201,6 +223,11 @@ class SHXF(MQC):
 
     def hop_check(self, molecule, bo_list, istep, unixmd_dir):
         """ Routine to check hopping occurs with random number
+
+            :param object molecule: molecule object
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param integer istep: current MD step
+            :param string unixmd_dir: unixmd directory
         """
         rand = random.random()
         for ist in range(molecule.nst):
@@ -217,6 +244,8 @@ class SHXF(MQC):
 
     def evaluate_hop(self, molecule):
         """ Routine to evaluate hopping and velocity rescaling
+
+            :param object molecule: molecule object
         """
         pot_diff = molecule.states[self.rstate].energy - molecule.states[self.rstate_old].energy
         if (molecule.ekin < pot_diff):
@@ -233,11 +262,15 @@ class SHXF(MQC):
 
     def calculate_force(self, molecule):
         """ Routine to calculate the forces
+
+            :param object molecule: molecule object
         """
         self.rforce = np.copy(molecule.states[self.rstate].force)
 
     def update_energy(self, molecule):
-        """ Routine to update the energy of molecules in surface hopping
+        """ Routine to update the energy of molecules in surface hopping dynamics
+
+            :param object molecule: molecule object
         """
         # update kinetic energy
         molecule.update_kinetic()
@@ -245,7 +278,9 @@ class SHXF(MQC):
         molecule.etot = molecule.epot + molecule.ekin
 
     def check_coherence(self, molecule):
-        """ Check coherence and reset density
+        """ Routine to check coherence among BO states
+
+            :param object molecule: molecule object
         """
         count = 0
         for ist in range(molecule.nst):
@@ -272,7 +307,9 @@ class SHXF(MQC):
 #                print(f" TSHXF DECO F           {ist + 1}", flush=True)
 
     def check_decoherence(self, molecule):
-        """ Check coherence and reset density
+        """ Routine to check if the electronic state is decohered
+
+            :param object molecule: molecule object
         """
         if (self.l_hop):
             for ist in range(molecule.nst):
@@ -287,7 +324,9 @@ class SHXF(MQC):
                         return
 
     def aux_propagator(self, molecule):
-        """ Update auxiliary positions/velocities
+        """ Routine to propagate auxiliary molecule
+
+            :param object molecule: molecule object
         """
         self.pos_old = np.copy(molecule.pos)
         # Get auxiliary position
@@ -319,7 +358,10 @@ class SHXF(MQC):
 #            print(f"AUX_VEL {self.aux.vel[ist, 0, 0]:15.8f}            {ist + 1}", flush=True)
 
     def set_decoherence(self, molecule, one_st):
-        """ Reset densities in case of molecule got decohered
+        """ Routine to reset coefficient/density if the state is decohered
+            
+            :param object molecule: molecule object
+            :param integer one_st: state index that its population is one. 
         """
         self.phase = np.zeros((molecule.nst, molecule.nat, molecule.nsp))
         for ist in range(molecule.nst):
@@ -332,7 +374,9 @@ class SHXF(MQC):
                 molecule.states[ist].coef = 0. + 0.j
  
     def get_phase(self, molecule):
-        """ Phase calculation routine 
+        """ Routine to calculate phase term
+        
+            :param object molecule: molecule object
         """
         for ist in range(molecule.nst):
             if (self.l_coh[ist]):
@@ -347,6 +391,8 @@ class SHXF(MQC):
 
     def el_propagator(self, molecule):
         """ Routine to propagate BO coefficients or density matrix
+        
+            :param object molecule: molecule object
         """
         if (self.propagation == "coefficient"):
             el_coef_xf(self, molecule)
