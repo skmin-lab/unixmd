@@ -2,7 +2,7 @@ from __future__ import division
 from bo.bo_calculator import BO_calculator
 
 class Turbomole(BO_calculator):
-    """ Class for TURBOMOLE program
+    """ Class for common parts of Turbomole program
 
         :param string functional: xc functional information
         :param string basis_set: basis set information
@@ -12,7 +12,7 @@ class Turbomole(BO_calculator):
         :param double version: version of Turbomole program
     """
     def __init__(self, functional, basis_set, memory, qm_path, nthreads, version):
-      #
+        # Initialize Turbomole common variables
         self.functional = functional
         self.basis_set = basis_set
         

@@ -1,14 +1,14 @@
 from __future__ import division
-from bo.turbomole.turbomole import Turbomole
 import os, shutil, re
+from bo.turbomole.turbomole import Turbomole
 import numpy as np
 import textwrap
 
 class DFT(Turbomole):
-    """ Class for TURBOMOLE TD-DFT method
+    """ Class for (TD)DFT method of Turbomole program
 
         :param object molecule: molecule object
-        :param string functional: xc functional
+        :param string functional: level of DFT theory
         :param string basis_set: basis set information
         :param string memory: allocatable memory in the calculations
         :param integer max_iter: maximum number of SCF iterations
@@ -22,27 +22,26 @@ class DFT(Turbomole):
     def __init__(self, molecule, functional="b-lyp", basis_set="STO-3g", memory="", \
         max_iter=50, scf_en_tol=1E-8, qm_path="./", qm_bin_path="./", qm_scripts_path="./", \
         nthreads=1, version=6.4):
-        #Initialize
+        # Initialize Turbomole common variables
         super().__init__(functional, basis_set, memory, qm_path, nthreads, version)
 
         self.max_iter = max_iter
         self.scf_en_tol = scf_tol
-        
+
         #self.qm_bin_path = os.path.join(self.qm_path, "bin/em64t-unknown-linux-gnu_smp/")
         self.qm_bin_path = os.path.join(self.qm_path, "bin/em64t-unknown-linux-gnu/")
         self.qm_scripts_path = os.path.join(self.qm_path, "scripts/")
-        
+
         #os.environ["PARA_ARCH"] = "SMP"
         #os.environ["PARNODES"] = f"{self.nthreads}"
         os.environ["TURBODIR"] = qm_path
-        
-        # TURBOMOLE can provide NAC except NAC between ground state and first excited state.
-        #
+
+        # Turbomole can provide NAC except NAC between ground state and first excited state.
         molecule.l_nacme = False
         self.re_calc = True
-    
+
     def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
-        """ Get/Extract BO information from TURBOMOLE
+        """ Extract energy, gradient and nonadiabatic couplings from (TD)DFT method
 
             :param object molecule: molecule object
             :param string base_dir: base directory
@@ -67,7 +66,7 @@ class DFT(Turbomole):
         self.move_dir(base_dir)
     
     def get_input(self, molecule, bo_list):
-        """ Generate TURBOMOLE input files
+        """ Generate Turbomole input files: define.in, control, etc
 
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation
@@ -164,7 +163,7 @@ class DFT(Turbomole):
             f.write(control)
 
     def run_QM(self, base_dir, istep, bo_list):
-        """ run TURBOMOLE calculation and save the output files
+        """ Run (TD)DFT calculation and save the output files to QMlog directory
 
             :param string base_dir: base directory
             :param integer istep: current MD step
@@ -192,7 +191,7 @@ class DFT(Turbomole):
             shutil.copy("gradient", os.path.join(tmp_dir, f"grad.{istep + 1}"))
 
     def extract_BO(self, molecule, bo_list, calc_force_only):
-        """ read output file and extract data
+        """ Read the output files to get BO information
 
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation
@@ -241,3 +240,4 @@ class DFT(Turbomole):
                 energy = energy.astype(float)
                 for ist in range(molecule.nst):
                     molecule.states[ist].energy = energy[ist]
+

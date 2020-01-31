@@ -1,10 +1,4 @@
 
-fileio.py
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: fileio
-   :members:
-   :show-inheritance:
-
 ===========================================
 molecule.py
 ===========================================
@@ -20,8 +14,21 @@ thermostat.py
    :show-inheritance:
 
 ===========================================
+fileio.py
+===========================================
+.. automodule:: fileio
+   :members:
+   :show-inheritance:
+
+===========================================
 bo
 ===========================================
+
+bo_calculator.py
+-------------------------------------------
+.. automodule:: bo.bo_calculator
+   :members:
+   :show-inheritance:
 
 dftbplus
 -------------------------------------------
@@ -123,9 +130,27 @@ shin_metiu.py
 mqc
 ===========================================
 
+mqc.py
+-------------------------------------------
+.. automodule:: mqc.mqc
+   :members: 
+   :show-inheritance:
+
+bomd.py
+-------------------------------------------
+.. automodule:: mqc.bomd
+   :members: 
+   :show-inheritance:
+
 eh.py
 -------------------------------------------
 .. automodule:: mqc.eh
+   :members: 
+   :show-inheritance:
+
+sh.py
+-------------------------------------------
+.. automodule:: mqc.sh
    :members: 
    :show-inheritance:
 

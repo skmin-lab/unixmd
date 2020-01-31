@@ -3,7 +3,7 @@ from bo.bo_calculator import BO_calculator
 import os
 
 class Columbus(BO_calculator):
-    """ Class for Columbus program
+    """ Class for common parts of Columbus program
 
         :param object molecule: molecule object
         :param string basis_set: basis set information
@@ -21,10 +21,10 @@ class Columbus(BO_calculator):
         self.nthreads = nthreads
         self.version = version
 
-        # qm_path should be saved in environmental variable "COLUMBUS"
+        # qm_path should be saved in the environmental variable "COLUMBUS"
         os.environ["COLUMBUS"] = self.qm_path
 
-        # check the atomic species
+        # check the atomic species with sorted command
         self.atom_type = sorted(set(molecule.symbols))
 
         # check basis sets
