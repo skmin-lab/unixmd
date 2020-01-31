@@ -20,6 +20,7 @@ Born-Oppenheimer Hamiltonian and its corresponding nuclear wave function as foll
 
 
 .. math::
+
    \Psi(\underline{\underline{\mathbf{r}}},\underline{\underline{\mathbf{R}}},t) \approx \chi_{I}(\underline{\underline{\mathbf{R}}},t) \Phi_{I}(\underline{\underline{\mathbf{r}}}, \underline{\underline{\mathbf{R}}}),
 
 where :math:`\underline{\underline{\mathbf{r}}}` is the collective index for electrons, :math:`\underline{\underline{\mathbf{R}}}` is for nuclei,
@@ -29,10 +30,12 @@ equation and approximating the nuclear equation further within the quantum hydro
 
 
 .. math::
+
    M_{\nu} \ddot{\mathbf{R}}_{\nu} = - \nabla_{\nu}E_{I}(\underline{\underline{\mathbf{R}}}),
 
 
 .. math::
+
    H_{BO}(\underline{\underline{\mathbf{r}}},\underline{\underline{\mathbf{R}}})\Phi_{I}(\underline{\underline{\mathbf{r}}},\underline{\underline{\mathbf{R}}}) = E_{I}(\underline{\underline{\mathbf{R}}})\Phi_{I}(\underline{\underline{\mathbf{r}}},\underline{\underline{\mathbf{R}}}),
 
 
