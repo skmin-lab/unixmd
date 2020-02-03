@@ -110,19 +110,26 @@ class Molecule(object):
         """
         f = geometry.split('\n')
 
-        l_read_nr_atoms = False # Is the nr of atoms info read?
+        # Is the nr of atoms info read?
+        l_read_nr_atoms = False
         count_line = 0
         for line_number, line in enumerate(f):
             llength = len(line.split())
-            if (not l_read_nr_atoms and llength == 0): continue # skip the blank lines
-            elif (count_line == 0 and llength == 1): # read the nr. of atoms
+            if (not l_read_nr_atoms and llength == 0):
+                # skip the blank lines
+                continue
+            elif (count_line == 0 and llength == 1):
+                # read the nr. of atoms
                 l_read_nr_atoms = True
                 self.nat = int(line.split()[0])
                 count_line += 1
-            elif (count_line == 1): # skip the comment line
+            elif (count_line == 1):
+                # skip the comment line
                 count_line += 1 
-            else: # read the positions and the velocities
-                if len(line.split()) == 0: break
+            else:
+                # read the positions and the velocities
+                if (len(line.split()) == 0):
+                    break
                 assert len(line.split()) == (1 + 2 * self.nsp)
                 self.symbols.append(line.split()[0])
                 self.mass.append(data[line.split()[0]])  
