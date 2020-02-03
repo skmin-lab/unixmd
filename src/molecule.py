@@ -109,21 +109,27 @@ class Molecule(object):
             :param string unit_vel: unit of velocity (au = atomic unit, A/ps = angstrom per ps, A/fs = angstromm per fs)
         """
         f = geometry.split('\n')
-        # remove any empty lines
-        f = filter(None,f)
+
+        l_read_nr_atoms = False # Is the nr of atoms info read?
+        count_line = 0
         for line_number, line in enumerate(f):
-            if line_number == 0:
-                assert len(line.split()) == 1
+            llength = len(line.split())
+            if (not l_read_nr_atoms and llength == 0): continue # skip the blank lines
+            elif (count_line == 0 and llength == 1): # read the nr. of atoms
+                l_read_nr_atoms = True
                 self.nat = int(line.split()[0])
-            elif (line_number == 1):
-                pass
-            else:
+                count_line += 1
+            elif (count_line == 1): # skip the comment line
+                count_line += 1 
+            else: # read the positions and the velocities
                 if len(line.split()) == 0: break
                 assert len(line.split()) == (1 + 2 * self.nsp)
                 self.symbols.append(line.split()[0])
                 self.mass.append(data[line.split()[0]])  
                 self.pos.append(list(map(float, line.split()[1:(self.nsp + 1)])))
-                self.vel.append(list(map(float, line.split()[(self.nsp + 1):]))) 
+                self.vel.append(list(map(float, line.split()[(self.nsp + 1):])))
+                count_line += 1
+        assert self.nat == count_line - 2 
 
         self.symbols = np.array(self.symbols)
         self.mass = np.array(self.mass)
