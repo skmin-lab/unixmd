@@ -16,6 +16,6 @@
 2. Add new BO interfaces: Turbomole, Columbus
 3. Add standard outputs for surface hopping, Ehrenfest, adiabatic dynamics
 4. Add manual for BO interfaces: Molpro, TeraChem, DFTB+, gaussian09, Columbus, Turbomole, shin-metiu model
-
+5. Fix bugs about reading a molecular geometry from a string variable
 
 
