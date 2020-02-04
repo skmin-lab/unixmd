@@ -26,7 +26,7 @@ Born-Oppenheimer Hamiltonian and its corresponding nuclear wave function as foll
 where :math:`\underline{\underline{\mathbf{r}}}` is the collective index for electrons, :math:`\underline{\underline{\mathbf{R}}}` is for nuclei,
 and the subscript :math:`I` stands for an index of the eigenfunctions. The electronic wave function is paramagnetically dependent on 
 :math:`\underline{\underline{\mathbf{R}}}` given at each time t. Plugging the above product into the full molecular time-dependent Schrodinger 
-equation and approximating the nuclear equation further within the quantum hydrodynamics formulation, the coupled equation is derived as follows.
+equation and approximating the nuclear equation further within the quantum hydrodynamics formulation [#Madelung]_ [#Sakurai]_, the coupled equation is derived as follows.
 
 
 .. math::
@@ -174,3 +174,9 @@ Detailed description of DISH-XF method is in paper J. Phys. Chem. Lett. 2018, 9,
 | wsigma         | width of nuclear wave packet of auxiliary trajectory | 0.1     |
 +----------------+------------------------------------------------------+---------+
 
+=======================
+References
+=======================
+.. [#Madelung] Madelung, E. *Z. Phys.* **1927**, 40, 322-326. 
+.. [#Sakurai] Sakurai, J. J.; Tuan, S.F. Modern Quantum Mechanics. **1994**, *Addison-Wesly*, Boston.
+.. [#Ryabinkin] Ryabinkin. I. G.; Nagech, J.; Izmaylov, A. F.  *J. Phys. Chem. Lett.* **2015**, 6, 4200-4203. 
