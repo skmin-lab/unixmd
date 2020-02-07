@@ -33,17 +33,10 @@ Contents
 
 .. toctree::
    :glob:
-   :caption: Methods
+   :caption: Keywords
    :maxdepth: 1
 
-   methods/main
-
-.. toctree::
-   :glob:
-   :caption: BO Interface
-   :maxdepth: 1
-
-   bo/main
+   keywords/main
 
 .. toctree::
    :glob:
