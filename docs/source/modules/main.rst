@@ -30,6 +30,15 @@ bo_calculator.py
    :members:
    :show-inheritance:
 
+columbus
+-------------------------------------------
+
+casscf.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.columbus.casscf
+   :members:
+   :show-inheritance:
+
 dftbplus
 -------------------------------------------
 
