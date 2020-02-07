@@ -1,5 +1,12 @@
 
 ===========================================
+fileio.py
+===========================================
+.. automodule:: fileio
+   :members:
+   :show-inheritance:
+
+===========================================
 molecule.py
 ===========================================
 .. automodule:: molecule
@@ -10,13 +17,6 @@ molecule.py
 thermostat.py
 ===========================================
 .. automodule:: thermostat
-   :members:
-   :show-inheritance:
-
-===========================================
-fileio.py
-===========================================
-.. automodule:: fileio
    :members:
    :show-inheritance:
 
@@ -60,21 +60,6 @@ ssr.py
    :members:
    :show-inheritance:
 
-molpro
--------------------------------------------
-
-molpro.py
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.molpro.molpro
-   :members:
-   :show-inheritance:
-
-casscf.py
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.molpro.casscf
-   :members:
-   :show-inheritance:
-
 gaussian09
 -------------------------------------------
 
@@ -87,6 +72,21 @@ gaussian09.py
 dft.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. automodule:: bo.gaussian09.dft
+   :members:
+   :show-inheritance:
+
+molpro
+-------------------------------------------
+
+molpro.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.molpro.molpro
+   :members:
+   :show-inheritance:
+
+casscf.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.molpro.casscf
    :members:
    :show-inheritance:
 
