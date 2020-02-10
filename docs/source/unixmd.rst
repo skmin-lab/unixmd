@@ -3,9 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-UNI-XMD documentation
+UNI-xMD documentation
 ===========================================
-This is a documentation page for UNIversal eXcited state Molecular Dynamics (UNI-XMD) program.
+This is a documentation page for UNIversal eXcited state Molecular Dynamics (UNI-xMD) program.
 
 Features
 ---------------------------

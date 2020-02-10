@@ -2,7 +2,7 @@
 DFTB+ is a fast and efficient versatile quantum mechanical simulation software package.
 Using DFTB+ you can carry out quantum mechanical simulations similar to density functional
 theory but in an approximate way, typically gaining around two orders of magnitude in
-speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-XMD.
+speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 
 - (TD)DFTB is time-dependent density-functional tight-binding method. DFTB+ supports only
   analytical gradients, not nonadiabatic couplings. Thus, it can be used for only adiabatic dynamics.
@@ -73,7 +73,7 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-XMD.
 SSR
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-UNI-XMD automatically determines single-state REKS as BO interfaces for ground state BOMD.
+UNI-xMD automatically determines single-state REKS as BO interfaces for ground state BOMD.
 When we include the excited states, SA-REKS or SSR methods can be exploited and these are
 determined from the **use_ssr_state** argument.
 

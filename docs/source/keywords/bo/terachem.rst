@@ -2,7 +2,7 @@
 TeraChem is general purpose quantum chemistry software designed to run on NVIDIA GPU
 architectures under a 64-bit Linux operating system. It includes many functionalities
 such as DFT or wave function based methods. Among them, SSR method is interfaced with
-current version of UNI-XMD.
+current version of UNI-xMD.
 
 - In general, spin-restricted ensemble-referenced Kohn-Sham (REKS) method can be classified
   as single-state REKS, state-averaged REKS (SA-REKS) and state-interaction SA-REKS (SSR).
@@ -25,7 +25,7 @@ current version of UNI-XMD.
 SSR
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-UNI-XMD automatically determines single-state REKS as BO interfaces for ground state BOMD.
+UNI-xMD automatically determines single-state REKS as BO interfaces for ground state BOMD.
 When we include the excited states, SA-REKS or SSR methods can be exploited and these are
 determined from the **use_ssr_state** argument.
 

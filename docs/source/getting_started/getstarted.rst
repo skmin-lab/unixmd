@@ -49,7 +49,7 @@ Quick Start
 | This is quick start.
 | program is controlled by running script.
 | Goto directory 
-| $ cd [UNIXMDHOME]/quick_start/
+| $ cd [UNIxMDHOME]/quick_start/
 
 Define system
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

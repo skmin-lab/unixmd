@@ -2,7 +2,7 @@
 Molpro is a comprehensive system of ab initio programs for advanced molecular electronic structure
 calculations, designed and maintained by many authors. It comprises efficient and well parallelized
 programs for standard computational chemistry applications, such as DFT or many wave function based
-methods. Among them, CASSCF method is interfaced with current version of UNI-XMD.
+methods. Among them, CASSCF method is interfaced with current version of UNI-xMD.
 
 - CASSCF is complete active space self-consistent field method. Molpro supports analytical gradients as
   well as nonadiabatic couplings, thus it can be used for excited state molecular dynamics.

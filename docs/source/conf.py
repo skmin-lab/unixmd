@@ -20,8 +20,8 @@ sys.path.insert(0, os.path.abspath('../../src'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'UNI-XMD'
-copyright = '2019, mingroup'
+project = 'UNI-xMD'
+copyright = '2020, mingroup'
 author = 'mingroup'
 
 # The short X.Y version
