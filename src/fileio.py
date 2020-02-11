@@ -3,7 +3,7 @@ import os, textwrap, datetime
 from misc import au_to_A
 
 def touch_file(molecule, calc_coupling, propagation, unixmd_dir, SH_chk):
-    """ Open the UNIXMD output files
+    """ Open the UNI-xMD output files
 
         :param object molecule: molecule object
         :param boolean calc_coupling: check whether the dynamics includes coupling calculation
@@ -15,13 +15,13 @@ def touch_file(molecule, calc_coupling, propagation, unixmd_dir, SH_chk):
     if (calc_coupling):
         write_init_coupling(molecule, propagation, unixmd_dir, SH_chk)
 
-    # Print UNIXMD version
+    # Print UNI-xMD version
     cur_time = datetime.datetime.now()
     cur_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
     prog_info = textwrap.dedent(f"""\
     {"-" * 68}
 
-    {"UNI-XMD version 20.1":>43s}
+    {"UNI-xMD version 20.1":>43s}
 
     {"< Developers >":>40s}
     {" " * 4}Seung Kyu Min,  In Seong Lee,  Jong-Kwon Ha,  Daeho Han,
@@ -29,10 +29,10 @@ def touch_file(molecule, calc_coupling, propagation, unixmd_dir, SH_chk):
 
     {"-" * 68}
 
-    {" " * 4}Please cite UNI-XMD as follows:
+    {" " * 4}Please cite UNI-xMD as follows:
     {" " * 4}This is article
 
-    {" " * 4}UNI-XMD begins on {cur_time}
+    {" " * 4}UNI-xMD begins on {cur_time}
     """)
     print (prog_info, flush=True)
 
