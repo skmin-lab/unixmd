@@ -3,6 +3,7 @@ Compile Manual with Sphinx
   [Prerequisite]
         Sphinx
         sphinx_rtd_theme
+        sphinxcontrib-bibtex
 
 
 
@@ -13,6 +14,10 @@ Compile Manual with Sphinx
         if you don't have sphinx_rtd_theme
 
         $ pip install sphinx_rtd_theme
+
+        if you don't have sphinxcontrib-bibtex
+
+        $ pip install sphinxcontrib-bibtex
 
   [Build]
     

@@ -51,3 +51,11 @@ Contents
    :maxdepth: 1
 
    modules/main
+
+.. toctree::
+   :glob:
+   :caption: References
+   :maxdepth: 1
+
+   references/main
+
