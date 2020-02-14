@@ -2,7 +2,7 @@
 Gaussian09 has been a standard program for electronic structure calculations of molecules.
 The only BOMD using the DFT option is available with Gaussian09 in the current version of UNI-xMD,
 because it doesn't explicitly provide with nonadiabatic coupling vectors. 
-Numerical calculation of the coupling elements using the CI overlap is on progress, which allows the other dynamics options.
+Numerical calculation of the coupling elements using the CI overlap :cite:`Ryabinkin2015` is on progress, which allows the other dynamics options.
 
 - (TD)DFT is used to provide with a potential energy and its gradient for a certain adiabatic state.
 
