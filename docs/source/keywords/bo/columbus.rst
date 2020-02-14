@@ -1,10 +1,10 @@
 
-Columbus[ref] is one of famous free software for high-level ab initio quantum calculation. Similar with
+Columbus:cite:`Columbus` is one of famous free software for high-level ab initio quantum calculation. Similar with
 other software, it can do various types of fundamental quantum calculation. However, the major
 competitiveness of Columbus compare to other software is, it is mainly designed for calculate
 multi-reference calculations on electonic ground and excited states. This feature is indeed well suited
 for dynamics in UNI-xMD, it is implemented for various types of dynamics. In the current version of UNI-xMD,
-only CASSCF method is available. :cite:`Sakurai1,New1`
+only CASSCF method is available.
 
 - CASSCF is complete active space self-consistent field method. It provides analytical gradients as
   well as nonadiabatic couplings, thus it can be used for excited state molecular dynamics.
