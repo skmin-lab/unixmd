@@ -1,9 +1,9 @@
 
 BO interface for a few model sytems are provided in UNI-xMD package.
 
-Shin-Metiu
+1D charge transfer model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-1D charge transfer model system proposed by Shin and Metiu (J. Chem. Phys. 1995, 102, 9285) is implemented.
+1D charge transfer model system proposed by Shin and Metiu:cite:`shin1995` is implemented.
 
 .. math::
 
