@@ -1,5 +1,5 @@
 
-Ehrenfest dynamics, which is mean-field dynamics, evolves nuclei on averaging potential energy surfaces,
+Ehrenfest dynamics :cite:`eh1999`, which is mean-field dynamics, evolves nuclei on averaging potential energy surfaces,
 
 .. math::
 
