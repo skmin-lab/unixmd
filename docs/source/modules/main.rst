@@ -142,30 +142,30 @@ mqc
 mqc.py
 -------------------------------------------
 .. automodule:: mqc.mqc
-   :members: 
+   :members:
    :show-inheritance:
 
 bomd.py
 -------------------------------------------
 .. automodule:: mqc.bomd
-   :members: 
+   :members:
    :show-inheritance:
 
 eh.py
 -------------------------------------------
 .. automodule:: mqc.eh
-   :members: 
+   :members:
    :show-inheritance:
 
 sh.py
 -------------------------------------------
 .. automodule:: mqc.sh
-   :members: 
+   :members:
    :show-inheritance:
 
 shxf.py
 -------------------------------------------
 .. automodule:: mqc.shxf
-   :members: 
+   :members:
    :show-inheritance:
 
