@@ -1,12 +1,12 @@
 
-Ehrenfest dynamics, which is mean-field dynamics, evolves nuclei on averaging potential energy surfaces,
+Ehrenfest dynamics :cite:`eh1999`, which is mean-field dynamics, evolves nuclei on averaging potential energy surfaces,
 
 .. math::
 
    E(\underline{\underline{\bf R}}(t))=\sum_{i}\vert c_i \vert^2E_i,
 
 where :math:`E_i` is i-th adiabatic energy and
-the driving force is given by: 
+the driving force is given by:
 
 .. math::
 

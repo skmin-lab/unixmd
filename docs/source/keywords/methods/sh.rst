@@ -1,19 +1,18 @@
 
 Surface hopping dynamics, often called as Tully's fewest switches surface hopping dynamics (FSSH) is basic method
-for propagate of artificial wavepackets through time. It was introduced by Tully, J. C. in 1990, and many other
+for propagate of artificial wavepackets through time. It was introduced by Tully, J. C. in 1990 :cite:`Tully1990`, and many other
 augmented has been introduced up to now. The basic algorithm of FSSH has been implemented in the UNI-xMD with
-following equations. :cite:`Sakurai,New`
+following equations.
 
 .. math::
 
    M_{v}\ddot{R}^{(I)}_{v}(t) = -\nabla_{v}E^{(I)}_{L}
 
-
 Nuclear equation of motion is expressed by Newtonian equation, F = ma. It is expressed fully with classical.
 However, the electronic degrees of freedom are represented just as follows.
 
 .. math::
-   
+
    \dot{C}^{(I)}_{K}(t) = -{{i}\over{\hbar}}E^{(I)}_K(t)C^{(I)}_{K}(t)-\sum_{J}\sum_{v}d^{(I)}_{KJv}\cdot\dot{R}^{(I)}
    _v(t)C^{(I)}_J(t)
 
@@ -21,7 +20,7 @@ BO coefficient for electronic propagator is derived from force acting on each su
 vector d. Using this coefficient we can structure hopping probability express as follows.
 
 .. math::
-   
+
    P^{(I)}_{L{\rightarrow}K}[t,t+{\Delta}t] = {{2H[\rho^{(I)}_{LK}(t)\sum_vd^{(I)}_{LKv}\cdot\dot{R}^{(I)}_v(t)]
    {\Delta}t}\over{\rho^{(I)}_{LL}(t)}}, \rho^{(I)}_{LK}=C^{(I)}_L{\cdot}C^{(I)}_K
 
@@ -45,5 +44,4 @@ trajectories will be transit to that state in stochastical behavior.
 +----------------+------------------------------------------------+---------+
 | l_adjnac       | adjust nonadiabatic coupling                   | True    |
 +----------------+------------------------------------------------+---------+
-
 

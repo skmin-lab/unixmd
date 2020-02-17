@@ -1,5 +1,6 @@
 
-TeraChem is general purpose quantum chemistry software designed to run on NVIDIA GPU
+TeraChem :cite:`TeraChem1,TeraChem2,TeraChem3,TeraChem4,TeraChem5,TeraChem6` is general
+purpose quantum chemistry software designed to run on NVIDIA GPU
 architectures under a 64-bit Linux operating system. It includes many functionalities
 such as DFT or wave function based methods. Among them, SSR method is interfaced with
 current version of UNI-xMD.
