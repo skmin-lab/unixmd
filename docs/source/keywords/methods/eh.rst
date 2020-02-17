@@ -6,7 +6,7 @@ Ehrenfest dynamics :cite:`eh1999`, which is mean-field dynamics, evolves nuclei 
    E(\underline{\underline{\bf R}}(t))=\sum_{i}\vert c_i \vert^2E_i,
 
 where :math:`E_i` is i-th adiabatic energy and
-the driving force is given by: 
+the driving force is given by:
 
 .. math::
 
