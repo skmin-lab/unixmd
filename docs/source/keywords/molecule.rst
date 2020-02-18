@@ -13,15 +13,37 @@ At the very first stage of dynamics calculations, users need to make a molecule 
 | dof        | degrees of freedom (if model is False, molecular   | None      |
 |            | DoF is given.)                                     |           |
 +------------+----------------------------------------------------+-----------+
-| unit_pos   | unit of position (A = angstrom, au = atomic unit   | A         |
-|            | [bohr])                                            |           |
+| unit_pos   | unit of position (A = angstrom, au = atomic unit)  | A         |
 +------------+----------------------------------------------------+-----------+
-|            | unit of velocity (au = atomic unit, A/ps = angstrom| au        |
-| unit_vel   | /ps, A/fs = angstrom/fs)                           |           |
+| unit_vel   | unit of velocity (au = atomic unit, A/ps, A/fs)    | au        |
 +------------+----------------------------------------------------+-----------+
 | charge     | total charge of the system                         | 0         |
 +------------+----------------------------------------------------+-----------+
 | model      | is the system a model system?                      | False     |
 +------------+----------------------------------------------------+-----------+
+
+The structure of "geometry" string is the following.
+
+1. the number of atoms
+
+2. comment line
+
+3. specification of the molecule (atomic symbol, positions, velocities)
+
+**Ex.** Making a water molecule object
+
+.. code-block:: python
+
+   from molecule import Molecule
+
+   geometry = """
+   3
+   h2o
+   O    0.00    0.00    0.00    0.00    0.00    0.00
+   H    0.95   -0.55    0.00    0.00    0.00    0.00
+   H   -0.95   -0.55    0.00    0.00    0.00    0.00
+   """
+
+   mol = Molecule(geometry=geometry, nstates=2)
 
 
