@@ -20,7 +20,7 @@ class Turbomole(BO_calculator):
         self.qm_path = qm_path
         self.nthreads = nthreads
         self.version = version
-        
+
         if (self.version != 6.4):
             raise ValueError ("TURBOMOMLE6.4 is ONLY available!")
       

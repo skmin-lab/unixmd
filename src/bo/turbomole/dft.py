@@ -40,6 +40,12 @@ class DFT(Turbomole):
         molecule.l_nacme = False
         self.re_calc = True
 
+        if (self.nthreads > 1):
+            raise ValueError ("Parallel CASSCF Not Implemented")
+        
+        if (molecule.charge != 0):
+            raise ValueError ("Cation/Anion Case  Not Implemented")
+    
     def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from (TD)DFT method
 
@@ -57,8 +63,6 @@ class DFT(Turbomole):
         x2t_command = os.path.join(self.qm_scripts_path, "x2t")
         command = f"{x2t_command} geometry.xyz > coord" 
         os.system(command)      
-        #os.system("cp coord coord.ref")
-        
         
         self.get_input(molecule, bo_list)
         self.run_QM(base_dir, istep, bo_list)
