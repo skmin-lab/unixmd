@@ -9,34 +9,34 @@ UNI-xMD mainly targeted on MQC, and whole dynamics implemented in current versio
 MQC class. In the MQC class, there are functions for update classical properties of nuclear.
 
 Far more insights about treating MQC in terms of code structure, the overall modules are controlled in fundamental
-input file ``run.py``. When user select their dynamics method, they have to make ``MQC`` object and ``run`` method 
-to run that ``MQC`` object. In the ``MQC`` object, basic dynamics parameters such as number of steps are given as 
-argements. Besides, ``run`` methods includes overall dynamics condition as arguements. 
+input file run.py. When user select their dynamics method, they have to make md object from ``MQC`` class and a run 
+method(md.run) to run that md object. In the md object, basic dynamics parameters such as number of steps are given as 
+arguments. Besides, run methods includes overall dynamics condition as arguments. 
 
-Arguments for ``run`` method are listed below. The important point is that ``run`` method is included in each 
+Arguments for a run method are listed below. The important point is that run method is included in each 
 md subclasses of ``MQC``, not ``MQC`` itself.
 
-+----------------+------------------------------------------------+-----------+
-| Keywords       | Work                                           | Default   |
-+================+================================================+===========+
-| ``molecule``   | molecule object                                | ``None``  |
-+----------------+------------------------------------------------+-----------+
-| ``theory``     | theory object containing on-the-fly            | ``None``  |
-|                | calculation information                        |           |
-+----------------+------------------------------------------------+-----------+
-| ``thermostat`` | thermostat type                                | ``None``  |
-+----------------+------------------------------------------------+-----------+
-| ``input_dir``  | location of input directory                    | ``./``    |
-+----------------+------------------------------------------------+-----------+
-| ``save_scr``   | logical for saving scratch directory           | ``True``  |
-+----------------+------------------------------------------------+-----------+
-| ``save_QMlog`` | logical for saving QM calculation log          | ``False`` |
-+----------------+------------------------------------------------+-----------+
++----------------+-------------------------------------------------+-----------+
+| Keywords       | Work                                            | Default   |
++================+=================================================+===========+
+| ``molecule``   | molecule object                                 |           |
++----------------+-------------------------------------------------+-----------+
+| ``theory``     | theory object containing on-the-fly             |           |
+|                | calculation information                         |           |
++----------------+-------------------------------------------------+-----------+
+| ``thermostat`` | thermostat type                                 |           |
++----------------+-------------------------------------------------+-----------+
+| ``input_dir``  | location of input directory                     | ``./``    |
++----------------+-------------------------------------------------+-----------+
+| ``save_scr``   | logical for saving scratch directory            | ``True``  |
++----------------+-------------------------------------------------+-----------+
+| ``save_QMlog`` | logical for saving QM calculation log           | ``False`` |
++----------------+-------------------------------------------------+-----------+
 
-Further information of each individual ``MQC`` objects are listed in next section.
+Further information of each individual md objects are listed in next section.
 
 
-**EX.** Making a MQC object with FSSH method
+**Ex.** Making a MQC object with FSSH method
 
 .. code-block:: python
 
@@ -46,4 +46,4 @@ Further information of each individual ``MQC`` objects are listed in next sectio
 
    md.run(molecule=mol, theory=qm, thermostat=bathT, input_dir="./TRAJ.sh", save_scr=True, save_QMlog=False)
 
-
+   #theory and thermostat must be classified before md.run called. they are omitted in this sample code.
