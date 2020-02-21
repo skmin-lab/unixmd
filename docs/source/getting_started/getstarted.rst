@@ -31,56 +31,71 @@ You can compile electronic propagation routine by typing following command in ro
    $ python3 setup.py build_ext -b ./src/mqc/el_prop
 
 ================================
-Program Structure and Code Flow
+Code overview
 ================================
-
-In this section, we want to describe the structure of UNI-xMD and how its code flows. 
-
 
 Program structure
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+The overall code structure is displayed in next figure.
+
+.. image:: ./unixmd_structure.png
+   :width: 400pt
+
 UNI-xMD is mainly based on object-oriented programming, which is structured by 
 several classes closely connected with each others. 
-Central modules of UNI-xMD can be devided into followings.
+Central modules of UNI-xMD can be divided into followings.
 
-Molecule : Describes overall molecule objects, including state objects
+Molecule: Describes overall molecule objects, including state objects.
 
-MQC : Class for dynamics propagation. Contains subclasses for each methods 
+MQC: Class for dynamics propagation. Contains subclasses for each methods
 (ex)Ehrenfest, FSSH, etc...)
 
-BO : Class for calculating dynamics properties using external software. 
+BO: Class for calculating dynamics properties using external software. 
 Includes subclasses for each softwares (ex) g09, molpro, etc...)
 
-FileIO : Class for handling output files.
+Thermostat: Class for velocity rescaling in given condition.
 
-Subclasses of MQC and BO classes are orgazined in inheritance structure.
+Subclasses of MQC and BO classes are organized in inheritance structure.
 This helps to simplify codes by inherit common arguments to different subclasses.
 
 For the detailed information of each modules, check each sections in below.
 
-Work flow
+Working process
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The overall code structure and flowchart are displayed in next figure.
+The general work flow for whole methods are controlled by run.py. To be specific, 
+the user must state basic arguments for run method(md.run) in run.py. i.e, arguments 
+for molecule, bo, mqc and thermostat objects are require to run UNI-xMD. For detailed 
+information about each objects will be included in each section. 
 
-.. image:: ./unixmd_structure.png
-    :width: 400pt
+UNI-xMD also provides template code for run.py. In addition, there are sample codes 
+for each BO and MQC methods in example directory.
 
-The general code flow for whole methods are as follows.
+.. code-block:: python
 
-1. Basic molecular informations in input file are stored in molecule class.
+   from molecule import Molecule
+   import bo
+   import mqc
+   from thermostat import *
+   from misc import data
 
-2. Initialize the dynamics steps  
+   geom = """
+   NUMBER_OF_ATOMS
+   TITLE
+   SYMBOL  COORDINATES  VELOCITIES
+   """
 
-3. Calculate dynamics properties from molecular properties using external software in BO module.
+   mol = Molecule(geometry=geom, nstates=NSTATES)
 
-4. Propagation through time using calculated features in MQC module.
+   qm = bo.PROG_NAME.QM_METHOD(ARGUMENTS)
 
-5. Repeat former steps until dynamics end step
+   md = mqc.MD_METHOD(ARGUMETNS)
 
-In here, only general scheme is described. About detailed dynamic process for 
-individual BO or MQC method will be stated in keyword section.
+   bathT = THERMOSTAT(ARGUMENTS)
+
+   md.run(molecule=mol, theory=qm, thermostat=bathT, input_dir=INPUT_DIR)
+
 
 ==========================
 Quick Start
