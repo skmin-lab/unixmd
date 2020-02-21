@@ -10,7 +10,7 @@ MQC class. In the MQC class, there are functions for update classical properties
 
 Far more insights about treating MQC in terms of code structure, the overall modules are controlled in fundamental
 input file run.py. When user select their dynamics method, they have to make md object from the subclass of 
-``MQC`` class such as ``SH``, and a run method(md.run) to run that md object. In the md object, basic dynamics 
+``MQC`` class such as ``SH``(mqc.SH), and a run method(md.run) to run that md object. In the md object, basic dynamics 
 parameters such as number of steps are given as arguments. Besides, run methods includes overall dynamics condition 
 as arguments. 
 
