@@ -64,7 +64,7 @@ For the detailed information of each modules, check each sections in below.
 Working process
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To run UNI-xMD, UNI-xMD requires creating objects in running script.
+To run UNI-xMD, UNI-xMD requires creating some objects in running script.
 A straightfoward way to perform a UNI-xMD calculation is as follows:
 
 1)  First of all, you should add the corresponding directories to your python path.
@@ -85,7 +85,7 @@ A straightfoward way to perform a UNI-xMD calculation is as follows:
 
 3) To run UNI-xMD, you should create several objects, which are ``molecule``, ``bo``, ``md`` and ``thermostat``, in your running script. The important thing is that molecule object is created in the first place. 
 
-**- Define molecular infomation** 
+- **Define molecular infomation** 
 
 .. code-block:: python
 
@@ -95,45 +95,45 @@ A straightfoward way to perform a UNI-xMD calculation is as follows:
     SYMBOL  COORDINATES  VELOCITIES
     """
     
-    mol = Molecule(geometry=geom, nstates=2)
+    mol = Molecule(geometry=geom, ARGUMENTS)
 
 .. note:: molecule object should be already created before creating another objects such as ``bo``, ``md`` and ``thermostat``.
 
-**- Determine on-the-fly calculation program and method to get energy, force and non-adiabatic coupling vector**
+- **Determine electronic structure calculation program and method to get energy, force and non-adiabatic coupling vector**
 
 .. code-block:: python
    
-    qm = bo.QM_prog.QM_method(molecule=mol, others)
+    qm = bo.QM_prog.QM_method(molecule=mol, ARGUMENTS)
 
 QM_prog and QM_method is electronic structure calculation program and theory, respectively. They are listed in ???.
 
-**- Determine method of MD. Ehrenfest dynamics, FSSH, BOMD and SHXF are possible in UNI-xMD**
+- **Determine method of MD**
 
 .. code-block:: python
    
-    md = mqc.XXX(molecule=mol, other dynamics information)
+    md = mqc.XXX(molecule=mol, ARGUMENTS)
 
-XXX can be replaced by BOMD, SH, EH, SHXF which means Born-Opphenhimer molecular dynamics, surface hopping, Ehrenfest dynamics and decoherence induced surface hopping based on exact factorization, respectively.
+XXX can be replaced by BOMD, SH, Eh, SHXF which means Born-Opphenhimer molecular dynamics, surface hopping, Ehrenfest dynamics and decoherence induced surface hopping based on exact factorization, respectively.
 
-**- Choose thermostat type, there are three types of thermostat, that () states in detail**
+- **Choose thermostat type, there are three types of thermostat, that () states in detail**
 
 .. code-block:: python
    
-    bathT = thermostat_type(temperature=300.0, nrescale=20)
+    bathT = thermostat_type(temperature=300.0, ARGUMENTS)
 
 thermostat_type is listed in ???.
 
-**- Put your objects into md method**
+- **Put your objects into md method**
 
 .. code-block:: python
    
-    md.run(molecule=mol, theory=qm, thermostat=bathT, input_dir="./", save_scr=True, save_QMlog=False)
+    md.run(molecule=mol, theory=qm, thermostat=bathT, ARGUMENTS)
 
 4) Execute your running script
 
 .. code-block:: bash
 
-   $UNIXMDHOME/running_script_name
+   python3 $UNIXMDHOME/running_script_name
 
 
 5) Check output
