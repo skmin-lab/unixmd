@@ -64,13 +64,86 @@ For the detailed information of each modules, check each sections in below.
 Working process
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The general work flow for whole methods are controlled by run.py. To be specific, 
-the user must state basic arguments for run method(md.run) in run.py. i.e, arguments 
-for molecule, bo, mqc and thermostat objects are require to run UNI-xMD. For detailed 
-information about each objects will be included in each section. 
+To run UNI-xMD, UNI-xMD requires creating objects in running script.
+A straightfoward way to perform a UNI-xMD calculation is as follows:
 
-UNI-xMD also provides template code for run.py. In addition, there are sample codes 
-for each BO and MQC methods in example directory.
+1)  First of all, you should add the corresponding directories to your python path.
+
+.. code-block:: bash
+  
+    export PYTHONPATH=$UNIXMDHOME/src:$PYTHONPATH
+ 
+2) You should import some library in running script.
+
+.. code-block:: python
+
+    from molecule import Molecule
+    import bo
+    import mqc
+    from thermostat import *
+    from misc import data
+
+3) To run UNI-xMD, you should create several objects, which are ``molecule``, ``bo``, ``md`` and ``thermostat``, in your running script. The important thing is that molecule object is created in the first place. 
+
+**- Define molecular infomation** 
+
+.. code-block:: python
+
+    geom = """
+    NUMBER_OF_ATOMS
+    TITLE
+    SYMBOL  COORDINATES  VELOCITIES
+    """
+    
+    mol = Molecule(geometry=geom, nstates=2)
+
+.. note:: molecule object should be already created before creating another objects such as ``bo``, ``md`` and ``thermostat``.
+
+**- Determine on-the-fly calculation program and method to get energy, force and non-adiabatic coupling vector**
+
+.. code-block:: python
+   
+    qm = bo.QM_prog.QM_method(molecule=mol, others)
+
+QM_prog and QM_method is electronic structure calculation program and theory, respectively. They are listed in ???.
+
+**- Determine method of MD. Ehrenfest dynamics, FSSH, BOMD and SHXF are possible in UNI-xMD**
+
+.. code-block:: python
+   
+    md = mqc.XXX(molecule=mol, other dynamics information)
+
+XXX can be replaced by BOMD, SH, EH, SHXF which means Born-Opphenhimer molecular dynamics, surface hopping, Ehrenfest dynamics and decoherence induced surface hopping based on exact factorization, respectively.
+
+**- Choose thermostat type, there are three types of thermostat, that () states in detail**
+
+.. code-block:: python
+   
+    bathT = thermostat_type(temperature=300.0, nrescale=20)
+
+thermostat_type is listed in ???.
+
+**- Put your objects into md method**
+
+.. code-block:: python
+   
+    md.run(molecule=mol, theory=qm, thermostat=bathT, input_dir="./", save_scr=True, save_QMlog=False)
+
+4) Execute your running script
+
+.. code-block:: bash
+
+   $UNIXMDHOME/running_script_name
+
+
+5) Check output
+
+UNI-xMD provides various output file.
+
+- blabla
+
+- blabla
+
 
 .. code-block:: python
 
@@ -95,7 +168,6 @@ for each BO and MQC methods in example directory.
    bathT = THERMOSTAT(ARGUMENTS)
 
    md.run(molecule=mol, theory=qm, thermostat=bathT, input_dir=INPUT_DIR)
-
 
 ==========================
 Quick Start
