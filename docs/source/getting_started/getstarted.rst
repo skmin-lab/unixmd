@@ -133,7 +133,7 @@ thermostat_type is listed in ???.
 
 .. code-block:: bash
 
-   $ python3 running_script_name
+   $ python3 running_script.py
 
 ==========================
 Quick Start
