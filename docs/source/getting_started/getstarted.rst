@@ -67,13 +67,13 @@ Working process
 To run UNI-xMD, UNI-xMD requires creating some objects in running script.
 A straightfoward way to perform a UNI-xMD calculation is as follows:
 
-1)  First of all, you should add the corresponding directories to your python path.
+**1. First of all, you should add the corresponding directory to your python path.**
 
 .. code-block:: bash
   
-    export PYTHONPATH=$UNIXMDHOME/src:$PYTHONPATH
+    $ export PYTHONPATH=$UNIXMDHOME/src:$PYTHONPATH
  
-2) You should import some library in running script.
+**2. You should import some library in running script.**
 
 .. code-block:: python
 
@@ -83,9 +83,9 @@ A straightfoward way to perform a UNI-xMD calculation is as follows:
     from thermostat import *
     from misc import data
 
-3) To run UNI-xMD, you should create several objects, which are ``molecule``, ``bo``, ``md`` and ``thermostat``, in your running script. The important thing is that molecule object is created in the first place. 
+**3. To run UNI-xMD, you should create several objects, which are** ``molecule`` **,** ``bo`` **,** ``md`` **and** ``thermostat`` **, in your running script. The important thing is that molecule object is created in the first place.**
 
-- **Define molecular infomation** 
+- Define molecular infomation
 
 .. code-block:: python
 
@@ -99,7 +99,7 @@ A straightfoward way to perform a UNI-xMD calculation is as follows:
 
 .. note:: molecule object should be already created before creating another objects such as ``bo``, ``md`` and ``thermostat``.
 
-- **Determine electronic structure calculation program and method to get energy, force and non-adiabatic coupling vector**
+- Determine electronic structure calculation program and method to get energy, force and non-adiabatic coupling vector
 
 .. code-block:: python
    
@@ -107,7 +107,7 @@ A straightfoward way to perform a UNI-xMD calculation is as follows:
 
 QM_prog and QM_method is electronic structure calculation program and theory, respectively. They are listed in ???.
 
-- **Determine method of MD**
+- Determine method of MD
 
 .. code-block:: python
    
@@ -115,7 +115,7 @@ QM_prog and QM_method is electronic structure calculation program and theory, re
 
 XXX can be replaced by BOMD, SH, Eh, SHXF which means Born-Opphenhimer molecular dynamics, surface hopping, Ehrenfest dynamics and decoherence induced surface hopping based on exact factorization, respectively.
 
-- **Choose thermostat type, there are three types of thermostat, that () states in detail**
+- Choose thermostat type, there are three types of thermostat, that () states in detail
 
 .. code-block:: python
    
@@ -123,51 +123,17 @@ XXX can be replaced by BOMD, SH, Eh, SHXF which means Born-Opphenhimer molecular
 
 thermostat_type is listed in ???.
 
-- **Put your objects into md method**
+- Put your objects into md method
 
 .. code-block:: python
    
     md.run(molecule=mol, theory=qm, thermostat=bathT, ARGUMENTS)
 
-4) Execute your running script
+**4. Execute your running script**
 
 .. code-block:: bash
 
-   python3 $UNIXMDHOME/running_script_name
-
-
-5) Check output
-
-UNI-xMD provides various output file.
-
-- blabla
-
-- blabla
-
-
-.. code-block:: python
-
-   from molecule import Molecule
-   import bo
-   import mqc
-   from thermostat import *
-   from misc import data
-
-   geom = """
-   NUMBER_OF_ATOMS
-   TITLE
-   SYMBOL  COORDINATES  VELOCITIES
-   """
-
-   mol = Molecule(geometry=geom, nstates=NSTATES)
-
-   qm = bo.PROG_NAME.QM_METHOD(ARGUMENTS)
-
-   md = mqc.MD_METHOD(ARGUMETNS)
-
-   bathT = THERMOSTAT(ARGUMENTS)
-
-   md.run(molecule=mol, theory=qm, thermostat=bathT, input_dir=INPUT_DIR)
+   $ python3 running_script_name
 
 ==========================
 Quick Start
