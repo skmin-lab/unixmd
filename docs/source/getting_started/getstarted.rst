@@ -47,87 +47,80 @@ Inheritance,...
 Quick Start
 ==========================
 
-Once installation is complete, the user is now able to run UNI-xMD.
-A straightfoward way to perform a UNI-xMD calculation is as follows:
-
-1)  First of all, you should add the corresponding directories to your python path.
-
-.. code-block:: bash
-  
-    export PYTHONPATH=:[UNIxMDHOME]/src:$PATHONPATH
- 
-2) You should import some library in running script.
+Here, we provide executable running script file, which contains:
 
 .. code-block:: python
 
-    from molecule import Molecule
-    import bo
-    import mqc
-    from thermostat import *
-    from misc import data
+   from molecule import Molecule
+   import bo
+   import mqc
+   from thermostat import *
+   from misc import data
 
-3) To run UNI-xMD, you should create several objects, which are ``molecule``, ``bo``, ``md`` and ``thermostat``, in your running script. The important thing is that molecule object is created in the first place. 
+   geom = """
+   NUMBER_OF_ATOMS
+   TITLE
+   SYMBOL  COORDINATES  VELOCITIES
+   """
 
-- Define molecular infomation contains atom number and geometry. 
+   mol = Molecule(geometry=geom, nstates=NSTATES)
 
-.. code-block:: python
+   qm = bo.PROG_NAME.QM_METHOD(ARGUMENTS)
 
-    geom = """
-    6
-    c2h4
-    C       -0.69284974      0.00000000      0.00000000   0.0 0.0 0.0
-    C        0.66284974      0.00000000      0.00000000   0.0 0.0 0.0
-    H       -1.03381877      0.72280451     -0.32280655   0.0 0.0 0.0
-    H       -1.23381879     -0.72280451     -0.34280655   0.0 0.0 0.0
-    H        1.03381877      0.75280451     -0.32280655   0.0 0.0 0.0
-    H        1.03381877     -0.72280451     -0.31280655   0.0 0.0 0.0
-    """
-    
-    mol = Molecule(geometry=geom, nstates=2)
+   md = mqc.MD_METHOD(ARGUMETNS)
 
-.. note:: molecule object should be already created before creating another objects such as ``bo``, ``md`` and ``thermostat``.
+   bathT = THERMOSTAT(ARGUMENTS)
 
--  Determine on-the-fly calculation method to get energy, force and non-adiabatic coupling vector.
+   md.run(molecule=mol, theory=qm, thermostat=bathT, input_dir=INPUT_DIR)
 
-.. code-block:: python
-   
-    qm = bo.dftbplus.SSR(molecule=mol, scc_tol)
+If you execute this script, you can get output file.
+UNI-xMD provides some output files such as **MDENERGY**, **MOVIE.xyz**, **FINAL.xyz** when all types of ``md``, which can be possible in UNI-xMD, are performed. 
+In the case of ``Eh``, ``SH`` and ``SHXF``, **BOCOH**, **BOPOP** and **NACME** are addtionally generated. Escpecially, ``SH`` and ``SHXF`` generate more output file **SHPROB** and **SHSTATE**.
 
-
-- Determine method of MD. Ehrenfest dynamics, FSSH, BOMD and SHXF are possible in UNI-xMD.
-
-.. code-block:: python
-   
-    md = mqc.SHXF(molecule=mol, nsteps=1000, dt=0.125, istate=1, propagation="coefficient", \
-    wsigma=0.1, threshold=0.01)
-
-
-- Choose thermostat type, there are three types of thermostat, that () states in detail.
-
-.. code-block:: python
-   
-    bathT = rescale1(temperature=300.0, nrescale=20)
-
-
-- Put your objects into md method.
-
-.. code-block:: python
-   
-    md.run(~~~)
-
-4) Execute your running script.
+- MDENERGY  : energy which contains kinetic energy, potential energy of each adiabatic state and total energy 
 
 .. code-block:: bash
 
-   [UNIxMDHOME]/running_script_name
+    Here is data
 
+- MOVIE.xyz : geometries at each step 
 
-5) check output
+.. code-block:: bash
 
-UNI-xMD provieds various output file.
+    Here is data
 
-- blabla
+- FINAL.xyz : geometry at final step
 
-- blabla
+.. code-block:: bash
 
+    Here is data
+
+- BOCOH     : off-diagonal term of adiabatic density matrix
+
+.. code-block:: bash
+
+    Here is data
+
+- BOPOP     : adiabatic population
+
+.. code-block:: bash
+
+    Here is data
+
+- NACME     : non-adiabatic coupling matrix
+
+.. code-block:: bash
+
+    Here is data
+
+- SHPROB    : hopping probability between all of adiabatic states
+
+.. code-block:: bash
+
+    Here is data
+
+- SHSTATE   : running state 
+.. code-block:: bash
+
+    Here is data
 
