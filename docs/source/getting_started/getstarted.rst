@@ -105,15 +105,15 @@ A straightfoward way to perform a UNI-xMD calculation is as follows:
    
     qm = bo.QM_prog.QM_method(molecule=mol, ARGUMENTS)
 
-QM_prog and QM_method is electronic structure calculation program and theory, respectively. They are listed in ???.
+**QM_prog** and **QM_method** is electronic structure calculation program and theory, respectively. They are listed in ???.
 
 - Determine method of MD
 
 .. code-block:: python
    
-    md = mqc.XXX(molecule=mol, ARGUMENTS)
+    md = mqc.MDTYPE(molecule=mol, ARGUMENTS)
 
-XXX can be replaced by BOMD, SH, Eh, SHXF which means Born-Opphenhimer molecular dynamics, surface hopping, Ehrenfest dynamics and decoherence induced surface hopping based on exact factorization, respectively.
+**MDTYPE** can be replaced by BOMD, SH, Eh, SHXF which means Born-Opphenhimer molecular dynamics, surface hopping, Ehrenfest dynamics and decoherence induced surface hopping based on exact factorization, respectively.
 
 - Choose thermostat type, there are three types of thermostat, that () states in detail
 
