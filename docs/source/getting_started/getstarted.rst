@@ -64,38 +64,76 @@ For the detailed information of each modules, check each sections in below.
 Working process
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The general work flow for whole methods are controlled by run.py. To be specific, 
-the user must state basic arguments for run method(md.run) in run.py. i.e, arguments 
-for molecule, bo, mqc and thermostat objects are require to run UNI-xMD. For detailed 
-information about each objects will be included in each section. 
+To run UNI-xMD, UNI-xMD requires creating some objects in running script.
+A straightfoward way to perform a UNI-xMD calculation is as follows:
 
-UNI-xMD also provides template code for run.py. In addition, there are sample codes 
-for each BO and MQC methods in example directory.
+**1. First of all, you should add the corresponding directory to your python path.**
+
+.. code-block:: bash
+  
+    $ export PYTHONPATH=$UNIXMDHOME/src:$PYTHONPATH
+ 
+**2. You should import some library in running script.**
 
 .. code-block:: python
 
-   from molecule import Molecule
-   import bo
-   import mqc
-   from thermostat import *
-   from misc import data
+    from molecule import Molecule
+    import bo
+    import mqc
+    from thermostat import *
+    from misc import data
 
-   geom = """
-   NUMBER_OF_ATOMS
-   TITLE
-   SYMBOL  COORDINATES  VELOCITIES
-   """
+**3. To run UNI-xMD, you should create several objects, which are** ``molecule`` **,** ``bo`` **,** ``md`` **and** ``thermostat`` **, in your running script. The important thing is that molecule object is created in the first place.**
 
-   mol = Molecule(geometry=geom, nstates=NSTATES)
+- Define molecular infomation
 
-   qm = bo.PROG_NAME.QM_METHOD(ARGUMENTS)
+.. code-block:: python
 
-   md = mqc.MD_METHOD(ARGUMETNS)
+    geom = """
+    NUMBER_OF_ATOMS
+    TITLE
+    SYMBOL  COORDINATES  VELOCITIES
+    """
+    
+    mol = Molecule(geometry=geom, ARGUMENTS)
 
-   bathT = THERMOSTAT(ARGUMENTS)
+.. note:: molecule object should be already created before creating another objects such as ``bo``, ``md`` and ``thermostat``.
 
-   md.run(molecule=mol, theory=qm, thermostat=bathT, input_dir=INPUT_DIR)
+- Determine electronic structure calculation program and method to get energy, force and non-adiabatic coupling vector
 
+.. code-block:: python
+   
+    qm = bo.QM_prog.QM_method(molecule=mol, ARGUMENTS)
+
+**QM_prog** and **QM_method** is electronic structure calculation program and theory, respectively. They are listed in ???.
+
+- Determine method of MD
+
+.. code-block:: python
+   
+    md = mqc.MDTYPE(molecule=mol, ARGUMENTS)
+
+**MDTYPE** can be replaced by BOMD, SH, Eh, SHXF which means Born-Opphenhimer molecular dynamics, surface hopping, Ehrenfest dynamics and decoherence induced surface hopping based on exact factorization, respectively.
+
+- Choose thermostat type, there are three types of thermostat, that () states in detail
+
+.. code-block:: python
+   
+    bathT = thermostat_type(temperature=300.0, ARGUMENTS)
+
+thermostat_type is listed in ???.
+
+- Put your objects into md method
+
+.. code-block:: python
+   
+    md.run(molecule=mol, theory=qm, thermostat=bathT, ARGUMENTS)
+
+**4. Execute your running script**
+
+.. code-block:: bash
+
+   $ python3 running_script.py
 
 ==========================
 Quick Start
