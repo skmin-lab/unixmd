@@ -75,25 +75,25 @@ Here, we provide executable running script file, which contains:
 
 If you execute this script, you can get output file listed in table:
 
-+-----------+------+----+----+------+
-|           | BOMD | SH | Eh | SHXF |
-+===========+======+====+====+======+
-| MDENERGY  | o    | o  | o  | o    |
-+-----------+------+----+----+------+
-| MOVIE.xyz | o    | o  | o  | o    |
-+-----------+------+----+----+------+
-| FINAL.xyz | o    | o  | o  | o    |
-+-----------+------+----+----+------+
-| BOCOH*    | x    | o  | o  | o    |
-+-----------+------+----+----+------+
-| BOPOP*    | x    | o  | o  | o    |
-+-----------+------+----+----+------+
-| NACME     | x    | o  | o  | o    |
-+-----------+------+----+----+------+
-| SHPROB    | x    | o  | x  | o    |
-+-----------+------+----+----+------+
-| SHSTATE   | x    | o  | x  | o    |
-+-----------+------+----+----+------+
++-----------+------+-------+----+
+|           | BOMD | SH(XF)| Eh |
++===========+======+=======+====+
+| MDENERGY  | o    | o     | o  |
++-----------+------+-------+----+
+| MOVIE.xyz | o    | o     | o  |
++-----------+------+-------+----+
+| FINAL.xyz | o    | o     | o  |
++-----------+------+-------+----+
+| BOCOH*    | x    | o     | o  |
++-----------+------+-------+----+
+| BOPOP*    | x    | o     | o  |
++-----------+------+-------+----+
+| NACME     | x    | o     | o  |
++-----------+------+-------+----+
+| SHPROB    | x    | o     | x  |
++-----------+------+-------+----+
+| SHSTATE   | x    | o     | x  |
++-----------+------+-------+----+
 
 .. note:: \*If you set propagation="density", UNI-xMD provides **BOCOH** and **BOPOP**. However, if you set propagation="coefficient", UNI-xMD provides **BOCOEF** rather than **BOCOH** and **BOPOP**.
 
