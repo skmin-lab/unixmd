@@ -73,9 +73,29 @@ Here, we provide executable running script file, which contains:
 
    md.run(molecule=mol, theory=qm, thermostat=bathT, input_dir=INPUT_DIR)
 
-If you execute this script, you can get output file.
-UNI-xMD provides some output files such as **MDENERGY**, **MOVIE.xyz**, **FINAL.xyz** when all types of ``md``, which can be possible in UNI-xMD, are performed. 
-In the case of ``Eh``, ``SH`` and ``SHXF``, **BOCOH**, **BOPOP** and **NACME** are addtionally generated. Escpecially, ``SH`` and ``SHXF`` generate more output file **SHPROB** and **SHSTATE**.
+If you execute this script, you can get output file listed in table:
+
++-----------+------+----+----+------+
+|           | BOMD | SH | Eh | SHXF |
++===========+======+====+====+======+
+| MDENERGY  | o    | o  | o  | o    |
++-----------+------+----+----+------+
+| MOVIE.xyz | o    | o  | o  | o    |
++-----------+------+----+----+------+
+| FINAL.xyz | o    | o  | o  | o    |
++-----------+------+----+----+------+
+| BOCOH*    | x    | o  | o  | o    |
++-----------+------+----+----+------+
+| BOPOP*    | x    | o  | o  | o    |
++-----------+------+----+----+------+
+| NACME     | x    | o  | o  | o    |
++-----------+------+----+----+------+
+| SHPROB    | x    | o  | x  | o    |
++-----------+------+----+----+------+
+| SHSTATE   | x    | o  | x  | o    |
++-----------+------+----+----+------+
+
+.. note:: \*If you set propagation="density", UNI-xMD provides **BOCOH** and **BOPOP**. However, if you set propagation="coefficient", UNI-xMD provides **BOCOEF** rather than **BOCOH** and **BOPOP**.
 
 - MDENERGY  : energy which contains kinetic energy, potential energy of each adiabatic state and total energy 
 
