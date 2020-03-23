@@ -138,26 +138,101 @@ thermostat_type is listed in ???.
 ==========================
 Quick Start
 ==========================
-| This is quick start.
-| program is controlled by running script.
-| Goto directory 
-| $ cd [UNIXMDHOME]/quick_start/
 
-Define system
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-mol = Molecule(~~~)
+Here, we provide executable running script file, which contains:
 
-Define MD method
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-import and make object
-md = EH(~~~)
+.. code-block:: python
 
-Run MD
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-each md module has 'run' method which actually run~~~
-md.run(~~~)
+   from molecule import Molecule
+   import bo
+   import mqc
+   from thermostat import *
+   from misc import data
 
-Check output
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-files~~~~~,simple explanation
+   geom = """
+   NUMBER_OF_ATOMS
+   TITLE
+   SYMBOL  COORDINATES  VELOCITIES
+   """
+
+   mol = Molecule(geometry=geom, nstates=NSTATES)
+
+   qm = bo.PROG_NAME.QM_METHOD(ARGUMENTS)
+
+   md = mqc.MD_METHOD(ARGUMETNS)
+
+   bathT = THERMOSTAT(ARGUMENTS)
+
+   md.run(molecule=mol, theory=qm, thermostat=bathT, input_dir=INPUT_DIR)
+
+If you execute this script, you can get output file listed in table:
+
++-----------+------+-------+----+
+|           | BOMD | SH(XF)| Eh |
++===========+======+=======+====+
+| MDENERGY  | o    | o     | o  |
++-----------+------+-------+----+
+| MOVIE.xyz | o    | o     | o  |
++-----------+------+-------+----+
+| FINAL.xyz | o    | o     | o  |
++-----------+------+-------+----+
+| BOCOH*    | x    | o     | o  |
++-----------+------+-------+----+
+| BOPOP*    | x    | o     | o  |
++-----------+------+-------+----+
+| NACME     | x    | o     | o  |
++-----------+------+-------+----+
+| SHPROB    | x    | o     | x  |
++-----------+------+-------+----+
+| SHSTATE   | x    | o     | x  |
++-----------+------+-------+----+
+
+.. note:: \*If you set propagation="density", UNI-xMD provides **BOCOH** and **BOPOP**. However, if you set propagation="coefficient", UNI-xMD provides **BOCOEF** rather than **BOCOH** and **BOPOP**.
+
+- MDENERGY  : energy which contains kinetic energy, potential energy of each adiabatic state and total energy 
+
+.. code-block:: bash
+
+    Here is data
+
+- MOVIE.xyz : geometries at each step 
+
+.. code-block:: bash
+
+    Here is data
+
+- FINAL.xyz : geometry at final step
+
+.. code-block:: bash
+
+    Here is data
+
+- BOCOH     : off-diagonal term of adiabatic density matrix
+
+.. code-block:: bash
+
+    Here is data
+
+- BOPOP     : adiabatic population
+
+.. code-block:: bash
+
+    Here is data
+
+- NACME     : non-adiabatic coupling matrix
+
+.. code-block:: bash
+
+    Here is data
+
+- SHPROB    : hopping probability between all of adiabatic states
+
+.. code-block:: bash
+
+    Here is data
+
+- SHSTATE   : running state 
+.. code-block:: bash
+
+    Here is data
 
