@@ -9,8 +9,8 @@ UNI-xMD mainly targeted on MQC, and whole dynamics implemented in current versio
 MQC class. In the MQC class, there are functions for update classical properties of nuclear.
 
 Far more insights about treating MQC in terms of code structure, the overall modules are controlled in fundamental
-input file run.py. When user select their dynamics method, they have to make md object from the subclass of 
-``MQC`` class such as ``SH``(mqc.SH), and a run method(md.run) to run that md object. In the md object, basic dynamics 
+input file run.py. When user select their dynamics method, they have to make md object from the subclass of
+``MQC`` class such as ``SH`` (mqc.SH), and a run method (md.run) to run that md object. In the md object, basic dynamics 
 parameters such as number of steps are given as arguments. Besides, run methods includes overall dynamics condition 
 as arguments. 
 
