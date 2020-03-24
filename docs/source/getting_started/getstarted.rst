@@ -232,6 +232,7 @@ If you execute this script, you can get output file listed in table:
     Here is data
 
 - SHSTATE   : running state 
+
 .. code-block:: bash
 
     Here is data
