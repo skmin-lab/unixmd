@@ -1,8 +1,7 @@
 from __future__ import division
-import os, shutil, re
 from bo.dftbplus.dftbplus import DFTBplus
+import os, shutil, re, textwrap
 import numpy as np
-import textwrap
 
 spin_w = {"H":"-0.072", "C":"-0.031 -0.025 -0.025 -0.023", "N":"-0.033 -0.027 -0.027 -0.026", \
     "O":"-0.035 -0.030 -0.030 -0.028"}
@@ -46,10 +45,10 @@ class SSR(DFTBplus):
         ssr22=True, use_ssr_state=1, state_l=0, guess=1, shift=0.3, tuning=1., \
         grad_level=1, grad_tol=1E-8, mem_level=2, sk_path="./", periodic=False, \
         a_axis=0., b_axis=0., c_axis=0., qm_path="./", nthreads=1, version=19.1):
-        # Initialize DFTBplus common variables
+        # Initialize DFTB+ common variables
         super().__init__(molecule, sk_path, qm_path, nthreads, version)
 
-        # Initialize DFTBplus SSR variables
+        # Initialize DFTB+ SSR variables
         self.scc = scc
         self.scc_tol = scc_tol
         self.max_scc_iter = max_scc_iter
@@ -76,16 +75,16 @@ class SSR(DFTBplus):
         self.b_axis = b_axis
         self.c_axis = c_axis
 
-        # set 'l_nacme' with respect to the computational method
+        # Set 'l_nacme' with respect to the computational method
         # DFTB/SSR can produce NACs, so we do not need to get NACME from CIoverlap
-        # when we calculate SA-REKS state, NACME can be obtained directly from diabetic Hamiltonian
+        # When we calculate SA-REKS state, NACME can be obtained directly from diabetic Hamiltonian
         if (self.use_ssr_state == 1):
             molecule.l_nacme = False
         else:
             molecule.l_nacme = True
 
         if (molecule.nst > 1 and self.use_ssr_state == 0):
-            # SA-REKS state with sh
+            # SA-REKS state with SH
             self.re_calc = True
         else:
             # SSR state or single-state REKS
@@ -113,10 +112,11 @@ class SSR(DFTBplus):
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation
         """
-        # make 'geometry.gen' file
+        # Make 'geometry.gen' file
+        # TODO : add environmental variable to common part
         os.system("xyz2gen geometry.xyz")
         if (self.periodic):
-            # substitute C to S in first line
+            # Substitute C to S in first line
             file_be = open('geometry.gen', 'r')
             file_af = open('tmp.gen', 'w')
             first_row = True
@@ -125,7 +125,7 @@ class SSR(DFTBplus):
                     row = f'{molecule.nat} S\n'
                     first_row = False
                 file_af.write(row)
-            # add gamma-point and cell lattice information
+            # Add gamma-point and cell lattice information
             geom_periodic = textwrap.dedent(f"""\
             {0.0:15.8f} {0.0:15.8f} {0.0:15.8f}
             {self.a_axis:15.8f} {0.0:15.8f} {0.0:15.8f}
@@ -137,7 +137,7 @@ class SSR(DFTBplus):
             file_af.close()
             os.rename('tmp.gen', 'geometry.gen')
 
-        # make 'dftb_in.hsd' file
+        # Make 'dftb_in.hsd' file
         input_dftb = ""
 
         # Geometry Block
@@ -241,7 +241,7 @@ class SSR(DFTBplus):
         if (not self.ssr22):
             raise ValueError ("Other active spaces Not Implemented")
 
-        # energy functional options
+        # Energy functional options
         if (molecule.nst == 1):
             energy_functional = 1
             energy_level = 1
@@ -254,22 +254,22 @@ class SSR(DFTBplus):
 
         # NAC calculation options
         if (molecule.nst == 1 or self.use_ssr_state == 0):
-            # single-state REKS or SA-REKS state
+            # Single-state REKS or SA-REKS state
             self.nac = "No"
         else:
             # SSR state
             if (self.calc_coupling):
-                # sh, eh need NAC calculations
+                # SH, Eh need NAC calculations
                 self.nac = "Yes"
             else:
-                # bomd do not need NAC calculations
+                # BOMD do not need NAC calculations
                 self.nac = "No"
 
         # TODO: rd will be determined automatically
         # qm => do not use rd, qmmm => use rd + external pc
         rd = "No"
 
-        # options for SCF optimization
+        # Options for SCF optimization
         if (self.guess == 2):
             raise ValueError("read external guess not implemented")
 
@@ -314,7 +314,7 @@ class SSR(DFTBplus):
         """)
         input_dftb += input_parseroptions
 
-        # write 'dftb_in.hsd' file
+        # Write 'dftb_in.hsd' file
         file_name = "dftb_in.hsd"
         with open(file_name, "w") as f:
             f.write(input_dftb)
@@ -326,13 +326,13 @@ class SSR(DFTBplus):
             :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
         """
-        # run DFTBplus method
+        # Run DFTB+ method
         qm_command = os.path.join(self.qm_path, "dftb+")
-        # openmp setting
+        # OpenMP setting
         os.environ["OMP_NUM_THREADS"] = f"{self.nthreads}"
         command = f"{qm_command} > log"
         os.system(command)
-        # copy the output file to 'QMlog' directory
+        # Copy the output file to 'QMlog' directory
         tmp_dir = os.path.join(base_dir, "QMlog")
         if (os.path.exists(tmp_dir)):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
@@ -345,23 +345,23 @@ class SSR(DFTBplus):
             :param integer,list bo_list: list of BO states for BO calculation
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        # read 'log' file
+        # Read 'log' file
         file_name = "log"
         with open(file_name, "r") as f:
             log_out = f.read()
-        # read 'detailed.out' file
+        # Read 'detailed.out' file
         # TODO: the qmmm information is written in this file
 #        file_name = "detailed.out"
 #        with open(file_name, "r") as f:
 #            detailed_out = f.read()
 
-        # energy
+        # Energy
         if (not calc_force_only):
             for states in molecule.states:
                 states.energy = 0.
 
             if (molecule.nst == 1):
-                # single-state REKS
+                # Single-state REKS
                 tmp_e = 'Spin' + '\n\s+\w+\s+([-]\S+)(?:\s+\S+){3}' * molecule.nst
                 energy = re.findall(tmp_e, log_out)
                 energy = np.array(energy)
@@ -379,13 +379,13 @@ class SSR(DFTBplus):
             for ist in range(molecule.nst):
                 molecule.states[ist].energy = energy[ist]
 
-        # force
+        # Force
         if (not calc_force_only):
             for states in molecule.states:
                 states.force = np.zeros((molecule.nat, molecule.nsp))
 
         if (self.nac == "Yes"):
-            # SSR state with sh, eh
+            # SSR state with SH, Eh
             for ist in range(molecule.nst):
                 tmp_f = f' {ist + 1} st state \(SSR\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
                 force = re.findall(tmp_f, log_out)
@@ -394,8 +394,8 @@ class SSR(DFTBplus):
                 force = force.reshape(molecule.nat, 3, order='C')
                 molecule.states[ist].force = - np.copy(force)
         else:
-            # sh : SA-REKS state
-            # bomd : SSR state, SA-REKS state or single-state REKS
+            # SH : SA-REKS state
+            # BOMD : SSR state, SA-REKS state or single-state REKS
             tmp_f = f' {bo_list[0] + 1} state \(\w+[-]*\w+\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
             force = re.findall(tmp_f, log_out)
             force = np.array(force[0])

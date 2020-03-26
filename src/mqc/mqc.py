@@ -1,7 +1,7 @@
 from __future__ import division
-import numpy as np
-import textwrap
 from misc import fs_to_au
+import textwrap
+import numpy as np
 
 class MQC(object):
     """ Class for nuclear/electronic propagator used in MQC dynamics
@@ -28,13 +28,13 @@ class MQC(object):
 
         self.rforce = np.zeros((molecule.nat, molecule.nsp))
 
-        # initialize coefficients and densities
+        # Initialize coefficients and densities
         molecule.states[self.istate].coef = 1. + 0.j
         molecule.rho[self.istate, self.istate] = 1. + 0.j
 
     def cl_update_position(self, molecule):
-        """ Routine to update nulcear positions
-            
+        """ Routine to update nuclear positions
+
             :param object molecule: molecule object
         """
         self.calculate_force(molecule)
@@ -43,8 +43,8 @@ class MQC(object):
         molecule.pos += self.dt * molecule.vel
 
     def cl_update_velocity(self, molecule):
-        """ Rotine to update nulcear velocities
-            
+        """ Routine to update nuclear velocities
+
             :param object molecule: molecule object
         """
         self.calculate_force(molecule)
@@ -56,7 +56,7 @@ class MQC(object):
 #        """ Routine to calculate current temperature
 #        """
 #        pass
-#    #    self.temperature = molecule.ekin * 2 / float(molecule.dof) * au_to_K
+#        #self.temperature = molecule.ekin * 2 / float(molecule.dof) * au_to_K
 
     def calculate_force(self):
         """ Routine to calculate the forces
@@ -68,18 +68,19 @@ class MQC(object):
         """
         pass
 
+    # TODO : add argument
     #def print_init(self, molecule, theory, thermostat, debug):
     def print_init(self, molecule, theory, thermostat):
         """ Routine to print the initial information of dynamics
-            
+
             :param object molecule: molecule object
             :param object theory: theory object containing on-the-fly calculation infomation
             :param object thermostat: thermostat type
         """
-        # print molecule information: coordinate, velocity
+        # Print molecule information: coordinate, velocity
         molecule.print_init()
 
-        # print dynamics information
+        # Print dynamics information
         qm_prog = str(theory.__class__).split('.')[1]
         qm_method = theory.__class__.__name__
         md_type = self.__class__.__name__
@@ -92,7 +93,6 @@ class MQC(object):
         elif (md_type == "BOMD"):
             method = "BOMD"
 
-        # TODO : naming for n.p e.p p
         dynamics_info = textwrap.dedent(f"""\
         {"-" * 68}
         {"Dynamics Information":>43s}
@@ -110,14 +110,15 @@ class MQC(object):
             dynamics_info += f"  Propagation Scheme       = {self.propagation:>16s}\n"
         print (dynamics_info, flush=True)
 
-        # print thermostat information
+        # Print thermostat information
         thermostat.print_init()
         # TODO : efficient method for printing thermostat information
 #        print (f"{'-'*118}",flush=True)
 #        print (f"{'Thermostat information':>69}",flush=True)
 #        print (f"{'-'*118}",flush=True)
 
-        # print dynamics information for each step
+        # Print dynamics information for each step
+        # TODO : debug option print (add argument)
         if (method == "FSSH" or method == "SHXF"):
             INIT = f" #INFO{'STEP':>8s}{'State':>7s}{'Max. Prob.':>14s}{'Rand.':>12s}{'Kinetic(H)':>15s}{'Potential(H)':>15s}{'Total(H)':>13s}{'Temperature(K)':>17s}{'Norm.':>8s}"
             DEBUG2 = f" #DEBUG2{'STEP':>6s}{'Acc. Hopping Prob.':>22s}"
@@ -127,7 +128,7 @@ class MQC(object):
         elif (method == "BOMD"):
             INIT = f" #INFO{'STEP':>8s}{'State':>7s}{'Kinetic(H)':>13s}{'Potential(H)':>15s}{'Total(H)':>13s}{'Temperature(K)':>17s}"
             DEBUG2 = ""
-    
+
         DEBUG1 = f" #DEBUG1{'STEP':>6s}"
         for ist in range(molecule.nst):
             DEBUG1 += f"{'Potential_':>14s}{ist}(H)"

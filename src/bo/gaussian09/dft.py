@@ -1,9 +1,8 @@
 from __future__ import division
-import os, shutil, re, subprocess
 from bo.gaussian09.gaussian09 import Gaussian09
-import numpy as np
-import textwrap
 from misc import au_to_A, eV_to_au
+import os, shutil, re, textwrap, subprocess
+import numpy as np
 
 class DFT(Gaussian09):
     """ Class for the (TD)DFT method of Gaussian09 program
@@ -16,7 +15,7 @@ class DFT(Gaussian09):
         :param string g09_root_path: path for Gaussian09 root
         :param string version: version of Gaussian09 program
     """
-    def __init__(self, molecule, nthreads=8, memory="4gb",\
+    def __init__(self, molecule, nthreads=8, memory="4gb", \
         functional="BLYP", basis_set="STO-3G", \
         g09_root_path="/opt/gaussian/", version="Revision A.02"):
         # Initialize Gaussian09 common variables
@@ -56,10 +55,11 @@ class DFT(Gaussian09):
             :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
         """
-        if (len(bo_list) > 1):
-            raise ValueError(f"Ehrenfest dynamics with g09 is not implemented yet!")
+        # TODO : currently, CIoverlap is not correct -> only BOMD possible with TDDFT
+        if (self.calc_coupling):
+            raise ValueError ("only BOMD possible with TDDFT")
 
-        # make 'g09.inp' file
+        # Make 'g09.inp' file
         input_g09 = ""
 
         # Route section block
@@ -90,7 +90,7 @@ class DFT(Gaussian09):
         input_molecule += "\n"
         input_g09 += input_molecule
 
-        # write 'g09.inp' file
+        # Write 'g09.inp' file
         file_name = "g09.inp"
         with open(file_name, "w") as f:
             f.write(input_g09)
@@ -102,7 +102,8 @@ class DFT(Gaussian09):
             :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
         """
-        # set environment variables
+        # Set environment variables
+        # TODO : move to gaussian09.py
         os.environ["g09root"] = self.g09_root_path
         os.environ["GAUSS_SCDIR"] = self.scr_qm_dir
         path_profile = os.path.join(self.g09_root_path, "g09/bsd/g09.profile")
@@ -111,14 +112,14 @@ class DFT(Gaussian09):
             key, value = line.split("=")
             os.environ[key] = value
 
-        # set run command
+        # Set run command
         qm_command = os.path.join(self.g09_root_path, "g09/g09")
         command = f"{qm_command} < g09.inp > log"
 
         # Run Gaussian09
         os.system(command)
 
-        # copy the output file to 'QMlog' directory
+        # Copy the output file to 'QMlog' directory
         tmp_dir = os.path.join(base_dir, "QMlog")
         if (os.path.exists(tmp_dir)):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
@@ -135,7 +136,7 @@ class DFT(Gaussian09):
         with open(file_name, "r") as f:
             log = f.read()
 
-        # energy
+        # Energy
         if (not calc_force_only):
             for states in molecule.states:
                 states.energy = 0.
@@ -154,20 +155,20 @@ class DFT(Gaussian09):
                 for ist in range(1, molecule.nst):
                     molecule.states[ist].energy = molecule.states[0].energy + energy[ist - 1]
 
-        # force
+        # Force
         if (not calc_force_only):
             for states in molecule.states:
                 states.force = np.zeros((molecule.nat, molecule.nsp))
 
         tmp_f = "Forces\s+\(Hartrees\/Bohr\)\n.+\n.+" \
             + "\n\s+\d*\s+\d*\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)" * molecule.nat
-        force = re.findall(tmp_f, log) 
+        force = re.findall(tmp_f, log)
         force = np.array(force[0])
         force = force.astype(float)
         force = force.reshape(molecule.nat, 3, order='C')
         molecule.states[bo_list[0]].force = np.copy(force)
 
-        # nacme
+        # NACME
         pass
 
 

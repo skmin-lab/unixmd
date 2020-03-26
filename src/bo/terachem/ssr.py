@@ -1,8 +1,7 @@
 from __future__ import division
-import os, shutil, re
 from bo.terachem.terachem import TeraChem
+import os, shutil, re, textwrap
 import numpy as np
-import textwrap
 
 class SSR(TeraChem):
     """ Class for SSR method of TeraChem program
@@ -41,10 +40,8 @@ class SSR(TeraChem):
 
         self.reks22 = reks22
         if (self.reks22 == "yes"):
-
             if (molecule.nst > 2):
                 raise ValueError ("3state REKS with gradient Not Implemented")
-
             self.reks_scf_tol = reks_scf_tol
             self.reks_max_scf_iter = reks_max_scf_iter
             self.reks_diis = reks_diis
@@ -53,20 +50,21 @@ class SSR(TeraChem):
             if (molecule.nst > 1):
                 self.cpreks_max_tol = cpreks_max_tol
                 self.cpreks_max_iter = cpreks_max_iter
-
         else:
             raise ValueError("reks22 should be switched on in our interface")
 
-        # set 'l_nacme' with respect to the computational method
+        # Set 'l_nacme' with respect to the computational method
         # SSR can produce NACs, so we do not need to get NACME from CIoverlap
-        # when we calculate SA-REKS state, NACME can be obtained directly from diabetic Hamiltonian
+        # When we calculate SA-REKS state, NACME can be obtained directly from diabetic Hamiltonian
         if (self.use_ssr_state == 1):
             molecule.l_nacme = False
         else:
+            # TODO : diabatic SH?
             molecule.l_nacme = True
 
         if (molecule.nst > 1 and self.use_ssr_state == 0):
-            # SA-REKS state with sh
+            # SA-REKS state with SH
+            # TODO : diabatic SH?
             self.re_calc = True
         else:
             # SSR state or single-state REKS
@@ -95,10 +93,10 @@ class SSR(TeraChem):
             :param integer,list bo_list: list of BO states for BO calculation
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        # make 'input.tcin' file
+        # Make 'input.tcin' file
         input_terachem = ""
 
-        # control Block
+        # Control Block
         input_control = \
         input_control = textwrap.dedent(f"""\
 
@@ -109,7 +107,7 @@ class SSR(TeraChem):
         """)
         input_terachem += input_control
 
-        # system Block
+        # System Block
         input_system = textwrap.dedent(f"""\
         precision {self.precision}
         gpus {self.ngpus}   {self.gpu_id}
@@ -128,7 +126,7 @@ class SSR(TeraChem):
         """)
         input_terachem += input_dft
 
-        # options for SCF initial guess
+        # Options for SCF initial guess
         # TODO : read information from previous step
 #        if (calc_force_only):
 #            guess = 1
@@ -140,7 +138,7 @@ class SSR(TeraChem):
         # REKS Block
         if (self.reks22 == "yes"):
 
-            # energy functional options
+            # Energy functional options
             if (molecule.nst == 1):
                 sa_reks = 0
             elif (molecule.nst == 2):
@@ -151,17 +149,18 @@ class SSR(TeraChem):
 
             # NAC calculation options
             if (self.calc_coupling and sa_reks == 2):
-                # SSR state with sh, eh
+                # SSR state with SH, Eh
                 reks_target = 12
                 self.nac = "Yes"
             else:
-                # any method with bomd / SA-REKS state with sh
+                # Any method with BOMD / SA-REKS state with SH
+                # TODO : diabatic SH?
                 reks_target = bo_list[0] + 1
                 self.nac = "No"
 
             # TODO: pointcharges? in qmmm?
 
-            # options for REKS SCF initial guess
+            # Options for REKS SCF initial guess
             # TODO : read information from previous step
 #            if (restart):
 #                reks_guess = 1
@@ -187,7 +186,7 @@ class SSR(TeraChem):
                 """)
                 input_terachem += input_cpreks
 
-        # write 'input.tcin' file
+        # Write 'input.tcin' file
         file_name = "input.tcin"
         with open(file_name, "w") as f:
             f.write(input_terachem)
@@ -199,13 +198,13 @@ class SSR(TeraChem):
             :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
         """
-        # run TeraChem method
+        # Run TeraChem method
         qm_command = os.path.join(self.qm_path, "terachem")
-        # openmp setting
+        # OpenMP setting
         os.environ["OMP_NUM_THREADS"] = "1"
         command = f"{qm_command} input.tcin > log"
         os.system(command)
-        # copy the output file to 'QMlog' directory
+        # Copy the output file to 'QMlog' directory
         tmp_dir = os.path.join(base_dir, "QMlog")
         if (os.path.exists(tmp_dir)):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
@@ -218,18 +217,18 @@ class SSR(TeraChem):
             :param integer,list bo_list: list of BO states for BO calculation
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        # read 'log' file
+        # Read 'log' file
         file_name = "log"
         with open(file_name, "r") as f:
             log_out = f.read()
 
-        # energy
+        # Energy
         if (not calc_force_only):
             for states in molecule.states:
                 states.energy = 0.
 
             if (molecule.nst == 1):
-                # single-state REKS
+                # Single-state REKS
                 tmp_e = 'REKS energy:\s+([-]\S+)'
                 energy = re.findall(tmp_e, log_out)
                 energy = np.array(energy)
@@ -256,13 +255,13 @@ class SSR(TeraChem):
                     energy = energy.astype(float)
                     molecule.states[1].energy = energy[0]
 
-        # force
+        # Force
         if (not calc_force_only):
             for states in molecule.states:
                 states.force = np.zeros((molecule.nat, molecule.nsp))
 
         if (self.nac == "Yes"):
-            # SSR state with sh, eh
+            # SSR state with SH, Eh
             for ist in range(molecule.nst):
                 tmp_f = f'Eigen state {ist + 1} gradient\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
                     '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
@@ -272,8 +271,9 @@ class SSR(TeraChem):
                 force = force.reshape(molecule.nat, 3, order='C')
                 molecule.states[ist].force = - np.copy(force)
         else:
-            # sh : SA-REKS state
-            # bomd : SSR state, SA-REKS state or single-state REKS
+            # SH : SA-REKS state
+            # TODO : diabatic SH?
+            # BOMD : SSR state, SA-REKS state or single-state REKS
             tmp_f = 'Gradient units are Hartree/Bohr\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
 	              '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
             force = re.findall(tmp_f, log_out)
@@ -283,29 +283,30 @@ class SSR(TeraChem):
             molecule.states[bo_list[0]].force = - np.copy(force)
 
         # NAC
+        # TODO : NACME - diabatic SH?
         if (not calc_force_only and self.nac == "Yes"):
 
             # 1.92 version do not show H vector
             if (self.version == 1.92):
-                # zeroing for G, h and H vectors
+                # Zeroing for G, h and H vectors
                 Gvec = np.zeros((molecule.nat, molecule.nsp))
                 hvec = np.zeros((molecule.nat, molecule.nsp))
                 ssr_coef = np.zeros((molecule.nst, molecule.nst))
                 Hvec = np.zeros((molecule.nat, molecule.nsp))
-                # calculate G vector, G vector is difference gradient so minus sign is needed
+                # Calculate G vector, G vector is difference gradient so minus sign is needed
                 Gvec = - 0.5 * (molecule.states[0].force - molecule.states[1].force)
-                # read h vector
+                # Read h vector
                 tmp_c = 'Coupling gradient\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
 	                  '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
                 hvec = re.findall(tmp_c, log_out)
                 hvec = np.array(hvec[0])
                 hvec = hvec.astype(float)
                 hvec = hvec.reshape(molecule.nat, 3, order='C')
-                # read coefficients of SSR state
+                # Read coefficients of SSR state
                 ssr_coef = re.findall('SSR state\s\d\s+[-]\S+\s+([-]*\S+)\s+([-]*\S+)', log_out)
                 ssr_coef = np.array(ssr_coef)
                 ssr_coef = ssr_coef.astype(float)
-                # calculate H vector from G, h vector
+                # Calculate H vector from G, h vector
                 Hvec = 1. / (molecule.states[1].energy - molecule.states[0].energy) * \
                     ((2. * ssr_coef[0, 0] * ssr_coef[1, 0] * Gvec + hvec) / \
                     (ssr_coef[0, 0] * ssr_coef[1, 1] + ssr_coef[1, 0] * ssr_coef[0, 1]))

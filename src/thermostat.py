@@ -1,18 +1,19 @@
 from __future__ import division
 from misc import au_to_K, eps
 from mqc.shxf import SHXF
-import numpy as np
 import textwrap
+import numpy as np
 
 # In a model example, a specific routine should be devised separately.
 class thermo(object):
-    """ Object class for a thermostat. The type of the given thermostat is classified by its subclasses.
+    """ Object class for a thermostat. The type of given thermostat is classified by its subclasses.
 
-        :param double temperature: the temperature (K) set in the NVT ensemble
+        :param double temperature: temperature (K) set in the NVT ensemble
     """
     def __init__(self, temperature):
         # Initialize input values
         self.temp = temperature
+
 
 class none(thermo):
     """ No temperature control; the NVE case
@@ -23,7 +24,7 @@ class none(thermo):
     def run(self, molecule, md):
         """ Control the temperature (dummy in this case)
 
-            :param object molecule: molecule object  
+            :param object molecule: molecule object
             :param object md: MQC object, the MD theory
         """
         pass
@@ -43,6 +44,7 @@ class none(thermo):
 #        print ("NVE: Total energy is conserved!\n", flush=True)
 #        print (f"Temp = {self.temp}", flush=True)
 
+
 class rescale1(thermo):
     """ Rescale the velocities in a given period
 
@@ -58,22 +60,24 @@ class rescale1(thermo):
     def run(self, molecule, md):
         """ Control the temperature
 
-            :param object molecule: molecule object  
+            :param object molecule: molecule object
             :param object md: MQC object, the MD theory
         """
+        # TODO : p_name?
         p_name = "RESCALE1"
         self.istep += 1
-        if(not (self.istep + 1) % self.nrescale == 0):
+        if (not (self.istep + 1) % self.nrescale == 0):
             return
 
         ctemp = molecule.ekin * 2 / float(molecule.dof) * au_to_K
-        if(ctemp < eps):
+        if (ctemp < eps):
             raise ValueError(f"{p_name} Current temperature too small or zero {ctemp}")
 
         alpha = np.sqrt(self.temp / ctemp)
         molecule.vel *= alpha
 
-        if(isinstance(md, SHXF)):
+        # TODO : import direct md object?
+        if (isinstance(md, SHXF)):
             md.aux.vel *= alpha
             md.aux.vel_old *= alpha
 
@@ -95,6 +99,7 @@ class rescale1(thermo):
 #        print (f"Temperature is rescaled as \"{self.temp} K\" at each \"{self.nrescale} step\"!\n", flush=True)
 #        print (f"nrescale = {self.nrescale}", flush=True)
 
+
 class rescale2(thermo):
     """ Rescale the velocities when the temerature is out of a given range
 
@@ -109,20 +114,22 @@ class rescale2(thermo):
     def run(self, molecule, md):
         """ Control the temperature
 
-            :param object molecule: molecule object  
+            :param object molecule: molecule object
             :param object md: MQC object, the MD theory
         """
+        # TODO : p_name?
         p_name = "RESCALE2"
 
         ctemp = molecule.ekin * 2 / float(molecule.dof) * au_to_K
-        if(ctemp < eps):
+        if (ctemp < eps):
             raise ValueError(f"{p_name} Current temperature too small or zero {ctemp}")
 
-        if(abs(self.temp - ctemp) > self.dtemp):
+        if (abs(self.temp - ctemp) > self.dtemp):
             alpha = np.sqrt(self.temp / ctemp)
             molecule.vel *= alpha
 
-            if(isinstance(md, SHXF)):
+            # TODO : import direct md object?
+            if (isinstance(md, SHXF)):
                 md.aux.vel *= alpha
                 md.aux.vel_old *= alpha
 

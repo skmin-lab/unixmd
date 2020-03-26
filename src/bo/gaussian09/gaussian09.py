@@ -19,7 +19,7 @@ class Gaussian09(BO_calculator):
         self.g09_root_path = g09_root_path
         self.version = version
 
-        # print Gaussian09 Revision warning
+        # Print Gaussian09 Revision warning
         print("\n\n WARNING: The Gaussian09 implementation is based on the Revision A.02 version, not the latest one! \n\n")
 
 

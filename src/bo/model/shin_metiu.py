@@ -1,10 +1,10 @@
 from __future__ import division
-import os, shutil, re
 from bo.model.model import Model
+import os, shutil, re
 import numpy as np
 
 class Shin_Metiu(Model):
-    """ Class for shin-metiu model BO calculation
+    """ Class for Shin-Metiu model BO calculation
 
         :param object molecule: molecule object
         :param string qm_path: path for Shin-Metiu 1D charge transfer model BO calculation program
@@ -13,15 +13,15 @@ class Shin_Metiu(Model):
         # Initialize model common variables
         super().__init__(qm_path)
 
-        # set 'l_nacme' with respect to the computational method
-        # shin-metiu model can produce NACs, so we do not need to get NACME
+        # Set 'l_nacme' with respect to the computational method
+        # Shin-Metiu model can produce NACs, so we do not need to get NACME
         molecule.l_nacme = False
 
-        # shin-metiu model can compute the gradient of several states simultaneously,
+        # Shin-Metiu model can compute the gradient of several states simultaneously
         self.re_calc = False
 
     def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
-        """ Extract energy, gradient and nonadiabatic couplings from shin-metui BO calculation
+        """ Extract energy, gradient and nonadiabatic couplings from Shin-Metiu BO calculation
 
             :param object molecule: molecule object
             :param string base_dir: base directory
@@ -40,27 +40,27 @@ class Shin_Metiu(Model):
 
             :param object molecule: molecule object
         """
-        # make 'metiu.in' file
+        # Make 'metiu.in' file
         input_shin_metiu = ""
         input_shin_metiu += f"metiu\n{molecule.pos[0, 0]:15.8f}\n{molecule.nst}"
 
-        # write 'metiu.in' file
+        # Write 'metiu.in' file
         file_name = "metiu.in"
         with open(file_name, "w") as f:
             f.write(input_shin_metiu)
 
     def run_QM(self, base_dir, istep, bo_list):
-        """ Run model BO calculation and save the output files to QMlog directory
+        """ Run Shin-Metiu BO calculation and save the output files to QMlog directory
 
             :param string base_dir: base directory
             :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
         """
-        # run shin-metiu model
+        # Run Shin-Metiu model
         qm_command = os.path.join(self.qm_path, "metiu.x")
         command = f"{qm_command} < metiu.in > metiu.log"
         os.system(command)
-        # copy the output file to 'QMlog' directory
+        # Copy the output file to 'QMlog' directory
         tmp_dir = os.path.join(base_dir, "QMlog")
         if (os.path.exists(tmp_dir)):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
@@ -73,7 +73,7 @@ class Shin_Metiu(Model):
             :param integer,list bo_list: list of BO states for BO calculation
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        # energy
+        # Energy
         file_name = "ENERGY.DAT"
         with open(file_name, "r") as f:
             log_out = f.read()
@@ -89,7 +89,7 @@ class Shin_Metiu(Model):
             for ist in range(molecule.nst):
                 molecule.states[ist].energy = energy[ist]
 
-        # force
+        # Force
         file_name = "FORCE.DAT"
         with open(file_name, "r") as f:
             log_out = f.read()
