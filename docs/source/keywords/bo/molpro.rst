@@ -1,5 +1,5 @@
 
-Molpro :cite:`Molpro` is a comprehensive system of ab initio programs for advanced molecular electronic structure
+Molpro :cite:`Werner2012` is a comprehensive system of ab initio programs for advanced molecular electronic structure
 calculations, designed and maintained by many authors. It comprises efficient and well parallelized
 programs for standard computational chemistry applications, such as DFT or many wave function based
 methods. Among them, CASSCF method is interfaced with current version of UNI-xMD.

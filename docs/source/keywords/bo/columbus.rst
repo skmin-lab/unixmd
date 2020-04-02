@@ -1,5 +1,5 @@
 
-Columbus :cite:`Columbus` is one of famous free software for high-level ab initio quantum calculation. Similar with
+Columbus :cite:`Lischka2011` is one of famous free software for high-level ab initio quantum calculation. Similar with
 other software, it can do various types of fundamental quantum calculation. However, the major
 competitiveness of Columbus compare to other software is, it is mainly designed for calculate
 multi-reference calculations on electonic ground and excited states. This feature is indeed well suited
