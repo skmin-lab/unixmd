@@ -12,7 +12,7 @@ the driving force is given by:
 
    \vec{F}=\sum_{i} \vec{F}_i + \sum_{i\neq j} c_ic_j(E_i-E_j)d_{ij},
 
-where :math:`d_{ij}` is non-adiabatic couping between i-th and j-th adiabatic state.
+where :math:`d_{ij}` is nonadiabatic couping between i-th and j-th adiabatic state.
 
 +----------------+------------------------------------------------+---------+
 | Keywords       | Work                                           | Default |

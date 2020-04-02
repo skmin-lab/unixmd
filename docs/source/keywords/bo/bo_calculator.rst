@@ -5,7 +5,7 @@ forces and nonadiabatic couplings. UNI-xMD interfaces with followings in current
 
 - Columbus, DFTB+, Gaussian09, Molpro, TeraChem, Turbomole, Model system
 
-Only some methods supports with BO interface of UNI-xMD in current version.
+Only some methods support with BO interface of UNI-xMD in current version.
 If you want to add other methods such as CASPT2, see "Do It yourself" section.
 The BO interfacings in UNI-xMD proceed with **get_bo** method in each object.
 Detailed explanation of **get_bo** method is given in *modules* section.

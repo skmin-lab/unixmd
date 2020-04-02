@@ -3,6 +3,7 @@ BO interface for a few model sytems are provided in UNI-xMD package.
 
 1D charge transfer model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 1D charge transfer model system proposed by Shin and Metiu :cite:`Shin1995` is implemented.
 
 .. math::

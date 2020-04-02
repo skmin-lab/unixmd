@@ -10,11 +10,11 @@ MQC class. In the MQC class, there are functions for update classical properties
 
 Far more insights about treating MQC in terms of code structure, the overall modules are controlled in fundamental
 input file run.py. When user select their dynamics method, they have to make md object from the subclass of
-``MQC`` class such as ``SH`` (mqc.SH), and a run method (md.run) to run that md object. In the md object, basic dynamics 
-parameters such as number of steps are given as arguments. Besides, run methods includes overall dynamics condition 
-as arguments. 
+``MQC`` class such as ``SH`` (mqc.SH), and a run method (md.run) to run that md object. In the md object, basic dynamics
+parameters such as number of steps are given as arguments. Besides, run methods includes overall dynamics condition
+as arguments.
 
-Arguments for a run method are listed below. The important point is that run method is included in each 
+Arguments for a run method are listed below. The important point is that run method is included in each
 md subclasses of ``MQC``, not ``MQC`` itself.
 
 +----------------+-------------------------------------------------+-----------+
@@ -36,7 +36,6 @@ md subclasses of ``MQC``, not ``MQC`` itself.
 
 Further information of each individual md objects are listed in next section.
 
-
 **Ex.** Making a md object with FSSH method
 
 .. code-block:: python
@@ -47,4 +46,5 @@ Further information of each individual md objects are listed in next section.
 
    md.run(molecule=mol, theory=qm, thermostat=bathT, input_dir="./TRAJ.sh", save_scr=True, save_QMlog=False)
 
-   #theory and thermostat must be classified before md.run called. they are omitted in this sample code.
+   # theory and thermostat must be classified before md.run is called. They are omitted in this sample code.
+
