@@ -40,13 +40,6 @@ Contents
 
 .. toctree::
    :glob:
-   :caption: Examples
-   :maxdepth: 1
-
-   examples/main
-
-.. toctree::
-   :glob:
    :caption: Modules
    :maxdepth: 1
 
