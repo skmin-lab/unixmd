@@ -11,7 +11,7 @@ Features
 ---------------------------
 | This is features.
 | UNI-xMD program includes adiabatic, Ehrenfest, surface hopping and especially DISH-XF dynamics method.
-| This package includes scripts that interface the dynamics modules with some quantum chemistry calculation program such as molpro, dftb, etc..
+| This package includes several scripts that interface the dynamics modules with some quantum chemistry calculation program such as Molpro, DFTB+, etc..
 
 Authors
 --------------------------
@@ -37,13 +37,6 @@ Contents
    :maxdepth: 1
 
    keywords/main
-
-.. toctree::
-   :glob:
-   :caption: Examples
-   :maxdepth: 1
-
-   examples/main
 
 .. toctree::
    :glob:

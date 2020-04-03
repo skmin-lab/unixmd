@@ -1,11 +1,11 @@
 from __future__ import division
-import numpy as np
-import os, shutil
 from mqc.mqc import MQC
 from fileio import touch_file, write_md_output, write_final_xyz
 from misc import au_to_K
+import os, shutil
+import numpy as np
 
-class BOMD(MQC):    
+class BOMD(MQC):
     """ Class for born-oppenheimer molecular dynamics (BOMD)
 
         :param object molecule: molecule object
@@ -19,7 +19,7 @@ class BOMD(MQC):
 
     def run(self, molecule, theory, thermostat, input_dir="./", \
         save_QMlog=False, save_scr=True):
-        """ run MQC dynamics according to BOMD
+        """ Run MQC dynamics according to BOMD
 
             :param object molecule: molecule object
             :param object theory: theory object containing on-the-fly calculation infomation
@@ -28,7 +28,7 @@ class BOMD(MQC):
             :param boolean save_QMlog: logical for saving QM calculation log
             :param boolean save_scr: logical for saving scratch directory
         """
-        # set directory information
+        # Set directory information
         input_dir = os.path.expanduser(input_dir)
         base_dir = os.path.join(os.getcwd(), input_dir)
 
@@ -43,23 +43,23 @@ class BOMD(MQC):
         if (save_QMlog):
             os.makedirs(QMlog_dir)
 
-        # initialize unixmd
+        # Initialize UNI-xMD
         os.chdir(base_dir)
         bo_list = [self.istate]
         theory.calc_coupling = False
+
         touch_file(molecule, theory.calc_coupling, None, unixmd_dir, SH_chk=False)
         self.print_init(molecule, theory, thermostat)
 
-        # calculate initial input geometry at t = 0.0 s
+        # Calculate initial input geometry at t = 0.0 s
         theory.get_bo(molecule, base_dir, -1, bo_list, calc_force_only=False)
 
         self.update_energy(molecule)
 
-        self.print_step(molecule, -1)
         write_md_output(molecule, theory.calc_coupling, -1, None, unixmd_dir)
-        
+        self.print_step(molecule, -1)
 
-        # main MD loop
+        # Main MD loop
         for istep in range(self.nsteps):
 
             self.cl_update_position(molecule)
@@ -72,14 +72,14 @@ class BOMD(MQC):
 
             self.update_energy(molecule)
 
-            self.print_step(molecule, istep)
             write_md_output(molecule, theory.calc_coupling, istep, None, unixmd_dir)
+            self.print_step(molecule, istep)
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, istep, unixmd_dir)
 
-        # delete scratch directory
+        # Delete scratch directory
         if (not save_scr):
-            tmp_dir = os.path.join(base_dir, "md/scr_qm")
+            tmp_dir = os.path.join(unixmd_dir, "scr_qm")
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
 
@@ -95,11 +95,13 @@ class BOMD(MQC):
 
             :param object molecule: molecule object
         """
-        # update kinetic energy
+        # Update kinetic energy
         molecule.update_kinetic()
         molecule.epot = molecule.states[self.istate].energy
         molecule.etot = molecule.epot + molecule.ekin
 
+    # TODO : add argument
+    #def print_step(self, molecule, istep, debug=0):
     def print_step(self, molecule, istep):
         """ Routine to print each steps infomation about dynamics
 
@@ -108,14 +110,15 @@ class BOMD(MQC):
         """
         ctemp = molecule.ekin * 2. / float(molecule.dof) * au_to_K
 
-        # print INFO for each step
+        # Print INFO for each step
         INFO = f" INFO{istep + 1:>9d}{self.istate:>5d} "
         INFO += f"{molecule.ekin:14.8f}{molecule.epot:15.8f}{molecule.etot:15.8f}"
         INFO += f"{ctemp:13.6f}"
         print (INFO, flush=True)
 
-        # print DEBUG1 for each step
+        # Print DEBUG1 for each step
         # TODO : if (debug=1):
+        # TODO : debug option print (add argument)
         DEBUG1 = f" DEBUG1{istep + 1:>7d}"
         for ist in range(molecule.nst):
             DEBUG1 += f"{molecule.states[ist].energy:17.8f} "

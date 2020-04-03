@@ -1,10 +1,9 @@
 from __future__ import division
-import os, shutil, re
 from bo.columbus.columbus import Columbus
 from bo.columbus.colbasis import *
-import numpy as np
-import textwrap
 from misc import data, au_to_A, A_to_au, amu_to_au
+import os, shutil, re, textwrap
+import numpy as np
 
 class CASSCF(Columbus):
     """ Class for CASSCF method of Columbus program
@@ -25,7 +24,6 @@ class CASSCF(Columbus):
 
         # Initialize Columbus CASSCF variables
         # TODO : restart option? from mocoef file
-        # in addition, Columbus do not provide periodic setting with CASSCF method
 #        self.max_iter = max_iter
 #        self.scf_en_tol = scf_en_tol
 #        self.scf_grad_tol = scf_grad_tol
@@ -34,21 +32,21 @@ class CASSCF(Columbus):
         self.active_orb = active_orb
 #        self.cpscf_grad_tol = cpscf_grad_tol
 
-        # casscf calculation do not provide parallel computation
+        # CASSCF calculation do not support parallel computation
         if (self.nthreads > 1):
             raise ValueError ("Parallel CASSCF Not Implemented")
 
-        # calculate number of frozen, closed and occ orbitals in CASSCF method
-        # no positive frozen core orbitals in CASSCF
+        # Calculate number of frozen, closed and occ orbitals in CASSCF method
+        # Note that there is no positive frozen core orbitals in CASSCF
         self.frozen_orb = 0
         self.closed_orb = int((int(molecule.nelec) - self.active_elec) / 2)
         self.docc_orb = int(int(molecule.nelec) / 2)
 
-        # check the closed shell for systems
+        # Check the closed shell for systems
         if (not int(molecule.nelec) % 2 == 0):
             raise ValueError ("Only closed shell configuration Implemented")
 
-        # set 'l_nacme' with respect to the computational method
+        # Set 'l_nacme' with respect to the computational method
         # CASSCF can produce NACs, so we do not need to get NACME from CIoverlap
         # CASSCF can compute the gradient of several states simultaneously,
         #        but self.re_calc is set to be true to reduce cost.
@@ -78,7 +76,7 @@ class CASSCF(Columbus):
             :param integer,list bo_list: list of BO states for BO calculation
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        # generate 'geom' file used in Columbus
+        # Generate 'geom' file used in Columbus
         geom = ""
         for iat in range(molecule.nat):
             atom_num = list(data.keys()).index(f"{molecule.symbols[iat]}")
@@ -91,7 +89,7 @@ class CASSCF(Columbus):
         with open(file_name, "w") as f:
             f.write(geom)
 
-        # set basis sets information
+        # Set basis sets information
         # TODO : move to columbus.py, this is common part
         if (self.basis_set == "cc-pvdz"):
             tmp_basis = "\n".join([f"{cc_pvdz[f'{itype}']}" for itype in self.atom_type])
@@ -116,7 +114,7 @@ class CASSCF(Columbus):
         else:
             raise ValueError ("Basis set not yet implemented in Columbus input: add manually (colbasis.py)")
 
-        # generate new prepinp script
+        # Generate new prepinp script
         shutil.copy(os.path.join(self.qm_path, "prepinp"), "prepinp_copy")
 
         file_name = "prepinp_copy"
@@ -129,7 +127,7 @@ class CASSCF(Columbus):
             f.write(prepinp)
         os.chmod("prepinp_fix", 0o755)
 
-        # generate 'prepin' file used in prepinp script of Columbus
+        # Generate 'prepin' file used in prepinp script of Columbus
         prepin = "1\nc1\ngeom\n\n"
         prepin += tmp_basis
         prepin += "\ny\n\n"
@@ -140,17 +138,17 @@ class CASSCF(Columbus):
 
         os.system("./prepinp_fix < prepin > prepout")
 
-        # generate 'stdin' file used in colinp script of Columbus
-        # dalton, scf input setting in colinp script of Columbus
+        # Generate 'stdin' file used in colinp script of Columbus
+        # DALTON, SCF input setting in colinp script of Columbus
         stdin = f"\ny\n1\nn\nno\n2\nyes\n{self.docc_orb}\nyes\nno\n\n"
-        # mcscf input setting in colinp script of Columbus
+        # MCSCF input setting in colinp script of Columbus
         stdin += f"3\nn\n3\n1\n{int(molecule.nelec)}\n1\n1\n0\n0\n{self.closed_orb}\n{self.active_orb}\nn\n" + "\t" * 14 + "\n"
-        # job control setting in colinp script of Columbus
+        # Job control setting in colinp script of Columbus
         if (calc_force_only):
-            # start from 'mocoef' file
+            # Start from 'mocoef' file
             stdin += "5\n1\n1\n3\n11\n1\nn\n\n3\nn\n8\n4\n7\n\n"
         else:
-            # start from SCF calculation
+            # Start from SCF calculation
             stdin += "5\n1\n1\n2\n3\n11\n1\nn\n\n3\nn\n8\n4\n7\n\n"
 
         file_name = "stdin"
@@ -159,8 +157,8 @@ class CASSCF(Columbus):
 
         os.system(f"{self.qm_path}/colinp < stdin > stdout")
 
-        # manually modify input files
-        # modify 'mcscfin' files
+        # Manually modify input files
+        # Modify 'mcscfin' files
         file_name = "mcscfin"
         with open(file_name, "r") as f:
             mcscfin = f.readlines()
@@ -182,9 +180,9 @@ class CASSCF(Columbus):
         with open(file_name, "w") as f:
             f.write(new_mcscf)
 
-        # modify 'transmomin' files
+        # Modify 'transmomin' files
         transmomin = "MCSCF\n"
-        # gradient part
+        # Gradient part
         for ist in bo_list:
             transmomin += f"1  {ist + 1}  1  {ist + 1}\n"
 
@@ -198,10 +196,10 @@ class CASSCF(Columbus):
         with open(file_name, "w") as f:
             f.write(transmomin)
 
-        # copy 'daltcomm' files
+        # Copy 'daltcomm' files
         shutil.copy("daltcomm", "daltcomm.new")
 
-        # copy 'mocoef' file to scratch directory
+        # Copy 'mocoef' file to scratch directory
         if (calc_force_only):
             shutil.copy("MOCOEFS/mocoef_mc.sp", "mocoef")
 
@@ -212,11 +210,11 @@ class CASSCF(Columbus):
             :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
         """
-        # run Columbus method
+        # Run Columbus method
         qm_command = os.path.join(self.qm_path, "runc")
         command = f"{qm_command} -m {self.memory} > runls"
         os.system(command)
-        # copy the output file to 'QMlog' directory
+        # Copy the output file to 'QMlog' directory
         tmp_dir = os.path.join(base_dir, "QMlog")
         if (os.path.exists(tmp_dir)):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
@@ -229,9 +227,9 @@ class CASSCF(Columbus):
             :param integer,list bo_list: list of BO states for BO calculation
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        # energy
+        # Energy
         if (not calc_force_only):
-            # read 'mcscfsm.sp' file
+            # Read 'mcscfsm.sp' file
             file_name = "LISTINGS/mcscfsm.sp"
             with open(file_name, "r") as f:
                 log_out = f.read()
@@ -246,13 +244,13 @@ class CASSCF(Columbus):
             for ist in range(molecule.nst):
                 molecule.states[ist].energy = energy[ist]
 
-        # force
+        # Force
         if (not calc_force_only):
             for states in molecule.states:
                 states.force = np.zeros((molecule.nat, molecule.nsp))
 
         for ist in bo_list:
-            # read 'cartgrd.drt1.state?.sp' file
+            # Read 'cartgrd.drt1.state?.sp' file
             file_name = f"GRADIENTS/cartgrd.drt1.state{ist + 1}.sp"
             with open(file_name, "r") as f:
                 log_out = f.read()
@@ -272,7 +270,7 @@ class CASSCF(Columbus):
                     if (ist == jst):
                         molecule.nac[ist, jst, :, :] = 0.
                     elif (ist < jst):
-                        # read 'cartgrd.nad.drt1.state?.drt1.state?.sp' file
+                        # Read 'cartgrd.nad.drt1.state?.drt1.state?.sp' file
                         file_name = f"GRADIENTS/cartgrd.nad.drt1.state{jst + 1}.drt1.state{ist + 1}.sp"
                         with open(file_name, "r") as f:
                             log_out = f.read()

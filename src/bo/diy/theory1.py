@@ -1,7 +1,8 @@
-from bo.example_program.program_name import Program_name
+from __future__ import division
+from bo.example_program.program_name import Program_Name
 
-class Theory1(Program_name):
-    """
+class Theory1(Program_Name):
+    """ Class for Theory1 method of Program_Name program
     """
     def __init__(self, molecule, arg1="arg1"):
         super().__init__(arg1)

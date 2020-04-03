@@ -1,12 +1,12 @@
 from __future__ import division
-import numpy as np
-import random, os, shutil
+from mqc.el_prop.el_propagator import *
 from mqc.mqc import MQC
 from fileio import touch_file, write_md_output, write_final_xyz, typewriter
 from misc import eps, au_to_K
-from mqc.el_prop.el_propagator import *
+import random, os, shutil
+import numpy as np
  
-class SH(MQC):    
+class SH(MQC):
     """ Class for surface hopping dynamics
 
         :param object molecule: molecule object
@@ -25,9 +25,9 @@ class SH(MQC):
 
         # Initialize SH variables
         self.rstate = istate
-        self.rstate_old = self.rstate  
-        
-        self.rand = 0.0
+        self.rstate_old = self.rstate
+
+        self.rand = 0.
         self.prob = np.zeros(molecule.nst)
         self.acc_prob = np.zeros(molecule.nst + 1)
 
@@ -36,7 +36,7 @@ class SH(MQC):
 
     def run(self, molecule, theory, thermostat, input_dir="./", \
         save_QMlog=False, save_scr=True):
-        """ run MQC dynamics according to surface hopping dynamics
+        """ Run MQC dynamics according to surface hopping dynamics
 
             :param object molecule: molecule object
             :param object theory: theory object containing on-the-fly calculation infomation
@@ -45,7 +45,7 @@ class SH(MQC):
             :param boolean save_QMlog: logical for saving QM calculation log
             :param boolean save_scr: logical for saving scratch directory
         """
-        # set directory information
+        # Set directory information
         input_dir = os.path.expanduser(input_dir)
         base_dir = os.path.join(os.getcwd(), input_dir)
 
@@ -60,7 +60,7 @@ class SH(MQC):
         if (save_QMlog):
             os.makedirs(QMlog_dir)
 
-        # initialize unixmd
+        # Initialize UNI-xMD
         os.chdir(base_dir)
         bo_list = [self.rstate]
         theory.calc_coupling = True
@@ -69,7 +69,7 @@ class SH(MQC):
             unixmd_dir, SH_chk=True)
         self.print_init(molecule, theory, thermostat)
 
-        # calculate initial input geometry at t = 0.0 s
+        # Calculate initial input geometry at t = 0.0 s
         theory.get_bo(molecule, base_dir, -1, bo_list, calc_force_only=False)
         if (not molecule.l_nacme):
             molecule.get_nacme()
@@ -83,10 +83,9 @@ class SH(MQC):
 
         write_md_output(molecule, theory.calc_coupling, -1, \
             self.propagation, unixmd_dir)
-
         self.print_step(molecule, -1)
 
-        # main MD loop
+        # Main MD loop
         for istep in range(self.nsteps):
 
             self.cl_update_position(molecule)
@@ -98,6 +97,7 @@ class SH(MQC):
                 molecule.adjust_nac()
 
             self.cl_update_velocity(molecule)
+
             if (not molecule.l_nacme):
                 molecule.get_nacme()
 
@@ -114,15 +114,15 @@ class SH(MQC):
 
             self.update_energy(molecule)
 
-            self.print_step(molecule, istep)
             write_md_output(molecule, theory.calc_coupling, istep, \
                 self.propagation, unixmd_dir)
+            self.print_step(molecule, istep)
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, istep, unixmd_dir)
 
-        # delete scratch directory
+        # Delete scratch directory
         if (not save_scr):
-            tmp_dir = os.path.join(base_dir, "md/scr_qm")
+            tmp_dir = os.path.join(unixmd_dir, "scr_qm")
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
 
@@ -131,14 +131,16 @@ class SH(MQC):
 
             :param object molecule: molecule object
             :param integer istep: current MD step
-            :param string unixmd_dir: unixmd directory
+            :param string unixmd_dir: md directory
         """
-        # reset surface hopping variables
-        self.l_hop = False
-        self.force_hop = False
+        # Reset surface hopping variables
         self.rstate_old = self.rstate
+
         self.prob = np.zeros(molecule.nst)
         self.acc_prob = np.zeros(molecule.nst + 1)
+
+        self.l_hop = False
+        self.force_hop = False
 
         accum = 0.
 
@@ -148,7 +150,7 @@ class SH(MQC):
         for ist in range(molecule.nst):
             if (ist != self.rstate):
                 if (self.force_hop):
-                    self.prob[ist] = molecule.rho.real[ist, ist] / (1. - eps) 
+                    self.prob[ist] = molecule.rho.real[ist, ist] / (1. - eps)
                 else:
                     self.prob[ist] = - 2. * molecule.rho.real[ist, self.rstate] * \
                         molecule.nacme[ist, self.rstate] * self.dt / molecule.rho.real[self.rstate, self.rstate]
@@ -156,14 +158,14 @@ class SH(MQC):
                 if (self.prob[ist] < 0.):
                     self.prob[ist] = 0.
                 accum += self.prob[ist]
-            self.acc_prob[ist + 1] = accum      
+            self.acc_prob[ist + 1] = accum
         psum = self.acc_prob[molecule.nst]
  
         if (psum > 1.):
             self.prob /= psum
             self.acc_prob /= psum
 
-        # write SHPROB file
+        # Write SHPROB file
         tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(molecule.nst)])
         typewriter(tmp, unixmd_dir, "SHPROB")
 
@@ -184,7 +186,7 @@ class SH(MQC):
                 self.rstate = ist
                 bo_list[0] = self.rstate
 
-        # write SHSTATE file
+        # Write SHSTATE file
         tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
         typewriter(tmp, unixmd_dir, "SHSTATE")
 
@@ -203,7 +205,7 @@ class SH(MQC):
                 raise ValueError ("Too small kinetic energy!")
             fac = 1. - pot_diff / molecule.ekin
             molecule.vel *= np.sqrt(fac)
-            # update kinetic energy
+            # Update kinetic energy
             molecule.update_kinetic()
 
 #        a = 0.
@@ -239,7 +241,7 @@ class SH(MQC):
 
             :param object molecule: molecule object
         """
-        # update kinetic energy
+        # Update kinetic energy
         molecule.update_kinetic()
         molecule.epot = molecule.states[self.rstate].energy
         molecule.etot = molecule.epot + molecule.ekin
@@ -256,6 +258,7 @@ class SH(MQC):
         else:
             raise ValueError ("Other propagators Not Implemented")
 
+    # TODO : add argument
     #def print_step(self, molecule, istep, debug=0):
     def print_step(self, molecule, istep):
         """ Routine to print each steps infomation about dynamics
@@ -275,27 +278,29 @@ class SH(MQC):
         for ist in range(molecule.nst):
             norm += molecule.rho.real[ist, ist]
 
-        # print INFO for each step
+        # Print INFO for each step
         INFO = f" INFO{istep + 1:>9d}{self.rstate:>5d}{max_prob:11.5f} ({self.rstate}->{hstate}){self.rand:11.5f}"
         INFO += f"{molecule.ekin:14.8f}{molecule.epot:15.8f}{molecule.etot:15.8f}"
         INFO += f"{ctemp:13.6f}"
         INFO += f"{norm:11.5f}"
         print (INFO, flush=True)
 
-        # print DEBUG1 for each step
+        # Print DEBUG1 for each step
         # TODO : if (debug=1):
+        # TODO : debug option print (add argument)
         DEBUG1 = f" DEBUG1{istep + 1:>7d}"
         for ist in range(molecule.nst):
             DEBUG1 += f"{molecule.states[ist].energy:17.8f} "
         print (DEBUG1, flush=True)
 
-        # print DEBUG2 for each step
+        # Print DEBUG2 for each step
+        # TODO : debug option print (add argument)
         DEBUG2 = f" DEBUG2{istep + 1:>7d}"
         for ist in range(molecule.nst):
             DEBUG2 += f"{self.acc_prob[ist]:12.5f}({self.rstate}->{ist})"
         print (DEBUG2, flush=True)
 
-        # print event in surface hopping
+        # Print event in surface hopping
         if (self.rstate != self.rstate_old):
             print (f" Hopping {self.rstate_old} -> {self.rstate}", flush=True)
 

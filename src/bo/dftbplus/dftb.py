@@ -1,9 +1,8 @@
 from __future__ import division
-import os, shutil, re, struct
 from bo.dftbplus.dftbplus import DFTBplus
-import numpy as np
-import textwrap
 from misc import eV_to_au
+import os, shutil, re, textwrap, struct
+import numpy as np
 
 spin_w = {"H":"-0.072", "C":"-0.031 -0.025 -0.025 -0.023", "N":"-0.033 -0.027 -0.027 -0.026", \
     "O":"-0.035 -0.030 -0.030 -0.028"}
@@ -20,8 +19,8 @@ class DFTB(DFTBplus):
         :param boolean sdftb: include spin-polarisation scheme
         :param double unpaired_e: number of unpaired electrons
         :param double e_temp: electronic temperature for Fermi-Dirac scheme
-        :param string mixer: charge mixing method used in SCC-DFTB
-        :param string ex_symmetry: symmetry (singlet or triplet) in TD-DFTB
+        :param string mixer: charge mixing method used in DFTB
+        :param string ex_symmetry: symmetry (singlet or triplet) in TDDFTB
         :param string sk_path: path for slater-koster files
         :param boolean periodic: use periodicity in the calculations
         :param double a(b, c)_axis: the length of cell lattice
@@ -35,10 +34,10 @@ class DFTB(DFTBplus):
         sdftb=False, unpaired_e=0., e_temp=0., mixer="Broyden", \
         ex_symmetry="S", sk_path="./", periodic=False, a_axis=0., b_axis=0., c_axis=0., \
         qm_path="./", nthreads=1, mpi=False, mpi_path="./", version=19.1):
-        # Initialize DFTBplus common variables
+        # Initialize DFTB+ common variables
         super().__init__(molecule, sk_path, qm_path, nthreads, version)
 
-        # Initialize DFTBplus DFTB variables
+        # Initialize DFTB+ DFTB variables
         self.scc = scc
         self.scc_tol = scc_tol
         self.max_scc_iter = max_scc_iter
@@ -59,11 +58,11 @@ class DFTB(DFTBplus):
         self.b_axis = b_axis
         self.c_axis = c_axis
 
-        # set 'l_nacme' with respect to the computational method
-        # TD-DFTB do not produce NACs, so we should get NACME from CIoverlap
+        # Set 'l_nacme' with respect to the computational method
+        # TDDFTB do not produce NACs, so we should get NACME from CIoverlap
         molecule.l_nacme = True
 
-        # re-calculation of excited state forces is not needed for ground state dynamics
+        # Re-calculation of excited state forces is not needed for ground state dynamics
         if (molecule.nst > 1):
             self.re_calc = True
         else:
@@ -94,7 +93,7 @@ class DFTB(DFTBplus):
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
         if (self.calc_coupling and not calc_force_only and istep >= 0 and molecule.nst > 1):
-            # after T = 0.0 s
+            # After T = 0.0 s
             shutil.copy(os.path.join(self.scr_qm_dir, "geometry.xyz"), \
                 os.path.join(self.scr_qm_dir, "../geometry.xyz.pre"))
             shutil.copy(os.path.join(self.scr_qm_dir, "eigenvec.bin"), \
@@ -110,14 +109,15 @@ class DFTB(DFTBplus):
             :param integer,list bo_list: list of BO states for BO calculation
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        # TODO : currently, CIoverlap is not correct -> only BOMD possible with TD-DFTB
+        # TODO : currently, CIoverlap is not correct -> only BOMD possible with TDDFTB
         if (self.calc_coupling):
-            raise ValueError ("only BOMD possible with TD-DFTB")
+            raise ValueError ("only BOMD possible with TDDFTB")
 
-        # make 'geometry.gen' file
+        # Make 'geometry.gen' file
+        # TODO : add environmental variable to common part
         os.system("xyz2gen geometry.xyz")
         if (self.periodic):
-            # substitute C to S in first line
+            # Substitute C to S in first line
             file_be = open('geometry.gen', 'r')
             file_af = open('tmp.gen', 'w')
             first_row = True
@@ -126,7 +126,7 @@ class DFTB(DFTBplus):
                     row = f'{molecule.nat} S\n'
                     first_row = False
                 file_af.write(row)
-            # add gamma-point and cell lattice information
+            # Add gamma-point and cell lattice information
             geom_periodic = textwrap.dedent(f"""\
             {0.0:15.8f} {0.0:15.8f} {0.0:15.8f}
             {self.a_axis:15.8f} {0.0:15.8f} {0.0:15.8f}
@@ -138,14 +138,14 @@ class DFTB(DFTBplus):
             file_af.close()
             os.rename('tmp.gen', 'geometry.gen')
 
-        # make 'double.gen' file for overlap in TD-DFTB
+        # Make 'double.gen' file for overlap in TDDFTB
         # In this case, we do not need to consider periodicity
         if (self.calc_coupling and not calc_force_only and istep >= 0 and molecule.nst > 1):
-            # move previous files to currect directory
+            # Move previous files to currect directory
             os.rename('../geometry.xyz.pre', './geometry.xyz.pre')
             os.rename('../eigenvec.bin.pre', './eigenvec.bin.pre')
             os.rename('../XplusY.DAT.pre', './XplusY.DAT.pre')
-            # open geometry.xyz.pre
+            # Open geometry.xyz.pre
             file_af = open('double.xyz', 'w')
             file_be = open('geometry.xyz.pre', 'r')
             first_row = True
@@ -155,7 +155,7 @@ class DFTB(DFTBplus):
                     first_row = False
                 file_af.write(row)
             file_be.close()
-            # open geometry.xyz
+            # Open geometry.xyz
             file_be = open('geometry.xyz', 'r')
             iline = 1
             for row in file_be:
@@ -164,9 +164,10 @@ class DFTB(DFTBplus):
                 iline += 1
             file_be.close()
             file_af.close()
+            # TODO : add environmental variable to common part
             os.system("xyz2gen double.xyz")
 
-        # make 'dftb_in.hsd' file
+        # Make 'dftb_in.hsd' file
         input_dftb = ""
 
         # Geometry Block
@@ -263,7 +264,7 @@ class DFTB(DFTBplus):
         # ExcitedState Block
         if (molecule.nst > 1):
 
-            # calculate excited state force and root state?
+            # Calculate excited state force and root state?
             if (bo_list[0] > 0):
                 ex_force = "Yes"
                 rst = bo_list[0]
@@ -271,7 +272,7 @@ class DFTB(DFTBplus):
                 ex_force = "No"
                 rst = bo_list[0] + 1
 
-            # set symmetry in TD-DFTB
+            # Set symmetry in TDDFTB
             if (self.ex_symmetry == "S"):
                 symmetry = "singlet"
             elif (self.ex_symmetry == "T"):
@@ -279,7 +280,7 @@ class DFTB(DFTBplus):
             else:
                 raise ValueError (f"wrong input given in {self.ex_symmetry}")
 
-            # set number of excitations in TD-DFTB
+            # Set number of excitations in TDDFTB
             if (molecule.nat <= 5):
                 num_ex = molecule.nst + 2
             elif (molecule.nat > 5 and molecule.nat <= 15):
@@ -287,7 +288,7 @@ class DFTB(DFTBplus):
             else:
                 num_ex = 3 * molecule.nst + 2
 
-            # write XplusY data?
+            # Write XplusY data?
             if (self.calc_coupling):
                 xpy = "Yes"
             else:
@@ -333,15 +334,15 @@ class DFTB(DFTBplus):
             """)
             input_dftb += input_parallel
 
-        # write 'dftb_in.hsd.geom' file
+        # Write 'dftb_in.hsd.geom' file
         file_name = "dftb_in.hsd.geom"
         with open(file_name, "w") as f:
             f.write(input_dftb)
 
-        # write 'dftb_in.hsd.double' file
+        # Write 'dftb_in.hsd.double' file
         if (self.calc_coupling and not calc_force_only and istep >= 0 and molecule.nst > 1):
 
-            # new input for dftb
+            # New input for dftb
             input_dftb = ""
 
             # Geometry Block
@@ -378,28 +379,28 @@ class DFTB(DFTBplus):
             :param integer,list bo_list: list of BO states for BO calculation
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        # set run command
+        # Set run command
         qm_command = os.path.join(self.qm_path, "dftb+")
         if (self.mpi):
-            # mpi setting
+            # MPI setting
             os.environ["OMP_NUM_THREADS"] = "1"
             mpi_command = os.path.join(self.mpi_path, "mpirun")
             command = f"{mpi_command} -np {self.nthreads} {qm_command} > log"
         else:
-            # openmp setting
+            # OpenMP setting
             os.environ["OMP_NUM_THREADS"] = f"{self.nthreads}"
             command = f"{qm_command} > log"
 
-        # run DFTBplus for calculation of overlap matrix
+        # Run DFTB+ for calculation of overlap matrix
         if (self.calc_coupling and not calc_force_only and istep >= 0 and molecule.nst > 1):
             shutil.copy("dftb_in.hsd.double", "dftb_in.hsd")
             os.system(command)
 
-        # run DFTBplus method for molecular dynamics
+        # Run DFTB+ method for molecular dynamics
         shutil.copy("dftb_in.hsd.geom", "dftb_in.hsd")
         os.system(command)
 
-        # copy the output file to 'QMlog' directory
+        # Copy the output file to 'QMlog' directory
         tmp_dir = os.path.join(base_dir, "QMlog")
         if (os.path.exists(tmp_dir)):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
@@ -414,18 +415,18 @@ class DFTB(DFTBplus):
             :param integer,list bo_list: list of BO states for BO calculation
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        # read 'detailed.out' file
+        # Read 'detailed.out' file
         # TODO: the qmmm information is written in this file
         file_name = "detailed.out"
         with open(file_name, "r") as f:
             detailed_out = f.read()
-        # read 'EXC.DAT' file
+        # Read 'EXC.DAT' file
         if (molecule.nst > 1):
             file_name = "EXC.DAT"
             with open(file_name, "r") as f:
                 exc_out = f.read()
 
-        # energy
+        # Energy
         if (not calc_force_only):
             for states in molecule.states:
                 states.energy = 0.
@@ -444,7 +445,7 @@ class DFTB(DFTBplus):
                 for ist in range(1, molecule.nst):
                     molecule.states[ist].energy = molecule.states[0].energy + energy[ist - 1]
 
-        # force
+        # Force
         if (not calc_force_only):
             for states in molecule.states:
                 states.force = np.zeros((molecule.nat, molecule.nsp))
@@ -456,12 +457,13 @@ class DFTB(DFTBplus):
         force = force.reshape(molecule.nat, 3, order='C')
         molecule.states[bo_list[0]].force = np.copy(force)
 
-        # nacme
+        # NACME
         if (self.calc_coupling and not calc_force_only):
             molecule.nacme = np.zeros((molecule.nst, molecule.nst))
             if (istep >= 0):
-                self.CIoverlap(molecule, base_dir)
-                # read 'NACME.DAT'
+                # TODO : current TDNAC gives too large values
+                #self.CIoverlap(molecule, base_dir)
+                # Read 'NACME.DAT'
                 ist = 0
                 jst = 0
                 nline = 1
@@ -486,7 +488,7 @@ class DFTB(DFTBplus):
             :param object molecule: molecule object
             :param string base_dir: base directory
         """
-        # set new variable to decide the number of basis functions for atoms
+        # Set new variable to decide the number of basis functions for atoms
         check_atom = [0]
         num_basis = 0
         core_elec = 0.
@@ -500,7 +502,7 @@ class DFTB(DFTBplus):
                 num_basis += 1
                 check_atom.append(num_basis)
 
-        # set new variable to decide the position of atoms in basis functions
+        # Set new variable to decide the position of atoms in basis functions
         check_basis = []
         for ibasis in range(num_basis):
             for iat in range(molecule.nat):
@@ -509,7 +511,7 @@ class DFTB(DFTBplus):
                 if (ibasis + 1 >= ind_a and ibasis + 1 <= ind_b):
                     check_basis.append(iat + 1)
 
-        # write 'INPUT' file
+        # Write 'INPUT' file
         ncore = 0
         nocc = int(int(molecule.nelec - core_elec) / 2) - ncore
         nvirt = num_basis - nocc - ncore
@@ -522,7 +524,7 @@ class DFTB(DFTBplus):
 
         f_out.close()
 
-        # write 'AOVERLAP' file
+        # Write 'AOVERLAP' file
         file_name_out = "AOVERLAP"
         f_out = open(file_name_out, "w")
 
@@ -576,7 +578,7 @@ class DFTB(DFTBplus):
 
         f_out.close()
 
-        # write 'MOCOEF' file
+        # Write 'MOCOEF' file
         file_name_out = "MOCOEF"
         f_out = open(file_name_out, "w")
 
@@ -599,7 +601,7 @@ class DFTB(DFTBplus):
 
         f_out.close()
 
-        # write 'MOCOEFOLD' file
+        # Write 'MOCOEFOLD' file
         file_name_out = "MOCOEFOLD"
         f_out = open(file_name_out, "w")
 
@@ -622,7 +624,7 @@ class DFTB(DFTBplus):
 
         f_out.close()
 
-        # write 'CICOEF' file
+        # Write 'CICOEF' file
         file_name_out = "CICOEF"
         f_out = open(file_name_out, "w")
 
@@ -658,7 +660,7 @@ class DFTB(DFTBplus):
 
         for iexc in range(nexc):
 
-            # normalize the CI coefficients
+            # Normalize the CI coefficients
             norm_val = 0.
             for iocc in range(nocc):
                 for ivirt in range(nvirt):
@@ -680,7 +682,7 @@ class DFTB(DFTBplus):
 
         f_out.close()
 
-        # write 'CICOEFOLD' file
+        # Write 'CICOEFOLD' file
         file_name_out = "CICOEFOLD"
         f_out = open(file_name_out, "w")
 
@@ -716,7 +718,7 @@ class DFTB(DFTBplus):
 
         for iexc in range(nexc):
 
-            # normalize the CI coefficients
+            # Normalize the CI coefficients
             norm_val = 0.
             for iocc in range(nocc):
                 for ivirt in range(nvirt):

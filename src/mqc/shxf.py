@@ -1,12 +1,12 @@
 from __future__ import division
-import numpy as np
-import random, os, shutil
+from mqc.el_prop.el_propagator import *
 from mqc.mqc import MQC
 from fileio import touch_file, write_md_output, write_final_xyz, typewriter
 from misc import eps
-from mqc.el_prop.el_propagator import *
+import random, os, shutil
+import numpy as np
 
-"""     DENSITY PROPAGATION NOT IMPLEMENTED YET FOR SHXF!!!!!!!!!!!!!
+""" DENSITY PROPAGATION NOT IMPLEMENTED YET FOR SHXF!!!!!!!!!!!!!
 """
 
 class Auxiliary_Molecule(object):
@@ -55,6 +55,7 @@ class SHXF(MQC):
         self.rstate = istate
         self.rstate_old = self.rstate
 
+        self.rand = 0.
         self.prob = np.zeros(molecule.nst)
         self.acc_prob = np.zeros(molecule.nst + 1)
 
@@ -80,7 +81,7 @@ class SHXF(MQC):
 
     def run(self, molecule, theory, thermostat, input_dir="./", \
         save_QMlog=False, save_scr=True):
-        """ run MQC dynamics according to decoherence-induced surface hopping dynamics
+        """ Run MQC dynamics according to decoherence-induced surface hopping dynamics
 
             :param object molecule: molecule object
             :param object theory: theory object containing on-the-fly calculation infomation
@@ -89,11 +90,7 @@ class SHXF(MQC):
             :param boolean save_QMlog: logical for saving QM calculation log
             :param boolean save_scr: logical for saving scratch directory
         """
-        # TODO: current SHXF with thermostat Not Implemented -> should be removed
-        #thermotype = thermostat.__class__.__name__
-        #if (thermotype != "none"):
-        #    raise ValueError ("Thermostat for SHXF Dynamics Not Implemented")
-        # set directory information
+        # Set directory information
         input_dir = os.path.expanduser(input_dir)
         base_dir = os.path.join(os.getcwd(), input_dir)
 
@@ -108,14 +105,16 @@ class SHXF(MQC):
         if (save_QMlog):
             os.makedirs(QMlog_dir)
 
-        # initialize unixmd
+        # Initialize UNI-xMD
         os.chdir(base_dir)
         bo_list = [self.rstate]
         theory.calc_coupling = True
-        unixmd_init(molecule, theory.calc_coupling, self.propagation, \
-            unixmd_dir, SH_chk=True)
 
-        # calculate initial input geometry at t = 0.0 s
+        touch_file(molecule, theory.calc_coupling, self.propagation, \
+            unixmd_dir, SH_chk=True)
+        self.print_init(molecule, theory, thermostat)
+
+        # Calculate initial input geometry at t = 0.0 s
         theory.get_bo(molecule, base_dir, -1, bo_list, calc_force_only=False)
         if (not molecule.l_nacme):
             molecule.get_nacme()
@@ -135,7 +134,7 @@ class SHXF(MQC):
         write_md_output(molecule, theory.calc_coupling, -1, \
             self.propagation, unixmd_dir)
 
-        # main MD loop
+        # Main MD loop
         for istep in range(self.nsteps):
 
             self.cl_update_position(molecule)
@@ -171,12 +170,14 @@ class SHXF(MQC):
 
             write_md_output(molecule, theory.calc_coupling, istep, \
                 self.propagation, unixmd_dir)
+            # TODO : add print step for SHXF
+            #self.print_step(molecule, istep)
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, istep, unixmd_dir)
 
-        # delete scratch directory
+        # Delete scratch directory
         if (not save_scr):
-            tmp_dir = os.path.join(base_dir, "md/scr_qm")
+            tmp_dir = os.path.join(unixmd_dir, "scr_qm")
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
 
@@ -185,14 +186,16 @@ class SHXF(MQC):
 
             :param object molecule: molecule object
             :param integer istep: current MD step
-            :param string unixmd_dir: unixmd directory
+            :param string unixmd_dir: md directory
         """
-        # reset surface hopping variables
-        self.l_hop = False
-        self.force_hop = False
+        # Reset surface hopping variables
         self.rstate_old = self.rstate
+
         self.prob = np.zeros(molecule.nst)
         self.acc_prob = np.zeros(molecule.nst + 1)
+
+        self.l_hop = False
+        self.force_hop = False
 
         accum = 0.
 
@@ -202,8 +205,8 @@ class SHXF(MQC):
         for ist in range(molecule.nst):
             if (ist != self.rstate):
                 if (self.force_hop):
-                    self.prob[ist] = molecule.rho.real[ist, ist] / (1. - eps) 
-                else: 
+                    self.prob[ist] = molecule.rho.real[ist, ist] / (1. - eps)
+                else:
                     self.prob[ist] = - 2. * molecule.rho.real[ist, self.rstate] * \
                         molecule.nacme[ist, self.rstate] * self.dt / molecule.rho.real[self.rstate, self.rstate]
 
@@ -217,7 +220,7 @@ class SHXF(MQC):
             self.prob /= psum
             self.acc_prob /= psum
 
-        # write SHPROB file
+        # Write SHPROB file
         tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(molecule.nst)])
         typewriter(tmp, unixmd_dir, "SHPROB")
 
@@ -229,16 +232,16 @@ class SHXF(MQC):
             :param integer istep: current MD step
             :param string unixmd_dir: unixmd directory
         """
-        rand = random.random()
+        self.rand = random.random()
         for ist in range(molecule.nst):
             if (ist == self.rstate):
                 continue
-            if (rand > self.acc_prob[ist] and rand <= self.acc_prob[ist + 1]):
+            if (self.rand > self.acc_prob[ist] and self.rand <= self.acc_prob[ist + 1]):
                 self.l_hop = True
                 self.rstate = ist
                 bo_list[0] = self.rstate
 
-        # write SHSTATE file
+        # Write SHSTATE file
         tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
         typewriter(tmp, unixmd_dir, "SHSTATE")
 
@@ -257,7 +260,7 @@ class SHXF(MQC):
                 raise ValueError ("Too small kinetic energy!")
             fac = 1. - pot_diff / molecule.ekin
             molecule.vel *= np.sqrt(fac)
-            # update kinetic energy
+            # Update kinetic energy
             molecule.update_kinetic()
 
     def calculate_force(self, molecule):
@@ -272,7 +275,7 @@ class SHXF(MQC):
 
             :param object molecule: molecule object
         """
-        # update kinetic energy
+        # Update kinetic energy
         molecule.update_kinetic()
         molecule.epot = molecule.states[self.rstate].energy
         molecule.etot = molecule.epot + molecule.ekin
@@ -335,6 +338,7 @@ class SHXF(MQC):
                 self.aux.pos[ist] += self.aux.vel[ist] * self.dt
             else:
                 self.aux.pos[ist] = molecule.pos
+        # TODO : p_name?
 #            print(f"AUX_POS {self.aux.pos[ist, 0, 0]:15.8f}            {ist + 1}", flush=True)
 
         # Get auxiliary velocity
@@ -355,13 +359,14 @@ class SHXF(MQC):
                     self.aux.vel[ist] = molecule.vel * alpha
             else:
                 self.aux.vel[ist] = molecule.vel
+        # TODO : p_name?
 #            print(f"AUX_VEL {self.aux.vel[ist, 0, 0]:15.8f}            {ist + 1}", flush=True)
 
     def set_decoherence(self, molecule, one_st):
         """ Routine to reset coefficient/density if the state is decohered
-            
+
             :param object molecule: molecule object
-            :param integer one_st: state index that its population is one. 
+            :param integer one_st: state index that its population is one
         """
         self.phase = np.zeros((molecule.nst, molecule.nat, molecule.nsp))
         for ist in range(molecule.nst):
@@ -375,7 +380,7 @@ class SHXF(MQC):
  
     def get_phase(self, molecule):
         """ Routine to calculate phase term
-        
+
             :param object molecule: molecule object
         """
         for ist in range(molecule.nst):
@@ -386,12 +391,13 @@ class SHXF(MQC):
                     for iat in range(molecule.nat):
                         for isp in range(molecule.nsp):
                             self.phase[ist, iat, isp] += molecule.mass[iat] * \
-                            (self.aux.vel[ist, iat, isp] - self.aux.vel_old[ist, iat, isp])
+                                (self.aux.vel[ist, iat, isp] - self.aux.vel_old[ist, iat, isp])
+        # TODO : p_name?
 #            print(f"NABPH {self.phase[ist, 0, 0]:15.8f}            {ist + 1}", flush=True)
 
     def el_propagator(self, molecule):
         """ Routine to propagate BO coefficients or density matrix
-        
+
             :param object molecule: molecule object
         """
         if (self.propagation == "coefficient"):
@@ -400,5 +406,10 @@ class SHXF(MQC):
             raise ValueError ("Density Propagation Not Implemented")
         else:
             raise ValueError ("Other Propagators Not Implemented")
+
+
+    # TODO : add argument
+    # TODO : add print_step method
+
 
 

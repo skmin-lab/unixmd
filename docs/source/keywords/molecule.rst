@@ -1,5 +1,6 @@
 
-At the very first stage of dynamics calculations, users need to make a molecule object to be investigated. The keywords to specify the molecule are below.
+At the very first stage of dynamics calculations, users need to make
+a molecule object to be investigated. The keywords to specify the molecule are below.
 
 +--------------+----------------------------------------------------+-----------+
 | Keywords     | Work                                               | Default   |

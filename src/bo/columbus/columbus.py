@@ -24,10 +24,10 @@ class Columbus(BO_calculator):
         # qm_path should be saved in the environmental variable "COLUMBUS"
         os.environ["COLUMBUS"] = self.qm_path
 
-        # check the atomic species with sorted command
+        # Check the atomic species with sorted command
         self.atom_type = sorted(set(molecule.symbols))
 
-        # check basis sets
+        # Check basis sets
         for itype in self.atom_type:
             try:
                 pass
@@ -36,7 +36,5 @@ class Columbus(BO_calculator):
 
         if (self.version != 7.0):
             raise ValueError ("Other Versions Not Implemented")
-
-
 
 

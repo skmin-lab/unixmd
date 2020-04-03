@@ -1,5 +1,5 @@
 
-DFTB+ :cite:`DFTBplus` is a fast and efficient versatile quantum mechanical simulation software package.
+DFTB+ :cite:`Aradi2007,Hourahine2020` is a fast and efficient versatile quantum mechanical simulation software package.
 Using DFTB+ you can carry out quantum mechanical simulations similar to density functional
 theory but in an approximate way, typically gaining around two orders of magnitude in
 speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.

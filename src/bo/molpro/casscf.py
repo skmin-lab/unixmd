@@ -1,8 +1,7 @@
 from __future__ import division
-import os, shutil, re
 from bo.molpro.molpro import Molpro
+import os, shutil, re, textwrap
 import numpy as np
-import textwrap
 
 class CASSCF(Molpro):
     """ Class for CASSCF method of Molpro program
@@ -29,9 +28,10 @@ class CASSCF(Molpro):
         super().__init__(basis_set, memory, qm_path, nthreads, version)
 
         # Initialize Molpro CASSCF variables
-        # note that Molpro do not need restart option since it automatically search
+        # Note that Molpro do not need restart option since it automatically search
         # the MO files for restart if possible
-        # in addition, Molpro do not provide periodic setting with CASSCF method
+        # TODO : For restart of previous step, this can be done without removing scratch directory
+        # In addition, Molpro do not provide periodic setting with CASSCF method
         self.max_iter = max_iter
         self.scf_en_tol = scf_en_tol
         self.scf_grad_tol = scf_grad_tol
@@ -40,18 +40,18 @@ class CASSCF(Molpro):
         self.active_orb = active_orb
         self.cpscf_grad_tol = cpscf_grad_tol
 
-        # casscf calculation do not provide parallel computation
-        # TODO: if your system provide parallel casscf, then this part should be removed
+        # CASSCF calculation do not provide parallel computation
+        # If your system provide parallel casscf, then this part should be removed
         if (self.nthreads > 1):
             raise ValueError ("Parallel CASSCF Not Implemented")
 
-        # calculate number of frozen, closed and occ orbitals in CASSCF method
-        # no positive frozen core orbitals in CASSCF
+        # Calculate number of frozen, closed and occ orbitals in CASSCF method
+        # No positive frozen core orbitals in CASSCF
         self.frozen_orb = 0
         self.closed_orb = int((int(molecule.nelec) - self.active_elec) / 2)
         self.occ_orb = int(self.closed_orb + self.active_orb)
 
-        # set 'l_nacme' with respect to the computational method
+        # Set 'l_nacme' with respect to the computational method
         # CASSCF can produce NACs, so we do not need to get NACME from CIoverlap
         # CASSCF can compute the gradient of several states simultaneously,
         #        but self.re_calc is set to be true to reduce cost.
@@ -81,7 +81,7 @@ class CASSCF(Molpro):
             :param integer,list bo_list: list of BO states for BO calculation
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        # make 'molpro.inp' file
+        # Make 'molpro.inp' file
         input_molpro = ""
 
         # Scratch Block
@@ -110,7 +110,7 @@ class CASSCF(Molpro):
         """)
         input_molpro += input_control
 
-        # CASSCF Block: calculation energy option
+        # CASSCF Block: calculate energy option
         input_casscf = textwrap.dedent(f"""\
         {{mcscf,maxit={self.max_iter},energy={self.scf_en_tol},gradient={self.scf_grad_tol},step={self.scf_step_tol}
         frozen,{self.frozen_orb}
@@ -131,7 +131,7 @@ class CASSCF(Molpro):
             input_casscf_grad = f"""{casscf_grad}\n}}\n"""
         input_molpro += input_casscf_grad
 
-        # CASSCF Block: calculate nac option
+        # CASSCF Block: calculate NAC option
         if (not calc_force_only and self.calc_coupling):
             kst = 0
             tmp_ind = 5100.3 + float(molecule.nst) - 1
@@ -160,7 +160,7 @@ class CASSCF(Molpro):
         input_casscf_force = f"""{casscf_force}\n"""
         input_molpro += input_casscf_force
 
-        # write 'molpro.inp' file
+        # Write 'molpro.inp' file
         file_name = "molpro.inp"
         with open(file_name, "w") as f:
             f.write(input_molpro)
@@ -172,14 +172,14 @@ class CASSCF(Molpro):
             :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
         """
-        # run Molpro method
+        # Run Molpro method
         qm_command = os.path.join(self.qm_path, "molpro")
-        # openmp setting
+        # OpenMP setting
         os.environ["OMP_NUM_THREADS"] = "1"
         command = f"{qm_command} -m {self.memory} -I int -W wfu --no-xml-output -d int -o log -g -s molpro.inp > tmp_log"
         os.system(command)
         os.remove("tmp_log")
-        # copy the output file to 'QMlog' directory
+        # Copy the output file to 'QMlog' directory
         tmp_dir = os.path.join(base_dir, "QMlog")
         if (os.path.exists(tmp_dir)):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
@@ -192,12 +192,12 @@ class CASSCF(Molpro):
             :param integer,list bo_list: list of BO states for BO calculation
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        # read 'log' file
+        # Read 'log' file
         file_name = "log"
         with open(file_name, "r") as f:
             log_out = f.read()
 
-        # energy
+        # Energy
         if (not calc_force_only):
             for states in molecule.states:
                 states.energy = 0.
@@ -209,7 +209,7 @@ class CASSCF(Molpro):
             for ist in range(molecule.nst):
                 molecule.states[ist].energy = energy[ist]
 
-        # force
+        # Force
         if (not calc_force_only):
             for states in molecule.states:
                 states.force = np.zeros((molecule.nat, molecule.nsp))

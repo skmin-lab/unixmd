@@ -1,5 +1,6 @@
 
-Turbomole (TM) :cite:`TM` is quantum chemical program package, initially developed in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and at the Forschungszentrum Karlsruhe.
+Turbomole :cite:`Ahlrichs1989` is quantum chemical program package, initially developed
+in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and at the Forschungszentrum Karlsruhe.
 (TD)DFT method is interfaced with current version of UNI-xMD.
 
 - (TD)DFT provides analytical gradients, thus it can be used born-oppenhiemer molecular dynamics (BOMD).

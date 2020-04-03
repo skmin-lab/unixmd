@@ -1,5 +1,5 @@
 
-Decoherence induced surface hopping based on exact factorization (DISH-XF) :cite:`dish` method is included in UNI-xMD package.
+Decoherence induced surface hopping based on exact factorization (DISH-XF) :cite:`Ha2018` method is included in UNI-xMD package.
 Electronic equation of motion in DISH-XF contains "decoherence term" which is derived from exact factorization,
 in addition to Eherenfest term, i.e.
 
@@ -10,7 +10,7 @@ in addition to Eherenfest term, i.e.
     &+\sum_J\sum_\nu\frac{1}{M_\nu}\frac{\nabla_\nu|\chi|}{|\chi|}\Bigg|_{\underline{\underline{\bf R}}^{(I)}(t)}
     \cdot\left\{{\bf f}^{(I)}_{J\nu}(t)-{\bf f}^{(I)}_{K\nu}(t)\right\}|C^{(I)}_J(t)|^2 C^{(I)}_K(t)
 
-Detailed description of DISH-XF method is in :cite:`dish`
+Detailed description of DISH-XF method is in :cite:`Ha2018`
 
 +----------------+------------------------------------------------------+---------+
 | Keywords       | Work                                                 | Default |

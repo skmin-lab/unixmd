@@ -1,7 +1,7 @@
 from __future__ import division
+from misc import data, A_to_au, eps
 import textwrap
 import numpy as np
-from misc import data, A_to_au, eps
 
 class State(object):
     """ Class for BO states
@@ -13,7 +13,7 @@ class State(object):
         # Initialize variables
         self.energy = 0.
         self.energy_old = 0.
-        self.force = np.zeros((nat, nsp)) 
+        self.force = np.zeros((nat, nsp))
         self.coef = 0. + 0.j
         self.multiplicity = 1
 
@@ -21,7 +21,7 @@ class State(object):
 class Molecule(object):
     """ Class for a molecule object including State objects
 
-        :param string geometry: Cartesian coordinates for position and initial velocity in the extended xyz format
+        :param string geometry: initial cartesian coordinates for position and velocities in the extended xyz format
         :param integer nsp: dimension of space where the molecule is
         :param integer nstates: number of BO states
         :param integer dof: degrees of freedom (if model is False, molecular dof is given)
@@ -44,12 +44,12 @@ class Molecule(object):
         self.symbols = []
         self.read_geometry(geometry, unit_pos, unit_vel)
 
-        # Initialize system charge and nr. of electrons
+        # Initialize system charge and number of electrons
         if (not model):
             self.charge = charge
             self.get_nr_electrons()
         else:
-            self.charge = 0
+            self.charge = 0.
             self.nelec = 0
 
         # Initialize degrees of freedom
@@ -61,12 +61,12 @@ class Molecule(object):
         else:
             if (dof == None):
                 if (self.nat == 1):
-                    raise ValueError ("Too small NATOMS {self.nat}")
+                    raise ValueError ("Too small number of atoms {self.nat}")
                 elif (self.nat == 2):
-                    # diatomic molecules
+                    # Diatomic molecules
                     self.dof = 1
                 else:
-                    # non-linear molecules
+                    # Non-linear molecules
                     self.dof = self.nsp * self.nat - self.nsp * (self.nsp + 1) / 2
             else:
                 self.dof = dof
@@ -102,46 +102,46 @@ class Molecule(object):
                        H 0.0 0.0 0.0 0.0 0.0 0.0\n
                        H 0.0 0.0 0.8 0.0 0.0 0.0\n
                        '''\n
-            self.read_geometry( geometry )
+            self.read_geometry(geometry)
 
             :param string geometry: Cartesian coordinates for position and initial velocity in the extended xyz format
-            :param string unit_pos: unit of position (A = angstrom, au = atomic unit[bohr])
+            :param string unit_pos: unit of position (A = angstrom, au = atomic unit [bohr])
             :param string unit_vel: unit of velocity (au = atomic unit, A/ps = angstrom per ps, A/fs = angstromm per fs)
         """
         f = geometry.split('\n')
 
-        # Is the nr of atoms info read?
+        # Read the number of atoms
         l_read_nr_atoms = False
         count_line = 0
         for line_number, line in enumerate(f):
             llength = len(line.split())
             if (not l_read_nr_atoms and llength == 0):
-                # skip the blank lines
+                # Skip the blank lines
                 continue
             elif (count_line == 0 and llength == 1):
-                # read the nr. of atoms
+                # Read the number of atoms
                 l_read_nr_atoms = True
                 self.nat = int(line.split()[0])
                 count_line += 1
             elif (count_line == 1):
-                # skip the comment line
-                count_line += 1 
+                # Skip the comment line
+                count_line += 1
             else:
-                # read the positions and the velocities
+                # Read the positions and velocities
                 if (len(line.split()) == 0):
                     break
                 assert len(line.split()) == (1 + 2 * self.nsp)
                 self.symbols.append(line.split()[0])
-                self.mass.append(data[line.split()[0]])  
+                self.mass.append(data[line.split()[0]])
                 self.pos.append(list(map(float, line.split()[1:(self.nsp + 1)])))
                 self.vel.append(list(map(float, line.split()[(self.nsp + 1):])))
                 count_line += 1
-        assert self.nat == count_line - 2 
+        assert self.nat == count_line - 2
 
         self.symbols = np.array(self.symbols)
         self.mass = np.array(self.mass)
 
-        # unit conversion
+        # Conversion unit
         if (unit_pos == 'au'):
             fac_pos = 1.
         elif (unit_pos == 'A'):
@@ -164,7 +164,8 @@ class Molecule(object):
     def adjust_nac(self):
         """ Adjust phase of nonadiabatic couplings
         """
-        p_name = "ADJUST_NAC"
+        # TODO : p_name?
+#        p_name = "ADJUST_NAC"
         for ist in range(self.nst):
             for jst in range(ist, self.nst):
                 ovlp = 0.
@@ -184,12 +185,12 @@ class Molecule(object):
                     dot_nac = np.sum(self.nac_old[ist, jst] * self.nac[ist, jst])
                     ovlp = dot_nac / snac / snac_old
 
-                if(ovlp < 0.):
+                if (ovlp < 0.):
                     #print(f"{p_name} : the sign of NAC changed {ist} {jst}")
                     self.nac[ist, jst] = - self.nac[ist, jst]
                     self.nac[jst, ist] = - self.nac[jst, ist]
 
-        self.nac_old = np.copy(self.nac) 
+        self.nac_old = np.copy(self.nac)
 
     def get_nacme(self):
         """ Get NACME from nonadiabatic couplings
@@ -234,7 +235,7 @@ class Molecule(object):
                 geom_info += f"{self.pos[nth, isp]:15.8f}"
             geom_info += f"{self.mass[nth]:15.5f}\n"
         print (geom_info, flush=True)
-       
+
         vel_info = textwrap.dedent(f"""\
         {"-" * 68}
         {"Initial Velocity (au)":>44s}
@@ -248,15 +249,16 @@ class Molecule(object):
                 vel_info += f"{self.vel[nth, isp]:15.8f}"
             vel_info += f"\n"
         print (vel_info, flush=True)
-        
+
         ### TODO: multiplicity
+        ### TODO: add print of number of electrons?
         molecule_info = textwrap.dedent(f"""\
         {"-" * 68}
         {"Molecule Information":>43s}
         {"-" * 68}
           Number of Atoms          = {self.nat:>16d}
           Degrees of Freedom       = {int(self.dof):>16d}
-          Charge                   = {int(self.charge):>16d}   
+          Charge                   = {int(self.charge):>16d}
           Number of States         = {self.nst:>16d}
         """)
         ### TODO: Model case
