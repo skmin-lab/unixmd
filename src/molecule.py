@@ -259,6 +259,7 @@ class Molecule(object):
           Number of Atoms          = {self.nat:>16d}
           Degrees of Freedom       = {int(self.dof):>16d}
           Charge                   = {int(self.charge):>16d}
+          Number of Electrons      = {int(self.nelec):>16d}
           Number of States         = {self.nst:>16d}
         """)
         ### TODO: Model case
