@@ -12,6 +12,9 @@ class Turbomole(BO_calculator):
         :param double version: version of Turbomole program
     """
     def __init__(self, functional, basis_set, memory, qm_path, nthreads, version):
+        # Save name of BO calculator and its method
+        super().__init__()
+
         # Initialize Turbomole common variables
         self.functional = functional
         self.basis_set = basis_set

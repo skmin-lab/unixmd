@@ -11,6 +11,9 @@ class Gaussian09(BO_calculator):
         :param string version: version of Gaussian09 program
     """
     def __init__(self, basis_set, memory, nthreads, g09_root_path, version):
+        # Save name of BO calculator and its method
+        super().__init__()
+
         # Initialize Gaussian09 common variables
         self.basis_set = basis_set
 

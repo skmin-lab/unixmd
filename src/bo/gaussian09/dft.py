@@ -19,7 +19,7 @@ class DFT(Gaussian09):
         functional="BLYP", basis_set="STO-3G", \
         g09_root_path="/opt/gaussian/", version="Revision A.02"):
         # Initialize Gaussian09 common variables
-        super().__init__(basis_set, memory, nthreads, g09_root_path, version)
+        super(DFT, self).__init__(basis_set, memory, nthreads, g09_root_path, version)
 
         # Initialize Gaussian09 DFT variables
         self.functional = functional

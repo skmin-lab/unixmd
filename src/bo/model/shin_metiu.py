@@ -11,7 +11,7 @@ class Shin_Metiu(Model):
     """
     def __init__(self, molecule, qm_path="./"):
         # Initialize model common variables
-        super().__init__(qm_path)
+        super(Shin_Metiu, self).__init__(qm_path)
 
         # Set 'l_nacme' with respect to the computational method
         # Shin-Metiu model can produce NACs, so we do not need to get NACME

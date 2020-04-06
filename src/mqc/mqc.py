@@ -16,6 +16,9 @@ class MQC(object):
     """
     def __init__(self, molecule, istate, dt, nsteps, nesteps, \
         propagation, l_adjnac):
+        # Save name of MQC dynamics
+        self.md_type = self.__class__.__name__
+
         # Initialize input values
         self.istate = istate
         self.dt = dt * fs_to_au
@@ -80,23 +83,19 @@ class MQC(object):
         molecule.print_init()
 
         # Print dynamics information
-        qm_prog = str(theory.__class__).split('.')[1]
-        qm_method = theory.__class__.__name__
-        md_type = self.__class__.__name__
-
         dynamics_info = textwrap.dedent(f"""\
         {"-" * 68}
         {"Dynamics Information":>43s}
         {"-" * 68}
-          QM Program               = {qm_prog:>16s}
-          QM Method                = {qm_method:>16s}
+          QM Program               = {theory.qm_prog:>16s}
+          QM Method                = {theory.qm_method:>16s}
 
-          MQC Method               = {md_type:>16s}
+          MQC Method               = {self.md_type:>16s}
           Time Interval (fs)       = {self.dt / fs_to_au:16.6f}
           Initial State (0:GS)     = {self.istate:>16d}
           Nuclear Step             = {self.nsteps:>16d}
         """)
-        if (md_type != "BOMD"):
+        if (self.md_type != "BOMD"):
             dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
             dynamics_info += f"  Propagation Scheme       = {self.propagation:>16s}\n"
         print (dynamics_info, flush=True)

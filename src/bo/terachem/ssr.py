@@ -31,7 +31,7 @@ class SSR(TeraChem):
         reks_max_scf_iter=1000, reks_diis="yes", shift=0.3, use_ssr_state=1, \
         cpreks_max_tol=1E-6, cpreks_max_iter=1000, qm_path="./"):
         # Initialize TeraChem common variables
-        super().__init__(functional, basis_set, qm_path, ngpus, \
+        super(SSR, self).__init__(functional, basis_set, qm_path, ngpus, \
             gpu_id, precision, version)
 
         # Initialize TeraChem SSR variables

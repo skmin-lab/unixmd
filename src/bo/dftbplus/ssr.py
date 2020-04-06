@@ -46,7 +46,7 @@ class SSR(DFTBplus):
         grad_level=1, grad_tol=1E-8, mem_level=2, sk_path="./", periodic=False, \
         a_axis=0., b_axis=0., c_axis=0., qm_path="./", nthreads=1, version=19.1):
         # Initialize DFTB+ common variables
-        super().__init__(molecule, sk_path, qm_path, nthreads, version)
+        super(SSR, self).__init__(molecule, sk_path, qm_path, nthreads, version)
 
         # Initialize DFTB+ SSR variables
         self.scc = scc

@@ -11,6 +11,9 @@ class DFTBplus(BO_calculator):
         :param double version: version of DFTB+ program
     """
     def __init__(self, molecule, sk_path, qm_path, nthreads, version):
+        # Save name of BO calculator and its method
+        super().__init__()
+
         # Initialize DFTB+ common variables
         self.sk_path = sk_path
         self.qm_path = qm_path
