@@ -3,7 +3,7 @@ from mqc.el_prop.el_propagator import *
 from mqc.mqc import MQC
 from fileio import touch_file, write_md_output, write_final_xyz
 from misc import au_to_K
-import os, shutil
+import os, shutil, textwrap
 import numpy as np
 
 class Eh(MQC):
@@ -24,7 +24,7 @@ class Eh(MQC):
             propagation, l_adjnac)
 
     def run(self, molecule, theory, thermostat, input_dir="./", \
-        save_QMlog=False, save_scr=True):
+        save_QMlog=False, save_scr=True, debug=0):
         """ Run MQC dynamics according to Ehrenfest dynamics
 
             :param object molecule: molecule object
@@ -33,6 +33,7 @@ class Eh(MQC):
             :param string input_dir: location of input directory
             :param boolean save_QMlog: logical for saving QM calculation log
             :param boolean save_scr: logical for saving scratch directory
+            :param integer debug: verbosity level for standard output
         """
         # Set directory information
         input_dir = os.path.expanduser(input_dir)
@@ -56,7 +57,7 @@ class Eh(MQC):
 
         touch_file(molecule, theory.calc_coupling, self.propagation, \
             unixmd_dir, SH_chk=False)
-        self.print_init(molecule, theory, thermostat)
+        self.print_init(molecule, theory, thermostat, debug)
 
         if (molecule.l_nacme):
             raise ValueError ("Ehrenfest dynamics requries NAC calculation")
@@ -70,7 +71,7 @@ class Eh(MQC):
 
         write_md_output(molecule, theory.calc_coupling, -1, \
             self.propagation, unixmd_dir)
-        self.print_step(molecule, -1)
+        self.print_step(molecule, -1, debug)
 
         # Main MD loop
         for istep in range(self.nsteps):
@@ -96,7 +97,7 @@ class Eh(MQC):
 
             write_md_output(molecule, theory.calc_coupling, istep, \
                 self.propagation, unixmd_dir)
-            self.print_step(molecule, istep)
+            self.print_step(molecule, istep, debug)
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, istep, unixmd_dir)
 
@@ -145,13 +146,44 @@ class Eh(MQC):
         else:
             raise ValueError ("Other propagators Not Implemented")
 
-    # TODO : add argument
-    #def print_step(self, molecule, istep, debug=0):
-    def print_step(self, molecule, istep):
+    def print_init(self, molecule, theory, thermostat, debug):
+        """ Routine to print the initial information of dynamics
+
+            :param object molecule: molecule object
+            :param object theory: theory object containing on-the-fly calculation infomation
+            :param object thermostat: thermostat type
+            :param integer debug: verbosity level for standard output
+        """
+        # Print initial information about molecule, theory and thermostat
+        super().print_init(molecule, theory, thermostat, debug)
+
+        # Print dynamics information for start line
+        dynamics_step_info = textwrap.dedent(f"""\
+
+        {"-" * 118}
+        {"Start Dynamics":>65s}
+        {"-" * 118}
+        """)
+
+        # Print INIT for each step
+        INIT = f" #INFO{'STEP':>8s}{'Kinetic(H)':>15s}{'Potential(H)':>15s}{'Total(H)':>13s}{'Temperature(K)':>17s}{'norm':>8s}"
+        dynamics_step_info += INIT
+
+        # Print DEBUG1 for each step
+        if (debug >= 1):
+            DEBUG1 = f" #DEBUG1{'STEP':>6s}"
+            for ist in range(molecule.nst):
+                DEBUG1 += f"{'Potential_':>14s}{ist}(H)"
+            dynamics_step_info += "\n" + DEBUG1
+
+        print (dynamics_step_info, flush=True)
+
+    def print_step(self, molecule, istep, debug):
         """ Routine to print each steps infomation about dynamics
 
             :param object molecule: molecule object
             :param integer istep: current MD step
+            :param integer debug: verbosity level for standard output
         """
         ctemp = molecule.ekin * 2. / float(molecule.dof) * au_to_K
         norm = 0.
@@ -166,11 +198,10 @@ class Eh(MQC):
         print (INFO, flush=True)
 
         # Print DEBUG1 for each step
-        # TODO : if (debug=1):
-        # TODO : debug option print (add argument)
-        DEBUG1 = f" DEBUG1{istep + 1:>7d}"
-        for ist in range(molecule.nst):
-            DEBUG1 += f"{molecule.states[ist].energy:17.8f} "
-        print (DEBUG1, flush=True)
+        if (debug >= 1):
+            DEBUG1 = f" DEBUG1{istep + 1:>7d}"
+            for ist in range(molecule.nst):
+                DEBUG1 += f"{molecule.states[ist].energy:17.8f} "
+            print (DEBUG1, flush=True)
 
 

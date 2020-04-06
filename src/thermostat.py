@@ -40,10 +40,6 @@ class none(thermo):
         """)
         print (thermostat_info, flush=True)
 
-        # TODO : efficient method for printing thermostat information
-#        print ("NVE: Total energy is conserved!\n", flush=True)
-#        print (f"Temp = {self.temp}", flush=True)
-
 
 class rescale1(thermo):
     """ Rescale the velocities in a given period
@@ -94,11 +90,6 @@ class rescale1(thermo):
         """)
         print (thermostat_info, flush=True)
 
-        # TODO : efficient method for printing thermostat information
-#        print ("NVT: rescale type 1", flush=True)
-#        print (f"Temperature is rescaled as \"{self.temp} K\" at each \"{self.nrescale} step\"!\n", flush=True)
-#        print (f"nrescale = {self.nrescale}", flush=True)
-
 
 class rescale2(thermo):
     """ Rescale the velocities when the temerature is out of a given range
@@ -145,11 +136,5 @@ class rescale2(thermo):
           Temperature Range (K)    = {self.dtemp:>16.3f}
         """)
         print (thermostat_info, flush=True)
-
-        # TODO : efficient method for printing thermostat information
-#        print ("NVT: rescale type 2", flush=True)
-#        print (f"Temperature is rescaled as \"{self.temp} K\" when temp. is ouf of range \"[{self.temp}-{self.dtemp},{self.temp}-{self.dtemp}]\"!\n", flush=True)
-#        print (f"dT   = {self.dtemp}", flush=True)
-
 
 

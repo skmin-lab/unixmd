@@ -251,7 +251,6 @@ class Molecule(object):
         print (vel_info, flush=True)
 
         ### TODO: multiplicity
-        ### TODO: add print of number of electrons?
         molecule_info = textwrap.dedent(f"""\
         {"-" * 68}
         {"Molecule Information":>43s}
