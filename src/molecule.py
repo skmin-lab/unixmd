@@ -1,5 +1,5 @@
 from __future__ import division
-from misc import data, A_to_au, eps
+from misc import data, eps, A_to_au, call_name
 import textwrap
 import numpy as np
 
@@ -32,6 +32,9 @@ class Molecule(object):
     """
     def __init__(self, geometry, nsp=3, nstates=3, dof=None, \
         unit_pos='A', unit_vel='au', charge=0., model=False):
+        # Save name of Molecule class
+        self.mol_type = self.__class__.__name__
+
         # Initialize input values
         self.nsp = nsp
         self.nst = nstates
@@ -61,7 +64,7 @@ class Molecule(object):
         else:
             if (dof == None):
                 if (self.nat == 1):
-                    raise ValueError ("Too small number of atoms {self.nat}")
+                    raise ValueError (f"( {self.mol_type}.{call_name()} ) Too small number of atoms! {self.nat}")
                 elif (self.nat == 2):
                     # Diatomic molecules
                     self.dof = 1
@@ -147,7 +150,7 @@ class Molecule(object):
         elif (unit_pos == 'A'):
             fac_pos = A_to_au
         else:
-            raise ValueError ("Invalid unit of position")
+            raise ValueError (f"( {self.mol_type}.{call_name()} ) Invalid unit for position! {unit_pos}")
 
         self.pos = np.array(self.pos) * fac_pos
         if (unit_vel == 'au'):
@@ -157,15 +160,13 @@ class Molecule(object):
         elif (unit_vel == 'A/fs'):
             fac_vel = A_to_au / fs_to_au
         else:
-            raise ValueError ("Invalid unit of velocity")
+            raise ValueError (f"( {self.mol_type}.{call_name()} ) Invalid unit for velocity! {unit_vel}")
 
         self.vel = np.array(self.vel) * fac_vel
 
     def adjust_nac(self):
         """ Adjust phase of nonadiabatic couplings
         """
-        # TODO : p_name?
-#        p_name = "ADJUST_NAC"
         for ist in range(self.nst):
             for jst in range(ist, self.nst):
                 ovlp = 0.
@@ -186,7 +187,6 @@ class Molecule(object):
                     ovlp = dot_nac / snac / snac_old
 
                 if (ovlp < 0.):
-                    #print(f"{p_name} : the sign of NAC changed {ist} {jst}")
                     self.nac[ist, jst] = - self.nac[ist, jst]
                     self.nac[jst, ist] = - self.nac[jst, ist]
 

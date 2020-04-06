@@ -1,5 +1,5 @@
 from __future__ import division
-from misc import au_to_A
+from misc import au_to_A, call_name
 import os, textwrap, datetime
 
 def touch_file(molecule, calc_coupling, propagation, unixmd_dir, SH_chk):
@@ -73,7 +73,7 @@ def write_init_coupling(molecule, propagation, unixmd_dir, SH_chk):
         tmp = f'{"#":5s} BO State Coefficients: state Re-Im; see the manual for detail orders'
         typewriter(tmp, unixmd_dir, "BOCOEF")
     else:
-        raise ValueError (f"Unknown propagation type! (current input: {propagation})")
+        raise ValueError (f"( {call_name()} ) Other propagator not implemented! {propagation}")
 
     # NACME file header
     tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Eliments: off-diagonal'
@@ -146,6 +146,5 @@ def typewriter(string, dir_name, filename):
     tmp_name = os.path.join(dir_name, filename)
     with open(tmp_name, "a") as f:
         f.write(string + "\n")
-
 
 

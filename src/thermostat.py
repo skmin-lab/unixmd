@@ -1,5 +1,5 @@
 from __future__ import division
-from misc import au_to_K, eps
+from misc import eps, au_to_K, call_name
 from mqc.shxf import SHXF
 import textwrap
 import numpy as np
@@ -11,6 +11,9 @@ class thermo(object):
         :param double temperature: temperature (K) set in the NVT ensemble
     """
     def __init__(self, temperature):
+        # Save name of thermostat type
+        self.thermostat_type = self.__class__.__name__
+
         # Initialize input values
         self.temp = temperature
 
@@ -49,9 +52,9 @@ class rescale1(thermo):
     """
     def __init__(self, temperature=300.0, nrescale=20):
         # Initialize input values
+        super().__init__(temperature)
         self.nrescale = nrescale
         self.istep = -1
-        super().__init__(temperature)
 
     def run(self, molecule, md):
         """ Control the temperature
@@ -59,15 +62,13 @@ class rescale1(thermo):
             :param object molecule: molecule object
             :param object md: MQC object, the MD theory
         """
-        # TODO : p_name?
-        p_name = "RESCALE1"
         self.istep += 1
         if (not (self.istep + 1) % self.nrescale == 0):
             return
 
         ctemp = molecule.ekin * 2 / float(molecule.dof) * au_to_K
         if (ctemp < eps):
-            raise ValueError(f"{p_name} Current temperature too small or zero {ctemp}")
+            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Too small current temperature! {ctemp}")
 
         alpha = np.sqrt(self.temp / ctemp)
         molecule.vel *= alpha
@@ -99,8 +100,8 @@ class rescale2(thermo):
     """
     def __init__(self, temperature=300.0, dtemperature=100.0):
         # Initialize input values
-        self.dtemp = dtemperature
         super().__init__(temperature)
+        self.dtemp = dtemperature
 
     def run(self, molecule, md):
         """ Control the temperature
@@ -108,12 +109,9 @@ class rescale2(thermo):
             :param object molecule: molecule object
             :param object md: MQC object, the MD theory
         """
-        # TODO : p_name?
-        p_name = "RESCALE2"
-
         ctemp = molecule.ekin * 2 / float(molecule.dof) * au_to_K
         if (ctemp < eps):
-            raise ValueError(f"{p_name} Current temperature too small or zero {ctemp}")
+            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Too small current temperature! {ctemp}")
 
         if (abs(self.temp - ctemp) > self.dtemp):
             alpha = np.sqrt(self.temp / ctemp)

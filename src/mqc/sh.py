@@ -2,7 +2,7 @@ from __future__ import division
 from mqc.el_prop.el_propagator import *
 from mqc.mqc import MQC
 from fileio import touch_file, write_md_output, write_final_xyz, typewriter
-from misc import eps, au_to_K
+from misc import eps, au_to_K, call_name
 import random, os, shutil, textwrap
 import numpy as np
  
@@ -203,7 +203,7 @@ class SH(MQC):
                 self.rstate = self.rstate_old
         else:
             if (molecule.ekin < eps):
-                raise ValueError ("Too small kinetic energy!")
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin}")
             fac = 1. - pot_diff / molecule.ekin
             molecule.vel *= np.sqrt(fac)
             # Update kinetic energy
@@ -257,7 +257,7 @@ class SH(MQC):
         elif (self.propagation == "density"):
             el_rho(self.nesteps, self.dt, molecule)
         else:
-            raise ValueError ("Other propagators Not Implemented")
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Other propagator not implemented! {self.propagation}")
 
     def print_init(self, molecule, theory, thermostat, debug):
         """ Routine to print the initial information of dynamics

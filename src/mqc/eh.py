@@ -2,7 +2,7 @@ from __future__ import division
 from mqc.el_prop.el_propagator import *
 from mqc.mqc import MQC
 from fileio import touch_file, write_md_output, write_final_xyz
-from misc import au_to_K
+from misc import au_to_K, call_name
 import os, shutil, textwrap
 import numpy as np
 
@@ -60,7 +60,7 @@ class Eh(MQC):
         self.print_init(molecule, theory, thermostat, debug)
 
         if (molecule.l_nacme):
-            raise ValueError ("Ehrenfest dynamics requries NAC calculation")
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Ehrenfest dynamics needs NAC! {molecule.l_nacme}")
 
         # Calculate initial input geometry at t = 0.0 s
         theory.get_bo(molecule, base_dir, -1, bo_list, calc_force_only=False)
@@ -144,7 +144,7 @@ class Eh(MQC):
         elif (self.propagation == "density"):
             el_rho(self.nesteps, self.dt, molecule)
         else:
-            raise ValueError ("Other propagators Not Implemented")
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Other propagator not implemented! {self.propagation}")
 
     def print_init(self, molecule, theory, thermostat, debug):
         """ Routine to print the initial information of dynamics

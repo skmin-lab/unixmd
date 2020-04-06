@@ -2,7 +2,7 @@ from __future__ import division
 from mqc.el_prop.el_propagator import *
 from mqc.mqc import MQC
 from fileio import touch_file, write_md_output, write_final_xyz, typewriter
-from misc import eps, au_to_K
+from misc import eps, au_to_K, call_name
 import random, os, shutil, textwrap
 import numpy as np
 
@@ -258,7 +258,7 @@ class SHXF(MQC):
                 self.rstate = self.rstate_old
         else:
             if (molecule.ekin < eps):
-                raise ValueError ("Too small kinetic energy!")
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin}")
             fac = 1. - pot_diff / molecule.ekin
             molecule.vel *= np.sqrt(fac)
             # Update kinetic energy
@@ -339,8 +339,6 @@ class SHXF(MQC):
                 self.aux.pos[ist] += self.aux.vel[ist] * self.dt
             else:
                 self.aux.pos[ist] = molecule.pos
-        # TODO : p_name?
-#            print(f"AUX_POS {self.aux.pos[ist, 0, 0]:15.8f}            {ist + 1}", flush=True)
 
         # Get auxiliary velocity
         self.aux.vel_old = np.copy(self.aux.vel)
@@ -360,8 +358,6 @@ class SHXF(MQC):
                     self.aux.vel[ist] = molecule.vel * alpha
             else:
                 self.aux.vel[ist] = molecule.vel
-        # TODO : p_name?
-#            print(f"AUX_VEL {self.aux.vel[ist, 0, 0]:15.8f}            {ist + 1}", flush=True)
 
     def set_decoherence(self, molecule, one_st):
         """ Routine to reset coefficient/density if the state is decohered
@@ -393,8 +389,6 @@ class SHXF(MQC):
                         for isp in range(molecule.nsp):
                             self.phase[ist, iat, isp] += molecule.mass[iat] * \
                                 (self.aux.vel[ist, iat, isp] - self.aux.vel_old[ist, iat, isp])
-        # TODO : p_name?
-#            print(f"NABPH {self.phase[ist, 0, 0]:15.8f}            {ist + 1}", flush=True)
 
     def el_propagator(self, molecule):
         """ Routine to propagate BO coefficients or density matrix
@@ -404,9 +398,9 @@ class SHXF(MQC):
         if (self.propagation == "coefficient"):
             el_coef_xf(self, molecule)
         elif (self.propagation == "density"):
-            raise ValueError ("Density propagation Not Implemented")
+            raise ValueError (f"( {self.md_type}.{call_name()} ) density propagator not implemented! {self.propagation}")
         else:
-            raise ValueError ("Other propagators Not Implemented")
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Other propagator not implemented! {self.propagation}")
 
     def print_init(self, molecule, theory, thermostat, debug):
         """ Routine to print the initial information of dynamics
