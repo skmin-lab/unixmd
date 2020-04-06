@@ -7,11 +7,11 @@ Born-Oppenheimer Hamiltonian and its corresponding nuclear wave function as foll
 .. math::
 
    \Psi(\underline{\underline{\mathbf{r}}},\underline{\underline{\mathbf{R}}},t) \approx
-   \chi_{I}(\underline{\underline{\mathbf{R}}},t) \Phi_{I}(\underline{\underline{\mathbf{r}}},
+   \chi_{i}(\underline{\underline{\mathbf{R}}},t) \Phi_{i}(\underline{\underline{\mathbf{r}}},
    \underline{\underline{\mathbf{R}}}),
 
 where :math:`\underline{\underline{\mathbf{r}}}` is the collective index for electrons,
-:math:`\underline{\underline{\mathbf{R}}}` is for nuclei, and the subscript :math:`I`
+:math:`\underline{\underline{\mathbf{R}}}` is for nuclei, and the subscript :math:`i`
 stands for an index of the eigenfunctions. The electronic wave function is paramagnetically
 dependent on :math:`\underline{\underline{\mathbf{R}}}` given at each time t. Plugging
 the above product into the full molecular time-dependent Schrodinger equation and
@@ -20,27 +20,27 @@ approximating the nuclear equation further within the quantum hydrodynamics form
 
 .. math::
 
-   M_{\nu} \ddot{\mathbf{R}}_{\nu} = - \nabla_{\nu}E_{I}(\underline{\underline{\mathbf{R}}}),
+   M_{\nu} \ddot{\mathbf{R}}_{\nu} = - \nabla_{\nu}E_{i}(\underline{\underline{\mathbf{R}}}),
 
 .. math::
 
-   H_{BO}(\underline{\underline{\mathbf{r}}},\underline{\underline{\mathbf{R}}})\Phi_{I}
-   (\underline{\underline{\mathbf{r}}},\underline{\underline{\mathbf{R}}}) = E_{I}
-   (\underline{\underline{\mathbf{R}}})\Phi_{I}(\underline{\underline{\mathbf{r}}},\underline{\underline{\mathbf{R}}}),
+   H_{\mathrm{BO}}(\underline{\underline{\mathbf{r}}},\underline{\underline{\mathbf{R}}})\Phi_{i}
+   (\underline{\underline{\mathbf{r}}},\underline{\underline{\mathbf{R}}}) = E_{i}
+   (\underline{\underline{\mathbf{R}}})\Phi_{i}(\underline{\underline{\mathbf{r}}},\underline{\underline{\mathbf{R}}}),
 
-where :math:`E_{I}` is the :math:`I`-th eigenvalue and :math:`\nu` is the degrees of freedom for nuclei.
+where :math:`E_{i}` is the :math:`i`-th eigenvalue and :math:`\nu` is the degrees of freedom for nuclei.
 
 In this implementation, the eigenvalue gradient (the negative BO force) of a given
 target state is provided with an external electronic structure
 package or a customized Hamiltonian, and nuclear propagation is done by the Velocity-Verlet algorithm.
 
-+----------------+------------------------------------------------+---------+
-| Keywords       | Work                                           | Default |
-+================+================================================+=========+
-| istate         | initial state                                  | 0(GS)   |
-+----------------+------------------------------------------------+---------+
-| dt             | time interval (fs)                             | 0.5     |
-+----------------+------------------------------------------------+---------+
-| nsteps         | Total step of nuclear propagation              | 1000    |
-+----------------+------------------------------------------------+---------+
++----------------+------------------------------------------------+------------+
+| Keywords       | Work                                           | Default    |
++================+================================================+============+
+| ``istate``     | initial state                                  | ``0`` (GS) |
++----------------+------------------------------------------------+------------+
+| ``dt``         | time interval (fs)                             | ``0.5``    |
++----------------+------------------------------------------------+------------+
+| ``nsteps``     | Total step of nuclear propagation              | ``1000``   |
++----------------+------------------------------------------------+------------+
 
