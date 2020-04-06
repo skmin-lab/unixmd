@@ -1,5 +1,5 @@
 from functools import wraps
-import time
+import sys, time
 
 # Atomic weight
 data = { "xx" : 1.00794, "H" : 1.00794, "He" : 4.00260, "Li" : 6.941, "Be" : 9.012187, "B" : 10.811,
@@ -41,7 +41,7 @@ eps = 1.0E-12
 
 data.update({n : amu_to_au * data[n] for n in data.keys()})
 
-def elapsedtime(func):
+def elapsed_time(func):
     @wraps(func)
     def check(*args, **kwargs):
         tbegin = time.time()
@@ -49,5 +49,8 @@ def elapsedtime(func):
         tend = time.time()
         print (f"{func.__name__} : Elapsed time = {tend - tbegin} seconds", flush=True)
     return check
+
+def call_name():
+    return sys._getframe(1).f_code.co_name
 
 
