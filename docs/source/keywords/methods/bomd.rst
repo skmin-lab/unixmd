@@ -24,7 +24,7 @@ approximating the nuclear equation further within the quantum hydrodynamics form
 
 .. math::
 
-   H_{\mathrm{BO}}^{(I)}\Phi_{i}^{(I)}
+   \hat{H}_{\mathrm{BO}}\Phi_{i}^{(I)}
     = E_{i}^{(I)} \Phi_{i}^{(I)},
 
 where :math:`E_{i}^{(I)}` is the :math:`i`-th BO energy eigenvalue, :math:`\nu` is index for each nucleus, and the superscript :math:`(I)` shows dependency on the given trajectory :math:`\left\{\underline{\underline{\mathbf{R}}}^{(I)}(t) \right\}`.
