@@ -22,7 +22,7 @@ class DFT(Turbomole):
         max_iter=50, scf_en_tol=1E-8, qm_path="./", qm_bin_path="./", qm_scripts_path="./", \
         nthreads=1, version=6.4):
         # Initialize Turbomole common variables
-        super().__init__(functional, basis_set, memory, qm_path, nthreads, version)
+        super(DFT, self).__init__(functional, basis_set, memory, qm_path, nthreads, version)
 
         self.max_iter = max_iter
         self.scf_en_tol = scf_tol

@@ -11,6 +11,9 @@ class Molpro(BO_calculator):
         :param double version: version of Molpro program
     """
     def __init__(self, basis_set, memory, qm_path, nthreads, version):
+        # Save name of BO calculator and its method
+        super().__init__()
+
         # Initialize Molpro common variables
         self.basis_set = basis_set
 

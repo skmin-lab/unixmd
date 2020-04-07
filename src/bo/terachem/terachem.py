@@ -14,6 +14,9 @@ class TeraChem(BO_calculator):
     """
     def __init__(self, functional, basis_set, qm_path, ngpus, \
         gpu_id, precision, version):
+        # Save name of BO calculator and its method
+        super().__init__()
+
         # Initialize TeraChem common variables
         self.functional = functional
         self.basis_set = basis_set

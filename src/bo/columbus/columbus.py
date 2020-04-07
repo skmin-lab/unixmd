@@ -13,6 +13,9 @@ class Columbus(BO_calculator):
         :param double version: version of Columbus program
     """
     def __init__(self, molecule, basis_set, memory, qm_path, nthreads, version):
+        # Save name of BO calculator and its method
+        super().__init__()
+
         # Initialize Columbus common variables
         self.basis_set = basis_set
 

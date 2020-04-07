@@ -5,7 +5,7 @@ class Theory2(Program_Name):
     """ Class for Theory2 method of Program_Name program
     """
     def __init__(self, molecule, arg1="arg1"):
-        super().__init__(arg1)
+        super(Theory2, self).__init__(arg1)
         molecule.l_namce = 
         self.re_calc = 
 

@@ -25,7 +25,7 @@ class CASSCF(Molpro):
         active_elec=2, active_orb=2, cpscf_grad_tol=1E-7, \
         qm_path="./", nthreads=1, version=2015.1):
         # Initialize Molpro common variables
-        super().__init__(basis_set, memory, qm_path, nthreads, version)
+        super(CASSCF, self).__init__(basis_set, memory, qm_path, nthreads, version)
 
         # Initialize Molpro CASSCF variables
         # Note that Molpro do not need restart option since it automatically search

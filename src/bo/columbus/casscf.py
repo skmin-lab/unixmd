@@ -20,7 +20,7 @@ class CASSCF(Columbus):
     def __init__(self, molecule, basis_set="6-31g*", memory="500", \
         active_elec=2, active_orb=2, qm_path="./", nthreads=1, version=7.0):
         # Initialize Columbus common variables
-        super().__init__(molecule, basis_set, memory, qm_path, nthreads, version)
+        super(CASSCF, self).__init__(molecule, basis_set, memory, qm_path, nthreads, version)
 
         # Initialize Columbus CASSCF variables
         # TODO : restart option? from mocoef file

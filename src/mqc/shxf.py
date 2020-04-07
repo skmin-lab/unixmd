@@ -2,8 +2,8 @@ from __future__ import division
 from mqc.el_prop.el_propagator import *
 from mqc.mqc import MQC
 from fileio import touch_file, write_md_output, write_final_xyz, typewriter
-from misc import eps
-import random, os, shutil
+from misc import eps, au_to_K, call_name
+import random, os, shutil, textwrap
 import numpy as np
 
 """ DENSITY PROPAGATION NOT IMPLEMENTED YET FOR SHXF!!!!!!!!!!!!!
@@ -80,7 +80,7 @@ class SHXF(MQC):
         self.aux = Auxiliary_Molecule(molecule)
 
     def run(self, molecule, theory, thermostat, input_dir="./", \
-        save_QMlog=False, save_scr=True):
+        save_QMlog=False, save_scr=True, debug=0):
         """ Run MQC dynamics according to decoherence-induced surface hopping dynamics
 
             :param object molecule: molecule object
@@ -89,6 +89,7 @@ class SHXF(MQC):
             :param string input_dir: location of input directory
             :param boolean save_QMlog: logical for saving QM calculation log
             :param boolean save_scr: logical for saving scratch directory
+            :param integer debug: verbosity level for standard output
         """
         # Set directory information
         input_dir = os.path.expanduser(input_dir)
@@ -112,7 +113,7 @@ class SHXF(MQC):
 
         touch_file(molecule, theory.calc_coupling, self.propagation, \
             unixmd_dir, SH_chk=True)
-        self.print_init(molecule, theory, thermostat)
+        self.print_init(molecule, theory, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
         theory.get_bo(molecule, base_dir, -1, bo_list, calc_force_only=False)
@@ -133,6 +134,7 @@ class SHXF(MQC):
 
         write_md_output(molecule, theory.calc_coupling, -1, \
             self.propagation, unixmd_dir)
+        self.print_step(molecule, -1, debug)
 
         # Main MD loop
         for istep in range(self.nsteps):
@@ -170,8 +172,7 @@ class SHXF(MQC):
 
             write_md_output(molecule, theory.calc_coupling, istep, \
                 self.propagation, unixmd_dir)
-            # TODO : add print step for SHXF
-            #self.print_step(molecule, istep)
+            self.print_step(molecule, istep, debug)
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, istep, unixmd_dir)
 
@@ -257,7 +258,7 @@ class SHXF(MQC):
                 self.rstate = self.rstate_old
         else:
             if (molecule.ekin < eps):
-                raise ValueError ("Too small kinetic energy!")
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin}")
             fac = 1. - pot_diff / molecule.ekin
             molecule.vel *= np.sqrt(fac)
             # Update kinetic energy
@@ -338,8 +339,6 @@ class SHXF(MQC):
                 self.aux.pos[ist] += self.aux.vel[ist] * self.dt
             else:
                 self.aux.pos[ist] = molecule.pos
-        # TODO : p_name?
-#            print(f"AUX_POS {self.aux.pos[ist, 0, 0]:15.8f}            {ist + 1}", flush=True)
 
         # Get auxiliary velocity
         self.aux.vel_old = np.copy(self.aux.vel)
@@ -359,8 +358,6 @@ class SHXF(MQC):
                     self.aux.vel[ist] = molecule.vel * alpha
             else:
                 self.aux.vel[ist] = molecule.vel
-        # TODO : p_name?
-#            print(f"AUX_VEL {self.aux.vel[ist, 0, 0]:15.8f}            {ist + 1}", flush=True)
 
     def set_decoherence(self, molecule, one_st):
         """ Routine to reset coefficient/density if the state is decohered
@@ -392,8 +389,6 @@ class SHXF(MQC):
                         for isp in range(molecule.nsp):
                             self.phase[ist, iat, isp] += molecule.mass[iat] * \
                                 (self.aux.vel[ist, iat, isp] - self.aux.vel_old[ist, iat, isp])
-        # TODO : p_name?
-#            print(f"NABPH {self.phase[ist, 0, 0]:15.8f}            {ist + 1}", flush=True)
 
     def el_propagator(self, molecule):
         """ Routine to propagate BO coefficients or density matrix
@@ -403,13 +398,92 @@ class SHXF(MQC):
         if (self.propagation == "coefficient"):
             el_coef_xf(self, molecule)
         elif (self.propagation == "density"):
-            raise ValueError ("Density Propagation Not Implemented")
+            raise ValueError (f"( {self.md_type}.{call_name()} ) density propagator not implemented! {self.propagation}")
         else:
-            raise ValueError ("Other Propagators Not Implemented")
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Other propagator not implemented! {self.propagation}")
 
+    def print_init(self, molecule, theory, thermostat, debug):
+        """ Routine to print the initial information of dynamics
 
-    # TODO : add argument
-    # TODO : add print_step method
+            :param object molecule: molecule object
+            :param object theory: theory object containing on-the-fly calculation infomation
+            :param object thermostat: thermostat type
+            :param integer debug: verbosity level for standard output
+        """
+        # Print initial information about molecule, theory and thermostat
+        super().print_init(molecule, theory, thermostat, debug)
 
+        # Print dynamics information for start line
+        dynamics_step_info = textwrap.dedent(f"""\
+
+        {"-" * 118}
+        {"Start Dynamics":>65s}
+        {"-" * 118}
+        """)
+
+        # Print INIT for each step
+        INIT = f" #INFO{'STEP':>8s}{'State':>7s}{'Max. Prob.':>14s}{'Rand.':>12s}{'Kinetic(H)':>15s}{'Potential(H)':>15s}{'Total(H)':>13s}{'Temperature(K)':>17s}{'Norm.':>8s}"
+        dynamics_step_info += INIT
+
+        # Print DEBUG1 for each step
+        if (debug >= 1):
+            DEBUG1 = f" #DEBUG1{'STEP':>6s}"
+            for ist in range(molecule.nst):
+                DEBUG1 += f"{'Potential_':>14s}{ist}(H)"
+            dynamics_step_info += "\n" + DEBUG1
+
+        # Print DEBUG2 for each step
+        if (debug >= 2):
+            DEBUG2 = f" #DEBUG2{'STEP':>6s}{'Acc. Hopping Prob.':>22s}"
+            dynamics_step_info += "\n" + DEBUG2
+
+        print (dynamics_step_info, flush=True)
+
+    def print_step(self, molecule, istep, debug):
+        """ Routine to print each steps infomation about dynamics
+
+            :param object molecule: molecule object
+            :param integer istep: current MD step
+            :param integer debug: verbosity level for standard output
+        """
+        if (istep == -1):
+            max_prob = 0.
+            hstate = self.rstate
+        else:
+            max_prob = max(self.prob)
+            hstate = np.where(self.prob == max_prob)[0][0]
+
+        ctemp = molecule.ekin * 2. / float(molecule.dof) * au_to_K
+        norm = 0.
+        for ist in range(molecule.nst):
+            norm += molecule.rho.real[ist, ist]
+
+        # Print INFO for each step
+        INFO = f" INFO{istep + 1:>9d}{self.rstate:>5d}{max_prob:11.5f} ({self.rstate}->{hstate}){self.rand:11.5f}"
+        INFO += f"{molecule.ekin:14.8f}{molecule.epot:15.8f}{molecule.etot:15.8f}"
+        INFO += f"{ctemp:13.6f}"
+        INFO += f"{norm:11.5f}"
+        print (INFO, flush=True)
+
+        # Print DEBUG1 for each step
+        if (debug >= 1):
+            DEBUG1 = f" DEBUG1{istep + 1:>7d}"
+            for ist in range(molecule.nst):
+                DEBUG1 += f"{molecule.states[ist].energy:17.8f} "
+            print (DEBUG1, flush=True)
+
+        # Print DEBUG2 for each step
+        if (debug >= 2):
+            DEBUG2 = f" DEBUG2{istep + 1:>7d}"
+            for ist in range(molecule.nst):
+                DEBUG2 += f"{self.acc_prob[ist]:12.5f}({self.rstate}->{ist})"
+            print (DEBUG2, flush=True)
+
+        # Print event in surface hopping
+        if (self.rstate != self.rstate_old):
+            print (f" Hopping {self.rstate_old} -> {self.rstate}", flush=True)
+
+        if (self.force_hop):
+            print (f" Force hop {self.rstate_old} -> {self.rstate}", flush=True)
 
 

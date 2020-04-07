@@ -6,7 +6,9 @@ class BO_calculator(object):
     """ Class for Born-Oppenheimer (BO) calculator such as QM, ML, etc
     """
     def __init__(self):
-        pass
+        # Save name of BO calculator and its method
+        self.qm_prog = str(self.__class__).split('.')[1]
+        self.qm_method = self.__class__.__name__
 
     def get_bo(self, base_dir, calc_force_only):
         """ Make scratch directory and copy geometry file
