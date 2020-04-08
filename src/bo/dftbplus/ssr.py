@@ -1,17 +1,8 @@
 from __future__ import division
 from bo.dftbplus.dftbplus import DFTBplus
+from bo.dftbplus.dftbpar import spin_w, onsite_uu, onsite_ud, max_l
 import os, shutil, re, textwrap
 import numpy as np
-
-spin_w = {"H":"-0.072", "C":"-0.031 -0.025 -0.025 -0.023", "N":"-0.033 -0.027 -0.027 -0.026", \
-    "O":"-0.035 -0.030 -0.030 -0.028"}
-
-onsite_uu = {"H":"0.00000", "C":"0.00000 0.04973 0.04973 -0.01203", "N":"0.00000 0.06816 0.06816 -0.00879", \
-    "O":"0.00000 0.08672 0.08672 -0.00523"}
-onsite_ud = {"H":"0.00000", "C":"0.00000 0.10512 0.10512 0.02643", "N":"0.00000 0.12770 0.12770 0.03246", \
-    "O":"0.00000 0.14969 0.14969 0.03834"}
-
-max_l = {"H":"s", "C":"p", "N":"p", "O":"p"}
 
 class SSR(DFTBplus):
     """ Class for SSR method of DFTB+ program

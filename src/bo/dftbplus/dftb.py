@@ -1,13 +1,9 @@
 from __future__ import division
 from bo.dftbplus.dftbplus import DFTBplus
+from bo.dftbplus.dftbpar import spin_w, max_l
 from misc import eV_to_au
 import os, shutil, re, textwrap, struct
 import numpy as np
-
-spin_w = {"H":"-0.072", "C":"-0.031 -0.025 -0.025 -0.023", "N":"-0.033 -0.027 -0.027 -0.026", \
-    "O":"-0.035 -0.030 -0.030 -0.028"}
-
-max_l = {"H":"s", "C":"p", "N":"p", "O":"p"}
 
 class DFTB(DFTBplus):
     """ Class for (TD)DFTB method of DFTB+ program
