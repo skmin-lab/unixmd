@@ -28,6 +28,7 @@ class SSR(DFTBplus):
         :param boolean periodic: use periodicity in the calculations
         :param double a(b, c)_axis: the length of cell lattice
         :param string qm_path: path for QM binary
+        :param string script_path: path for DFTB+ python script (dptools)
         :param integer nthreads: number of threads in the calculations
         :param double version: version of DFTB+ program
     """
@@ -69,6 +70,7 @@ class SSR(DFTBplus):
         # Set 'l_nacme' with respect to the computational method
         # DFTB/SSR can produce NACs, so we do not need to get NACME from CIoverlap
         # When we calculate SA-REKS state, NACME can be obtained directly from diabetic Hamiltonian
+        # TODO : SA-REKS with SH should be removed!
         if (self.use_ssr_state == 1):
             molecule.l_nacme = False
         else:

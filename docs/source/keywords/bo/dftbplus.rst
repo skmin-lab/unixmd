@@ -124,6 +124,8 @@ determined from the **use_ssr_state** argument.
 +-------------------+------------------------------------------------+---------+
 | qm_path           | path for QM binary                             | ./      |
 +-------------------+------------------------------------------------+---------+
+| script_path       | path for DFTB+ python script (dptools)         | ./      |
++-------------------+------------------------------------------------+---------+
 | nthreads          | number of threads in the calculations          | 1       |
 +-------------------+------------------------------------------------+---------+
 | version           | version of DFTB+ program                       | 19.1    |

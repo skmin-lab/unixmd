@@ -21,6 +21,7 @@ class DFTB(DFTBplus):
         :param boolean periodic: use periodicity in the calculations
         :param double a(b, c)_axis: the length of cell lattice
         :param string qm_path: path for QM binary
+        :param string script_path: path for DFTB+ python script (dptools)
         :param integer nthreads: number of threads in the calculations
         :param boolean mpi: use MPI parallelization
         :param string mpi_path: path for MPI binary

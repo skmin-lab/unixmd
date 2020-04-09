@@ -8,6 +8,7 @@ class DFTBplus(BO_calculator):
         :param object molecule: molecule object
         :param string sk_path: path for slater-koster files
         :param string qm_path: path for QM binary
+        :param string script_path: path for DFTB+ python script (dptools)
         :param integer nthreads: number of threads in the calculations
         :param double version: version of DFTB+ program
     """
