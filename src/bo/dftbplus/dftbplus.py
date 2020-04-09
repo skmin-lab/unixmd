@@ -1,6 +1,7 @@
 from __future__ import division
 from bo.bo_calculator import BO_calculator
 from misc import call_name
+import os
 
 class DFTBplus(BO_calculator):
     """ Class for common parts of DFTB+ program
@@ -33,7 +34,7 @@ class DFTBplus(BO_calculator):
             # The version number can be changed according to the users setting
             script_dir = os.path.join(self.script_path, "build/scripts-3.6")
             if (not os.path.exists(script_dir)):
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) Please modify version number to correct number that you used! {script_dir}")
+                raise ValueError (f"( {self.qm_prog}.{call_name()} ) Please modify version number to correct number that you used! {script_dir}")
         elif (self.version == 20.1):
             # version 20.1
             lib_dir = os.path.join(self.script_path, "src")

@@ -11,7 +11,6 @@ class SSR(DFTBplus):
         :param boolean scc: include SCC scheme
         :param double scc_tol: energy convergence for REKS SCC iterations
         :param integer max_scc_iter: maximum number of REKS SCC iterations
-        :param boolean sdftb: include spin-polarisation parameters
         :param boolean lcdftb: include long-range corrected functional
         :param string lc_method: algorithms for LC-DFTB
         :param boolean ocdftb: include onsite correction (test option)
@@ -33,7 +32,7 @@ class SSR(DFTBplus):
         :param double version: version of DFTB+ program
     """
     def __init__(self, molecule, scc=True, scc_tol=1E-6, max_scc_iter=1000, \
-        sdftb=True, lcdftb=True, lc_method="NB", ocdftb=False, \
+        lcdftb=True, lc_method="MatrixBased", ocdftb=False, \
         ssr22=True, use_ssr_state=1, state_l=0, guess=1, shift=0.3, tuning=1., \
         grad_level=1, grad_tol=1E-8, mem_level=2, sk_path="./", periodic=False, \
         a_axis=0., b_axis=0., c_axis=0., qm_path="./", script_path="./", nthreads=1, version=19.1):
@@ -44,8 +43,6 @@ class SSR(DFTBplus):
         self.scc = scc
         self.scc_tol = scc_tol
         self.max_scc_iter = max_scc_iter
-
-        self.sdftb = sdftb
 
         self.lcdftb = lcdftb
         self.lc_method = lc_method
@@ -145,6 +142,7 @@ class SSR(DFTBplus):
         Hamiltonian = DFTB{{
         """)
         input_dftb += input_ham_init
+
         if (self.scc):
             input_ham_scc = textwrap.indent(textwrap.dedent(f"""\
               SCC = Yes
@@ -152,28 +150,24 @@ class SSR(DFTBplus):
               MaxSCCIterations = {self.max_scc_iter}
             """), "  ")
             input_dftb += input_ham_scc
-            if (self.sdftb):
-                spin_constant = ("\n" + " " * 18).join([f"  {itype} = {{ {spin_w[f'{itype}']} }}" for itype in self.atom_type])
-                input_ham_spin = textwrap.indent(textwrap.dedent(f"""\
-                  SpinConstants = {{
-                    ShellResolvedSpin = Yes
-                  {spin_constant}
-                  }}
-                """), "  ")
-                input_dftb += input_ham_spin
+
+            spin_constant = ("\n" + " " * 18).join([f"  {itype} = {{ {spin_w[f'{itype}']} }}" for itype in self.atom_type])
+            input_ham_spin = textwrap.indent(textwrap.dedent(f"""\
+              SpinConstants = {{
+                ShellResolvedSpin = Yes
+              {spin_constant}
+              }}
+            """), "  ")
+            input_dftb += input_ham_spin
+
             if (self.lcdftb):
-                if (self.lc_method == "MM"):
-                    lc_method = "MatrixBased"
-                elif (self.lc_method == "NB"):
-                    lc_method = "NeighbourBased"
-                else:
-                    raise ValueError("Other LC screening Not Compatible with SSR")
                 input_ham_lc = textwrap.indent(textwrap.dedent(f"""\
                   RangeSeparated = LC{{
-                    Screening = {lc_method}{{}}
+                    Screening = {self.lc_method}{{}}
                   }}
                 """), "  ")
                 input_dftb += input_ham_lc
+
             if (self.ocdftb):
                 onsite_const_uu = ("\n" + " " * 18).join([f"  {itype}uu = {{ {onsite_uu[f'{itype}']} }}" for itype in self.atom_type])
                 onsite_const_ud = ("\n" + " " * 18).join([f"  {itype}ud = {{ {onsite_ud[f'{itype}']} }}" for itype in self.atom_type])
@@ -184,6 +178,7 @@ class SSR(DFTBplus):
                   }}
                 """), "  ")
                 input_dftb += input_ham_oc
+
         # TODO: for QM/MM, point_charge??
         if (self.periodic):
             input_ham_periodic = textwrap.indent(textwrap.dedent(f"""\
