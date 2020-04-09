@@ -29,9 +29,9 @@ class DFTB(DFTBplus):
     def __init__(self, molecule, scc=True, scc_tol=1E-6, max_scc_iter=100, \
         sdftb=False, unpaired_e=0., e_temp=0., mixer="Broyden", \
         ex_symmetry="S", sk_path="./", periodic=False, a_axis=0., b_axis=0., c_axis=0., \
-        qm_path="./", nthreads=1, mpi=False, mpi_path="./", version=19.1):
+        qm_path="./", script_path="./", nthreads=1, mpi=False, mpi_path="./", version=19.1):
         # Initialize DFTB+ common variables
-        super().__init__(molecule, sk_path, qm_path, nthreads, version)
+        super().__init__(molecule, sk_path, qm_path, script_path, nthreads, version)
 
         # Initialize DFTB+ DFTB variables
         self.scc = scc
@@ -110,7 +110,6 @@ class DFTB(DFTBplus):
             raise ValueError ("only BOMD possible with TDDFTB")
 
         # Make 'geometry.gen' file
-        # TODO : add environmental variable to common part
         os.system("xyz2gen geometry.xyz")
         if (self.periodic):
             # Substitute C to S in first line
@@ -160,7 +159,6 @@ class DFTB(DFTBplus):
                 iline += 1
             file_be.close()
             file_af.close()
-            # TODO : add environmental variable to common part
             os.system("xyz2gen double.xyz")
 
         # Make 'dftb_in.hsd' file

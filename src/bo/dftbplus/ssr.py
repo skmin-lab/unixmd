@@ -35,9 +35,9 @@ class SSR(DFTBplus):
         sdftb=True, lcdftb=True, lc_method="NB", ocdftb=False, \
         ssr22=True, use_ssr_state=1, state_l=0, guess=1, shift=0.3, tuning=1., \
         grad_level=1, grad_tol=1E-8, mem_level=2, sk_path="./", periodic=False, \
-        a_axis=0., b_axis=0., c_axis=0., qm_path="./", nthreads=1, version=19.1):
+        a_axis=0., b_axis=0., c_axis=0., qm_path="./", script_path="./", nthreads=1, version=19.1):
         # Initialize DFTB+ common variables
-        super(SSR, self).__init__(molecule, sk_path, qm_path, nthreads, version)
+        super(SSR, self).__init__(molecule, sk_path, qm_path, script_path, nthreads, version)
 
         # Initialize DFTB+ SSR variables
         self.scc = scc
@@ -104,7 +104,6 @@ class SSR(DFTBplus):
             :param integer,list bo_list: list of BO states for BO calculation
         """
         # Make 'geometry.gen' file
-        # TODO : add environmental variable to common part
         os.system("xyz2gen geometry.xyz")
         if (self.periodic):
             # Substitute C to S in first line
