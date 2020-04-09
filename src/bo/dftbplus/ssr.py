@@ -15,6 +15,7 @@ class SSR(DFTBplus):
         :param string lc_method: algorithms for LC-DFTB
         :param boolean ocdftb: include onsite correction (test option)
         :param boolean ssr22: use REKS(2,2) calculation?
+        :param boolean ssr22: use REKS(4,4) calculation?
         :param integer use_ssr_state: calculate SSR state, if not, treat SA-REKS
         :param integer state_l: set L-th microstate as taget state
         :param integer guess: initial guess setting for eigenvectors
@@ -32,8 +33,8 @@ class SSR(DFTBplus):
         :param double version: version of DFTB+ program
     """
     def __init__(self, molecule, scc=True, scc_tol=1E-6, max_scc_iter=1000, \
-        lcdftb=True, lc_method="MatrixBased", ocdftb=False, \
-        ssr22=True, use_ssr_state=1, state_l=0, guess=1, shift=0.3, tuning=1., \
+        lcdftb=True, lc_method="MatrixBased", ocdftb=False, ssr22=True, \
+        ssr44=False, use_ssr_state=1, state_l=0, guess=1, shift=0.3, tuning=1., \
         grad_level=1, grad_tol=1E-8, mem_level=2, sk_path="./", periodic=False, \
         a_axis=0., b_axis=0., c_axis=0., qm_path="./", script_path="./", nthreads=1, version=19.1):
         # Initialize DFTB+ common variables
@@ -50,6 +51,12 @@ class SSR(DFTBplus):
         self.ocdftb = ocdftb
 
         self.ssr22 = ssr22
+        self.ssr44 = ssr44
+        if (not (self.ssr22 or self.ssr44)):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Other active space not implemented! {self.ssr22 or self.ssr44}")
+        if (self.ssr44):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) REKS(4,4) not implemented! {self.ssr44}")
+
         self.use_ssr_state = use_ssr_state
         self.state_l = state_l
         self.guess = guess
@@ -75,6 +82,7 @@ class SSR(DFTBplus):
 
         if (molecule.nst > 1 and self.use_ssr_state == 0):
             # SA-REKS state with SH
+            # TODO : should be removed
             self.re_calc = True
         else:
             # SSR state or single-state REKS
@@ -151,7 +159,7 @@ class SSR(DFTBplus):
             """), "  ")
             input_dftb += input_ham_scc
 
-            spin_constant = ("\n" + " " * 18).join([f"  {itype} = {{ {spin_w[f'{itype}']} }}" for itype in self.atom_type])
+            spin_constant = ("\n" + " " * 14).join([f"  {itype} = {{ {spin_w[f'{itype}']} }}" for itype in self.atom_type])
             input_ham_spin = textwrap.indent(textwrap.dedent(f"""\
               SpinConstants = {{
                 ShellResolvedSpin = Yes
@@ -180,6 +188,9 @@ class SSR(DFTBplus):
                 input_dftb += input_ham_oc
 
         # TODO: for QM/MM, point_charge??
+
+        # TODO: for restart option using previous step?
+
         if (self.periodic):
             input_ham_periodic = textwrap.indent(textwrap.dedent(f"""\
               KPointsAndWeights = {{
@@ -187,6 +198,7 @@ class SSR(DFTBplus):
               }}
             """), "  ")
             input_dftb += input_ham_periodic
+
         angular_momentum = ("\n" + " " * 10).join([f"  {itype} = '{max_l[f'{itype}']}'" for itype in self.atom_type])
         input_ham_basic = textwrap.dedent(f"""\
           Charge = {molecule.charge}
@@ -225,19 +237,20 @@ class SSR(DFTBplus):
         input_dftb += input_options
 
         # REKS Block
-        if (not self.ssr22):
-            raise ValueError ("Other active spaces Not Implemented")
 
         # Energy functional options
-        if (molecule.nst == 1):
-            energy_functional = 1
-            energy_level = 1
-        elif (molecule.nst == 2):
-            energy_functional = 2
-            energy_level = 1
-        else:
-            energy_functional = 2
-            energy_level = 2
+        if (self.ssr22):
+            if (molecule.nst == 1):
+                energy_functional = 1
+                energy_level = 1
+            elif (molecule.nst == 2):
+                energy_functional = 2
+                energy_level = 1
+            elif (molecule.nst == 3):
+                energy_functional = 2
+                energy_level = 2
+            else:
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) Too many electrnoic states! {molecule.nst}")
 
         # NAC calculation options
         if (molecule.nst == 1 or self.use_ssr_state == 0):
@@ -246,26 +259,20 @@ class SSR(DFTBplus):
         else:
             # SSR state
             if (self.calc_coupling):
-                # SH, Eh need NAC calculations
+                # SHXF, SH, Eh need NAC calculations
                 self.nac = "Yes"
             else:
                 # BOMD do not need NAC calculations
                 self.nac = "No"
 
-        # TODO: rd will be determined automatically
+        # TODO : relaxed density will be determined automatically
         # qm => do not use rd, qmmm => use rd + external pc
         rd = "No"
 
+        # TODO : read previous step for guess
         # Options for SCF optimization
         if (self.guess == 2):
-            raise ValueError("read external guess not implemented")
-
-        # TODO : read information from previous step
-#        if (calc_force_only):
-#            guess = 2
-#        else:
-#            guess = self.guess
-        guess = self.guess
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Reading eigenvectors not implemeted! {self.guess}")
 
         input_reks = textwrap.dedent(f"""\
         REKS = SSR22{{
@@ -274,7 +281,7 @@ class SSR(DFTBplus):
           useSSRstate = {self.use_ssr_state}
           TargetState = {bo_list[0] + 1}
           TargetStateL = {self.state_l}
-          InitialGuess = {guess}
+          InitialGuess = {self.guess}
           FONmaxIter = 50
           shift = {self.shift}
           GradientLevel = {self.grad_level}
@@ -289,10 +296,11 @@ class SSR(DFTBplus):
         input_dftb += input_reks
 
         # ParserOptions Block
+        # TODO : when 20.1 version relases, 19.1 part should be removed (not official version)
         if (self.version == 19.1):
             parser_version = 7
-        else:
-            raise ValueError ("Other Versions Not Implemented")
+        elif (self.version == 20.1):
+            parser_version = 8
 
         input_parseroptions = textwrap.dedent(f"""\
         ParserOptions = {{
