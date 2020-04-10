@@ -51,7 +51,7 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 +-------------------+------------------------------------------------+---------+
 | mixer             | charge mixing method used in SCC-DFTB          | Broyden |
 +-------------------+------------------------------------------------+---------+
-| ex_symmetry       | symmetry (singlet or triplet) in TD-DFTB       | S       |
+| ex_symmetry       | symmetry (singlet or triplet) in TD-DFTB       | singlet |
 +-------------------+------------------------------------------------+---------+
 | sk_path           | path for slater-koster files                   | ./      |
 +-------------------+------------------------------------------------+---------+

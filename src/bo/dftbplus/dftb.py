@@ -29,7 +29,7 @@ class DFTB(DFTBplus):
     """
     def __init__(self, molecule, scc=True, scc_tol=1E-6, max_scc_iter=100, \
         sdftb=False, unpaired_e=0., e_temp=0., mixer="Broyden", \
-        ex_symmetry="S", sk_path="./", periodic=False, a_axis=0., b_axis=0., c_axis=0., \
+        ex_symmetry="singlet", sk_path="./", periodic=False, a_axis=0., b_axis=0., c_axis=0., \
         qm_path="./", script_path="./", nthreads=1, mpi=False, mpi_path="./", version=19.1):
         # Initialize DFTB+ common variables
         super().__init__(molecule, sk_path, qm_path, script_path, nthreads, version)
@@ -55,15 +55,15 @@ class DFTB(DFTBplus):
         self.b_axis = b_axis
         self.c_axis = c_axis
 
-        # Set 'l_nacme' with respect to the computational method
-        # TDDFTB do not produce NACs, so we should get NACME from CIoverlap
-        molecule.l_nacme = True
+        # Check excitation symmetry in TDDFTB
+        if (not (self.ex_symmetry == "singlet" or self.ex_symmetry == "triplet")):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong symmetry for excited state! {self.ex_symmetry}")
 
-        # Re-calculation of excited state forces is not needed for ground state dynamics
-        if (molecule.nst > 1):
-            self.re_calc = True
-        else:
-            self.re_calc = False
+        # Set 'l_nacme' and 're_calc' with respect to the computational method
+        # TDDFTB do not produce NACs, so we should get NACME from CIoverlap
+        # TDDFTB cannot compute the gradient of several states simultaneously.
+        molecule.l_nacme = True
+        self.re_calc = True
 
     def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from (TD)DFTB method
@@ -108,7 +108,7 @@ class DFTB(DFTBplus):
         """
         # TODO : currently, CIoverlap is not correct -> only BOMD possible with TDDFTB
         if (self.calc_coupling):
-            raise ValueError ("only BOMD possible with TDDFTB")
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) only BOME possible with TDDFTB! {self.qm_method}")
 
         # Make 'geometry.gen' file
         os.system("xyz2gen geometry.xyz")
@@ -178,6 +178,7 @@ class DFTB(DFTBplus):
         Hamiltonian = DFTB{{
         """)
         input_dftb += input_ham_init
+
         if (self.scc):
             input_ham_scc = textwrap.indent(textwrap.dedent(f"""\
               SCC = Yes
@@ -186,6 +187,7 @@ class DFTB(DFTBplus):
               Mixer = {self.mixer}{{}}
             """), "  ")
             input_dftb += input_ham_scc
+
             if (self.sdftb and molecule.nst == 1):
                 input_ham_spin = textwrap.dedent(f"""\
                 SpinPolarisation = Colinear{{
@@ -193,7 +195,8 @@ class DFTB(DFTBplus):
                 }}
                 """)
                 input_dftb += input_ham_spin
-            if (self.sdftb or self.ex_symmetry == "T"):
+
+            if (self.sdftb or self.ex_symmetry == "triplet"):
                 spin_constant = ("\n" + " " * 18).join([f"  {itype} = {{ {spin_w[f'{itype}']} }}" for itype in self.atom_type])
                 input_ham_spin_w = textwrap.indent(textwrap.dedent(f"""\
                   SpinConstants = {{
@@ -202,13 +205,16 @@ class DFTB(DFTBplus):
                   }}
                 """), "  ")
                 input_dftb += input_ham_spin_w
-            # TODO : read information from previous step
+
+            # TODO : read initial guess from previous step
 #            if (calc_force_only):
 #                input_ham_restart = textwrap.indent(textwrap.dedent(f"""\
 #                  ReadInitialCharges = Yes
 #                """), "  ")
 #                input_dftb += input_ham_restart
+
         # TODO: for QM/MM, point_charge??
+
         if (self.periodic):
             input_ham_periodic = textwrap.indent(textwrap.dedent(f"""\
               KPointsAndWeights = {{
@@ -216,6 +222,7 @@ class DFTB(DFTBplus):
               }}
             """), "  ")
             input_dftb += input_ham_periodic
+
         angular_momentum = ("\n" + " " * 10).join([f"  {itype} = '{max_l[f'{itype}']}'" for itype in self.atom_type])
         input_ham_basic = textwrap.dedent(f"""\
           Charge = {molecule.charge}
@@ -259,7 +266,7 @@ class DFTB(DFTBplus):
         # ExcitedState Block
         if (molecule.nst > 1):
 
-            # Calculate excited state force and root state?
+            # Calculate excited state force for target state
             if (bo_list[0] > 0):
                 ex_force = "Yes"
                 rst = bo_list[0]
@@ -267,15 +274,8 @@ class DFTB(DFTBplus):
                 ex_force = "No"
                 rst = bo_list[0] + 1
 
-            # Set symmetry in TDDFTB
-            if (self.ex_symmetry == "S"):
-                symmetry = "singlet"
-            elif (self.ex_symmetry == "T"):
-                symmetry = "triplet"
-            else:
-                raise ValueError (f"wrong input given in {self.ex_symmetry}")
-
             # Set number of excitations in TDDFTB
+            # This part can be modified by users
             if (molecule.nat <= 5):
                 num_ex = molecule.nst + 2
             elif (molecule.nat > 5 and molecule.nat <= 15):
@@ -293,7 +293,7 @@ class DFTB(DFTBplus):
             ExcitedState = Casida{{
               NrOfExcitations = {num_ex}
               StateOfInterest = {rst}
-              Symmetry = {symmetry}
+              Symmetry = {self.ex_symmetry}
               WriteTransitions = Yes
               WriteMulliken = Yes
               WriteXplusY = {xpy}
@@ -305,8 +305,9 @@ class DFTB(DFTBplus):
         # ParserOptions Block
         if (self.version == 19.1):
             parser_version = 7
-        else:
-            raise ValueError ("Other Versions Not Implemented")
+        elif (self.version == 20.1):
+            parser_version = 8
+
         input_parseroptions = textwrap.dedent(f"""\
         ParserOptions = {{
           ParserVersion = {parser_version}
@@ -415,6 +416,7 @@ class DFTB(DFTBplus):
         file_name = "detailed.out"
         with open(file_name, "r") as f:
             detailed_out = f.read()
+
         # Read 'EXC.DAT' file
         if (molecule.nst > 1):
             file_name = "EXC.DAT"
