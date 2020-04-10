@@ -15,7 +15,7 @@ class SSR(DFTBplus):
         :param string lc_method: algorithms for LC-DFTB
         :param boolean ocdftb: include onsite correction (test option)
         :param boolean ssr22: use REKS(2,2) calculation?
-        :param boolean ssr22: use REKS(4,4) calculation?
+        :param boolean ssr44: use REKS(4,4) calculation?
         :param integer use_ssr_state: calculate SSR state, if not, treat SA-REKS
         :param integer state_l: set L-th microstate as taget state
         :param integer guess: initial guess setting for eigenvectors
