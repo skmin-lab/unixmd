@@ -71,22 +71,11 @@ class SSR(DFTBplus):
         self.b_axis = b_axis
         self.c_axis = c_axis
 
-        # Set 'l_nacme' with respect to the computational method
+        # Set 'l_nacme' and 're_calc' with respect to the computational method
         # DFTB/SSR can produce NACs, so we do not need to get NACME from CIoverlap
-        # When we calculate SA-REKS state, NACME can be obtained directly from diabetic Hamiltonian
-        # TODO : SA-REKS with SH should be removed!
-        if (self.use_ssr_state == 1):
-            molecule.l_nacme = False
-        else:
-            molecule.l_nacme = True
-
-        if (molecule.nst > 1 and self.use_ssr_state == 0):
-            # SA-REKS state with SH
-            # TODO : should be removed
-            self.re_calc = True
-        else:
-            # SSR state or single-state REKS
-            self.re_calc = False
+        # DFTB/SSR can compute the gradient of several states simultaneously.
+        molecule.l_nacme = False
+        self.re_calc = False
 
     def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from SSR method
@@ -101,7 +90,7 @@ class SSR(DFTBplus):
         self.write_xyz(molecule)
         self.get_input(molecule, bo_list)
         self.run_QM(base_dir, istep, bo_list)
-        self.extract_BO(molecule, bo_list, calc_force_only)
+        self.extract_BO(molecule, bo_list)
         self.move_dir(base_dir)
 
     def get_input(self, molecule, bo_list):
@@ -333,17 +322,17 @@ class SSR(DFTBplus):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
             shutil.copy("log", os.path.join(tmp_dir, log_step))
 
-    def extract_BO(self, molecule, bo_list, calc_force_only):
+    def extract_BO(self, molecule, bo_list):
         """ Read the output files to get BO information
 
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation
-            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # Read 'log' file
         file_name = "log"
         with open(file_name, "r") as f:
             log_out = f.read()
+
         # Read 'detailed.out' file
         # TODO: the qmmm information is written in this file
 #        file_name = "detailed.out"
@@ -351,36 +340,35 @@ class SSR(DFTBplus):
 #            detailed_out = f.read()
 
         # Energy
-        if (not calc_force_only):
-            for states in molecule.states:
-                states.energy = 0.
+        for states in molecule.states:
+            states.energy = 0.
 
-            if (molecule.nst == 1):
-                # Single-state REKS
-                tmp_e = 'Spin' + '\n\s+\w+\s+([-]\S+)(?:\s+\S+){3}' * molecule.nst
-                energy = re.findall(tmp_e, log_out)
+        if (molecule.nst == 1):
+            # Single-state REKS
+            tmp_e = 'Spin' + '\n\s+\w+\s+([-]\S+)(?:\s+\S+){3}' * molecule.nst
+            energy = re.findall(tmp_e, log_out)
+            energy = np.array(energy)
+        else:
+            if (self.use_ssr_state == 1):
+                # SSR state
+                energy = re.findall('SSR state\s+\S+\s+([-]\S+)', log_out)
                 energy = np.array(energy)
             else:
-                if (self.use_ssr_state == 1):
-                    # SSR state
-                    energy = re.findall('SSR state\s+\S+\s+([-]\S+)', log_out)
-                    energy = np.array(energy)
-                else:
-                    # SA-REKS state
-                    tmp_e = 'Spin' + '\n\s+\w+\s+([-]\S+)(?:\s+\S+){3}' * molecule.nst
-                    energy = re.findall(tmp_e, log_out)
-                    energy = np.array(energy[0])
-            energy = energy.astype(float)
-            for ist in range(molecule.nst):
-                molecule.states[ist].energy = energy[ist]
+                # SA-REKS state
+                tmp_e = 'Spin' + '\n\s+\w+\s+([-]\S+)(?:\s+\S+){3}' * molecule.nst
+                energy = re.findall(tmp_e, log_out)
+                energy = np.array(energy[0])
+
+        energy = energy.astype(float)
+        for ist in range(molecule.nst):
+            molecule.states[ist].energy = energy[ist]
 
         # Force
-        if (not calc_force_only):
-            for states in molecule.states:
-                states.force = np.zeros((molecule.nat, molecule.nsp))
+        for states in molecule.states:
+            states.force = np.zeros((molecule.nat, molecule.nsp))
 
         if (self.nac == "Yes"):
-            # SSR state with SH, Eh
+            # SHXF, SH, Eh : SSR state
             for ist in range(molecule.nst):
                 tmp_f = f' {ist + 1} st state \(SSR\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
                 force = re.findall(tmp_f, log_out)
@@ -389,7 +377,6 @@ class SSR(DFTBplus):
                 force = force.reshape(molecule.nat, 3, order='C')
                 molecule.states[ist].force = - np.copy(force)
         else:
-            # SH : SA-REKS state
             # BOMD : SSR state, SA-REKS state or single-state REKS
             tmp_f = f' {bo_list[0] + 1} state \(\w+[-]*\w+\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
             force = re.findall(tmp_f, log_out)
@@ -399,7 +386,7 @@ class SSR(DFTBplus):
             molecule.states[bo_list[0]].force = - np.copy(force)
 
         # NAC
-        if (not calc_force_only and self.nac == "Yes"):
+        if (self.nac == "Yes"):
             kst = 0
             for ist in range(molecule.nst):
                 for jst in range(molecule.nst):
@@ -415,7 +402,5 @@ class SSR(DFTBplus):
                         kst += 1
                     else:
                         molecule.nac[ist, jst] = - molecule.nac[jst, ist]
-
-
 
 
