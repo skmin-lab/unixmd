@@ -1,5 +1,5 @@
 from __future__ import division
-from mqc.el_prop.el_propagator import *
+from build.el_propagator import *
 from mqc.mqc import MQC
 from fileio import touch_file, write_md_output, write_final_xyz, typewriter
 from misc import eps, au_to_K, call_name

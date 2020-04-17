@@ -1,4 +1,5 @@
 from __future__ import division
+from build.cioverlap import *
 from bo.dftbplus.dftbplus import DFTBplus
 from bo.dftbplus.dftbpar import spin_w, max_l
 from misc import eV_to_au
@@ -479,287 +480,288 @@ class DFTB(DFTBplus):
             molecule.nacme = np.zeros((molecule.nst, molecule.nst))
             if (istep >= 0):
                 # TODO : current TDNAC gives too large values
-                self.CIoverlap(molecule, base_dir)
+                self.CI_overlap(molecule, base_dir)
                 # Read 'NACME.DAT'
-                ist = 0
-                jst = 0
-                nline = 1
-                file_name_in = "NACME.DAT"
-                with open(file_name_in, "r") as f_in:
-                    lines = f_in.readlines()
-                    for line in lines:
-                        field = line.split()
-                        if (nline % 2 == 0):
-                            # TODO : current TDNAC gives too large values
-                            #molecule.nacme[ist, jst] = field[0]
-                            jst += 1
-                            if (jst == molecule.nst):
-                                ist += 1
-                                jst = 0
-                        nline += 1
+#                ist = 0
+#                jst = 0
+#                nline = 1
+#                file_name_in = "NACME.DAT"
+#                with open(file_name_in, "r") as f_in:
+#                    lines = f_in.readlines()
+#                    for line in lines:
+#                        field = line.split()
+#                        if (nline % 2 == 0):
+#                            # TODO : current TDNAC gives too large values
+#                            #molecule.nacme[ist, jst] = field[0]
+#                            jst += 1
+#                            if (jst == molecule.nst):
+#                                ist += 1
+#                                jst = 0
+#                        nline += 1
 
-    def CIoverlap(self, molecule, base_dir):
+    def CI_overlap(self, molecule, base_dir):
         """ Read the necessary files and generate NACME file and
             this is an experimental feature and not used
 
             :param object molecule: molecule object
             :param string base_dir: base directory
         """
-        # Set new variable to decide the number of basis functions for atoms
-        check_atom = [0]
-        num_basis = 0
-        core_elec = 0.
-        for iat in range(molecule.nat):
-            max_ang = max_l[molecule.symbols[iat]]
-            if (max_ang == 'p'):
-                num_basis += 4
-                core_elec += 2.
-                check_atom.append(num_basis)
-            elif (max_ang == 's'):
-                num_basis += 1
-                check_atom.append(num_basis)
-
-        # Set new variable to decide the position of atoms in basis functions
-        check_basis = []
-        for ibasis in range(num_basis):
-            for iat in range(molecule.nat):
-                ind_a = check_atom[iat] + 1
-                ind_b = check_atom[iat + 1]
-                if (ibasis + 1 >= ind_a and ibasis + 1 <= ind_b):
-                    check_basis.append(iat + 1)
-
-        # Write 'INPUT' file
-        ncore = 0
-        nocc = int(int(molecule.nelec - core_elec) / 2) - ncore
-        nvirt = num_basis - nocc - ncore
-
-        file_name_out = "INPUT"
-        f_out = open(file_name_out, "w")
-
-        f_print = f"{num_basis:5d} {ncore:4d} {nocc:4d} {nvirt:4d} {molecule.nst:3d} 5.16767" + "\n"
-        f_out.write(f_print)
-
-        f_out.close()
-
-        # Write 'AOVERLAP' file
-        file_name_out = "AOVERLAP"
-        f_out = open(file_name_out, "w")
-
-        file_name_in = "oversqr.dat"
-#        over_mat = np.loadtxt(file_name_in, skiprows=5, dtype=np.float)
-#        nan_ind = np.argwhere(np.isnan(over_mat))
-#        for row, col in nan_ind:
-#            ind_a = check_basis[row%num_basis]
-#            ind_b = check_basis[col%num_basis]
-#            if (ind_a == ind_b):
-#                if (row%num_basis == col%num_basis):
-#                    over_mat[row, col] = 1.
+        wf_overlap(self, molecule)
+#        # Set new variable to decide the number of basis functions for atoms
+#        check_atom = [0]
+#        num_basis = 0
+#        core_elec = 0.
+#        for iat in range(molecule.nat):
+#            max_ang = max_l[molecule.symbols[iat]]
+#            if (max_ang == 'p'):
+#                num_basis += 4
+#                core_elec += 2.
+#                check_atom.append(num_basis)
+#            elif (max_ang == 's'):
+#                num_basis += 1
+#                check_atom.append(num_basis)
+#
+#        # Set new variable to decide the position of atoms in basis functions
+#        check_basis = []
+#        for ibasis in range(num_basis):
+#            for iat in range(molecule.nat):
+#                ind_a = check_atom[iat] + 1
+#                ind_b = check_atom[iat + 1]
+#                if (ibasis + 1 >= ind_a and ibasis + 1 <= ind_b):
+#                    check_basis.append(iat + 1)
+#
+#        # Write 'INPUT' file
+#        ncore = 0
+#        nocc = int(int(molecule.nelec - core_elec) / 2) - ncore
+#        nvirt = num_basis - nocc - ncore
+#
+#        file_name_out = "INPUT"
+#        f_out = open(file_name_out, "w")
+#
+#        f_print = f"{num_basis:5d} {ncore:4d} {nocc:4d} {nvirt:4d} {molecule.nst:3d} 5.16767" + "\n"
+#        f_out.write(f_print)
+#
+#        f_out.close()
+#
+#        # Write 'AOVERLAP' file
+#        file_name_out = "AOVERLAP"
+#        f_out = open(file_name_out, "w")
+#
+#        file_name_in = "oversqr.dat"
+##        over_mat = np.loadtxt(file_name_in, skiprows=5, dtype=np.float)
+##        nan_ind = np.argwhere(np.isnan(over_mat))
+##        for row, col in nan_ind:
+##            ind_a = check_basis[row%num_basis]
+##            ind_b = check_basis[col%num_basis]
+##            if (ind_a == ind_b):
+##                if (row%num_basis == col%num_basis):
+##                    over_mat[row, col] = 1.
+##                else:
+##                    over_mat[row, col] = 0.
+##        #np.savetxt("test", over_mat, fmt=f"%24.15e")
+##        np.savetxt("test", over_mat, fmt=f"%23.15e")
+#        with open(file_name_in, "r") as f_in:
+#            lines = f_in.readlines()
+#            nline = 1
+#            nrow = 1
+#            for line in lines:
+#                if (nline >= 6):
+#                    field = line.split()
+#                    if ("NaN" in field):
+#                        ncolumn = 1
+#                        for element in field:
+#                            if (element == 'NaN'):
+#                                ind_a = check_basis[nrow - 1]
+#                                ind_b = check_basis[ncolumn - 1]
+#                                if (ind_a == ind_b):
+#                                    if (nrow == ncolumn):
+#                                        f_print = f"{1.0:24.15e}"
+#                                    else:
+#                                        f_print = f"{0.0:24.15e}"
+#                                    f_out.write(f_print)
+#                            else:
+#                                f_print = f"{float(element):24.15e}"
+#                                f_out.write(f_print)
+#                            if (field.index(element) == 2 * num_basis - 1):
+#                                f_out.write("\n")
+#                            ncolumn += 1
+#                            if (ncolumn > num_basis):
+#                                ncolumn -= num_basis
+#                    else:
+#                        f_print = f"{line}"
+#                        f_out.write(f_print)
+#                    nrow += 1
+#                    if (nrow > num_basis):
+#                        nrow -= num_basis
+#                nline += 1
+#
+#        f_out.close()
+#
+#        # Write 'MOCOEF' file
+#        file_name_out = "MOCOEF"
+#        f_out = open(file_name_out, "w")
+#
+#        file_name_in = "eigenvec.bin"
+#        mocoef = []
+#        with open(file_name_in, "rb") as f_in:
+#            dummy = np.fromfile(f_in, dtype=np.integer, count = 1)
+#            for ibasis in range(num_basis):
+#                dummy = np.fromfile(f_in, dtype=np.integer, count = 1)
+#                data = np.fromfile(f_in, dtype=np.float64, count = num_basis)
+#                mocoef.append(data)
+#            mocoef = np.array(mocoef)
+#            mocoef = np.transpose(mocoef)
+#            mocoef = [val for sublist in mocoef for val in sublist]
+#            for ibasis in range(num_basis):
+#                ind_a = num_basis * ibasis
+#                ind_b = num_basis * (ibasis + 1)
+#                f_print = " ".join([f"{mocoef[ind]:13.8f}" for ind in range(ind_a, ind_b)]) + "\n"
+#                f_out.write(f_print)
+#
+#        f_out.close()
+#
+#        # Write 'MOCOEFOLD' file
+#        file_name_out = "MOCOEFOLD"
+#        f_out = open(file_name_out, "w")
+#
+#        file_name_in = "eigenvec.bin.pre"
+#        mocoef = []
+#        with open(file_name_in, "rb") as f_in:
+#            dummy = np.fromfile(f_in, dtype=np.integer, count = 1)
+#            for ibasis in range(num_basis):
+#                dummy = np.fromfile(f_in, dtype=np.integer, count = 1)
+#                data = np.fromfile(f_in, dtype=np.float64, count = num_basis)
+#                mocoef.append(data)
+#            mocoef = np.array(mocoef)
+#            mocoef = np.transpose(mocoef)
+#            mocoef = [val for sublist in mocoef for val in sublist]
+#            for ibasis in range(num_basis):
+#                ind_a = num_basis * ibasis
+#                ind_b = num_basis * (ibasis + 1)
+#                f_print = " ".join([f"{mocoef[ind]:13.8f}" for ind in range(ind_a, ind_b)]) + "\n"
+#                f_out.write(f_print)
+#
+#        f_out.close()
+#
+#        # Write 'CICOEF' file
+#        file_name_out = "CICOEF"
+#        f_out = open(file_name_out, "w")
+#
+#        file_name_in = "XplusY.DAT"
+#        with open(file_name_in, "r") as f_in:
+#            lines = f_in.readlines()
+#            nline = 1
+#            ind_b = -1
+#            for line in lines:
+#                if (nline == 1):
+#                    field = line.split()
+#                    nmat = int(field[0])
+#                    nexc = int(field[1])
+#                    nstd = int(nmat / 6) + 1
+#                    if (nmat % 6 != 0):
+#                        nstd += 1
+#                    xply = np.zeros((nocc, nvirt, nexc))
 #                else:
-#                    over_mat[row, col] = 0.
-#        #np.savetxt("test", over_mat, fmt=f"%24.15e")
-#        np.savetxt("test", over_mat, fmt=f"%23.15e")
-        with open(file_name_in, "r") as f_in:
-            lines = f_in.readlines()
-            nline = 1
-            nrow = 1
-            for line in lines:
-                if (nline >= 6):
-                    field = line.split()
-                    if ("NaN" in field):
-                        ncolumn = 1
-                        for element in field:
-                            if (element == 'NaN'):
-                                ind_a = check_basis[nrow - 1]
-                                ind_b = check_basis[ncolumn - 1]
-                                if (ind_a == ind_b):
-                                    if (nrow == ncolumn):
-                                        f_print = f"{1.0:24.15e}"
-                                    else:
-                                        f_print = f"{0.0:24.15e}"
-                                    f_out.write(f_print)
-                            else:
-                                f_print = f"{float(element):24.15e}"
-                                f_out.write(f_print)
-                            if (field.index(element) == 2 * num_basis - 1):
-                                f_out.write("\n")
-                            ncolumn += 1
-                            if (ncolumn > num_basis):
-                                ncolumn -= num_basis
-                    else:
-                        f_print = f"{line}"
-                        f_out.write(f_print)
-                    nrow += 1
-                    if (nrow > num_basis):
-                        nrow -= num_basis
-                nline += 1
-
-        f_out.close()
-
-        # Write 'MOCOEF' file
-        file_name_out = "MOCOEF"
-        f_out = open(file_name_out, "w")
-
-        file_name_in = "eigenvec.bin"
-        mocoef = []
-        with open(file_name_in, "rb") as f_in:
-            dummy = np.fromfile(f_in, dtype=np.integer, count = 1)
-            for ibasis in range(num_basis):
-                dummy = np.fromfile(f_in, dtype=np.integer, count = 1)
-                data = np.fromfile(f_in, dtype=np.float64, count = num_basis)
-                mocoef.append(data)
-            mocoef = np.array(mocoef)
-            mocoef = np.transpose(mocoef)
-            mocoef = [val for sublist in mocoef for val in sublist]
-            for ibasis in range(num_basis):
-                ind_a = num_basis * ibasis
-                ind_b = num_basis * (ibasis + 1)
-                f_print = " ".join([f"{mocoef[ind]:13.8f}" for ind in range(ind_a, ind_b)]) + "\n"
-                f_out.write(f_print)
-
-        f_out.close()
-
-        # Write 'MOCOEFOLD' file
-        file_name_out = "MOCOEFOLD"
-        f_out = open(file_name_out, "w")
-
-        file_name_in = "eigenvec.bin.pre"
-        mocoef = []
-        with open(file_name_in, "rb") as f_in:
-            dummy = np.fromfile(f_in, dtype=np.integer, count = 1)
-            for ibasis in range(num_basis):
-                dummy = np.fromfile(f_in, dtype=np.integer, count = 1)
-                data = np.fromfile(f_in, dtype=np.float64, count = num_basis)
-                mocoef.append(data)
-            mocoef = np.array(mocoef)
-            mocoef = np.transpose(mocoef)
-            mocoef = [val for sublist in mocoef for val in sublist]
-            for ibasis in range(num_basis):
-                ind_a = num_basis * ibasis
-                ind_b = num_basis * (ibasis + 1)
-                f_print = " ".join([f"{mocoef[ind]:13.8f}" for ind in range(ind_a, ind_b)]) + "\n"
-                f_out.write(f_print)
-
-        f_out.close()
-
-        # Write 'CICOEF' file
-        file_name_out = "CICOEF"
-        f_out = open(file_name_out, "w")
-
-        file_name_in = "XplusY.DAT"
-        with open(file_name_in, "r") as f_in:
-            lines = f_in.readlines()
-            nline = 1
-            ind_b = -1
-            for line in lines:
-                if (nline == 1):
-                    field = line.split()
-                    nmat = int(field[0])
-                    nexc = int(field[1])
-                    nstd = int(nmat / 6) + 1
-                    if (nmat % 6 != 0):
-                        nstd += 1
-                    xply = np.zeros((nocc, nvirt, nexc))
-                else:
-                    if ((nline - 1) % nstd == 1):
-                        ind_occ = nocc - 1
-                        ind_virt = 0
-                        ind_b += 1
-                    else:
-                        field = line.split()
-                        for element in field:
-                            xply[ind_occ, ind_virt, ind_b] = float(element)
-                            if (ind_occ == 0):
-                                ind_occ = nocc - 1
-                                ind_virt += 1
-                            else:
-                                ind_occ -= 1
-                nline += 1
-
-        for iexc in range(nexc):
-
-            # Normalize the CI coefficients
-            norm_val = 0.
-            for iocc in range(nocc):
-                for ivirt in range(nvirt):
-                    norm_val += xply[iocc, ivirt, iexc] ** 2
-            norm_val = np.sqrt(norm_val)
-            for iocc in range(nocc):
-                for ivirt in range(nvirt):
-                    xply[iocc, ivirt, iexc] /= norm_val
-
-            f_print = f"{iexc + 1:4d}" + "\n"
-            f_out.write(f_print)
-
-            for iocc in range(nocc):
-                for ivirt in range(nvirt):
-                    f_print = f"{xply[iocc, ivirt, iexc]:13.8f}"
-                    if (ivirt == nvirt - 1):
-                        f_print += "\n"
-                    f_out.write(f_print)
-
-        f_out.close()
-
-        # Write 'CICOEFOLD' file
-        file_name_out = "CICOEFOLD"
-        f_out = open(file_name_out, "w")
-
-        file_name_in = "XplusY.DAT.pre"
-        with open(file_name_in, "r") as f_in:
-            lines = f_in.readlines()
-            nline = 1
-            ind_b = -1
-            for line in lines:
-                if (nline == 1):
-                    field = line.split()
-                    nmat = int(field[0])
-                    nexc = int(field[1])
-                    nstd = int(nmat / 6) + 1
-                    if (nmat % 6 != 0):
-                        nstd += 1
-                    xply = np.zeros((nocc, nvirt, nexc))
-                else:
-                    if ((nline - 1) % nstd == 1):
-                        ind_occ = nocc - 1
-                        ind_virt = 0
-                        ind_b += 1
-                    else:
-                        field = line.split()
-                        for element in field:
-                            xply[ind_occ, ind_virt, ind_b] = float(element)
-                            if (ind_occ == 0):
-                                ind_occ = nocc - 1
-                                ind_virt += 1
-                            else:
-                                ind_occ -= 1
-                nline += 1
-
-        for iexc in range(nexc):
-
-            # Normalize the CI coefficients
-            norm_val = 0.
-            for iocc in range(nocc):
-                for ivirt in range(nvirt):
-                    norm_val += xply[iocc, ivirt, iexc] ** 2
-            norm_val = np.sqrt(norm_val)
-            for iocc in range(nocc):
-                for ivirt in range(nvirt):
-                    xply[iocc, ivirt, iexc] /= norm_val
-
-            f_print = f"{iexc + 1:4d}" + "\n"
-            f_out.write(f_print)
-
-            for iocc in range(nocc):
-                for ivirt in range(nvirt):
-                    f_print = f"{xply[iocc, ivirt, iexc]:13.8f}"
-                    if (ivirt == nvirt - 1):
-                        f_print += "\n"
-                    f_out.write(f_print)
-
-        f_out.close()
-
-        # TODO: this is temporary path, the directory for tdnac.x can be changed
-#        tdnac_command = os.path.join(base_dir, "../tdnac.x")
-#        command = f"{tdnac_command}"
-#        os.system(command)
+#                    if ((nline - 1) % nstd == 1):
+#                        ind_occ = nocc - 1
+#                        ind_virt = 0
+#                        ind_b += 1
+#                    else:
+#                        field = line.split()
+#                        for element in field:
+#                            xply[ind_occ, ind_virt, ind_b] = float(element)
+#                            if (ind_occ == 0):
+#                                ind_occ = nocc - 1
+#                                ind_virt += 1
+#                            else:
+#                                ind_occ -= 1
+#                nline += 1
+#
+#        for iexc in range(nexc):
+#
+#            # Normalize the CI coefficients
+#            norm_val = 0.
+#            for iocc in range(nocc):
+#                for ivirt in range(nvirt):
+#                    norm_val += xply[iocc, ivirt, iexc] ** 2
+#            norm_val = np.sqrt(norm_val)
+#            for iocc in range(nocc):
+#                for ivirt in range(nvirt):
+#                    xply[iocc, ivirt, iexc] /= norm_val
+#
+#            f_print = f"{iexc + 1:4d}" + "\n"
+#            f_out.write(f_print)
+#
+#            for iocc in range(nocc):
+#                for ivirt in range(nvirt):
+#                    f_print = f"{xply[iocc, ivirt, iexc]:13.8f}"
+#                    if (ivirt == nvirt - 1):
+#                        f_print += "\n"
+#                    f_out.write(f_print)
+#
+#        f_out.close()
+#
+#        # Write 'CICOEFOLD' file
+#        file_name_out = "CICOEFOLD"
+#        f_out = open(file_name_out, "w")
+#
+#        file_name_in = "XplusY.DAT.pre"
+#        with open(file_name_in, "r") as f_in:
+#            lines = f_in.readlines()
+#            nline = 1
+#            ind_b = -1
+#            for line in lines:
+#                if (nline == 1):
+#                    field = line.split()
+#                    nmat = int(field[0])
+#                    nexc = int(field[1])
+#                    nstd = int(nmat / 6) + 1
+#                    if (nmat % 6 != 0):
+#                        nstd += 1
+#                    xply = np.zeros((nocc, nvirt, nexc))
+#                else:
+#                    if ((nline - 1) % nstd == 1):
+#                        ind_occ = nocc - 1
+#                        ind_virt = 0
+#                        ind_b += 1
+#                    else:
+#                        field = line.split()
+#                        for element in field:
+#                            xply[ind_occ, ind_virt, ind_b] = float(element)
+#                            if (ind_occ == 0):
+#                                ind_occ = nocc - 1
+#                                ind_virt += 1
+#                            else:
+#                                ind_occ -= 1
+#                nline += 1
+#
+#        for iexc in range(nexc):
+#
+#            # Normalize the CI coefficients
+#            norm_val = 0.
+#            for iocc in range(nocc):
+#                for ivirt in range(nvirt):
+#                    norm_val += xply[iocc, ivirt, iexc] ** 2
+#            norm_val = np.sqrt(norm_val)
+#            for iocc in range(nocc):
+#                for ivirt in range(nvirt):
+#                    xply[iocc, ivirt, iexc] /= norm_val
+#
+#            f_print = f"{iexc + 1:4d}" + "\n"
+#            f_out.write(f_print)
+#
+#            for iocc in range(nocc):
+#                for ivirt in range(nvirt):
+#                    f_print = f"{xply[iocc, ivirt, iexc]:13.8f}"
+#                    if (ivirt == nvirt - 1):
+#                        f_print += "\n"
+#                    f_out.write(f_print)
+#
+#        f_out.close()
+#
+#        # TODO: this is temporary path, the directory for tdnac.x can be changed
+##        tdnac_command = os.path.join(base_dir, "../tdnac.x")
+##        command = f"{tdnac_command}"
+##        os.system(command)
 
 
