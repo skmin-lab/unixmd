@@ -65,6 +65,26 @@ class DFTB(DFTBplus):
         molecule.l_nacme = True
         self.re_calc = True
 
+        # Calculate number of basis for current system
+        num_basis = 0
+        for iat in range(molecule.nat):
+            max_ang = max_l[molecule.symbols[iat]]
+            if (max_ang == 's'):
+                num_basis += 1
+            elif (max_ang == 'p'):
+                num_basis += 4
+
+        # Initialize NACME variables
+        # There is no core orbitals in TDDFTB (fixed occupations)
+        nocc = int(int(molecule.nelec) / 2)
+        nvirt = num_basis - nocc
+
+        self.ao_overlap = np.zeros((num_basis, num_basis))
+        self.mo_coef_old = np.zeros((num_basis, num_basis))
+        self.mo_coef_new = np.zeros((num_basis, num_basis))
+        self.ci_coef_old = np.zeros((molecule.nst, nvirt, nocc))
+        self.ci_coef_new = np.zeros((molecule.nst, nvirt, nocc))
+
     def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from (TD)DFTB method
 
@@ -107,8 +127,8 @@ class DFTB(DFTBplus):
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # TODO : currently, CIoverlap is not correct -> only BOMD possible with TDDFTB
-        if (self.calc_coupling):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) only BOME possible with TDDFTB! {self.qm_method}")
+        #if (self.calc_coupling):
+        #    raise ValueError (f"( {self.qm_method}.{call_name()} ) only BOME possible with TDDFTB! {self.qm_method}")
 
         # Make 'geometry.gen' file
         os.system("xyz2gen geometry.xyz")
@@ -459,7 +479,7 @@ class DFTB(DFTBplus):
             molecule.nacme = np.zeros((molecule.nst, molecule.nst))
             if (istep >= 0):
                 # TODO : current TDNAC gives too large values
-                #self.CIoverlap(molecule, base_dir)
+                self.CIoverlap(molecule, base_dir)
                 # Read 'NACME.DAT'
                 ist = 0
                 jst = 0
