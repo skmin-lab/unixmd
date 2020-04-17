@@ -67,24 +67,25 @@ class DFTB(DFTBplus):
         self.re_calc = True
 
         # Calculate number of basis for current system
-        num_basis = 0
+        self.norb = 0
         for iat in range(molecule.nat):
             max_ang = max_l[molecule.symbols[iat]]
             if (max_ang == 's'):
-                num_basis += 1
+                self.norb += 1
             elif (max_ang == 'p'):
-                num_basis += 4
+                self.norb += 4
 
         # Initialize NACME variables
         # There is no core orbitals in TDDFTB (fixed occupations)
-        nocc = int(int(molecule.nelec) / 2)
-        nvirt = num_basis - nocc
+        # nocc is number of occupied orbitals and nvirt is number of virtual orbitals
+        self.nocc = int(int(molecule.nelec) / 2)
+        self.nvirt = self.norb - self.nocc
 
-        self.ao_overlap = np.zeros((num_basis, num_basis))
-        self.mo_coef_old = np.zeros((num_basis, num_basis))
-        self.mo_coef_new = np.zeros((num_basis, num_basis))
-        self.ci_coef_old = np.zeros((molecule.nst, nvirt, nocc))
-        self.ci_coef_new = np.zeros((molecule.nst, nvirt, nocc))
+        self.ao_overlap = np.zeros((self.norb, self.norb))
+        self.mo_coef_old = np.zeros((self.norb, self.norb))
+        self.mo_coef_new = np.zeros((self.norb, self.norb))
+        self.ci_coef_old = np.zeros((molecule.nst, self.nvirt, self.nocc))
+        self.ci_coef_new = np.zeros((molecule.nst, self.nvirt, self.nocc))
 
     def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from (TD)DFTB method
@@ -506,7 +507,10 @@ class DFTB(DFTBplus):
             :param object molecule: molecule object
             :param string base_dir: base directory
         """
+        # TODO: here, the required process = save the variables related to NACME
+
         wf_overlap(self, molecule)
+
 #        # Set new variable to decide the number of basis functions for atoms
 #        check_atom = [0]
 #        num_basis = 0

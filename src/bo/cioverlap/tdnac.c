@@ -35,8 +35,7 @@
     }
 }*/
 
-//static void TD_NAC(int nst, int nesteps, double dt, double complex **rho, double *energy, double *energy_old, double **nacme, double **nacme_old){
-static void TD_NAC(int nst){
+static void TD_NAC(int nst, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new){
 //    double complex **rho_dot = malloc(nst * sizeof(double complex *));
 //    double complex **rho_new = malloc(nst * sizeof(double complex *));
 //    double complex **k1 = malloc(nst * sizeof(double complex *));
@@ -51,7 +50,8 @@ static void TD_NAC(int nst){
 //    int iestep, ist, jst;
 //    double frac, edt, norm;
 
-//    printf("TD_NAC : nst = %8d\n", nst);
+    printf("TD_NAC : nst = %8d\n", nst);
+    printf("TD_NAC : ao_overlap = %15.8f\n", ao_overlap[0][0]);
 
 /*    frac = 1.0 / (double)nesteps;
     edt = dt * frac;
