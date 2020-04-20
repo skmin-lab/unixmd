@@ -2,7 +2,7 @@ from __future__ import division
 from build.cioverlap import *
 from bo.dftbplus.dftbplus import DFTBplus
 from bo.dftbplus.dftbpar import spin_w, max_l
-from misc import eV_to_au
+from misc import eV_to_au, elapsed_time
 import os, shutil, re, textwrap, struct
 import numpy as np
 
@@ -67,13 +67,25 @@ class DFTB(DFTBplus):
         self.re_calc = True
 
         # Calculate number of basis for current system
+        # Set new variable to decide the position of basis functions in terms of atoms
         self.norb = 0
+#        self.check_atom = [0]
         for iat in range(molecule.nat):
             max_ang = max_l[molecule.symbols[iat]]
             if (max_ang == 's'):
                 self.norb += 1
             elif (max_ang == 'p'):
                 self.norb += 4
+#            self.check_atom.append(self.norb)
+
+        # Set new variable to decide the position of atoms in terms of basis functions
+#        self.check_basis = []
+#        for ibasis in range(self.norb):
+#            for iat in range(molecule.nat):
+#                ind_a = self.check_atom[iat] + 1
+#                ind_b = self.check_atom[iat + 1]
+#                if (ibasis + 1 >= ind_a and ibasis + 1 <= ind_b):
+#                    self.check_basis.append(iat + 1)
 
         # Initialize NACME variables
         # There is no core orbitals in TDDFTB (fixed occupations)
@@ -500,6 +512,8 @@ class DFTB(DFTBplus):
 #                                jst = 0
 #                        nline += 1
 
+    # TODO : elapsed_time is needed?
+#    @elapsed_time
     def CI_overlap(self, molecule, base_dir):
         """ Read the necessary files and generate NACME file and
             this is an experimental feature and not used
@@ -508,6 +522,73 @@ class DFTB(DFTBplus):
             :param string base_dir: base directory
         """
         # TODO: here, the required process = save the variables related to NACME
+
+        # Read upper right block of 'oversqr.dat' file (< t | t+dt >)
+        file_name_in = "oversqr.dat"
+
+        # 1st method using np.method
+#        self.ao_overlap = np.zeros((self.norb, self.norb))
+#        over_mat = np.loadtxt(file_name_in, skiprows=5, dtype=np.float)
+#        nan_ind = np.argwhere(np.isnan(over_mat))
+##        for row, col in nan_ind:
+##            ind_a = self.check_basis[row%self.norb]
+##            ind_b = self.check_basis[col%self.norb]
+##            if (ind_a == ind_b):
+##                if (row%self.norb == col%self.norb):
+##                    over_mat[row, col] = 1.
+##                else:
+##                    over_mat[row, col] = 0.
+#        for row in range(self.norb):
+#            for col in range(self.norb, 2 * self.norb):
+#                self.ao_overlap[row, col - self.norb] = over_mat[row, col]
+#        np.savetxt("test1", self.ao_overlap, fmt=f"%6.3f")
+#        np.savetxt("test3", over_mat, fmt=f"%6.3f")
+
+        # 2nd method using direct read - faster than 1st method
+        self.ao_overlap = np.zeros((self.norb, self.norb))
+        with open(file_name_in, "r") as f_in:
+            lines = f_in.readlines()
+            row = 0
+            iline = 0
+            for line in lines:
+                # Skip first five lines and read upper block
+                if (iline in range(5, 5 + self.norb)):
+                    col = 0
+                    count = False
+                    field = line.split()
+                    for element in field:
+                        # Read right block
+                        if (count):
+                            # TODO : how to consider too large value, 26.6 in this case?
+                            # TODO : set to 1?
+                            if (element == 'NaN'):
+                                # TODO : Choose only onsite (same-atom) block, is this essential part?
+#                                ind_a = self.check_basis[row]
+#                                ind_b = self.check_basis[col]
+#                                if (ind_a == ind_b):
+#                                    if (row == col):
+#                                        new_val = 1.
+#                                    else:
+#                                        new_val = 0.
+                                if (row == col):
+                                    # Diagonal element in onsite (same-atom) block
+                                    new_val = 1.
+                                else:
+                                    # Off-diagonal element in onsite (same-atom) block
+                                    new_val = 0.
+                            else:
+                                new_val = float(element)
+                            # Set overlap matrix element
+                            if (col in range(self.norb)):
+                                self.ao_overlap[row, col] = new_val
+                        col += 1
+                        # Read right block
+                        if (col > self.norb - 1):
+                            col -= self.norb
+                            count = True
+                    row += 1
+                iline += 1
+#        np.savetxt("test2", self.ao_overlap, fmt=f"%6.3f")
 
         wf_overlap(self, molecule)
 
@@ -546,61 +627,9 @@ class DFTB(DFTBplus):
 #        f_out.write(f_print)
 #
 #        f_out.close()
-#
-#        # Write 'AOVERLAP' file
-#        file_name_out = "AOVERLAP"
-#        f_out = open(file_name_out, "w")
-#
-#        file_name_in = "oversqr.dat"
-##        over_mat = np.loadtxt(file_name_in, skiprows=5, dtype=np.float)
-##        nan_ind = np.argwhere(np.isnan(over_mat))
-##        for row, col in nan_ind:
-##            ind_a = check_basis[row%num_basis]
-##            ind_b = check_basis[col%num_basis]
-##            if (ind_a == ind_b):
-##                if (row%num_basis == col%num_basis):
-##                    over_mat[row, col] = 1.
-##                else:
-##                    over_mat[row, col] = 0.
-##        #np.savetxt("test", over_mat, fmt=f"%24.15e")
-##        np.savetxt("test", over_mat, fmt=f"%23.15e")
-#        with open(file_name_in, "r") as f_in:
-#            lines = f_in.readlines()
-#            nline = 1
-#            nrow = 1
-#            for line in lines:
-#                if (nline >= 6):
-#                    field = line.split()
-#                    if ("NaN" in field):
-#                        ncolumn = 1
-#                        for element in field:
-#                            if (element == 'NaN'):
-#                                ind_a = check_basis[nrow - 1]
-#                                ind_b = check_basis[ncolumn - 1]
-#                                if (ind_a == ind_b):
-#                                    if (nrow == ncolumn):
-#                                        f_print = f"{1.0:24.15e}"
-#                                    else:
-#                                        f_print = f"{0.0:24.15e}"
-#                                    f_out.write(f_print)
-#                            else:
-#                                f_print = f"{float(element):24.15e}"
-#                                f_out.write(f_print)
-#                            if (field.index(element) == 2 * num_basis - 1):
-#                                f_out.write("\n")
-#                            ncolumn += 1
-#                            if (ncolumn > num_basis):
-#                                ncolumn -= num_basis
-#                    else:
-#                        f_print = f"{line}"
-#                        f_out.write(f_print)
-#                    nrow += 1
-#                    if (nrow > num_basis):
-#                        nrow -= num_basis
-#                nline += 1
-#
-#        f_out.close()
-#
+
+
+
 #        # Write 'MOCOEF' file
 #        file_name_out = "MOCOEF"
 #        f_out = open(file_name_out, "w")
