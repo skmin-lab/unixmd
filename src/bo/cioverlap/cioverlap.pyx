@@ -14,7 +14,7 @@ def wf_overlap(theory, molecule):
         double **mo_coef_new
         double ***ci_coef_old
         double ***ci_coef_new
-        int ist, nst, iorb, norb, nocc, nvirt
+        int ist, nst, iorb, jorb, norb, nocc, nvirt
 
     # Assign size variables
     nst = molecule.nst
@@ -44,32 +44,34 @@ def wf_overlap(theory, molecule):
             ci_coef_old[ist][iorb] = <double*> PyMem_Malloc(nocc * sizeof(double))
             ci_coef_new[ist][iorb] = <double*> PyMem_Malloc(nocc * sizeof(double))
 
-    TD_NAC(nst, ao_overlap, mo_coef_old, mo_coef_new, ci_coef_old, ci_coef_new)
-
-#    energy_old = <double*> PyMem_Malloc(nst * sizeof(double))
-
-#    for ist in range(nst):
-#        energy[ist] = molecule.states[ist].energy
-#        energy_old[ist] = molecule.states[ist].energy_old
-#        for jst in range(nst):
-#            nacme[ist][jst] = molecule.nacme[ist, jst]
-#            nacme_old[ist][jst] = molecule.nacme_old[ist, jst]
-#            rho[ist][jst] = molecule.rho[ist, jst]
-#
-#    RK4_rho(nst, nesteps, dt, rho, energy, energy_old, nacme, nacme_old)
-
-    # Assign NACME variables
+    # Assign NACME variables from python to C
     for iorb in range(norb):
         for jorb in range(norb):
-            theory.ao_overlap[iorb, jorb] = ao_overlap[iorb][jorb]
-            theory.mo_coef_old[iorb, jorb] = mo_coef_old[iorb][jorb]
-            theory.mo_coef_new[iorb, jorb] = mo_coef_new[iorb][jorb]
+            ao_overlap[iorb][jorb] = theory.ao_overlap[iorb, jorb]
+            mo_coef_old[iorb][jorb] = theory.mo_coef_old[iorb, jorb]
+            mo_coef_new[iorb][jorb] = theory.mo_coef_new[iorb, jorb]
 
     for ist in range(nst):
         for iorb in range(nvirt):
             for jorb in range(nocc):
-                theory.ci_coef_old[ist, iorb, jorb] = ci_coef_old[ist][iorb][jorb]
-                theory.ci_coef_new[ist, iorb, jorb] = ci_coef_new[ist][iorb][jorb]
+                ci_coef_old[ist][iorb][jorb] = theory.ci_coef_old[ist, iorb, jorb]
+                ci_coef_new[ist][iorb][jorb] = theory.ci_coef_new[ist, iorb, jorb]
+
+    # Calculate TDNAC term for CIoverlap
+    TD_NAC(nst, ao_overlap, mo_coef_old, mo_coef_new, ci_coef_old, ci_coef_new)
+
+    # Assign NACME variables from C to python
+#    for iorb in range(norb):
+#        for jorb in range(norb):
+#            theory.ao_overlap[iorb, jorb] = ao_overlap[iorb][jorb]
+#            theory.mo_coef_old[iorb, jorb] = mo_coef_old[iorb][jorb]
+#            theory.mo_coef_new[iorb, jorb] = mo_coef_new[iorb][jorb]
+#
+#    for ist in range(nst):
+#        for iorb in range(nvirt):
+#            for jorb in range(nocc):
+#                theory.ci_coef_old[ist, iorb, jorb] = ci_coef_old[ist][iorb][jorb]
+#                theory.ci_coef_new[ist, iorb, jorb] = ci_coef_new[ist][iorb][jorb]
 
     # Deallocate NACME variables
     for iorb in range(norb):
