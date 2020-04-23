@@ -96,8 +96,8 @@ class DFTB(DFTBplus):
         self.ao_overlap = np.zeros((self.norb, self.norb))
         self.mo_coef_old = np.zeros((self.norb, self.norb))
         self.mo_coef_new = np.zeros((self.norb, self.norb))
-        self.ci_coef_old = np.zeros((molecule.nst, self.nvirt, self.nocc))
-        self.ci_coef_new = np.zeros((molecule.nst, self.nvirt, self.nocc))
+        self.ci_coef_old = np.zeros((molecule.nst, self.nocc, self.nvirt))
+        self.ci_coef_new = np.zeros((molecule.nst, self.nocc, self.nvirt))
 
     def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from (TD)DFTB method
@@ -588,7 +588,7 @@ class DFTB(DFTBplus):
                             count = True
                     row += 1
                 iline += 1
-#        np.savetxt("test2", self.ao_overlap, fmt=f"%6.3f")
+        np.savetxt("test2", self.ao_overlap, fmt=f"%6.3f")
 
         wf_overlap(self, molecule)
 

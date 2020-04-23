@@ -36,13 +36,13 @@ def wf_overlap(theory, molecule):
     ci_coef_new = <double***> PyMem_Malloc(nst * sizeof(double**))
 
     for ist in range(nst):
-        ci_coef_old[ist] = <double**> PyMem_Malloc(nvirt * sizeof(double*))
-        ci_coef_new[ist] = <double**> PyMem_Malloc(nvirt * sizeof(double*))
+        ci_coef_old[ist] = <double**> PyMem_Malloc(nocc * sizeof(double*))
+        ci_coef_new[ist] = <double**> PyMem_Malloc(nocc * sizeof(double*))
 
     for ist in range(nst):
-        for iorb in range(nvirt):
-            ci_coef_old[ist][iorb] = <double*> PyMem_Malloc(nocc * sizeof(double))
-            ci_coef_new[ist][iorb] = <double*> PyMem_Malloc(nocc * sizeof(double))
+        for iorb in range(nocc):
+            ci_coef_old[ist][iorb] = <double*> PyMem_Malloc(nvirt * sizeof(double))
+            ci_coef_new[ist][iorb] = <double*> PyMem_Malloc(nvirt * sizeof(double))
 
     # Assign NACME variables from python to C
     for iorb in range(norb):
@@ -52,8 +52,8 @@ def wf_overlap(theory, molecule):
             mo_coef_new[iorb][jorb] = theory.mo_coef_new[iorb, jorb]
 
     for ist in range(nst):
-        for iorb in range(nvirt):
-            for jorb in range(nocc):
+        for iorb in range(nocc):
+            for jorb in range(nvirt):
                 ci_coef_old[ist][iorb][jorb] = theory.ci_coef_old[ist, iorb, jorb]
                 ci_coef_new[ist][iorb][jorb] = theory.ci_coef_new[ist, iorb, jorb]
 
@@ -84,7 +84,7 @@ def wf_overlap(theory, molecule):
     PyMem_Free(mo_coef_new)
 
     for ist in range(nst):
-        for iorb in range(nvirt):
+        for iorb in range(nocc):
             PyMem_Free(ci_coef_old[ist][iorb])
             PyMem_Free(ci_coef_new[ist][iorb])
 
