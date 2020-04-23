@@ -68,6 +68,8 @@ class DFTB(DFTBplus):
 
         # Calculate number of basis for current system
         # Set new variable to decide the position of basis functions in terms of atoms
+        # DFTB method considers only valence electrons, so core electrons should be removed
+        core_elec = 0.
         self.norb = 0
 #        self.check_atom = [0]
         for iat in range(molecule.nat):
@@ -76,6 +78,7 @@ class DFTB(DFTBplus):
                 self.norb += 1
             elif (max_ang == 'p'):
                 self.norb += 4
+                core_elec += 2.
 #            self.check_atom.append(self.norb)
 
         # Set new variable to decide the position of atoms in terms of basis functions
@@ -90,7 +93,7 @@ class DFTB(DFTBplus):
         # Initialize NACME variables
         # There is no core orbitals in TDDFTB (fixed occupations)
         # nocc is number of occupied orbitals and nvirt is number of virtual orbitals
-        self.nocc = int(int(molecule.nelec) / 2)
+        self.nocc = int(int(molecule.nelec - core_elec) / 2)
         self.nvirt = self.norb - self.nocc
 
         self.ao_overlap = np.zeros((self.norb, self.norb))
@@ -590,92 +593,32 @@ class DFTB(DFTBplus):
                 iline += 1
         np.savetxt("test2", self.ao_overlap, fmt=f"%6.3f")
 
+        # Read 'eigenvec.bin.pre' file at time t
+        file_name_in = "eigenvec.bin.pre"
+
+        self.mo_coef_old = np.zeros((self.norb, self.norb))
+        with open(file_name_in, "rb") as f_in:
+            dummy = np.fromfile(f_in, dtype=np.integer, count=1)
+            for iorb in range(self.norb):
+                dummy = np.fromfile(f_in, dtype=np.integer, count=1)
+                data = np.fromfile(f_in, dtype=np.float64, count=self.norb)
+                self.mo_coef_old[iorb] = data
+        np.savetxt("test11", self.mo_coef_old, fmt=f"%12.6f")
+
+        # Read 'eigenvec.bin' file at time t + dt
+        file_name_in = "eigenvec.bin"
+
+        self.mo_coef_new = np.zeros((self.norb, self.norb))
+        with open(file_name_in, "rb") as f_in:
+            dummy = np.fromfile(f_in, dtype=np.integer, count=1)
+            for iorb in range(self.norb):
+                dummy = np.fromfile(f_in, dtype=np.integer, count=1)
+                data = np.fromfile(f_in, dtype=np.float64, count=self.norb)
+                self.mo_coef_new[iorb] = data
+        np.savetxt("test12", self.mo_coef_new, fmt=f"%12.6f")
+
         wf_overlap(self, molecule)
 
-#        # Set new variable to decide the number of basis functions for atoms
-#        check_atom = [0]
-#        num_basis = 0
-#        core_elec = 0.
-#        for iat in range(molecule.nat):
-#            max_ang = max_l[molecule.symbols[iat]]
-#            if (max_ang == 'p'):
-#                num_basis += 4
-#                core_elec += 2.
-#                check_atom.append(num_basis)
-#            elif (max_ang == 's'):
-#                num_basis += 1
-#                check_atom.append(num_basis)
-#
-#        # Set new variable to decide the position of atoms in basis functions
-#        check_basis = []
-#        for ibasis in range(num_basis):
-#            for iat in range(molecule.nat):
-#                ind_a = check_atom[iat] + 1
-#                ind_b = check_atom[iat + 1]
-#                if (ibasis + 1 >= ind_a and ibasis + 1 <= ind_b):
-#                    check_basis.append(iat + 1)
-#
-#        # Write 'INPUT' file
-#        ncore = 0
-#        nocc = int(int(molecule.nelec - core_elec) / 2) - ncore
-#        nvirt = num_basis - nocc - ncore
-#
-#        file_name_out = "INPUT"
-#        f_out = open(file_name_out, "w")
-#
-#        f_print = f"{num_basis:5d} {ncore:4d} {nocc:4d} {nvirt:4d} {molecule.nst:3d} 5.16767" + "\n"
-#        f_out.write(f_print)
-#
-#        f_out.close()
-
-
-
-#        # Write 'MOCOEF' file
-#        file_name_out = "MOCOEF"
-#        f_out = open(file_name_out, "w")
-#
-#        file_name_in = "eigenvec.bin"
-#        mocoef = []
-#        with open(file_name_in, "rb") as f_in:
-#            dummy = np.fromfile(f_in, dtype=np.integer, count = 1)
-#            for ibasis in range(num_basis):
-#                dummy = np.fromfile(f_in, dtype=np.integer, count = 1)
-#                data = np.fromfile(f_in, dtype=np.float64, count = num_basis)
-#                mocoef.append(data)
-#            mocoef = np.array(mocoef)
-#            mocoef = np.transpose(mocoef)
-#            mocoef = [val for sublist in mocoef for val in sublist]
-#            for ibasis in range(num_basis):
-#                ind_a = num_basis * ibasis
-#                ind_b = num_basis * (ibasis + 1)
-#                f_print = " ".join([f"{mocoef[ind]:13.8f}" for ind in range(ind_a, ind_b)]) + "\n"
-#                f_out.write(f_print)
-#
-#        f_out.close()
-#
-#        # Write 'MOCOEFOLD' file
-#        file_name_out = "MOCOEFOLD"
-#        f_out = open(file_name_out, "w")
-#
-#        file_name_in = "eigenvec.bin.pre"
-#        mocoef = []
-#        with open(file_name_in, "rb") as f_in:
-#            dummy = np.fromfile(f_in, dtype=np.integer, count = 1)
-#            for ibasis in range(num_basis):
-#                dummy = np.fromfile(f_in, dtype=np.integer, count = 1)
-#                data = np.fromfile(f_in, dtype=np.float64, count = num_basis)
-#                mocoef.append(data)
-#            mocoef = np.array(mocoef)
-#            mocoef = np.transpose(mocoef)
-#            mocoef = [val for sublist in mocoef for val in sublist]
-#            for ibasis in range(num_basis):
-#                ind_a = num_basis * ibasis
-#                ind_b = num_basis * (ibasis + 1)
-#                f_print = " ".join([f"{mocoef[ind]:13.8f}" for ind in range(ind_a, ind_b)]) + "\n"
-#                f_out.write(f_print)
-#
-#        f_out.close()
-#
 #        # Write 'CICOEF' file
 #        file_name_out = "CICOEF"
 #        f_out = open(file_name_out, "w")
