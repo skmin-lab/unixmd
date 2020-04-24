@@ -129,6 +129,9 @@ static void xf_cdot(int nst, int nat, int nsp, int *l_coh, double wsigma,
     free(qmom);
 }
 
+static void xf_rhodot(){
+}
+
 static void RK4_coef(int nst, int nesteps, double dt, double complex *coef, double *energy, double *energy_old, double **nacme, double **nacme_old){
     double complex *c_dot = malloc(nst * sizeof(double complex));
     double complex *coef_new = malloc(nst * sizeof(double complex));
@@ -455,4 +458,7 @@ static void RK4_coef_xf(int nst, int nesteps, double dt, double complex *coef,
     free(dv);
     
     free(xf_c_dot);
+}
+
+static void RK4_rho_xf(){
 }

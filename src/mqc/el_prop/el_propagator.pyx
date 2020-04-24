@@ -159,6 +159,11 @@ def el_coef(nesteps_py, dt_py, molecule):
     PyMem_Free(nacme)
     PyMem_Free(nacme_old)
 
+
+def el_rho_xf(nesteps_py, dt_py, molecule):
+    pass
+
+
 def el_rho(nesteps_py, dt_py, molecule):
     cdef:
         double *energy
