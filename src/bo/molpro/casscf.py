@@ -30,7 +30,7 @@ class CASSCF(Molpro):
         # Initialize Molpro CASSCF variables
         # Note that Molpro do not need restart option since it automatically search
         # the MO files for restart if possible
-        # TODO : For restart of previous step, this can be done without removing scratch directory
+        # TODO : Add feature: Initial guess from HF or previous step
         # In addition, Molpro do not provide periodic setting with CASSCF method
         self.max_iter = max_iter
         self.scf_en_tol = scf_en_tol
