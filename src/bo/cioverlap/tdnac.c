@@ -35,40 +35,85 @@
     }
 }*/
 
-static void TD_NAC(int nst, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new){
-//    double complex **rho_dot = malloc(nst * sizeof(double complex *));
-//    double complex **rho_new = malloc(nst * sizeof(double complex *));
-//    double complex **k1 = malloc(nst * sizeof(double complex *));
-//    double complex **k2 = malloc(nst * sizeof(double complex *));
-//    double complex **k3 = malloc(nst * sizeof(double complex *));
-//    double complex **k4 = malloc(nst * sizeof(double complex *));
-//    double complex **kfunction = malloc(nst * sizeof(double complex *));
-//    double complex **variation = malloc(nst * sizeof(double complex *));
-//    double *eenergy = malloc(nst * sizeof(double));
-//    double **dv = malloc(nst * sizeof(double*));
-//    double *na_term = malloc(nst * sizeof(double));
-//    int iestep, ist, jst;
+static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new){
+    double **mo_overlap = malloc(norb * sizeof(double*));
+    int ist, iorb, jorb, aorb, borb, mu, nu;
 //    double frac, edt, norm;
 
-    printf("TD_NAC : nst = %8d\n", nst);
-    printf("TD_NAC : ao_overlap = %15.8f\n", ao_overlap[0][0]);
+//    printf("TD_NAC : nst = %8d\n", nst);
+//    printf("TD_NAC : norb = %ld\n", sizeof(ao_overlap) / sizeof(ao_overlap[0]));
+//    printf("TD_NAC : norb = %ld\n", sizeof(tmp)); // sizeof(ao_overlap[0]));
+//    printf("TD_NAC : ao_overlap = %15.8f\n", ao_overlap[0][0]);
 
-/*    frac = 1.0 / (double)nesteps;
-    edt = dt * frac;
+//    frac = 1.0 / (double)nesteps;
+//    edt = dt * frac;
 
+    for(iorb = 0; iorb < norb; iorb++){
+        mo_overlap[iorb] = malloc(norb * sizeof(double));
+        // Initialize mo_overlap
+        for(jorb = 0; jorb < norb; jorb++){
+            mo_overlap[iorb][jorb] = 0.0;
+        }
+    }
+
+    for(iorb = 0; iorb < norb; iorb++){
+        for(jorb = 0; jorb < norb; jorb++){
+
+            for(mu = 0; mu < norb; mu++){
+                for(nu = 0; nu < norb; nu++){
+                    mo_overlap[iorb][jorb] += ao_overlap[mu][nu] * mo_coef_old[iorb][mu] * mo_coef_new[jorb][nu];
+                }
+            }
+
+        }
+    }
+//    // print
+//    for(iorb = 0; iorb < norb; iorb++){
+//        for(jorb = 0; jorb < norb; jorb++){
+//            printf("%15.8f ", mo_overlap[iorb][jorb]);
+//        }
+//        printf("\n");
+//    }
+//    printf("\n");
+//    printf("\n");
+
+    // TODO : ist = jst should be removed
     for(ist = 0; ist < nst; ist++){
-        dv[ist] = malloc(nst * sizeof(double));
-        rho_dot[ist] = malloc(nst * sizeof(double complex));
-        rho_new[ist] = malloc(nst * sizeof(double complex));
-        k1[ist] = malloc(nst * sizeof(double complex));
-        k2[ist] = malloc(nst * sizeof(double complex));
-        k3[ist] = malloc(nst * sizeof(double complex));
-        k4[ist] = malloc(nst * sizeof(double complex));
-        kfunction[ist] = malloc(nst * sizeof(double complex));
-        variation[ist] = malloc(nst * sizeof(double complex));
+        for(jst = 0; jst < nst; jst++){
+
+            // 1st term in Eq. 15
+            for(iorb = 0; iorb < nocc; iorb++){
+                for(aorb = 0; aorb < nvirt; aorb++){
+                    nacme[ist][jst] += ci_coef_old[ist][iorb][aorb] * ci_coef_new[jst][iorb][aorb];
+                }
+            }
+
+            // 2nd term in Eq. 15
+            for(iorb = 0; iorb < nocc; iorb++){
+                for(aorb = 0; aorb < nvirt; aorb++){
+                    for(borb = 0; borb < nvirt; aorb++){
+                        nacme[ist][jst] += ci_coef_old[ist][iorb][aorb] * ci_coef_new[jst][iorb][borb] * mo_overlap[nocc + aorb][nocc + borb];
+                    }
+                }
+            }
+
+            // 3rd term in Eq. 15
+            for(iorb = 0; iorb < nocc; iorb++){
+                for(aorb = 0; aorb < nvirt; aorb++){
+                    for(jorb = 0; jorb < nocc; jorb++){
+                        // TODO : permutation needed
+                        nacme[ist][jst] -= ci_coef_old[ist][iorb][aorb] * ci_coef_new[jst][jorb][aorb] * mo_overlap[jorb][iorb];
+                    }
+                }
+            }
+
+            // TODO : dt should be obtained from md.dt
+//            nacme[ist][jst] /= dt;
+
+        }
     }
     
-    for(iestep = 0; iestep < nesteps; iestep++){
+/*    for(iestep = 0; iestep < nesteps; iestep++){
         
         for(ist = 0; ist < nst; ist++){
             eenergy[ist] = energy_old[ist] + (energy[ist] - energy_old[ist]) *(double) iestep * frac;
@@ -79,81 +124,21 @@ static void TD_NAC(int nst, double **ao_overlap, double **mo_coef_old, double **
 
         rhodot(nst, rho, eenergy, dv, rho_dot);
 
-        for(ist = 0; ist < nst; ist++){
-            for(jst = 0; jst < nst; jst++){
-                k1[ist][jst] = edt * rho_dot[ist][jst];
-                kfunction[ist][jst] = 0.5 * k1[ist][jst];
-                rho_new[ist][jst] = rho[ist][jst] + kfunction[ist][jst];
-            }
-        }
-
-        rhodot(nst, rho_new, eenergy, dv, rho_dot);
-
-        for(ist = 0; ist < nst; ist++){
-            for(jst = 0; jst < nst; jst++){
-                k2[ist][jst] = edt * rho_dot[ist][jst];
-                kfunction[ist][jst] = 0.5 * (-1.0 + sqrt(2.0)) *  k1[ist][jst] + (1.0 - 0.5 * sqrt(2.0)) * k2[ist][jst];
-                rho_new[ist][jst] = rho[ist][jst] + kfunction[ist][jst];
-            }
-        }
-
-        rhodot(nst, rho_new, eenergy, dv, rho_dot);
-
-        for(ist = 0; ist < nst; ist++){
-            for(jst = 0; jst < nst; jst++){
-                k3[ist][jst] = edt * rho_dot[ist][jst];
-                kfunction[ist][jst] = - 0.5 * sqrt(2.0) * k2[ist][jst] + (1.0 + 0.5 * sqrt(2.0)) * k3[ist][jst];
-                rho_new[ist][jst] = rho[ist][jst] + kfunction[ist][jst];
-            }
-        }
-
-        rhodot(nst, rho_new, eenergy, dv, rho_dot);
-
-        for(ist = 0; ist < nst; ist++){
-            for(jst = 0; jst < nst; jst++){
-                k4[ist][jst] = edt * rho_dot[ist][jst];
-                variation[ist][jst] = (k1[ist][jst] + (2.0 - sqrt(2.0)) * k2[ist][jst] + (2.0 + sqrt(2.0)) * k3[ist][jst] + k4[ist][jst]) / 6.0;
-                rho[ist][jst] += variation[ist][jst];
-            }
-        }
     }
     
-    for(ist = 0; ist < nst; ist++){
-        na_term[ist] = 0.0;
-        for(jst = 0; jst < nst; jst++){
-            if(jst != ist){
-                na_term[ist] -= 2.0 * dv[ist][jst] * creal(rho[ist][jst]);
-            }
-        }
-    }
     norm = 0.0;
     for(ist = 0; ist < nst; ist++){
         norm += creal(rho[ist][ist]);
     }
 
-    free(eenergy);
-    free(na_term);
-    for(ist = 0; ist < nst; ist++){
-        free(dv[ist]);
-        free(k1[ist]);
-        free(k2[ist]);
-        free(k3[ist]);
-        free(k4[ist]);
-        free(kfunction[ist]);
-        free(variation[ist]);
-        free(rho_dot[ist]);
-        free(rho_new[ist]);
-    }
-    free(dv);
-    free(k1);
-    free(k2);
-    free(k3);
-    free(k4);
-    free(kfunction);
-    free(variation);
-    free(rho_dot);
-    free(rho_new);
     */
+
+    for(iorb = 0; iorb < norb; iorb++){
+        free(mo_overlap[iorb]);
+    }
+
+    free(mo_overlap);
+
 }
 
 

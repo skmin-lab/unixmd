@@ -5,7 +5,7 @@ from cpython.mem cimport PyMem_Malloc, PyMem_Free
 #cimport numpy as np
 
 cdef extern from "tdnac.c":
-    void TD_NAC(int nst, int norb, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new)
+    void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new)
 
 def wf_overlap(theory, molecule):
     cdef:
@@ -53,7 +53,8 @@ def wf_overlap(theory, molecule):
     # Assign NACME variables from python to C
     for ist in range(nst):
         for jst in range(nst):
-            nacme[ist][jst] = molecule.nacme[ist, jst]
+#            nacme[ist][jst] = molecule.nacme[ist, jst]
+            nacme[ist][jst] = 0.
 
     for iorb in range(norb):
         for jorb in range(norb):
@@ -68,7 +69,7 @@ def wf_overlap(theory, molecule):
                 ci_coef_new[ist][iorb][jorb] = theory.ci_coef_new[ist, iorb, jorb]
 
     # Calculate TDNAC term for CIoverlap
-    TD_NAC(nst, norb, nacme, ao_overlap, mo_coef_old, mo_coef_new, ci_coef_old, ci_coef_new)
+    TD_NAC(nst, norb, nocc, nvirt, nacme, ao_overlap, mo_coef_old, mo_coef_new, ci_coef_old, ci_coef_new)
 
     # Assign NACME variables from C to python
 #    for iorb in range(norb):
