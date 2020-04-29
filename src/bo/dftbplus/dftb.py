@@ -132,6 +132,8 @@ class DFTB(DFTBplus):
                 os.path.join(self.scr_qm_dir, "../geometry.xyz.pre"))
             shutil.copy(os.path.join(self.scr_qm_dir, "eigenvec.bin"), \
                 os.path.join(self.scr_qm_dir, "../eigenvec.bin.pre"))
+            shutil.copy(os.path.join(self.scr_qm_dir, "SPX.DAT"), \
+                os.path.join(self.scr_qm_dir, "../SPX.DAT.pre"))
             shutil.copy(os.path.join(self.scr_qm_dir, "XplusY.DAT"), \
                 os.path.join(self.scr_qm_dir, "../XplusY.DAT.pre"))
 
@@ -177,6 +179,7 @@ class DFTB(DFTBplus):
             # Move previous files to currect directory
             os.rename('../geometry.xyz.pre', './geometry.xyz.pre')
             os.rename('../eigenvec.bin.pre', './eigenvec.bin.pre')
+            os.rename('../SPX.DAT.pre', './SPX.DAT.pre')
             os.rename('../XplusY.DAT.pre', './XplusY.DAT.pre')
             # Open geometry.xyz.pre
             file_af = open('double.xyz', 'w')
@@ -621,17 +624,32 @@ class DFTB(DFTBplus):
         nmat = self.nocc * self.nvirt
 
         # The CI coefficients are arranged in order of single-particle excitations
-        file_name_in = "SPX.DAT"
+        # Read 'SPX.DAT.pre' file at time t
+        file_name_in = "SPX.DAT.pre"
         with open(file_name_in, "r") as f_in:
             lines = f_in.readlines()
             iline = 0
-            get_wij_ind = np.zeros((nmat, 2), dtype=np.int_)
+            get_wij_ind_old = np.zeros((nmat, 2), dtype=np.int_)
             for line in lines:
                 # Skip first five lines
                 if (iline in range(5, 5 + nmat)):
                     # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
                     field = line.split()
-                    get_wij_ind[int(field[0]) - 1] = [int(field[3]), int(field[5])]
+                    get_wij_ind_old[int(field[0]) - 1] = [int(field[3]), int(field[5])]
+                iline += 1
+
+        # Read 'SPX.DAT' file at time t + dt
+        file_name_in = "SPX.DAT"
+        with open(file_name_in, "r") as f_in:
+            lines = f_in.readlines()
+            iline = 0
+            get_wij_ind_new = np.zeros((nmat, 2), dtype=np.int_)
+            for line in lines:
+                # Skip first five lines
+                if (iline in range(5, 5 + nmat)):
+                    # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
+                    field = line.split()
+                    get_wij_ind_new[int(field[0]) - 1] = [int(field[3]), int(field[5])]
                 iline += 1
 
         # Read 'XplusY.DAT.pre' file at time t
@@ -659,8 +677,8 @@ class DFTB(DFTBplus):
                             break
                     else:
                         for element in field:
-                            ind_occ = get_wij_ind[ind, 0] - 1
-                            ind_virt = get_wij_ind[ind, 1] - self.nocc - 1
+                            ind_occ = get_wij_ind_old[ind, 0] - 1
+                            ind_virt = get_wij_ind_old[ind, 1] - self.nocc - 1
                             self.ci_coef_old[ist, ind_occ, ind_virt] = float(element)
                             ind += 1
                 iline += 1
@@ -691,8 +709,8 @@ class DFTB(DFTBplus):
                             break
                     else:
                         for element in field:
-                            ind_occ = get_wij_ind[ind, 0] - 1
-                            ind_virt = get_wij_ind[ind, 1] - self.nocc - 1
+                            ind_occ = get_wij_ind_new[ind, 0] - 1
+                            ind_virt = get_wij_ind_new[ind, 1] - self.nocc - 1
                             self.ci_coef_new[ist, ind_occ, ind_virt] = float(element)
                             ind += 1
                 iline += 1
