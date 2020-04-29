@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <complex.h>
 #include <math.h>
 
 // Routine to calculate overlap and permutation matrix in MO basis between two time steps
@@ -176,8 +175,8 @@ static void norm_CI_coef(int nst, int nocc, int nvirt, double ***ci_coef){
 static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new){
     double **mo_overlap = malloc(norb * sizeof(double*));
     double **permut_mat = malloc(norb * sizeof(double*));
-    int ist, jst, iorb, jorb, aorb, borb;
-//    double frac, edt, norm;
+    int ist, jst, iorb, jorb, aorb, borb, exponent;
+    double fac;
 
 //    printf("TD_NAC : nst = %8d\n", nst);
 //    printf("TD_NAC : norb = %ld\n", sizeof(ao_overlap) / sizeof(ao_overlap[0]));
@@ -230,8 +229,10 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
             for(iorb = 0; iorb < nocc; iorb++){
                 for(aorb = 0; aorb < nvirt; aorb++){
                     for(jorb = 0; jorb < nocc; jorb++){
-                        // TODO : permutation needed
-                        nacme[ist][jst] -= ci_coef_old[ist][iorb][aorb] * ci_coef_new[jst][jorb][aorb] * mo_overlap[jorb][iorb];
+                        // fac is permutation in 3rd term
+                        exponent = abs(jorb - iorb);
+                        fac = pow(-1.0, exponent);
+                        nacme[ist][jst] -= fac * ci_coef_old[ist][iorb][aorb] * ci_coef_new[jst][jorb][aorb] * mo_overlap[jorb][iorb];
                     }
                 }
             }
