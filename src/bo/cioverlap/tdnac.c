@@ -42,8 +42,8 @@ static void norm_CI_coef(int nst, int nocc, int nvirt, double ***ci_coef){
 
 }
 
-// Routine to calculate overlap matrix in MO basis between two time steps
-static void calc_MO_over(int norb, double **mo_overlap, double **ao_overlap, double **mo_coef_old, double **mo_coef_new){
+// Routine to calculate overlap and permutation matrix in MO basis between two time steps
+static void calc_MO_over(int norb, double **mo_overlap, double **permut_mat, double **ao_overlap, double **mo_coef_old, double **mo_coef_new){
 
     int iorb, jorb, mu, nu;
 
@@ -55,14 +55,16 @@ static void calc_MO_over(int norb, double **mo_overlap, double **ao_overlap, dou
                     mo_overlap[iorb][jorb] += ao_overlap[mu][nu] * mo_coef_old[iorb][mu] * mo_coef_new[jorb][nu];
                 }
             }
+            permut_mat[iorb][jorb] = round(mo_overlap[iorb][jorb]);
 
         }
     }
 
-    // Print mo_overlap values
+    // Print mo_overlap and permut_mat values
 //    for(iorb = 0; iorb < norb; iorb++){
 //        for(jorb = 0; jorb < norb; jorb++){
 //            printf("%15.8f ", mo_overlap[iorb][jorb]);
+//            printf("%15.8f ", permut_mat[iorb][jorb]);
 //        }
 //        printf("\n");
 //    }
@@ -73,6 +75,7 @@ static void calc_MO_over(int norb, double **mo_overlap, double **ao_overlap, dou
 // Routine to calculate TDNAC term used in electronic propagation
 static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new){
     double **mo_overlap = malloc(norb * sizeof(double*));
+    double **permut_mat = malloc(norb * sizeof(double*));
     int ist, jst, iorb, jorb, aorb, borb;
 //    double frac, edt, norm;
 
@@ -86,13 +89,15 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
 
     for(iorb = 0; iorb < norb; iorb++){
         mo_overlap[iorb] = malloc(norb * sizeof(double));
+        permut_mat[iorb] = malloc(norb * sizeof(double));
         // Initialize mo_overlap
         for(jorb = 0; jorb < norb; jorb++){
             mo_overlap[iorb][jorb] = 0.0;
+            permut_mat[iorb][jorb] = 0.0;
         }
     }
 
-    calc_MO_over(norb, mo_overlap, ao_overlap, mo_coef_old, mo_coef_new);
+    calc_MO_over(norb, mo_overlap, permut_mat, ao_overlap, mo_coef_old, mo_coef_new);
 
     norm_CI_coef(nst, nocc, nvirt, ci_coef_old);
     norm_CI_coef(nst, nocc, nvirt, ci_coef_new);
@@ -138,26 +143,6 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
     }
     printf("\n");
     
-/*    for(iestep = 0; iestep < nesteps; iestep++){
-        
-        for(ist = 0; ist < nst; ist++){
-            eenergy[ist] = energy_old[ist] + (energy[ist] - energy_old[ist]) *(double) iestep * frac;
-            for(jst = 0; jst < nst; jst++){
-                dv[ist][jst] = nacme_old[ist][jst] + (nacme[ist][jst] - nacme_old[ist][jst]) *(double) iestep * frac;
-            }
-        }
-
-        rhodot(nst, rho, eenergy, dv, rho_dot);
-
-    }
-    
-    norm = 0.0;
-    for(ist = 0; ist < nst; ist++){
-        norm += creal(rho[ist][ist]);
-    }
-
-    */
-
     for(iorb = 0; iorb < norb; iorb++){
         free(mo_overlap[iorb]);
     }
