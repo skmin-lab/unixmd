@@ -72,6 +72,61 @@ static void calc_MO_over(int norb, double **mo_overlap, double **permut_mat, dou
 
 }
 
+// Routine to match phase of MO coefficients and orderings between two time steps
+static void MO_phase_order(int norb, double **mo_coef_new, double **permut_mat){
+
+    double **tmp_mo = malloc(norb * sizeof(double*));
+    int iorb, jorb, mu;
+
+    for(iorb = 0; iorb < norb; iorb++){
+        tmp_mo[iorb] = malloc(norb * sizeof(double));
+        for(mu = 0; mu < norb; mu++){
+            tmp_mo[iorb][mu] = 0.0;
+        }
+    }
+
+    for(iorb = 0; iorb < norb; iorb++){
+        for(mu = 0; mu < norb; mu++){
+
+            for(jorb = 0; jorb < norb; jorb++){
+                tmp_mo[iorb][mu] += permut_mat[iorb][jorb] * mo_coef_new[jorb][mu];
+            }
+
+        }
+    }
+
+    // Print mo_coef_new values before matching and ordering
+//    for(iorb = 0; iorb < norb; iorb++){
+//        for(jorb = 0; jorb < norb; jorb++){
+//            printf("%15.8f ", mo_coef_new[iorb][jorb]);
+//        }
+//        printf("\n");
+//    }
+//    printf("\n");
+
+    for(iorb = 0; iorb < norb; iorb++){
+        for(mu = 0; mu < norb; mu++){
+            mo_coef_new[iorb][mu] = tmp_mo[iorb][mu];
+        }
+    }
+
+    // Print mo_coef_new values after matching and ordering
+//    for(iorb = 0; iorb < norb; iorb++){
+//        for(jorb = 0; jorb < norb; jorb++){
+//            printf("%15.8f ", mo_coef_new[iorb][jorb]);
+//        }
+//        printf("\n");
+//    }
+//    printf("\n");
+
+    for(iorb = 0; iorb < norb; iorb++){
+        free(tmp_mo[iorb]);
+    }
+
+    free(tmp_mo);
+
+}
+
 // Routine to calculate TDNAC term used in electronic propagation
 static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new){
     double **mo_overlap = malloc(norb * sizeof(double*));
@@ -98,6 +153,16 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
     }
 
     calc_MO_over(norb, mo_overlap, permut_mat, ao_overlap, mo_coef_old, mo_coef_new);
+    // Print mo_coef_new values
+//    for(iorb = 0; iorb < norb; iorb++){
+//        for(jorb = 0; jorb < norb; jorb++){
+//            printf("%15.8f ", mo_coef_old[iorb][jorb]);
+//        }
+//        printf("\n");
+//    }
+//    printf("\n");
+
+    MO_phase_order(norb, mo_coef_new, permut_mat);
 
     norm_CI_coef(nst, nocc, nvirt, ci_coef_old);
     norm_CI_coef(nst, nocc, nvirt, ci_coef_new);
@@ -145,9 +210,11 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
     
     for(iorb = 0; iorb < norb; iorb++){
         free(mo_overlap[iorb]);
+        free(permut_mat[iorb]);
     }
 
     free(mo_overlap);
+    free(permut_mat);
 
 }
 
