@@ -67,6 +67,7 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
 
         }
     }
+
 //    // print
 //    for(iorb = 0; iorb < norb; iorb++){
 //        for(jorb = 0; jorb < norb; jorb++){
@@ -91,7 +92,7 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
             // 2nd term in Eq. 15
             for(iorb = 0; iorb < nocc; iorb++){
                 for(aorb = 0; aorb < nvirt; aorb++){
-                    for(borb = 0; borb < nvirt; aorb++){
+                    for(borb = 0; borb < nvirt; borb++){
                         nacme[ist][jst] += ci_coef_old[ist][iorb][aorb] * ci_coef_new[jst][iorb][borb] * mo_overlap[nocc + aorb][nocc + borb];
                     }
                 }
