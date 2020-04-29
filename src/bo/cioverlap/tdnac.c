@@ -42,10 +42,38 @@ static void norm_CI_coef(int nst, int nocc, int nvirt, double ***ci_coef){
 
 }
 
+// Routine to calculate overlap matrix in MO basis between two time steps
+static void calc_MO_over(int norb, double **mo_overlap, double **ao_overlap, double **mo_coef_old, double **mo_coef_new){
+
+    int iorb, jorb, mu, nu;
+
+    for(iorb = 0; iorb < norb; iorb++){
+        for(jorb = 0; jorb < norb; jorb++){
+
+            for(mu = 0; mu < norb; mu++){
+                for(nu = 0; nu < norb; nu++){
+                    mo_overlap[iorb][jorb] += ao_overlap[mu][nu] * mo_coef_old[iorb][mu] * mo_coef_new[jorb][nu];
+                }
+            }
+
+        }
+    }
+
+    // Print mo_overlap values
+//    for(iorb = 0; iorb < norb; iorb++){
+//        for(jorb = 0; jorb < norb; jorb++){
+//            printf("%15.8f ", mo_overlap[iorb][jorb]);
+//        }
+//        printf("\n");
+//    }
+//    printf("\n");
+
+}
+
 // Routine to calculate TDNAC term used in electronic propagation
 static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new){
     double **mo_overlap = malloc(norb * sizeof(double*));
-    int ist, jst, iorb, jorb, aorb, borb, mu, nu;
+    int ist, jst, iorb, jorb, aorb, borb;
 //    double frac, edt, norm;
 
 //    printf("TD_NAC : nst = %8d\n", nst);
@@ -64,26 +92,7 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
         }
     }
 
-    for(iorb = 0; iorb < norb; iorb++){
-        for(jorb = 0; jorb < norb; jorb++){
-
-            for(mu = 0; mu < norb; mu++){
-                for(nu = 0; nu < norb; nu++){
-                    mo_overlap[iorb][jorb] += ao_overlap[mu][nu] * mo_coef_old[iorb][mu] * mo_coef_new[jorb][nu];
-                }
-            }
-
-        }
-    }
-
-//    // print mo_overlap values
-//    for(iorb = 0; iorb < norb; iorb++){
-//        for(jorb = 0; jorb < norb; jorb++){
-//            printf("%15.8f ", mo_overlap[iorb][jorb]);
-//        }
-//        printf("\n");
-//    }
-//    printf("\n");
+    calc_MO_over(norb, mo_overlap, ao_overlap, mo_coef_old, mo_coef_new);
 
     norm_CI_coef(nst, nocc, nvirt, ci_coef_old);
     norm_CI_coef(nst, nocc, nvirt, ci_coef_new);
