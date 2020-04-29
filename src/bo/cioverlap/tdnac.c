@@ -173,23 +173,15 @@ static void norm_CI_coef(int nst, int nocc, int nvirt, double ***ci_coef){
 
 // Routine to calculate TDNAC term used in electronic propagation
 static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new){
+
     double **mo_overlap = malloc(norb * sizeof(double*));
     double **permut_mat = malloc(norb * sizeof(double*));
     int ist, jst, iorb, jorb, aorb, borb, exponent;
     double fac;
 
-//    printf("TD_NAC : nst = %8d\n", nst);
-//    printf("TD_NAC : norb = %ld\n", sizeof(ao_overlap) / sizeof(ao_overlap[0]));
-//    printf("TD_NAC : norb = %ld\n", sizeof(tmp)); // sizeof(ao_overlap[0]));
-//    printf("TD_NAC : ao_overlap = %15.8f\n", ao_overlap[0][0]);
-
-//    frac = 1.0 / (double)nesteps;
-//    edt = dt * frac;
-
     for(iorb = 0; iorb < norb; iorb++){
         mo_overlap[iorb] = malloc(norb * sizeof(double));
         permut_mat[iorb] = malloc(norb * sizeof(double));
-        // Initialize mo_overlap
         for(jorb = 0; jorb < norb; jorb++){
             mo_overlap[iorb][jorb] = 0.0;
             permut_mat[iorb][jorb] = 0.0;
@@ -239,10 +231,16 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
 
             // TODO : dt should be obtained from md.dt
 //            nacme[ist][jst] /= dt;
+            // TODO : this value is obtained from dt = 0.125 fs
+            nacme[ist][jst] /= 5.16767162969409;
 
-            // print NACME values
+        }
+    }
+
+    // Print NACME values
+    for(ist = 0; ist < nst; ist++){
+        for(jst = 0; jst < nst; jst++){
             printf("%15.8f ", nacme[ist][jst]);
-
         }
         printf("\n");
     }
