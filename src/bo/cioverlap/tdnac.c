@@ -3,38 +3,46 @@
 #include <complex.h>
 #include <math.h>
 
-//double dot(double complex* u, double complex* v, int nst);
-//void cdot(int nst, double complex* c, double* e, double **dv, double complex *c_dot);
+// Routine to normalize CI coefficients
+static void norm_CI_coef(int nst, int nocc, int nvirt, double ***ci_coef){
 
-/*static void rhodot(int nst, double complex **rho, double *e, double **dv, double complex **rho_dot){
-    
-    int ist, jst, kst;
-    for(ist = 0; ist < nst; ist++){
-        for(jst = 0; jst < nst; jst++){
-            rho_dot[ist][jst] = 0.0 + 0.0 * I;
-        }
-    }
+    double norm;
+    int ist, iorb, aorb;
 
     for(ist = 0; ist < nst; ist++){
-        for(jst = 0; jst < nst; jst++){
-            if(ist != jst){
-                rho_dot[ist][ist] -= dv[ist][jst] * 2.0 * creal(rho[ist][jst]);
+
+        // Calculate norm value for CI coefficients
+        norm = 0.0;
+        for(iorb = 0; iorb < nocc; iorb++){
+            for(aorb = 0; aorb < nvirt; aorb++){
+                norm += pow(ci_coef[ist][iorb][aorb], 2);
             }
         }
-    }
+        norm = sqrt(norm);
 
-    for(ist = 0; ist < nst; ist++){
-        for(jst = ist + 1; jst < nst; jst++){
-            rho_dot[ist][jst] -=  1.0 * I * (e[jst] - e[ist]) * rho[ist][jst];
-
-            for(kst = 0; kst < nst; kst++){
-                rho_dot[ist][jst] -= dv[ist][kst] * rho[kst][jst] + dv[jst][kst] * rho[ist][kst];
+        // Normalize the CI coefficients
+        for(iorb = 0; iorb < nocc; iorb++){
+            for(aorb = 0; aorb < nvirt; aorb++){
+                ci_coef[ist][iorb][aorb] /= norm;
             }
-            rho_dot[jst][ist] = conj(rho_dot[ist][jst]);
         }
-    }
-}*/
 
+        // Print the CI coefficients
+//        if(ist == 0){
+//            for(iorb = 0; iorb < nocc; iorb++){
+//                for(aorb = 0; aorb < nvirt; aorb++){
+//                    printf("%15.8f ", ci_coef[ist][iorb][aorb]);
+//                }
+//                printf("\n");
+//            }
+//            printf("\n");
+//        }
+
+    }
+
+}
+
+// Routine to calculate TDNAC term used in electronic propagation
 static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new){
     double **mo_overlap = malloc(norb * sizeof(double*));
     int ist, jst, iorb, jorb, aorb, borb, mu, nu;
@@ -68,7 +76,7 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
         }
     }
 
-//    // print
+//    // print mo_overlap values
 //    for(iorb = 0; iorb < norb; iorb++){
 //        for(jorb = 0; jorb < norb; jorb++){
 //            printf("%15.8f ", mo_overlap[iorb][jorb]);
@@ -76,7 +84,9 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
 //        printf("\n");
 //    }
 //    printf("\n");
-//    printf("\n");
+
+    norm_CI_coef(nst, nocc, nvirt, ci_coef_old);
+    norm_CI_coef(nst, nocc, nvirt, ci_coef_new);
 
     // TODO : ist = jst should be removed
     for(ist = 0; ist < nst; ist++){
@@ -111,8 +121,13 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
             // TODO : dt should be obtained from md.dt
 //            nacme[ist][jst] /= dt;
 
+            // print NACME values
+            printf("%15.8f ", nacme[ist][jst]);
+
         }
+        printf("\n");
     }
+    printf("\n");
     
 /*    for(iestep = 0; iestep < nesteps; iestep++){
         
