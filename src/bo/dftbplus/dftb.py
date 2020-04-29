@@ -584,6 +584,9 @@ class DFTB(DFTBplus):
                                     new_val = 0.
                             else:
                                 new_val = float(element)
+                                # TODO : too large value temporarily changes to 1
+                                if (new_val > 1.):
+                                    new_val = 1.
                             # Set overlap matrix element
                             if (col in range(self.norb)):
                                 self.ao_overlap[row, col] = new_val
