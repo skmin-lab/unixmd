@@ -37,7 +37,7 @@
 
 static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new){
     double **mo_overlap = malloc(norb * sizeof(double*));
-    int ist, iorb, jorb, aorb, borb, mu, nu;
+    int ist, jst, iorb, jorb, aorb, borb, mu, nu;
 //    double frac, edt, norm;
 
 //    printf("TD_NAC : nst = %8d\n", nst);
