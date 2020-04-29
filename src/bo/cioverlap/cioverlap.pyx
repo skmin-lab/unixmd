@@ -5,10 +5,11 @@ from cpython.mem cimport PyMem_Malloc, PyMem_Free
 #cimport numpy as np
 
 cdef extern from "tdnac.c":
-    void TD_NAC(int nst, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new)
+    void TD_NAC(int nst, int norb, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new)
 
 def wf_overlap(theory, molecule):
     cdef:
+        double **nacme
         double **ao_overlap
         double **mo_coef_old
         double **mo_coef_new
@@ -23,9 +24,14 @@ def wf_overlap(theory, molecule):
     nvirt = theory.nvirt
 
     # Allocate NACME variables
+    nacme = <double**> PyMem_Malloc(nst * sizeof(double*))
+
     ao_overlap = <double**> PyMem_Malloc(norb * sizeof(double*))
     mo_coef_old = <double**> PyMem_Malloc(norb * sizeof(double*))
     mo_coef_new = <double**> PyMem_Malloc(norb * sizeof(double*))
+
+    for ist in range(nst):
+        nacme[ist] = <double*> PyMem_Malloc(nst * sizeof(double))
 
     for iorb in range(norb):
         ao_overlap[iorb] = <double*> PyMem_Malloc(norb * sizeof(double))
@@ -45,6 +51,10 @@ def wf_overlap(theory, molecule):
             ci_coef_new[ist][iorb] = <double*> PyMem_Malloc(nvirt * sizeof(double))
 
     # Assign NACME variables from python to C
+    for ist in range(nst):
+        for jst in range(nst):
+            nacme[ist][jst] = molecule.nacme[ist, jst]
+
     for iorb in range(norb):
         for jorb in range(norb):
             ao_overlap[iorb][jorb] = theory.ao_overlap[iorb, jorb]
@@ -58,7 +68,7 @@ def wf_overlap(theory, molecule):
                 ci_coef_new[ist][iorb][jorb] = theory.ci_coef_new[ist, iorb, jorb]
 
     # Calculate TDNAC term for CIoverlap
-    TD_NAC(nst, ao_overlap, mo_coef_old, mo_coef_new, ci_coef_old, ci_coef_new)
+    TD_NAC(nst, norb, nacme, ao_overlap, mo_coef_old, mo_coef_new, ci_coef_old, ci_coef_new)
 
     # Assign NACME variables from C to python
 #    for iorb in range(norb):
@@ -74,6 +84,11 @@ def wf_overlap(theory, molecule):
 #                theory.ci_coef_new[ist, iorb, jorb] = ci_coef_new[ist][iorb][jorb]
 
     # Deallocate NACME variables
+    for ist in range(nst):
+        PyMem_Free(nacme[ist])
+
+    PyMem_Free(nacme)
+
     for iorb in range(norb):
         PyMem_Free(ao_overlap[iorb])
         PyMem_Free(mo_coef_old[iorb])
