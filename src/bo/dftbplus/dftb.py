@@ -332,6 +332,7 @@ class DFTB(DFTBplus):
               StateOfInterest = {rst}
               Symmetry = {self.ex_symmetry}
               WriteTransitions = Yes
+              WriteSPTransitions = Yes
               WriteMulliken = Yes
               WriteXplusY = {xpy}
               ExcitedStateForces = {ex_force}
@@ -518,34 +519,33 @@ class DFTB(DFTBplus):
     # TODO : elapsed_time is needed?
 #    @elapsed_time
     def CI_overlap(self, molecule, base_dir):
-        """ Read the necessary files and generate NACME file and
-            this is an experimental feature and not used
+        """ Read the necessary files and calculate NACME from tdnac.c routine,
+            note that only reading of several files is required in this method
 
             :param object molecule: molecule object
             :param string base_dir: base directory
         """
-        # TODO: here, the required process = save the variables related to NACME
-
         # Read upper right block of 'oversqr.dat' file (< t | t+dt >)
         file_name_in = "oversqr.dat"
 
         # 1st method using np.method
-#        self.ao_overlap = np.zeros((self.norb, self.norb))
-#        over_mat = np.loadtxt(file_name_in, skiprows=5, dtype=np.float)
+        # TODO : this part should be removed, only for test purpose
+        self.ao_overlap = np.zeros((self.norb, self.norb))
+        over_mat = np.loadtxt(file_name_in, skiprows=5, dtype=np.float)
 #        nan_ind = np.argwhere(np.isnan(over_mat))
-##        for row, col in nan_ind:
-##            ind_a = self.check_basis[row%self.norb]
-##            ind_b = self.check_basis[col%self.norb]
-##            if (ind_a == ind_b):
-##                if (row%self.norb == col%self.norb):
-##                    over_mat[row, col] = 1.
-##                else:
-##                    over_mat[row, col] = 0.
-#        for row in range(self.norb):
-#            for col in range(self.norb, 2 * self.norb):
-#                self.ao_overlap[row, col - self.norb] = over_mat[row, col]
-#        np.savetxt("test1", self.ao_overlap, fmt=f"%6.3f")
-#        np.savetxt("test3", over_mat, fmt=f"%6.3f")
+#        for row, col in nan_ind:
+#            ind_a = self.check_basis[row%self.norb]
+#            ind_b = self.check_basis[col%self.norb]
+#            if (ind_a == ind_b):
+#                if (row%self.norb == col%self.norb):
+#                    over_mat[row, col] = 1.
+#                else:
+#                    over_mat[row, col] = 0.
+        for row in range(self.norb):
+            for col in range(self.norb, 2 * self.norb):
+                self.ao_overlap[row, col - self.norb] = over_mat[row, col]
+#        np.savetxt("test-over1", self.ao_overlap, fmt=f"%6.3f")
+        np.savetxt("test-S", over_mat, fmt=f"%6.3f")
 
         # 2nd method using direct read - faster than 1st method
         self.ao_overlap = np.zeros((self.norb, self.norb))
@@ -591,7 +591,7 @@ class DFTB(DFTBplus):
                             count = True
                     row += 1
                 iline += 1
-        np.savetxt("test2", self.ao_overlap, fmt=f"%6.3f")
+        np.savetxt("test-over2", self.ao_overlap, fmt=f"%6.3f")
 
         # Read 'eigenvec.bin.pre' file at time t
         file_name_in = "eigenvec.bin.pre"
@@ -603,7 +603,7 @@ class DFTB(DFTBplus):
                 dummy = np.fromfile(f_in, dtype=np.integer, count=1)
                 data = np.fromfile(f_in, dtype=np.float64, count=self.norb)
                 self.mo_coef_old[iorb] = data
-        np.savetxt("test11", self.mo_coef_old, fmt=f"%12.6f")
+        np.savetxt("test-mo1", self.mo_coef_old, fmt=f"%12.6f")
 
         # Read 'eigenvec.bin' file at time t + dt
         file_name_in = "eigenvec.bin"
@@ -615,102 +615,93 @@ class DFTB(DFTBplus):
                 dummy = np.fromfile(f_in, dtype=np.integer, count=1)
                 data = np.fromfile(f_in, dtype=np.float64, count=self.norb)
                 self.mo_coef_new[iorb] = data
-        np.savetxt("test12", self.mo_coef_new, fmt=f"%12.6f")
+        np.savetxt("test-mo2", self.mo_coef_new, fmt=f"%12.6f")
 
+        # Dimension for CI coefficients
+        nmat = self.nocc * self.nvirt
+
+        # The CI coefficients are arranged in order of single-particle excitations
+        file_name_in = "SPX.DAT"
+        with open(file_name_in, "r") as f_in:
+            lines = f_in.readlines()
+            iline = 0
+            get_wij_ind = np.zeros((nmat, 2), dtype=np.int_)
+            for line in lines:
+                # Skip first five lines
+                if (iline in range(5, 5 + nmat)):
+                    # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
+                    field = line.split()
+                    get_wij_ind[int(field[0]) - 1] = [int(field[3]), int(field[5])]
+                iline += 1
+
+        # Read 'XplusY.DAT.pre' file at time t
+        file_name_in = "XplusY.DAT.pre"
+        with open(file_name_in, "r") as f_in:
+            lines = f_in.readlines()
+            iline = 0
+            for line in lines:
+                if (iline == 0):
+                    field = line.split()
+                    assert int(field[0]) == nmat
+                    assert int(field[1]) >= molecule.nst
+                    # nxply is number of lines for each excited state in 'XplusY.dat'
+                    nxply = int(nmat / 6) + 1
+                    if (nmat % 6 != 0):
+                        nxply += 1
+                else:
+                    field = line.split()
+                    if (iline % nxply == 1):
+                        ind = 0
+                        ist = int(field[0]) - 1
+                        # In general, TDDFTB calculate the excited states more than molecule.nst,
+                        # so we do not need to read all data for 'XplusY.DAT'
+                        if (ist == molecule.nst):
+                            break
+                    else:
+                        for element in field:
+                            ind_occ = get_wij_ind[ind, 0] - 1
+                            ind_virt = get_wij_ind[ind, 1] - self.nocc - 1
+                            self.ci_coef_old[ist, ind_occ, ind_virt] = float(element)
+                            ind += 1
+                iline += 1
+        np.savetxt("test-ci1", self.ci_coef_old[0], fmt=f"%12.6f")
+
+        # Read 'XplusY.DAT' file at time t + dt
+        file_name_in = "XplusY.DAT"
+        with open(file_name_in, "r") as f_in:
+            lines = f_in.readlines()
+            iline = 0
+            for line in lines:
+                if (iline == 0):
+                    field = line.split()
+                    assert int(field[0]) == nmat
+                    assert int(field[1]) >= molecule.nst
+                    # nxply is number of lines for each excited state in 'XplusY.dat'
+                    nxply = int(nmat / 6) + 1
+                    if (nmat % 6 != 0):
+                        nxply += 1
+                else:
+                    field = line.split()
+                    if (iline % nxply == 1):
+                        ind = 0
+                        ist = int(field[0]) - 1
+                        # In general, TDDFTB calculate the excited states more than molecule.nst,
+                        # so we do not need to read all data for 'XplusY.DAT'
+                        if (ist == molecule.nst):
+                            break
+                    else:
+                        for element in field:
+                            ind_occ = get_wij_ind[ind, 0] - 1
+                            ind_virt = get_wij_ind[ind, 1] - self.nocc - 1
+                            self.ci_coef_new[ist, ind_occ, ind_virt] = float(element)
+                            ind += 1
+                iline += 1
+        np.savetxt("test-ci2", self.ci_coef_new[0], fmt=f"%12.6f")
+
+        # Calculate wavefunction overlap with orbital scheme
+        # Reference: J. Phys. Chem. Lett. 2015, 6, 4200-4203
         wf_overlap(self, molecule)
 
-#        # Write 'CICOEF' file
-#        file_name_out = "CICOEF"
-#        f_out = open(file_name_out, "w")
-#
-#        file_name_in = "XplusY.DAT"
-#        with open(file_name_in, "r") as f_in:
-#            lines = f_in.readlines()
-#            nline = 1
-#            ind_b = -1
-#            for line in lines:
-#                if (nline == 1):
-#                    field = line.split()
-#                    nmat = int(field[0])
-#                    nexc = int(field[1])
-#                    nstd = int(nmat / 6) + 1
-#                    if (nmat % 6 != 0):
-#                        nstd += 1
-#                    xply = np.zeros((nocc, nvirt, nexc))
-#                else:
-#                    if ((nline - 1) % nstd == 1):
-#                        ind_occ = nocc - 1
-#                        ind_virt = 0
-#                        ind_b += 1
-#                    else:
-#                        field = line.split()
-#                        for element in field:
-#                            xply[ind_occ, ind_virt, ind_b] = float(element)
-#                            if (ind_occ == 0):
-#                                ind_occ = nocc - 1
-#                                ind_virt += 1
-#                            else:
-#                                ind_occ -= 1
-#                nline += 1
-#
-#        for iexc in range(nexc):
-#
-#            # Normalize the CI coefficients
-#            norm_val = 0.
-#            for iocc in range(nocc):
-#                for ivirt in range(nvirt):
-#                    norm_val += xply[iocc, ivirt, iexc] ** 2
-#            norm_val = np.sqrt(norm_val)
-#            for iocc in range(nocc):
-#                for ivirt in range(nvirt):
-#                    xply[iocc, ivirt, iexc] /= norm_val
-#
-#            f_print = f"{iexc + 1:4d}" + "\n"
-#            f_out.write(f_print)
-#
-#            for iocc in range(nocc):
-#                for ivirt in range(nvirt):
-#                    f_print = f"{xply[iocc, ivirt, iexc]:13.8f}"
-#                    if (ivirt == nvirt - 1):
-#                        f_print += "\n"
-#                    f_out.write(f_print)
-#
-#        f_out.close()
-#
-#        # Write 'CICOEFOLD' file
-#        file_name_out = "CICOEFOLD"
-#        f_out = open(file_name_out, "w")
-#
-#        file_name_in = "XplusY.DAT.pre"
-#        with open(file_name_in, "r") as f_in:
-#            lines = f_in.readlines()
-#            nline = 1
-#            ind_b = -1
-#            for line in lines:
-#                if (nline == 1):
-#                    field = line.split()
-#                    nmat = int(field[0])
-#                    nexc = int(field[1])
-#                    nstd = int(nmat / 6) + 1
-#                    if (nmat % 6 != 0):
-#                        nstd += 1
-#                    xply = np.zeros((nocc, nvirt, nexc))
-#                else:
-#                    if ((nline - 1) % nstd == 1):
-#                        ind_occ = nocc - 1
-#                        ind_virt = 0
-#                        ind_b += 1
-#                    else:
-#                        field = line.split()
-#                        for element in field:
-#                            xply[ind_occ, ind_virt, ind_b] = float(element)
-#                            if (ind_occ == 0):
-#                                ind_occ = nocc - 1
-#                                ind_virt += 1
-#                            else:
-#                                ind_occ -= 1
-#                nline += 1
-#
 #        for iexc in range(nexc):
 #
 #            # Normalize the CI coefficients
