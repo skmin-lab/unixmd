@@ -22,6 +22,7 @@ static void calc_MO_over(int norb, double **mo_overlap, double **permut_mat, dou
     }
 
     // Print mo_overlap and permut_mat values
+//    printf("mo_overlap \n");
 //    for(iorb = 0; iorb < norb; iorb++){
 //        for(jorb = 0; jorb < norb; jorb++){
 //            printf("%15.8f ", mo_overlap[iorb][jorb]);
@@ -73,6 +74,7 @@ static void MO_phase_order(int norb, double **mo_coef_new, double **permut_mat){
     }
 
     // Print mo_coef_new values after matching and ordering
+//    printf("mo_coef_new after phase \n");
 //    for(iorb = 0; iorb < norb; iorb++){
 //        for(jorb = 0; jorb < norb; jorb++){
 //            printf("%15.8f ", mo_coef_new[iorb][jorb]);
@@ -122,6 +124,7 @@ static void CI_phase_order(int nst, int nocc, int nvirt, double ***ci_coef_old, 
 //    }
 //    printf("\n");
 
+//    printf("ci_coef_new after phase \n");
 //    for(iorb = 0; iorb < nocc; iorb++){
 //        for(aorb = 0; aorb < nvirt; aorb++){
 //            printf("%15.8f ", ci_coef_new[0][iorb][aorb]);
@@ -158,6 +161,7 @@ static void norm_CI_coef(int nst, int nocc, int nvirt, double ***ci_coef){
 
         // Print the CI coefficients
 //        if(ist == 0){
+//            printf("ci_coef \n");
 //            for(iorb = 0; iorb < nocc; iorb++){
 //                for(aorb = 0; aorb < nvirt; aorb++){
 //                    printf("%15.8f ", ci_coef[ist][iorb][aorb]);
@@ -197,11 +201,21 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
     norm_CI_coef(nst, nocc, nvirt, ci_coef_old);
     norm_CI_coef(nst, nocc, nvirt, ci_coef_new);
 
+    // Re-calculate mo_overlap with phase-corrected MO coefficients
+    // Now, mo_overlap is anti-symmetric
+    for(iorb = 0; iorb < norb; iorb++){
+        for(jorb = 0; jorb < norb; jorb++){
+            mo_overlap[iorb][jorb] = 0.0;
+        }
+    }
+    calc_MO_over(norb, mo_overlap, permut_mat, ao_overlap, mo_coef_old, mo_coef_new);
+
     // TODO : ist = jst should be removed
     for(ist = 0; ist < nst; ist++){
         for(jst = 0; jst < nst; jst++){
 
             // 1st term in Eq. 15
+            // TODO : this term may be problem
             for(iorb = 0; iorb < nocc; iorb++){
                 for(aorb = 0; aorb < nvirt; aorb++){
                     nacme[ist][jst] += ci_coef_old[ist][iorb][aorb] * ci_coef_new[jst][iorb][aorb];
