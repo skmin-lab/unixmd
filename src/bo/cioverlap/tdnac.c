@@ -218,7 +218,9 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
             // TODO : this term may be problem
             for(iorb = 0; iorb < nocc; iorb++){
                 for(aorb = 0; aorb < nvirt; aorb++){
-                    nacme[ist][jst] += ci_coef_old[ist][iorb][aorb] * ci_coef_new[jst][iorb][aorb];
+                    nacme[ist][jst] += ci_coef_new[ist][iorb][aorb] * (ci_coef_new[jst][iorb][aorb] - ci_coef_old[jst][iorb][aorb]);
+//                    nacme[ist][jst] += 0.5 * (ci_coef_old[ist][iorb][aorb] * ci_coef_new[jst][iorb][aorb] - ci_coef_old[ist][iorb][aorb] * ci_coef_old[jst][iorb][aorb]);
+//                    nacme[ist][jst] += 0.5 * (ci_coef_new[ist][iorb][aorb] * ci_coef_new[jst][iorb][aorb] - ci_coef_new[ist][iorb][aorb] * ci_coef_old[jst][iorb][aorb]);
                 }
             }
 
@@ -226,7 +228,9 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
             for(iorb = 0; iorb < nocc; iorb++){
                 for(aorb = 0; aorb < nvirt; aorb++){
                     for(borb = 0; borb < nvirt; borb++){
-                        nacme[ist][jst] += ci_coef_old[ist][iorb][aorb] * ci_coef_new[jst][iorb][borb] * mo_overlap[nocc + aorb][nocc + borb];
+                        if(aorb != borb){
+                            nacme[ist][jst] += ci_coef_new[ist][iorb][aorb] * ci_coef_new[jst][iorb][borb] * mo_overlap[nocc + aorb][nocc + borb];
+                        }
                     }
                 }
             }
@@ -235,10 +239,12 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
             for(iorb = 0; iorb < nocc; iorb++){
                 for(aorb = 0; aorb < nvirt; aorb++){
                     for(jorb = 0; jorb < nocc; jorb++){
-                        // fac is permutation in 3rd term
-                        exponent = abs(jorb - iorb);
-                        fac = pow(-1.0, exponent);
-                        nacme[ist][jst] -= fac * ci_coef_old[ist][iorb][aorb] * ci_coef_new[jst][jorb][aorb] * mo_overlap[jorb][iorb];
+                        if(iorb != jorb){
+                            // fac is permutation in 3rd term
+                            exponent = abs(jorb - iorb);
+                            fac = pow(-1.0, exponent);
+                            nacme[ist][jst] -= fac * ci_coef_new[ist][iorb][aorb] * ci_coef_new[jst][jorb][aorb] * mo_overlap[jorb][iorb];
+                        }
                     }
                 }
             }
@@ -246,7 +252,7 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
             // TODO : dt should be obtained from md.dt
 //            nacme[ist][jst] /= dt;
             // TODO : this value is obtained from dt = 0.125 fs
-            nacme[ist][jst] /= 5.16767162969409;
+//            nacme[ist][jst] /= 5.16767162969409;
 
         }
     }
