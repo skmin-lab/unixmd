@@ -10,9 +10,10 @@ static void calc_MO_over(int norb, double **mo_overlap, double **permut_mat, dou
     for(iorb = 0; iorb < norb; iorb++){
         for(jorb = 0; jorb < norb; jorb++){
 
+            // Calculate overlap in MO basis; S' = C * S * C^T
             for(mu = 0; mu < norb; mu++){
                 for(nu = 0; nu < norb; nu++){
-                    mo_overlap[iorb][jorb] += ao_overlap[mu][nu] * mo_coef_old[iorb][mu] * mo_coef_new[jorb][nu];
+                    mo_overlap[iorb][jorb] += mo_coef_old[iorb][mu] * ao_overlap[mu][nu] * mo_coef_new[jorb][nu];
                 }
             }
             // Permutation matrix is obtained by rounding off the overlap matrix in MO basis
@@ -29,6 +30,7 @@ static void MO_phase_order(int norb, double **mo_coef_new, double **permut_mat){
     double **tmp_mo = malloc(norb * sizeof(double*));
     int iorb, jorb, mu;
 
+    // Initialize temporary MO array; C'
     for(iorb = 0; iorb < norb; iorb++){
         tmp_mo[iorb] = malloc(norb * sizeof(double));
         for(mu = 0; mu < norb; mu++){
@@ -36,10 +38,10 @@ static void MO_phase_order(int norb, double **mo_coef_new, double **permut_mat){
         }
     }
 
+    // Decide the phase and ordering for MO coefficients using permutation matrix; C' = O * C
     for(iorb = 0; iorb < norb; iorb++){
         for(mu = 0; mu < norb; mu++){
 
-            // Decide the phase and ordering for MO coefficients; C' = O * C
             for(jorb = 0; jorb < norb; jorb++){
                 tmp_mo[iorb][mu] += permut_mat[iorb][jorb] * mo_coef_new[jorb][mu];
             }
@@ -47,12 +49,14 @@ static void MO_phase_order(int norb, double **mo_coef_new, double **permut_mat){
         }
     }
 
+    // Apply new phase correction for the MO coefficients; C = C'
     for(iorb = 0; iorb < norb; iorb++){
         for(mu = 0; mu < norb; mu++){
             mo_coef_new[iorb][mu] = tmp_mo[iorb][mu];
         }
     }
 
+    // Deallocate temporary MO array; C'
     for(iorb = 0; iorb < norb; iorb++){
         free(tmp_mo[iorb]);
     }
@@ -65,25 +69,67 @@ static void MO_phase_order(int norb, double **mo_coef_new, double **permut_mat){
 // TODO : Is this correct method to match phase (or order) for CI coefficients?
 static void CI_phase_order(int nst, int norb, int nocc, int nvirt, double ***ci_coef_old, double ***ci_coef_new, double **permut_mat){
 
-    double val;
-    int ist, iorb, aorb;
+    double **tmp_ci = malloc(norb * sizeof(double*));
+    double **tmp_ci_new = malloc(norb * sizeof(double*));
+    int ist, iorb, jorb, aorb, borb;
+
+    // Initialize temporary CI arrays; C' and C
+    for(iorb = 0; iorb < norb; iorb++){
+        tmp_ci[iorb] = malloc(norb * sizeof(double));
+        tmp_ci_new[iorb] = malloc(norb * sizeof(double));
+    }
 
     for(ist = 0; ist < nst; ist++){
-        for(aorb = 0; aorb < nvirt; aorb++){
 
-            val = 0.0;
-            for(iorb = 0; iorb < nocc; iorb++){
-                val += ci_coef_old[ist][iorb][aorb] * ci_coef_new[ist][iorb][aorb];
-            }
-
-            if(val < 0.0){
-                for(iorb = 0; iorb < nocc; iorb++){
-                    ci_coef_new[ist][iorb][aorb] *= -1.0;
+        for(iorb = 0; iorb < norb; iorb++){
+            for(aorb = 0; aorb < norb; aorb++){
+                // Assign CI coefficients at time t to new symmetric array
+                if(iorb < nocc && aorb >= nvirt){
+                    tmp_ci[iorb][aorb] = ci_coef_new[ist][iorb][aorb - nocc];
                 }
+                else if(iorb >= nvirt && aorb < nocc){
+                    tmp_ci[iorb][aorb] = ci_coef_new[ist][aorb][iorb - nocc];
+                }
+                else{
+                    tmp_ci[iorb][aorb] = 0.0;
+                }
+                // Initialize new empty array for phase correction
+                tmp_ci_new[iorb][aorb] = 0.0;
             }
-
         }
+
+        // Decide the phase and ordering for CI coefficients using permutation matrix; C' = O * C * O
+        // TODO : The phases for occupied and virtual orbitals are matched when permutation is diagonal matrix
+        for(jorb = 0; jorb < norb; jorb++){
+            for(borb = 0; borb < norb; borb++){
+    
+                for(iorb = 0; iorb < norb; iorb++){
+                    for(aorb = 0; aorb < norb; aorb++){
+                        //tmp_ci_new[iorb][jorb] += permut_mat[iorb][aorb] * tmp_ci[aorb][borb] * permut_mat[borb][jorb];
+                        tmp_ci_new[jorb][borb] += permut_mat[jorb][iorb] * tmp_ci[iorb][aorb] * permut_mat[aorb][borb];
+                    }
+                }
+    
+            }
+        }
+
+        // Apply new phase correction for the CI coefficients; C = C'
+        for(iorb = 0; iorb < nocc; iorb++){
+            for(aorb = 0; aorb < nvirt; aorb++){
+                ci_coef_new[ist][iorb][aorb] = tmp_ci_new[iorb][nocc + aorb];
+            }
+        }
+
     }
+
+    // Deallocate temporary CI arrays; C' and C
+    for(iorb = 0; iorb < norb; iorb++){
+        free(tmp_ci[iorb]);
+        free(tmp_ci_new[iorb]);
+    }
+
+    free(tmp_ci);
+    free(tmp_ci_new);
 
 }
 
@@ -95,7 +141,7 @@ static void norm_CI_coef(int nst, int nocc, int nvirt, double ***ci_coef){
 
     for(ist = 0; ist < nst; ist++){
 
-        // Calculate norm value for CI coefficients
+        // Calculate normalization value for CI coefficients
         norm = 0.0;
         for(iorb = 0; iorb < nocc; iorb++){
             for(aorb = 0; aorb < nvirt; aorb++){
