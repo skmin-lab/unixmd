@@ -58,13 +58,14 @@ class CASSCF(Molpro):
         molecule.l_nacme = False
         self.re_calc = True
 
-    def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
+    def get_bo(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from CASSCF method
 
             :param object molecule: molecule object
             :param string base_dir: base directory
             :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
+            :param double dt: time interval
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
         super().get_bo(base_dir, calc_force_only)

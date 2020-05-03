@@ -71,7 +71,7 @@ class SH(MQC):
         self.print_init(molecule, theory, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
-        theory.get_bo(molecule, base_dir, -1, bo_list, calc_force_only=False)
+        theory.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=False)
         if (not molecule.l_nacme):
             molecule.get_nacme()
 
@@ -92,7 +92,7 @@ class SH(MQC):
             self.cl_update_position(molecule)
 
             molecule.backup_bo()
-            theory.get_bo(molecule, base_dir, istep, bo_list, calc_force_only=False)
+            theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=False)
 
             if (not molecule.l_nacme):
                 molecule.adjust_nac()
@@ -109,7 +109,7 @@ class SH(MQC):
             if (self.l_hop):
                 self.evaluate_hop(molecule)
                 if (theory.re_calc):
-                    theory.get_bo(molecule, base_dir, istep, bo_list, calc_force_only=True)
+                    theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=True)
 
             thermostat.run(molecule, self)
 

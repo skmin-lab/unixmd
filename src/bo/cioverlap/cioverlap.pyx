@@ -2,9 +2,9 @@
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
 
 cdef extern from "tdnac.c":
-    void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new)
+    void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double dt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new)
 
-def wf_overlap(theory, molecule, istep_py):
+def wf_overlap(theory, molecule, istep_py, dt_py):
     cdef:
         double **nacme
         double **ao_overlap
@@ -12,9 +12,11 @@ def wf_overlap(theory, molecule, istep_py):
         double **mo_coef_new
         double ***ci_coef_old
         double ***ci_coef_new
+        double dt
         int istep, ist, nst, iorb, jorb, norb, nocc, nvirt
 
     # Assign size variables
+    dt = dt_py
     istep = istep_py
     nst = molecule.nst
     norb = theory.norb
@@ -66,13 +68,12 @@ def wf_overlap(theory, molecule, istep_py):
                 ci_coef_new[ist][iorb][jorb] = theory.ci_coef_new[ist, iorb, jorb]
 
     # Calculate TDNAC term for CIoverlap
-    TD_NAC(istep, nst, norb, nocc, nvirt, nacme, ao_overlap, mo_coef_old, mo_coef_new, ci_coef_old, ci_coef_new)
+    TD_NAC(istep, nst, norb, nocc, nvirt, dt, nacme, ao_overlap, mo_coef_old, mo_coef_new, ci_coef_old, ci_coef_new)
 
     # Assign NACME variables from C to python
     for ist in range(nst):
         for jst in range(nst):
-#             molecule.nacme[ist, jst] = nacme[ist][jst]
-             molecule.nacme[ist, jst] = 0.
+             molecule.nacme[ist, jst] = nacme[ist][jst]
 
     for iorb in range(norb):
         for jorb in range(norb):

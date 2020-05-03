@@ -103,13 +103,14 @@ class DFTB(DFTBplus):
         self.ci_coef_old = np.zeros((molecule.nst, self.nocc, self.nvirt))
         self.ci_coef_new = np.zeros((molecule.nst, self.nocc, self.nvirt))
 
-    def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
+    def get_bo(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from (TD)DFTB method
 
             :param object molecule: molecule object
             :param string base_dir: base directory
             :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
+            :param double dt: time interval
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
         self.copy_files(molecule, istep, calc_force_only)
@@ -117,7 +118,7 @@ class DFTB(DFTBplus):
         self.write_xyz(molecule)
         self.get_input(molecule, istep, bo_list, calc_force_only)
         self.run_QM(molecule, base_dir, istep, bo_list, calc_force_only)
-        self.extract_BO(molecule, base_dir, istep, bo_list, calc_force_only)
+        self.extract_BO(molecule, base_dir, istep, bo_list, dt, calc_force_only)
         self.move_dir(base_dir)
 
     def copy_files(self, molecule, istep, calc_force_only):
@@ -442,13 +443,14 @@ class DFTB(DFTBplus):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
             shutil.copy("log", os.path.join(tmp_dir, log_step))
 
-    def extract_BO(self, molecule, base_dir, istep, bo_list, calc_force_only):
+    def extract_BO(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
         """ Read the output files to get BO information
 
             :param object molecule: molecule object
             :param string base_dir: base directory
             :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
+            :param double dt: time interval
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # Read 'detailed.out' file
@@ -499,16 +501,17 @@ class DFTB(DFTBplus):
             molecule.nacme = np.zeros((molecule.nst, molecule.nst))
             if (istep >= 0):
                 # TODO : current TDNAC gives zero values
-                self.CI_overlap(molecule, istep)
+                self.CI_overlap(molecule, istep, dt)
 
     # TODO : elapsed_time is needed?
 #    @elapsed_time
-    def CI_overlap(self, molecule, istep):
+    def CI_overlap(self, molecule, istep, dt):
         """ Read the necessary files and calculate NACME from tdnac.c routine,
             note that only reading of several files is required in this method
 
             :param object molecule: molecule object
             :param integer istep: current MD step
+            :param double dt: time interval
         """
         # Read upper right block of 'oversqr.dat' file (< t | t+dt >)
         file_name_in = "oversqr.dat"
@@ -711,6 +714,6 @@ class DFTB(DFTBplus):
 
         # Calculate wavefunction overlap with orbital scheme
         # Reference: J. Phys. Chem. Lett. 2015, 6, 4200-4203
-        wf_overlap(self, molecule, istep)
+        wf_overlap(self, molecule, istep, dt)
 
 
