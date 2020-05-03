@@ -105,7 +105,6 @@ static void CI_phase_order(int nst, int norb, int nocc, int nvirt, double ***ci_
     
                 for(iorb = 0; iorb < norb; iorb++){
                     for(aorb = 0; aorb < norb; aorb++){
-                        //tmp_ci_new[iorb][jorb] += permut_mat[iorb][aorb] * tmp_ci[aorb][borb] * permut_mat[borb][jorb];
                         tmp_ci_new[jorb][borb] += permut_mat[jorb][iorb] * tmp_ci[iorb][aorb] * permut_mat[aorb][borb];
                     }
                 }
