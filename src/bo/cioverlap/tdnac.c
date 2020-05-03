@@ -21,17 +21,6 @@ static void calc_MO_over(int norb, double **mo_overlap, double **permut_mat, dou
         }
     }
 
-    // Print mo_overlap and permut_mat values
-//    printf("mo_overlap \n");
-//    for(iorb = 0; iorb < norb; iorb++){
-//        for(jorb = 0; jorb < norb; jorb++){
-//            printf("%15.8f ", mo_overlap[iorb][jorb]);
-//            printf("%15.8f ", permut_mat[iorb][jorb]);
-//        }
-//        printf("\n");
-//    }
-//    printf("\n");
-
 }
 
 // Routine to match phase of MO coefficients and orderings between two time steps
@@ -50,7 +39,7 @@ static void MO_phase_order(int norb, double **mo_coef_new, double **permut_mat){
     for(iorb = 0; iorb < norb; iorb++){
         for(mu = 0; mu < norb; mu++){
 
-            // Decide the phase and ordering for MO coefficients
+            // Decide the phase and ordering for MO coefficients; C' = O * C
             for(jorb = 0; jorb < norb; jorb++){
                 tmp_mo[iorb][mu] += permut_mat[iorb][jorb] * mo_coef_new[jorb][mu];
             }
@@ -58,30 +47,11 @@ static void MO_phase_order(int norb, double **mo_coef_new, double **permut_mat){
         }
     }
 
-    // Print mo_coef_new values before matching and ordering
-//    for(iorb = 0; iorb < norb; iorb++){
-//        for(jorb = 0; jorb < norb; jorb++){
-//            printf("%15.8f ", mo_coef_new[iorb][jorb]);
-//        }
-//        printf("\n");
-//    }
-//    printf("\n");
-
     for(iorb = 0; iorb < norb; iorb++){
         for(mu = 0; mu < norb; mu++){
             mo_coef_new[iorb][mu] = tmp_mo[iorb][mu];
         }
     }
-
-    // Print mo_coef_new values after matching and ordering
-//    printf("mo_coef_new after phase \n");
-//    for(iorb = 0; iorb < norb; iorb++){
-//        for(jorb = 0; jorb < norb; jorb++){
-//            printf("%15.8f ", mo_coef_new[iorb][jorb]);
-//        }
-//        printf("\n");
-//    }
-//    printf("\n");
 
     for(iorb = 0; iorb < norb; iorb++){
         free(tmp_mo[iorb]);
@@ -93,7 +63,7 @@ static void MO_phase_order(int norb, double **mo_coef_new, double **permut_mat){
 
 // Routine to match phase of CI coefficients and orderings between two time steps
 // TODO : Is this correct method to match phase (or order) for CI coefficients?
-static void CI_phase_order(int nst, int nocc, int nvirt, double ***ci_coef_old, double ***ci_coef_new){
+static void CI_phase_order(int nst, int norb, int nocc, int nvirt, double ***ci_coef_old, double ***ci_coef_new, double **permut_mat){
 
     double val;
     int ist, iorb, aorb;
@@ -114,24 +84,6 @@ static void CI_phase_order(int nst, int nocc, int nvirt, double ***ci_coef_old, 
 
         }
     }
-
-    // Print ci_coef_old and ci_coef_new values
-//    for(iorb = 0; iorb < nocc; iorb++){
-//        for(aorb = 0; aorb < nvirt; aorb++){
-//            printf("%15.8f ", ci_coef_old[0][iorb][aorb]);
-//        }
-//        printf("\n");
-//    }
-//    printf("\n");
-
-//    printf("ci_coef_new after phase \n");
-//    for(iorb = 0; iorb < nocc; iorb++){
-//        for(aorb = 0; aorb < nvirt; aorb++){
-//            printf("%15.8f ", ci_coef_new[0][iorb][aorb]);
-//        }
-//        printf("\n");
-//    }
-//    printf("\n");
 
 }
 
@@ -159,18 +111,6 @@ static void norm_CI_coef(int nst, int nocc, int nvirt, double ***ci_coef){
             }
         }
 
-        // Print the CI coefficients
-//        if(ist == 0){
-//            printf("ci_coef \n");
-//            for(iorb = 0; iorb < nocc; iorb++){
-//                for(aorb = 0; aorb < nvirt; aorb++){
-//                    printf("%15.8f ", ci_coef[ist][iorb][aorb]);
-//                }
-//                printf("\n");
-//            }
-//            printf("\n");
-//        }
-
     }
 
 }
@@ -182,6 +122,10 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
     double **permut_mat = malloc(norb * sizeof(double*));
     int ist, jst, iorb, jorb, aorb, borb, exponent;
     double fac;
+    int debug;
+
+    // This is temporary option to print several variables
+    debug = 0;
 
     for(iorb = 0; iorb < norb; iorb++){
         mo_overlap[iorb] = malloc(norb * sizeof(double));
@@ -194,9 +138,95 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
 
     calc_MO_over(norb, mo_overlap, permut_mat, ao_overlap, mo_coef_old, mo_coef_new);
 
+    if(debug == 1){
+        // Print mo_overlap
+        printf("mo_overlap \n");
+        for(iorb = 0; iorb < norb; iorb++){
+            for(jorb = 0; jorb < norb; jorb++){
+                printf("%15.8f ", mo_overlap[iorb][jorb]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+
+        // Print permut_mat
+        printf("permut_mat \n");
+        for(iorb = 0; iorb < norb; iorb++){
+            for(jorb = 0; jorb < norb; jorb++){
+                printf("%15.8f ", permut_mat[iorb][jorb]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+
+        // Print mo_coef_old
+        printf("mo_coef_old \n");
+        for(iorb = 0; iorb < norb; iorb++){
+            for(jorb = 0; jorb < norb; jorb++){
+                printf("%15.8f ", mo_coef_old[iorb][jorb]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+
+        // Print mo_coef_new
+        printf("mo_coef_new \n");
+        for(iorb = 0; iorb < norb; iorb++){
+            for(jorb = 0; jorb < norb; jorb++){
+                printf("%15.8f ", mo_coef_new[iorb][jorb]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+    }
+
     MO_phase_order(norb, mo_coef_new, permut_mat);
 
-    CI_phase_order(nst, nocc, nvirt, ci_coef_old, ci_coef_new);
+    if(debug == 1){
+        // Print mo_coef_new
+        printf("mo_coef_new after phase correction \n");
+        for(iorb = 0; iorb < norb; iorb++){
+            for(jorb = 0; jorb < norb; jorb++){
+                printf("%15.8f ", mo_coef_new[iorb][jorb]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+
+        // Print ci_coef_old
+        printf("ci_coef_old \n");
+        for(iorb = 0; iorb < nocc; iorb++){
+            for(aorb = 0; aorb < nvirt; aorb++){
+                printf("%15.8f ", ci_coef_old[0][iorb][aorb]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+
+        // Print ci_coef_new
+        printf("ci_coef_new \n");
+        for(iorb = 0; iorb < nocc; iorb++){
+            for(aorb = 0; aorb < nvirt; aorb++){
+                printf("%15.8f ", ci_coef_new[0][iorb][aorb]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+    }
+
+    CI_phase_order(nst, norb, nocc, nvirt, ci_coef_old, ci_coef_new, permut_mat);
+
+    if(debug == 1){
+        // Print ci_coef_new
+        printf("ci_coef_new after phase correction \n");
+        for(iorb = 0; iorb < nocc; iorb++){
+            for(aorb = 0; aorb < nvirt; aorb++){
+                printf("%15.8f ", ci_coef_new[0][iorb][aorb]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+    }
 
     norm_CI_coef(nst, nocc, nvirt, ci_coef_old);
     norm_CI_coef(nst, nocc, nvirt, ci_coef_new);
@@ -209,6 +239,28 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
         }
     }
     calc_MO_over(norb, mo_overlap, permut_mat, ao_overlap, mo_coef_old, mo_coef_new);
+
+    if(debug == 1){
+        // Print mo_overlap
+        printf("mo_overlap with phase-corrected mo \n");
+        for(iorb = 0; iorb < norb; iorb++){
+            for(jorb = 0; jorb < norb; jorb++){
+                printf("%15.8f ", mo_overlap[iorb][jorb]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+
+        // Print permut_mat
+        printf("permut_mat with phase-corrected mo \n");
+        for(iorb = 0; iorb < norb; iorb++){
+            for(jorb = 0; jorb < norb; jorb++){
+                printf("%15.8f ", permut_mat[iorb][jorb]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+    }
 
     // TODO : ist = jst should be removed
     for(ist = 0; ist < nst; ist++){
@@ -264,6 +316,8 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
         }
         printf("\n");
     }
+    printf("\n");
+    printf("\n");
     printf("\n");
     
     for(iorb = 0; iorb < norb; iorb++){
