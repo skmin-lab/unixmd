@@ -500,11 +500,9 @@ class DFTB(DFTBplus):
         if (self.calc_coupling and not calc_force_only):
             molecule.nacme = np.zeros((molecule.nst, molecule.nst))
             if (istep >= 0):
-                # TODO : current TDNAC gives zero values
+                # TODO : current TDNAC gives slightly wrong values
                 self.CI_overlap(molecule, istep, dt)
 
-    # TODO : elapsed_time is needed?
-#    @elapsed_time
     def CI_overlap(self, molecule, istep, dt):
         """ Read the necessary files and calculate NACME from tdnac.c routine,
             note that only reading of several files is required in this method

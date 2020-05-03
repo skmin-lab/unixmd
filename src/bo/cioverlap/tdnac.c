@@ -365,7 +365,7 @@ static void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double dt,
             // TODO : this term may cause a problem
             for(iorb = 0; iorb < nocc; iorb++){
                 for(aorb = 0; aorb < nvirt; aorb++){
-                    nacme[ist][jst] += ci_coef_new[ist][iorb][aorb] * (ci_coef_new[jst][iorb][aorb] - ci_coef_old[jst][iorb][aorb]);
+//                    nacme[ist][jst] += ci_coef_new[ist][iorb][aorb] * (ci_coef_new[jst][iorb][aorb] - ci_coef_old[jst][iorb][aorb]);
 //                    nacme[ist][jst] += 0.5 * (ci_coef_old[ist][iorb][aorb] * ci_coef_new[jst][iorb][aorb] - ci_coef_old[ist][iorb][aorb] * ci_coef_old[jst][iorb][aorb]);
 //                    nacme[ist][jst] += 0.5 * (ci_coef_new[ist][iorb][aorb] * ci_coef_new[jst][iorb][aorb] - ci_coef_new[ist][iorb][aorb] * ci_coef_old[jst][iorb][aorb]);
                 }
@@ -399,6 +399,17 @@ static void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double dt,
             // NACME is divided by time step (finite numerical differentiation)
             nacme[ist][jst] /= dt;
 
+        }
+    }
+
+    // TODO : This is temporary part to make zero value for diagonal elements
+    // TODO : This is temporary part to make anti-symmetric value for off-diagonal elements
+    for(ist = 0; ist < nst; ist++){
+        nacme[ist][ist] = 0.0;
+        for(jst = 0; jst < nst; jst++){
+            if(ist > jst){
+                nacme[ist][jst] = -nacme[jst][ist];
+            }
         }
     }
 
