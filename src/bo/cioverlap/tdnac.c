@@ -132,6 +132,33 @@ static void CI_phase_order(int nst, int norb, int nocc, int nvirt, double ***ci_
 
 }
 
+// Routine to match phase for the states between two time steps
+static void state_phase(int nst, int nocc, int nvirt, double ***ci_coef_old, double ***ci_coef_new){
+
+    double val;
+    int ist, iorb, aorb;
+
+    for(ist = 0; ist < nst; ist++){
+
+        val = 0.0;
+        for(iorb = 0; iorb < nocc; iorb++){
+            for(aorb = 0; aorb < nvirt; aorb++){
+                val += ci_coef_old[ist][iorb][aorb] * ci_coef_new[ist][iorb][aorb];
+            }
+        }
+
+        if(val < 0.0){
+            for(iorb = 0; iorb < nocc; iorb++){
+                for(aorb = 0; aorb < nvirt; aorb++){
+                    ci_coef_new[ist][iorb][aorb] *= -1.0;
+                }
+            }
+        }
+
+    }
+
+}
+
 // Routine to normalize CI coefficients
 static void norm_CI_coef(int nst, int nocc, int nvirt, double ***ci_coef){
 
@@ -273,6 +300,20 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
         printf("\n");
     }
 
+    state_phase(nst, nocc, nvirt, ci_coef_old, ci_coef_new);
+
+    if(debug == 1){
+        // Print ci_coef_new
+        printf("ci_coef_new after state correction \n");
+        for(iorb = 0; iorb < nocc; iorb++){
+            for(aorb = 0; aorb < nvirt; aorb++){
+                printf("%15.8f ", ci_coef_new[0][iorb][aorb]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+    }
+
     norm_CI_coef(nst, nocc, nvirt, ci_coef_old);
     norm_CI_coef(nst, nocc, nvirt, ci_coef_new);
 
@@ -312,7 +353,7 @@ static void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, doubl
         for(jst = 0; jst < nst; jst++){
 
             // 1st term in Eq. 15
-            // TODO : this term may be problem
+            // TODO : this term may cause a problem
             for(iorb = 0; iorb < nocc; iorb++){
                 for(aorb = 0; aorb < nvirt; aorb++){
                     nacme[ist][jst] += ci_coef_new[ist][iorb][aorb] * (ci_coef_new[jst][iorb][aorb] - ci_coef_old[jst][iorb][aorb]);
