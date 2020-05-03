@@ -79,7 +79,9 @@ static void CI_phase_order(int nst, int norb, int nocc, int nvirt, double ***ci_
         tmp_ci_new[iorb] = malloc(norb * sizeof(double));
     }
 
-    for(ist = 0; ist < nst; ist++){
+    // TODO : Currently, TDNAC between S_0 and S_j is not included
+//    for(ist = 0; ist < nst; ist++){
+    for(ist = 1; ist < nst; ist++){
 
         for(iorb = 0; iorb < norb; iorb++){
             for(aorb = 0; aorb < norb; aorb++){
@@ -138,7 +140,9 @@ static void state_phase(int nst, int nocc, int nvirt, double ***ci_coef_old, dou
     double val;
     int ist, iorb, aorb;
 
-    for(ist = 0; ist < nst; ist++){
+    // TODO : Currently, TDNAC between S_0 and S_j is not included
+//    for(ist = 0; ist < nst; ist++){
+    for(ist = 1; ist < nst; ist++){
 
         val = 0.0;
         for(iorb = 0; iorb < nocc; iorb++){
@@ -165,7 +169,9 @@ static void norm_CI_coef(int nst, int nocc, int nvirt, double ***ci_coef){
     double norm;
     int ist, iorb, aorb;
 
-    for(ist = 0; ist < nst; ist++){
+    // TODO : Currently, TDNAC between S_0 and S_j is not included
+//    for(ist = 0; ist < nst; ist++){
+    for(ist = 1; ist < nst; ist++){
 
         // Calculate normalization value for CI coefficients
         norm = 0.0;
@@ -351,6 +357,7 @@ static void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double **n
     }
 
     // TODO : ist = jst should be removed
+    // TODO : The equation for <S_0|S_j> and <S_i|S_j> should be separated
     for(ist = 0; ist < nst; ist++){
         for(jst = 0; jst < nst; jst++){
 

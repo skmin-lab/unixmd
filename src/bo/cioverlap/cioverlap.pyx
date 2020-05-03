@@ -1,8 +1,5 @@
 # cython: language_level=3
-#import numpy as np
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
-#from cpython.complex cimport complex
-#cimport numpy as np
 
 cdef extern from "tdnac.c":
     void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new)

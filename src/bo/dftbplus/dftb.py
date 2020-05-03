@@ -99,6 +99,7 @@ class DFTB(DFTBplus):
         self.ao_overlap = np.zeros((self.norb, self.norb))
         self.mo_coef_old = np.zeros((self.norb, self.norb))
         self.mo_coef_new = np.zeros((self.norb, self.norb))
+        # TODO : nst can be reduced to nst - 1 since S0 is only reference state (Phi_0)
         self.ci_coef_old = np.zeros((molecule.nst, self.nocc, self.nvirt))
         self.ci_coef_new = np.zeros((molecule.nst, self.nocc, self.nvirt))
 
@@ -651,7 +652,7 @@ class DFTB(DFTBplus):
                     if (iline == 0):
                         field = line.split()
                         assert int(field[0]) == nmat
-                        assert int(field[1]) >= molecule.nst
+                        assert int(field[1]) >= molecule.nst - 1
                         # nxply is number of lines for each excited state in 'XplusY.dat'
                         nxply = int(nmat / 6) + 1
                         if (nmat % 6 != 0):
@@ -663,16 +664,17 @@ class DFTB(DFTBplus):
                             ist = int(field[0]) - 1
                             # In general, TDDFTB calculate the excited states more than molecule.nst,
                             # so we do not need to read all data for 'XplusY.DAT'
-                            if (ist == molecule.nst):
+                            if (ist == molecule.nst - 1):
                                 break
                         else:
+                            # TODO : Currently, elements for CI coefficients for S0 state are zero
                             for element in field:
                                 ind_occ = get_wij_ind_old[ind, 0] - 1
                                 ind_virt = get_wij_ind_old[ind, 1] - self.nocc - 1
-                                self.ci_coef_old[ist, ind_occ, ind_virt] = float(element)
+                                self.ci_coef_old[ist + 1, ind_occ, ind_virt] = float(element)
                                 ind += 1
                     iline += 1
-            np.savetxt("test-ci1", self.ci_coef_old[0], fmt=f"%12.6f")
+            np.savetxt("test-ci1", self.ci_coef_old[1], fmt=f"%12.6f")
 
         # Read 'XplusY.DAT' file at time t + dt
         file_name_in = "XplusY.DAT"
@@ -683,7 +685,7 @@ class DFTB(DFTBplus):
                 if (iline == 0):
                     field = line.split()
                     assert int(field[0]) == nmat
-                    assert int(field[1]) >= molecule.nst
+                    assert int(field[1]) >= molecule.nst - 1
                     # nxply is number of lines for each excited state in 'XplusY.dat'
                     nxply = int(nmat / 6) + 1
                     if (nmat % 6 != 0):
@@ -695,16 +697,17 @@ class DFTB(DFTBplus):
                         ist = int(field[0]) - 1
                         # In general, TDDFTB calculate the excited states more than molecule.nst,
                         # so we do not need to read all data for 'XplusY.DAT'
-                        if (ist == molecule.nst):
+                        if (ist == molecule.nst - 1):
                             break
                     else:
+                        # TODO : Currently, elements for CI coefficients for S0 state are zero
                         for element in field:
                             ind_occ = get_wij_ind_new[ind, 0] - 1
                             ind_virt = get_wij_ind_new[ind, 1] - self.nocc - 1
-                            self.ci_coef_new[ist, ind_occ, ind_virt] = float(element)
+                            self.ci_coef_new[ist + 1, ind_occ, ind_virt] = float(element)
                             ind += 1
                 iline += 1
-        np.savetxt("test-ci2", self.ci_coef_new[0], fmt=f"%12.6f")
+        np.savetxt("test-ci2", self.ci_coef_new[1], fmt=f"%12.6f")
 
         # Calculate wavefunction overlap with orbital scheme
         # Reference: J. Phys. Chem. Lett. 2015, 6, 4200-4203
