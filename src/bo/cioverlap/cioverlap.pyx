@@ -5,9 +5,9 @@ from cpython.mem cimport PyMem_Malloc, PyMem_Free
 #cimport numpy as np
 
 cdef extern from "tdnac.c":
-    void TD_NAC(int nst, int norb, int nocc, int nvirt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new)
+    void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new)
 
-def wf_overlap(theory, molecule):
+def wf_overlap(theory, molecule, istep_py):
     cdef:
         double **nacme
         double **ao_overlap
@@ -15,9 +15,10 @@ def wf_overlap(theory, molecule):
         double **mo_coef_new
         double ***ci_coef_old
         double ***ci_coef_new
-        int ist, nst, iorb, jorb, norb, nocc, nvirt
+        int istep, ist, nst, iorb, jorb, norb, nocc, nvirt
 
     # Assign size variables
+    istep = istep_py
     nst = molecule.nst
     norb = theory.norb
     nocc = theory.nocc
@@ -53,7 +54,6 @@ def wf_overlap(theory, molecule):
     # Assign NACME variables from python to C
     for ist in range(nst):
         for jst in range(nst):
-#            nacme[ist][jst] = molecule.nacme[ist, jst]
             nacme[ist][jst] = 0.
 
     for iorb in range(norb):
@@ -69,20 +69,22 @@ def wf_overlap(theory, molecule):
                 ci_coef_new[ist][iorb][jorb] = theory.ci_coef_new[ist, iorb, jorb]
 
     # Calculate TDNAC term for CIoverlap
-    TD_NAC(nst, norb, nocc, nvirt, nacme, ao_overlap, mo_coef_old, mo_coef_new, ci_coef_old, ci_coef_new)
+    TD_NAC(istep, nst, norb, nocc, nvirt, nacme, ao_overlap, mo_coef_old, mo_coef_new, ci_coef_old, ci_coef_new)
 
     # Assign NACME variables from C to python
-#    for iorb in range(norb):
-#        for jorb in range(norb):
-#            theory.ao_overlap[iorb, jorb] = ao_overlap[iorb][jorb]
-#            theory.mo_coef_old[iorb, jorb] = mo_coef_old[iorb][jorb]
-#            theory.mo_coef_new[iorb, jorb] = mo_coef_new[iorb][jorb]
-#
-#    for ist in range(nst):
-#        for iorb in range(nvirt):
-#            for jorb in range(nocc):
-#                theory.ci_coef_old[ist, iorb, jorb] = ci_coef_old[ist][iorb][jorb]
-#                theory.ci_coef_new[ist, iorb, jorb] = ci_coef_new[ist][iorb][jorb]
+    for ist in range(nst):
+        for jst in range(nst):
+#             molecule.nacme[ist, jst] = nacme[ist][jst]
+             molecule.nacme[ist, jst] = 0.
+
+    for iorb in range(norb):
+        for jorb in range(norb):
+            theory.mo_coef_old[iorb, jorb] = mo_coef_new[iorb][jorb]
+
+    for ist in range(nst):
+        for iorb in range(nvirt):
+            for jorb in range(nocc):
+                theory.ci_coef_old[ist, iorb, jorb] = ci_coef_new[ist][iorb][jorb]
 
     # Deallocate NACME variables
     for ist in range(nst):

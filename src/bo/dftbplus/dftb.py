@@ -130,12 +130,13 @@ class DFTB(DFTBplus):
             # After T = 0.0 s
             shutil.copy(os.path.join(self.scr_qm_dir, "geometry.xyz"), \
                 os.path.join(self.scr_qm_dir, "../geometry.xyz.pre"))
-            shutil.copy(os.path.join(self.scr_qm_dir, "eigenvec.bin"), \
-                os.path.join(self.scr_qm_dir, "../eigenvec.bin.pre"))
-            shutil.copy(os.path.join(self.scr_qm_dir, "SPX.DAT"), \
-                os.path.join(self.scr_qm_dir, "../SPX.DAT.pre"))
-            shutil.copy(os.path.join(self.scr_qm_dir, "XplusY.DAT"), \
-                os.path.join(self.scr_qm_dir, "../XplusY.DAT.pre"))
+            if (istep == 0):
+                shutil.copy(os.path.join(self.scr_qm_dir, "eigenvec.bin"), \
+                    os.path.join(self.scr_qm_dir, "../eigenvec.bin.pre"))
+                shutil.copy(os.path.join(self.scr_qm_dir, "SPX.DAT"), \
+                    os.path.join(self.scr_qm_dir, "../SPX.DAT.pre"))
+                shutil.copy(os.path.join(self.scr_qm_dir, "XplusY.DAT"), \
+                    os.path.join(self.scr_qm_dir, "../XplusY.DAT.pre"))
 
     def get_input(self, molecule, istep, bo_list, calc_force_only):
         """ Generate DFTB+ input files: geometry.gen, dftb_in.hsd
@@ -145,10 +146,6 @@ class DFTB(DFTBplus):
             :param integer,list bo_list: list of BO states for BO calculation
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        # TODO : currently, CIoverlap is not correct -> only BOMD possible with TDDFTB
-        #if (self.calc_coupling):
-        #    raise ValueError (f"( {self.qm_method}.{call_name()} ) only BOME possible with TDDFTB! {self.qm_method}")
-
         # Make 'geometry.gen' file
         os.system("xyz2gen geometry.xyz")
         if (self.periodic):
@@ -178,9 +175,10 @@ class DFTB(DFTBplus):
         if (self.calc_coupling and not calc_force_only and istep >= 0 and molecule.nst > 1):
             # Move previous files to currect directory
             os.rename('../geometry.xyz.pre', './geometry.xyz.pre')
-            os.rename('../eigenvec.bin.pre', './eigenvec.bin.pre')
-            os.rename('../SPX.DAT.pre', './SPX.DAT.pre')
-            os.rename('../XplusY.DAT.pre', './XplusY.DAT.pre')
+            if (istep == 0):
+                os.rename('../eigenvec.bin.pre', './eigenvec.bin.pre')
+                os.rename('../SPX.DAT.pre', './SPX.DAT.pre')
+                os.rename('../XplusY.DAT.pre', './XplusY.DAT.pre')
             # Open geometry.xyz.pre
             file_af = open('double.xyz', 'w')
             file_be = open('geometry.xyz.pre', 'r')
@@ -335,7 +333,7 @@ class DFTB(DFTBplus):
               StateOfInterest = {rst}
               Symmetry = {self.ex_symmetry}
               WriteTransitions = Yes
-              WriteSPTransitions = Yes
+              WriteSPTransitions = {xpy}
               WriteMulliken = Yes
               WriteXplusY = {xpy}
               ExcitedStateForces = {ex_force}
@@ -499,34 +497,17 @@ class DFTB(DFTBplus):
         if (self.calc_coupling and not calc_force_only):
             molecule.nacme = np.zeros((molecule.nst, molecule.nst))
             if (istep >= 0):
-                # TODO : current TDNAC gives too large values
-                self.CI_overlap(molecule, base_dir)
-                # Read 'NACME.DAT'
-#                ist = 0
-#                jst = 0
-#                nline = 1
-#                file_name_in = "NACME.DAT"
-#                with open(file_name_in, "r") as f_in:
-#                    lines = f_in.readlines()
-#                    for line in lines:
-#                        field = line.split()
-#                        if (nline % 2 == 0):
-#                            # TODO : current TDNAC gives too large values
-#                            #molecule.nacme[ist, jst] = field[0]
-#                            jst += 1
-#                            if (jst == molecule.nst):
-#                                ist += 1
-#                                jst = 0
-#                        nline += 1
+                # TODO : current TDNAC gives zero values
+                self.CI_overlap(molecule, istep)
 
     # TODO : elapsed_time is needed?
 #    @elapsed_time
-    def CI_overlap(self, molecule, base_dir):
+    def CI_overlap(self, molecule, istep):
         """ Read the necessary files and calculate NACME from tdnac.c routine,
             note that only reading of several files is required in this method
 
             :param object molecule: molecule object
-            :param string base_dir: base directory
+            :param integer istep: current MD step
         """
         # Read upper right block of 'oversqr.dat' file (< t | t+dt >)
         file_name_in = "oversqr.dat"
@@ -603,16 +584,17 @@ class DFTB(DFTBplus):
         np.savetxt("test-over2", self.ao_overlap, fmt=f"%6.3f")
 
         # Read 'eigenvec.bin.pre' file at time t
-        file_name_in = "eigenvec.bin.pre"
+        if (istep == 0):
+            file_name_in = "eigenvec.bin.pre"
 
-        self.mo_coef_old = np.zeros((self.norb, self.norb))
-        with open(file_name_in, "rb") as f_in:
-            dummy = np.fromfile(f_in, dtype=np.integer, count=1)
-            for iorb in range(self.norb):
+            self.mo_coef_old = np.zeros((self.norb, self.norb))
+            with open(file_name_in, "rb") as f_in:
                 dummy = np.fromfile(f_in, dtype=np.integer, count=1)
-                data = np.fromfile(f_in, dtype=np.float64, count=self.norb)
-                self.mo_coef_old[iorb] = data
-        np.savetxt("test-mo1", self.mo_coef_old, fmt=f"%12.6f")
+                for iorb in range(self.norb):
+                    dummy = np.fromfile(f_in, dtype=np.integer, count=1)
+                    data = np.fromfile(f_in, dtype=np.float64, count=self.norb)
+                    self.mo_coef_old[iorb] = data
+            np.savetxt("test-mo1", self.mo_coef_old, fmt=f"%12.6f")
 
         # Read 'eigenvec.bin' file at time t + dt
         file_name_in = "eigenvec.bin"
@@ -631,18 +613,19 @@ class DFTB(DFTBplus):
 
         # The CI coefficients are arranged in order of single-particle excitations
         # Read 'SPX.DAT.pre' file at time t
-        file_name_in = "SPX.DAT.pre"
-        with open(file_name_in, "r") as f_in:
-            lines = f_in.readlines()
-            iline = 0
-            get_wij_ind_old = np.zeros((nmat, 2), dtype=np.int_)
-            for line in lines:
-                # Skip first five lines
-                if (iline in range(5, 5 + nmat)):
-                    # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
-                    field = line.split()
-                    get_wij_ind_old[int(field[0]) - 1] = [int(field[3]), int(field[5])]
-                iline += 1
+        if (istep == 0):
+            file_name_in = "SPX.DAT.pre"
+            with open(file_name_in, "r") as f_in:
+                lines = f_in.readlines()
+                iline = 0
+                get_wij_ind_old = np.zeros((nmat, 2), dtype=np.int_)
+                for line in lines:
+                    # Skip first five lines
+                    if (iline in range(5, 5 + nmat)):
+                        # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
+                        field = line.split()
+                        get_wij_ind_old[int(field[0]) - 1] = [int(field[3]), int(field[5])]
+                    iline += 1
 
         # Read 'SPX.DAT' file at time t + dt
         file_name_in = "SPX.DAT"
@@ -659,36 +642,37 @@ class DFTB(DFTBplus):
                 iline += 1
 
         # Read 'XplusY.DAT.pre' file at time t
-        file_name_in = "XplusY.DAT.pre"
-        with open(file_name_in, "r") as f_in:
-            lines = f_in.readlines()
-            iline = 0
-            for line in lines:
-                if (iline == 0):
-                    field = line.split()
-                    assert int(field[0]) == nmat
-                    assert int(field[1]) >= molecule.nst
-                    # nxply is number of lines for each excited state in 'XplusY.dat'
-                    nxply = int(nmat / 6) + 1
-                    if (nmat % 6 != 0):
-                        nxply += 1
-                else:
-                    field = line.split()
-                    if (iline % nxply == 1):
-                        ind = 0
-                        ist = int(field[0]) - 1
-                        # In general, TDDFTB calculate the excited states more than molecule.nst,
-                        # so we do not need to read all data for 'XplusY.DAT'
-                        if (ist == molecule.nst):
-                            break
+        if (istep == 0):
+            file_name_in = "XplusY.DAT.pre"
+            with open(file_name_in, "r") as f_in:
+                lines = f_in.readlines()
+                iline = 0
+                for line in lines:
+                    if (iline == 0):
+                        field = line.split()
+                        assert int(field[0]) == nmat
+                        assert int(field[1]) >= molecule.nst
+                        # nxply is number of lines for each excited state in 'XplusY.dat'
+                        nxply = int(nmat / 6) + 1
+                        if (nmat % 6 != 0):
+                            nxply += 1
                     else:
-                        for element in field:
-                            ind_occ = get_wij_ind_old[ind, 0] - 1
-                            ind_virt = get_wij_ind_old[ind, 1] - self.nocc - 1
-                            self.ci_coef_old[ist, ind_occ, ind_virt] = float(element)
-                            ind += 1
-                iline += 1
-        np.savetxt("test-ci1", self.ci_coef_old[0], fmt=f"%12.6f")
+                        field = line.split()
+                        if (iline % nxply == 1):
+                            ind = 0
+                            ist = int(field[0]) - 1
+                            # In general, TDDFTB calculate the excited states more than molecule.nst,
+                            # so we do not need to read all data for 'XplusY.DAT'
+                            if (ist == molecule.nst):
+                                break
+                        else:
+                            for element in field:
+                                ind_occ = get_wij_ind_old[ind, 0] - 1
+                                ind_virt = get_wij_ind_old[ind, 1] - self.nocc - 1
+                                self.ci_coef_old[ist, ind_occ, ind_virt] = float(element)
+                                ind += 1
+                    iline += 1
+            np.savetxt("test-ci1", self.ci_coef_old[0], fmt=f"%12.6f")
 
         # Read 'XplusY.DAT' file at time t + dt
         file_name_in = "XplusY.DAT"
@@ -724,35 +708,6 @@ class DFTB(DFTBplus):
 
         # Calculate wavefunction overlap with orbital scheme
         # Reference: J. Phys. Chem. Lett. 2015, 6, 4200-4203
-        wf_overlap(self, molecule)
-
-#        for iexc in range(nexc):
-#
-#            # Normalize the CI coefficients
-#            norm_val = 0.
-#            for iocc in range(nocc):
-#                for ivirt in range(nvirt):
-#                    norm_val += xply[iocc, ivirt, iexc] ** 2
-#            norm_val = np.sqrt(norm_val)
-#            for iocc in range(nocc):
-#                for ivirt in range(nvirt):
-#                    xply[iocc, ivirt, iexc] /= norm_val
-#
-#            f_print = f"{iexc + 1:4d}" + "\n"
-#            f_out.write(f_print)
-#
-#            for iocc in range(nocc):
-#                for ivirt in range(nvirt):
-#                    f_print = f"{xply[iocc, ivirt, iexc]:13.8f}"
-#                    if (ivirt == nvirt - 1):
-#                        f_print += "\n"
-#                    f_out.write(f_print)
-#
-#        f_out.close()
-#
-#        # TODO: this is temporary path, the directory for tdnac.x can be changed
-##        tdnac_command = os.path.join(base_dir, "../tdnac.x")
-##        command = f"{tdnac_command}"
-##        os.system(command)
+        wf_overlap(self, molecule, istep)
 
 
