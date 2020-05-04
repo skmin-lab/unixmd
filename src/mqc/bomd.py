@@ -53,7 +53,7 @@ class BOMD(MQC):
         self.print_init(molecule, theory, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
-        theory.get_bo(molecule, base_dir, -1, bo_list, calc_force_only=False)
+        theory.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=False)
 
         self.update_energy(molecule)
 
@@ -65,7 +65,7 @@ class BOMD(MQC):
 
             self.cl_update_position(molecule)
 
-            theory.get_bo(molecule, base_dir, istep, bo_list, calc_force_only=False)
+            theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=False)
 
             self.cl_update_velocity(molecule)
 

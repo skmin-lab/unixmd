@@ -1,5 +1,5 @@
 from __future__ import division
-from mqc.el_prop.el_propagator import *
+from build.el_propagator import *
 from mqc.mqc import MQC
 from fileio import touch_file, write_md_output, write_final_xyz
 from misc import au_to_K, call_name
@@ -63,7 +63,7 @@ class Eh(MQC):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Ehrenfest dynamics needs NAC! {molecule.l_nacme}")
 
         # Calculate initial input geometry at t = 0.0 s
-        theory.get_bo(molecule, base_dir, -1, bo_list, calc_force_only=False)
+        theory.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=False)
         if (not molecule.l_nacme):
             molecule.get_nacme()
 
@@ -79,7 +79,7 @@ class Eh(MQC):
             self.cl_update_position(molecule)
 
             molecule.backup_bo()
-            theory.get_bo(molecule, base_dir, istep, bo_list, calc_force_only=False)
+            theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=False)
 
             if (not molecule.l_nacme):
                 molecule.adjust_nac()
