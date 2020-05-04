@@ -148,6 +148,10 @@ class DFTB(DFTBplus):
             :param integer,list bo_list: list of BO states for BO calculation
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
+        # TODO : Currently, CIoverlap is not correct
+        if (self.calc_coupling):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) only BOMD possible with TDDFTB! {self.qm_method}")
+
         # Make 'geometry.gen' file
         os.system("xyz2gen geometry.xyz")
         if (self.periodic):
