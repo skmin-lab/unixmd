@@ -13,7 +13,7 @@ Compile Cython
     
   [Build]
     
-        $ python3 setup.py build_ext -b ./src/mqc/el_prop
+        $ python3 setup.py build_ext -b ./src/build
 
 Test Run
 
