@@ -5,7 +5,16 @@
 // Routine to calculate overlap and permutation matrix in MO basis between two time steps
 static void calc_MO_over(int norb, double **mo_overlap, double **permut_mat, double **ao_overlap, double **mo_coef_old, double **mo_coef_new){
 
+    double **tmp_sign = malloc(norb * sizeof(double*));
     int iorb, jorb, mu, nu;
+
+    // Initialize temporary array to save sign of overlap in MO basis
+    for(iorb = 0; iorb < norb; iorb++){
+        tmp_sign[iorb] = malloc(norb * sizeof(double));
+        for(jorb = 0; jorb < norb; jorb++){
+            tmp_sign[iorb][jorb] = 0.0;
+        }
+    }
 
     for(iorb = 0; iorb < norb; iorb++){
         for(jorb = 0; jorb < norb; jorb++){
@@ -14,13 +23,32 @@ static void calc_MO_over(int norb, double **mo_overlap, double **permut_mat, dou
             for(mu = 0; mu < norb; mu++){
                 for(nu = 0; nu < norb; nu++){
                     mo_overlap[iorb][jorb] += mo_coef_old[iorb][mu] * ao_overlap[mu][nu] * mo_coef_new[jorb][nu];
+                    // Save the sign of overlap elements for calculating permutation matrix
+                    if(mo_overlap[iorb][jorb] < 0.0){
+                        tmp_sign[iorb][jorb] = -1.0;
+                    }
+                    else{
+                        tmp_sign[iorb][jorb] = 1.0;
+                    }
                 }
             }
-            // Permutation matrix is obtained by rounding off the overlap matrix in MO basis
-            permut_mat[iorb][jorb] = round(mo_overlap[iorb][jorb]);
 
         }
     }
+
+    for(iorb = 0; iorb < norb; iorb++){
+        for(jorb = 0; jorb < norb; jorb++){
+            // Permutation matrix is obtained by rounding off the square of overlap matrix in MO basis
+            permut_mat[iorb][jorb] = round(pow(mo_overlap[iorb][jorb], 2) * tmp_sign[iorb][jorb]);
+        }
+    }
+
+    // Deallocate temporary array to save sign of overlap in MO basis
+    for(iorb = 0; iorb < norb; iorb++){
+        free(tmp_sign[iorb]);
+    }
+
+    free(tmp_sign);
 
 }
 
@@ -275,7 +303,7 @@ static void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double dt,
         printf("ci_coef_old \n");
         for(iorb = 0; iorb < nocc; iorb++){
             for(aorb = 0; aorb < nvirt; aorb++){
-                printf("%15.8f ", ci_coef_old[0][iorb][aorb]);
+                printf("%15.8f ", ci_coef_old[1][iorb][aorb]);
             }
             printf("\n");
         }
@@ -285,7 +313,7 @@ static void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double dt,
         printf("ci_coef_new \n");
         for(iorb = 0; iorb < nocc; iorb++){
             for(aorb = 0; aorb < nvirt; aorb++){
-                printf("%15.8f ", ci_coef_new[0][iorb][aorb]);
+                printf("%15.8f ", ci_coef_new[1][iorb][aorb]);
             }
             printf("\n");
         }
@@ -299,7 +327,7 @@ static void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double dt,
         printf("ci_coef_new after phase correction \n");
         for(iorb = 0; iorb < nocc; iorb++){
             for(aorb = 0; aorb < nvirt; aorb++){
-                printf("%15.8f ", ci_coef_new[0][iorb][aorb]);
+                printf("%15.8f ", ci_coef_new[1][iorb][aorb]);
             }
             printf("\n");
         }
@@ -313,7 +341,7 @@ static void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double dt,
         printf("ci_coef_new after state correction \n");
         for(iorb = 0; iorb < nocc; iorb++){
             for(aorb = 0; aorb < nvirt; aorb++){
-                printf("%15.8f ", ci_coef_new[0][iorb][aorb]);
+                printf("%15.8f ", ci_coef_new[1][iorb][aorb]);
             }
             printf("\n");
         }
@@ -400,15 +428,15 @@ static void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double dt,
     }
 
     // Print NACME values
-    for(ist = 0; ist < nst; ist++){
-        for(jst = 0; jst < nst; jst++){
-            printf("%15.8f ", nacme[ist][jst]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-    printf("\n");
-    printf("\n");
+//    for(ist = 0; ist < nst; ist++){
+//        for(jst = 0; jst < nst; jst++){
+//            printf("%15.8f ", nacme[ist][jst]);
+//        }
+//        printf("\n");
+//    }
+//    printf("\n");
+//    printf("\n");
+//    printf("\n");
     
     for(iorb = 0; iorb < norb; iorb++){
         free(mo_overlap[iorb]);
