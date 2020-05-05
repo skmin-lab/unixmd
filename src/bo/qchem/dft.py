@@ -17,7 +17,7 @@ class DFT(QChem):
         self.scf_max_iter = scf_max_iter
         self.nthreads = nthreads
 
-    def get_bo(self, molecule, base_dir, istep, bo_list, calc_force_only):
+    def get_bo(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from (TD)DFT method
         """
         super().get_bo(base_dir, calc_force_only)
