@@ -4,4 +4,5 @@ from bo import molpro
 from bo import gaussian09
 from bo import turbomole
 from bo import columbus
+from bo import qchem
 from bo import model
