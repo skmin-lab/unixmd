@@ -107,7 +107,7 @@ class SH(MQC):
 
             self.hop_prob(molecule, istep, unixmd_dir)
             self.hop_check(molecule, bo_list)
-            self.evaluate_hop(molecule, bo_list, step, unixmd_dir)
+            self.evaluate_hop(molecule, bo_list, istep, unixmd_dir)
             if (theory.re_calc and self.l_hop):
                 theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=True)
 
