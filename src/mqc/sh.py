@@ -76,9 +76,9 @@ class SH(MQC):
             molecule.get_nacme()
 
         self.hop_prob(molecule, -1, unixmd_dir)
-        self.hop_check(molecule, bo_list, -1, unixmd_dir)
+        self.hop_check(molecule, bo_list)
         if (self.l_hop):
-            self.evaluate_hop(molecule, bo_list, istep, unixmd_dir)
+            self.evaluate_hop(molecule, bo_list, -1, unixmd_dir)
 
         self.update_energy(molecule)
 
@@ -105,7 +105,7 @@ class SH(MQC):
             self.el_propagator(molecule)
 
             self.hop_prob(molecule, istep, unixmd_dir)
-            self.hop_check(molecule, bo_list, istep, unixmd_dir)
+            self.hop_check(molecule, bo_list)
             if (self.l_hop):
                 self.evaluate_hop(molecule, bo_list, istep, unixmd_dir)
                 if (theory.re_calc and self.l_hop):
@@ -170,13 +170,11 @@ class SH(MQC):
         tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(molecule.nst)])
         typewriter(tmp, unixmd_dir, "SHPROB")
 
-    def hop_check(self, molecule, bo_list, istep, unixmd_dir):
+    def hop_check(self, molecule, bo_list):
         """ Routine to check hopping occurs with random number
 
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation
-            :param integer istep: current MD step
-            :param string unixmd_dir: unixmd directory
         """
         self.rand = random.random()
         for ist in range(molecule.nst):
@@ -192,6 +190,9 @@ class SH(MQC):
         """ Routine to evaluate hopping and velocity rescaling
 
             :param object molecule: molecule object
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param integer istep: current MD step
+            :param string unixmd_dir: unixmd directory
         """
         pot_diff = molecule.states[self.rstate].energy - molecule.states[self.rstate_old].energy
         if (molecule.ekin < pot_diff):
