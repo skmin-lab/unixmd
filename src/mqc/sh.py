@@ -207,7 +207,6 @@ class SH(MQC):
             # Update kinetic energy
             molecule.update_kinetic()
 
-
         # Write SHSTATE file
         tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
         typewriter(tmp, unixmd_dir, "SHSTATE")
