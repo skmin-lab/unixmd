@@ -121,9 +121,10 @@ class SHXF(MQC):
             molecule.get_nacme()
 
         self.hop_prob(molecule, -1, unixmd_dir)
-        self.hop_check(molecule, bo_list, -1, unixmd_dir)
-        if (self.l_hop):
-            self.evaluate_hop(molecule)
+        self.hop_check(molecule, bo_list)
+        self.evaluate_hop(molecule, bo_list, -1, unixmd_dir)
+        if (theory.re_calc and self.l_hop):
+            theory.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=True)
 
         self.update_energy(molecule)
 
@@ -155,11 +156,10 @@ class SHXF(MQC):
             self.el_propagator(molecule)
 
             self.hop_prob(molecule, istep, unixmd_dir)
-            self.hop_check(molecule, bo_list, istep, unixmd_dir)
-            if (self.l_hop):
-                self.evaluate_hop(molecule)
-                if (theory.re_calc):
-                    theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=True)
+            self.hop_check(molecule, bo_list)
+            self.evaluate_hop(molecule, bo_list, istep, unixmd_dir)
+            if (theory.re_calc and self.l_hop):
+                theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=True)
 
             thermostat.run(molecule, self)
 
@@ -225,13 +225,11 @@ class SHXF(MQC):
         tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(molecule.nst)])
         typewriter(tmp, unixmd_dir, "SHPROB")
 
-    def hop_check(self, molecule, bo_list, istep, unixmd_dir):
+    def hop_check(self, molecule, bo_list):
         """ Routine to check hopping occurs with random number
 
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation
-            :param integer istep: current MD step
-            :param string unixmd_dir: unixmd directory
         """
         self.rand = random.random()
         for ist in range(molecule.nst):
@@ -242,27 +240,32 @@ class SHXF(MQC):
                 self.rstate = ist
                 bo_list[0] = self.rstate
 
-        # Write SHSTATE file
-        tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
-        typewriter(tmp, unixmd_dir, "SHSTATE")
-
-    def evaluate_hop(self, molecule):
+    def evaluate_hop(self, molecule, bo_list, istep, unixmd_dir):
         """ Routine to evaluate hopping and velocity rescaling
 
             :param object molecule: molecule object
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param integer istep: current MD step
+            :param string unixmd_dir: unixmd directory
         """
-        pot_diff = molecule.states[self.rstate].energy - molecule.states[self.rstate_old].energy
-        if (molecule.ekin < pot_diff):
-            if (not self.force_hop):
-                self.l_hop = False
-                self.rstate = self.rstate_old
-        else:
-            if (molecule.ekin < eps):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin}")
-            fac = 1. - pot_diff / molecule.ekin
-            molecule.vel *= np.sqrt(fac)
-            # Update kinetic energy
-            molecule.update_kinetic()
+        if (self.l_hop):
+            pot_diff = molecule.states[self.rstate].energy - molecule.states[self.rstate_old].energy
+            if (molecule.ekin < pot_diff):
+                if (not self.force_hop):
+                    self.l_hop = False
+                    self.rstate = self.rstate_old
+                    bo_list[0] = self.rstate
+            else:
+                if (molecule.ekin < eps):
+                    raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin}")
+                fac = 1. - pot_diff / molecule.ekin
+                molecule.vel *= np.sqrt(fac)
+                # Update kinetic energy
+                molecule.update_kinetic()
+
+        # Write SHSTATE file
+        tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
+        typewriter(tmp, unixmd_dir, "SHSTATE")
 
     def calculate_force(self, molecule):
         """ Routine to calculate the forces
