@@ -108,7 +108,7 @@ class SH(MQC):
             self.hop_check(molecule, bo_list, istep, unixmd_dir)
             if (self.l_hop):
                 self.evaluate_hop(molecule)
-                if (theory.re_calc):
+                if (theory.re_calc and self.l_hop):
                     theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=True)
 
             thermostat.run(molecule, self)
@@ -187,9 +187,6 @@ class SH(MQC):
                 self.rstate = ist
                 bo_list[0] = self.rstate
 
-        # Write SHSTATE file
-        tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
-        typewriter(tmp, unixmd_dir, "SHSTATE")
 
     def evaluate_hop(self, molecule):
         """ Routine to evaluate hopping and velocity rescaling
@@ -201,6 +198,7 @@ class SH(MQC):
             if (not self.force_hop):
                 self.l_hop = False
                 self.rstate = self.rstate_old
+                bo_list[0] = self.rstate
         else:
             if (molecule.ekin < eps):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin}")
@@ -208,6 +206,11 @@ class SH(MQC):
             molecule.vel *= np.sqrt(fac)
             # Update kinetic energy
             molecule.update_kinetic()
+
+
+        # Write SHSTATE file
+        tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
+        typewriter(tmp, unixmd_dir, "SHSTATE")
 
 #        a = 0.
 #        b = 0.
