@@ -79,6 +79,8 @@ class SH(MQC):
         self.hop_check(molecule, bo_list)
         if (self.l_hop):
             self.evaluate_hop(molecule, bo_list, -1, unixmd_dir)
+            if (theory.re_calc and self.l_hop):
+                theory.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=True)
 
         self.update_energy(molecule)
 
@@ -184,7 +186,6 @@ class SH(MQC):
                 self.l_hop = True
                 self.rstate = ist
                 bo_list[0] = self.rstate
-
 
     def evaluate_hop(self, molecule, bo_list, istep, unixmd_dir):
         """ Routine to evaluate hopping and velocity rescaling
