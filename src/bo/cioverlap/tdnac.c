@@ -5,7 +5,16 @@
 // Routine to calculate overlap and permutation matrix in MO basis between two time steps
 static void calc_MO_over(int norb, double **mo_overlap, double **permut_mat, double **ao_overlap, double **mo_coef_old, double **mo_coef_new){
 
+    double **tmp_sign = malloc(norb * sizeof(double*));
     int iorb, jorb, mu, nu;
+
+    // Initialize temporary array to save sign of overlap in MO basis
+    for(iorb = 0; iorb < norb; iorb++){
+        tmp_sign[iorb] = malloc(norb * sizeof(double));
+        for(jorb = 0; jorb < norb; jorb++){
+            tmp_sign[iorb][jorb] = 0.0;
+        }
+    }
 
     for(iorb = 0; iorb < norb; iorb++){
         for(jorb = 0; jorb < norb; jorb++){
@@ -14,13 +23,32 @@ static void calc_MO_over(int norb, double **mo_overlap, double **permut_mat, dou
             for(mu = 0; mu < norb; mu++){
                 for(nu = 0; nu < norb; nu++){
                     mo_overlap[iorb][jorb] += mo_coef_old[iorb][mu] * ao_overlap[mu][nu] * mo_coef_new[jorb][nu];
+                    // Save the sign of overlap elements for calculating permutation matrix
+                    if(mo_overlap[iorb][jorb] < 0.0){
+                        tmp_sign[iorb][jorb] = -1.0;
+                    }
+                    else{
+                        tmp_sign[iorb][jorb] = 1.0;
+                    }
                 }
             }
-            // Permutation matrix is obtained by rounding off the overlap matrix in MO basis
-            permut_mat[iorb][jorb] = round(mo_overlap[iorb][jorb]);
 
         }
     }
+
+    for(iorb = 0; iorb < norb; iorb++){
+        for(jorb = 0; jorb < norb; jorb++){
+            // Permutation matrix is obtained by rounding off the square of overlap matrix in MO basis
+            permut_mat[iorb][jorb] = round(pow(mo_overlap[iorb][jorb], 2) * tmp_sign[iorb][jorb]);
+        }
+    }
+
+    // Deallocate temporary array to save sign of overlap in MO basis
+    for(iorb = 0; iorb < norb; iorb++){
+        free(tmp_sign[iorb]);
+    }
+
+    free(tmp_sign);
 
 }
 
@@ -79,8 +107,7 @@ static void CI_phase_order(int nst, int norb, int nocc, int nvirt, double ***ci_
         tmp_ci_new[iorb] = malloc(norb * sizeof(double));
     }
 
-    // TODO : Currently, TDNAC between S_0 and S_j is not included
-//    for(ist = 0; ist < nst; ist++){
+    // CI coefficients for S_0 are zero
     for(ist = 1; ist < nst; ist++){
 
         for(iorb = 0; iorb < norb; iorb++){
@@ -104,13 +131,13 @@ static void CI_phase_order(int nst, int norb, int nocc, int nvirt, double ***ci_
         // TODO : The phases for occupied and virtual orbitals are matched when permutation is diagonal matrix
         for(jorb = 0; jorb < norb; jorb++){
             for(borb = 0; borb < norb; borb++){
-    
+
                 for(iorb = 0; iorb < norb; iorb++){
                     for(aorb = 0; aorb < norb; aorb++){
                         tmp_ci_new[jorb][borb] += permut_mat[jorb][iorb] * tmp_ci[iorb][aorb] * permut_mat[aorb][borb];
                     }
                 }
-    
+
             }
         }
 
@@ -140,8 +167,7 @@ static void state_phase(int nst, int nocc, int nvirt, double ***ci_coef_old, dou
     double val;
     int ist, iorb, aorb;
 
-    // TODO : Currently, TDNAC between S_0 and S_j is not included
-//    for(ist = 0; ist < nst; ist++){
+    // CI coefficients for S_0 are zero
     for(ist = 1; ist < nst; ist++){
 
         val = 0.0;
@@ -169,8 +195,7 @@ static void norm_CI_coef(int nst, int nocc, int nvirt, double ***ci_coef){
     double norm;
     int ist, iorb, aorb;
 
-    // TODO : Currently, TDNAC between S_0 and S_j is not included
-//    for(ist = 0; ist < nst; ist++){
+    // CI coefficients for S_0 are zero
     for(ist = 1; ist < nst; ist++){
 
         // Calculate normalization value for CI coefficients
@@ -275,7 +300,7 @@ static void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double dt,
         printf("ci_coef_old \n");
         for(iorb = 0; iorb < nocc; iorb++){
             for(aorb = 0; aorb < nvirt; aorb++){
-                printf("%15.8f ", ci_coef_old[0][iorb][aorb]);
+                printf("%15.8f ", ci_coef_old[1][iorb][aorb]);
             }
             printf("\n");
         }
@@ -285,7 +310,7 @@ static void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double dt,
         printf("ci_coef_new \n");
         for(iorb = 0; iorb < nocc; iorb++){
             for(aorb = 0; aorb < nvirt; aorb++){
-                printf("%15.8f ", ci_coef_new[0][iorb][aorb]);
+                printf("%15.8f ", ci_coef_new[1][iorb][aorb]);
             }
             printf("\n");
         }
@@ -299,7 +324,7 @@ static void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double dt,
         printf("ci_coef_new after phase correction \n");
         for(iorb = 0; iorb < nocc; iorb++){
             for(aorb = 0; aorb < nvirt; aorb++){
-                printf("%15.8f ", ci_coef_new[0][iorb][aorb]);
+                printf("%15.8f ", ci_coef_new[1][iorb][aorb]);
             }
             printf("\n");
         }
@@ -313,7 +338,7 @@ static void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double dt,
         printf("ci_coef_new after state correction \n");
         for(iorb = 0; iorb < nocc; iorb++){
             for(aorb = 0; aorb < nvirt; aorb++){
-                printf("%15.8f ", ci_coef_new[0][iorb][aorb]);
+                printf("%15.8f ", ci_coef_new[1][iorb][aorb]);
             }
             printf("\n");
         }
@@ -357,43 +382,70 @@ static void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double dt,
     }
 
     // TODO : ist = jst should be removed
-    // TODO : The equation for <S_0|S_j> and <S_i|S_j> should be separated
+    // TODO : we need to evaluate only ist < jst cases since NACME is anti-symmetric
     for(ist = 0; ist < nst; ist++){
         for(jst = 0; jst < nst; jst++){
 
-            // 1st term in Eq. 15
-            // TODO : this term may cause a problem
-            for(iorb = 0; iorb < nocc; iorb++){
-                for(aorb = 0; aorb < nvirt; aorb++){
-//                    nacme[ist][jst] += ci_coef_new[ist][iorb][aorb] * (ci_coef_new[jst][iorb][aorb] - ci_coef_old[jst][iorb][aorb]);
-//                    nacme[ist][jst] += 0.5 * (ci_coef_old[ist][iorb][aorb] * ci_coef_new[jst][iorb][aorb] - ci_coef_old[ist][iorb][aorb] * ci_coef_old[jst][iorb][aorb]);
-//                    nacme[ist][jst] += 0.5 * (ci_coef_new[ist][iorb][aorb] * ci_coef_new[jst][iorb][aorb] - ci_coef_new[ist][iorb][aorb] * ci_coef_old[jst][iorb][aorb]);
-                }
-            }
+            if(ist == 0 || jst == 0){
 
-            // 2nd term in Eq. 15
-            for(iorb = 0; iorb < nocc; iorb++){
-                for(aorb = 0; aorb < nvirt; aorb++){
-                    for(borb = 0; borb < nvirt; borb++){
-                        if(aorb != borb){
-                            nacme[ist][jst] += ci_coef_new[ist][iorb][aorb] * ci_coef_new[jst][iorb][borb] * mo_overlap[nocc + aorb][nocc + borb];
+                if(ist > jst){
+
+                    // TDNAC between S_i and S_0 state
+                    for(iorb = 0; iorb < nocc; iorb++){
+                        for(aorb = 0; aorb < nvirt; aorb++){
+                            nacme[ist][jst] += 0.5 * ci_coef_new[ist][iorb][aorb] * (mo_overlap[nocc + aorb][iorb] - mo_overlap[iorb][nocc + aorb]);
                         }
                     }
-                }
-            }
 
-            // 3rd term in Eq. 15
-            for(iorb = 0; iorb < nocc; iorb++){
-                for(aorb = 0; aorb < nvirt; aorb++){
+                }
+                else{
+
+                    // TDNAC between S_0 and S_j state
                     for(jorb = 0; jorb < nocc; jorb++){
-                        if(iorb != jorb){
-                            // fac is permutation in 3rd term
-                            exponent = abs(jorb - iorb);
-                            fac = pow(-1.0, exponent);
-                            nacme[ist][jst] -= fac * ci_coef_new[ist][iorb][aorb] * ci_coef_new[jst][jorb][aorb] * mo_overlap[jorb][iorb];
+                        for(borb = 0; borb < nvirt; borb++){
+                            nacme[ist][jst] += 0.5 * ci_coef_new[jst][jorb][borb] * (mo_overlap[jorb][nocc + borb] - mo_overlap[nocc + borb][jorb]);
+                        }
+                    }
+
+                }
+
+            }
+            else{
+
+                // TDNAC between S_i and S_j state
+
+                // 1st term in Eq. 15
+                for(iorb = 0; iorb < nocc; iorb++){
+                    for(aorb = 0; aorb < nvirt; aorb++){
+                        nacme[ist][jst] += 0.5 * (ci_coef_old[ist][iorb][aorb] * ci_coef_new[jst][iorb][aorb] - ci_coef_old[jst][iorb][aorb] * ci_coef_new[ist][iorb][aorb]);
+                    }
+                }
+
+                // 2nd term in Eq. 15
+                for(iorb = 0; iorb < nocc; iorb++){
+                    for(aorb = 0; aorb < nvirt; aorb++){
+                        for(borb = 0; borb < nvirt; borb++){
+                            if(aorb != borb){
+                                nacme[ist][jst] += 0.5 * ci_coef_new[ist][iorb][aorb] * ci_coef_new[jst][iorb][borb] * (mo_overlap[nocc + aorb][nocc + borb] - mo_overlap[nocc + borb][nocc + aorb]);
+                            }
                         }
                     }
                 }
+
+                // 3rd term in Eq. 15
+                for(iorb = 0; iorb < nocc; iorb++){
+                    for(aorb = 0; aorb < nvirt; aorb++){
+                        for(jorb = 0; jorb < nocc; jorb++){
+                            if(iorb != jorb){
+                                // fac is permutation in 3rd term
+                                exponent = abs(jorb - iorb);
+                                fac = pow(-1.0, exponent);
+                                nacme[ist][jst] -= 0.5 * fac * ci_coef_new[ist][iorb][aorb] * ci_coef_new[jst][jorb][aorb] * (mo_overlap[jorb][iorb] - mo_overlap[iorb][jorb]);
+                            }
+                        }
+                    }
+                }
+
             }
 
             // NACME is divided by time step (finite numerical differentiation)
@@ -402,28 +454,17 @@ static void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double dt,
         }
     }
 
-    // TODO : This is temporary part to make zero value for diagonal elements
-    // TODO : This is temporary part to make anti-symmetric value for off-diagonal elements
-    for(ist = 0; ist < nst; ist++){
-        nacme[ist][ist] = 0.0;
-        for(jst = 0; jst < nst; jst++){
-            if(ist > jst){
-                nacme[ist][jst] = -nacme[jst][ist];
+    if(debug == 1){
+        // Print NACME values
+        for(ist = 0; ist < nst; ist++){
+            for(jst = 0; jst < nst; jst++){
+                printf("%15.8f ", nacme[ist][jst]);
             }
-        }
-    }
-
-    // Print NACME values
-    for(ist = 0; ist < nst; ist++){
-        for(jst = 0; jst < nst; jst++){
-            printf("%15.8f ", nacme[ist][jst]);
+            printf("\n");
         }
         printf("\n");
     }
-    printf("\n");
-    printf("\n");
-    printf("\n");
-    
+
     for(iorb = 0; iorb < norb; iorb++){
         free(mo_overlap[iorb]);
         free(permut_mat[iorb]);

@@ -2,7 +2,8 @@ from __future__ import division
 from build.cioverlap import *
 from bo.dftbplus.dftbplus import DFTBplus
 from bo.dftbplus.dftbpar import spin_w, max_l
-from misc import eV_to_au, elapsed_time
+#from misc import eV_to_au, call_name
+from misc import eV_to_au
 import os, shutil, re, textwrap, struct
 import numpy as np
 
@@ -149,8 +150,8 @@ class DFTB(DFTBplus):
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # TODO : Currently, CIoverlap is not correct
-        if (self.calc_coupling):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) only BOMD possible with TDDFTB! {self.qm_method}")
+#        if (self.calc_coupling):
+#            raise ValueError (f"( {self.qm_method}.{call_name()} ) only BOMD possible with TDDFTB! {self.qm_method}")
 
         # Make 'geometry.gen' file
         os.system("xyz2gen geometry.xyz")
