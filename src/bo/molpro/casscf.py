@@ -21,6 +21,7 @@ class CASSCF(Molpro):
         :param double version: version of Molpro program
     """
     def __init__(self, molecule, basis_set="sto-3g", memory="500m", \
+        scf_max_iter=20, scf_en_tol=1E-8, scf_rho_tol=1E-6, \
         mcscf_max_iter=20, mcscf_en_tol=1E-8, mcscf_grad_tol=1E-6, mcscf_step_tol=1E-2, \
         active_elec=2, active_orb=2, cpscf_grad_tol=1E-7, \
         qm_path="./", nthreads=1, version=2015.1):
@@ -32,6 +33,13 @@ class CASSCF(Molpro):
         # the MO files for restart if possible
         # TODO : For restart of previous step, this can be done without removing scratch directory
         # In addition, Molpro do not provide periodic setting with CASSCF method
+
+        # HF calculation for initial guess of CASSCF calculation
+        self.scf_max_iter = scf_max_iter
+        self.scf_en_tol = scf_en_tol
+        self.scf_rho_tol = scf_rho_tol
+
+        # CASSCF calculation
         self.mcscf_max_iter = mcscf_max_iter
         self.mcscf_en_tol = mcscf_en_tol
         self.mcscf_grad_tol = mcscf_grad_tol
@@ -110,6 +118,17 @@ class CASSCF(Molpro):
 
         """)
         input_molpro += input_control
+
+        # HF Block: calculate energy option
+        input_hf = textwrap.dedent(f"""\
+        {{hf,maxit={self.scf_max_iter},energy={self.scf_en_tol},accu={self.scf_rho_tol}
+        start,2100.2
+        orbital,2100.2
+        wf,{int(molecule.nelec)},1,0
+        }}
+
+        """)
+        input_molpro += input_hf
 
         # CASSCF Block: calculate energy option
         input_casscf = textwrap.dedent(f"""\
