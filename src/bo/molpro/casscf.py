@@ -9,10 +9,10 @@ class CASSCF(Molpro):
         :param object molecule: molecule object
         :param string basis_set: basis set information
         :param string memory: allocatable memory in the calculations
-        :param integer max_iter: maximum number of MCSCF iterations
-        :param double scf_en_tol: energy convergence for MCSCF iterations
-        :param double scf_grad_tol: gradient convergence for MCSCF iterations
-        :param double scf_step_tol: step length convergence for MCSCF iterations
+        :param integer mcscf_max_iter: maximum number of MCSCF iterations
+        :param double mcscf_en_tol: energy convergence for MCSCF iterations
+        :param double mcscf_grad_tol: gradient convergence for MCSCF iterations
+        :param double mcscf_step_tol: step length convergence for MCSCF iterations
         :param integer active_elec: number of electrons in active space
         :param integer active_orb: number of orbitals in active space
         :param double cpscf_grad_tol: gradient tolerance for CP-MCSCF equations
@@ -21,7 +21,7 @@ class CASSCF(Molpro):
         :param double version: version of Molpro program
     """
     def __init__(self, molecule, basis_set="sto-3g", memory="500m", \
-        max_iter=20, scf_en_tol=1E-8, scf_grad_tol=1E-6, scf_step_tol=1E-2, \
+        mcscf_max_iter=20, mcscf_en_tol=1E-8, mcscf_grad_tol=1E-6, mcscf_step_tol=1E-2, \
         active_elec=2, active_orb=2, cpscf_grad_tol=1E-7, \
         qm_path="./", nthreads=1, version=2015.1):
         # Initialize Molpro common variables
@@ -32,10 +32,10 @@ class CASSCF(Molpro):
         # the MO files for restart if possible
         # TODO : For restart of previous step, this can be done without removing scratch directory
         # In addition, Molpro do not provide periodic setting with CASSCF method
-        self.max_iter = max_iter
-        self.scf_en_tol = scf_en_tol
-        self.scf_grad_tol = scf_grad_tol
-        self.scf_step_tol = scf_step_tol
+        self.mcscf_max_iter = mcscf_max_iter
+        self.mcscf_en_tol = mcscf_en_tol
+        self.mcscf_grad_tol = mcscf_grad_tol
+        self.mcscf_step_tol = mcscf_step_tol
         self.active_elec = active_elec
         self.active_orb = active_orb
         self.cpscf_grad_tol = cpscf_grad_tol
@@ -113,7 +113,7 @@ class CASSCF(Molpro):
 
         # CASSCF Block: calculate energy option
         input_casscf = textwrap.dedent(f"""\
-        {{mcscf,maxit={self.max_iter},energy={self.scf_en_tol},gradient={self.scf_grad_tol},step={self.scf_step_tol}
+        {{mcscf,maxit={self.mcscf_max_iter},energy={self.mcscf_en_tol},gradient={self.mcscf_grad_tol},step={self.mcscf_step_tol}
         frozen,{self.frozen_orb}
         closed,{self.closed_orb}
         occ,{self.occ_orb}
