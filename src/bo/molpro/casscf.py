@@ -44,6 +44,7 @@ class CASSCF(Molpro):
         # HF calculation for initial guess of CASSCF calculation
         self.scf_max_iter = scf_max_iter
         self.scf_en_tol = scf_en_tol
+        # TODO : this option is not applied to HF calculation
         self.scf_rho_tol = scf_rho_tol
 
         # CASSCF calculation
