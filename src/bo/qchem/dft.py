@@ -8,9 +8,9 @@ class DFT(QChem):
     """ Class for DFT method of QChem5.2 program
     """
     def __init__(self, molecule, basis_set="sto-3g", memory="500m", \
-        functional="b3lyp", scf_max_iter=20, \
+        functional="b3lyp", scf_max_iter=50, \
         qm_path="/opt/qchem", nthreads=1, version=5.2):
-        # Initialize Molpro common variables
+        # Initialize QChem common variables
         super(DFT, self).__init__(basis_set, memory, qm_path, nthreads, version)
 
         self.functional = functional
@@ -25,13 +25,13 @@ class DFT(QChem):
         self.get_input(molecule, bo_list, calc_force_only)
         self.run_QM(base_dir, istep, bo_list)
         self.extract_BO(molecule, bo_list, calc_force_only)
-       # self.move_dir(base_dir)
+        self.move_dir(base_dir)
 
     def get_input(self, molecule, bo_list, calc_force_only):
         """ Generate QChem input files: qchem.in
         """
 
-        # Make QC5.2 input file
+        # Make QChem5.2 input file
         input_qc = ""
           
         # Molecular information such as charge, geometry
@@ -44,47 +44,51 @@ class DFT(QChem):
             list_pos = list(molecule.pos[iat])
             input_molecule += \
                 f"{molecule.symbols[iat]}{list_pos[0]:15.8f}{list_pos[1]:15.8f}{list_pos[2]:15.8f}\n"
-        input_molecule += "$end\n\n"
+        input_molecule += "$end\n\n$rem\n"
         input_qc += input_molecule
 
-        # Job control to calculate NAC
-        input_nac = textwrap.dedent(f"""\
-        $rem
-        JOBTYPE  SP
-        METHOD {self.functional}
-        BASIS {self.basis_set}
-        SCF_MAX_CYCLES {self.scf_max_iter}
-        CIS_N_ROOTS  {molecule.nst}
-        CIS_TRIPLETS FALSE
-        CALC_NAC TRUE
-        CIS_DER_NUMSTATE {molecule.nst}
-        !CIS_STATE_DERIV {bo_list[0]}
-        $end
+        if (not calc_force_only):
+            # Job control to calculate NAC
+            input_nac = textwrap.dedent(f"""\
+            JOBTYPE  SP
+            METHOD {self.functional}
+            BASIS {self.basis_set}
+            SCF_MAX_CYCLES {self.scf_max_iter}
+            CIS_N_ROOTS  {molecule.nst}
+            CIS_TRIPLETS FALSE
+            CALC_NAC TRUE
+            CIS_DER_NUMSTATE {molecule.nst}
+            $end
 
-        $derivative_coupling
-        running state is {bo_list[0]}
-        """)
+            $derivative_coupling
+            running state is {bo_list[0]}
+            """)
 
-        for ist in range(molecule.nst):
-            input_nac += f"{ist}  "
-        input_nac += "\n$end\n\n"
+            for ist in range(molecule.nst):
+                input_nac += f"{ist}  "
+            input_nac += "\n$end\n\n"
 
-        input_qc += input_nac
-  
+            input_nac += textwrap.dedent(f"""\
+            @@@
+
+            $molecule
+            read
+            $end
+
+            $rem
+            SCF_GUESS read
+            """)
+
+            input_qc += input_nac
+      
         # Job control to calculate force
         input_force = textwrap.dedent(f"""\
-
-        @@@
-
-        $molcule
-        read
-        $end
-
-        $rem
         JOBTYPE force
         METHOD {self.functional}
         BASIS {self.basis_set}
-        SCF_GUESS read
+        CIS_N_ROOTS  {molecule.nst}
+        CIS_TRIPLETS FALSE
+        CIS_STATE_DERIV {bo_list[0]}
         $end
         """)
 
@@ -99,9 +103,11 @@ class DFT(QChem):
         """
         # Set environment variable 
         os.environ["QC"] = self.qm_path
-        os.system(f"echo $QC")
-        os.system(f"source $QC/qcenv.sh")
-        os.system(f"echo $QCSCRATCH")
+        path_qcenv = os.path.join(self.qm_path, "qcenv.sh")
+        command = f'env -i sh -c "source {path_qcenv} && env"'
+        for line in subprocess.getoutput(command).split("\n"):
+            key, value = line.split("=")
+            os.environ[key] = value
         os.environ["QCLOCALSCR"] = self.scr_qm_dir
 
         qm_exec_command = f"$QC/bin/qchem -mpi -np {self.nthreads} qchem.in > log"
@@ -117,9 +123,6 @@ class DFT(QChem):
     def extract_BO(self, molecule, bo_list, calc_force_only):
         """ Read the output files to get BO information
         """
-        #os.system('cp /home/tikim/11-program-test/01-Qchem/04-NAC-test/nac.out ./log')
-        #os.system('cp /home/tikim/11-program-test/01-Qchem/05-force-NAC/nac-force-es.out ./log')
-        os.system('cp /home/tikim/11-program-test/01-Qchem/05-force-NAC/qchem.out ./log')
         file_name = "log"
         with open(file_name, "r") as f:
             log = f.read()
@@ -162,6 +165,8 @@ class DFT(QChem):
         force = re.findall(tmp_f, log)
         force = np.array(force)
         force = force.astype(float)
+
+        # QChem provides gradient, not force
         force = -force
 
         nline = 0
@@ -175,15 +180,17 @@ class DFT(QChem):
                 for iat in range(dnum):
                     states.force[6 * nline + iat] = tmp_force[iat]
 
-        # Non-adiabatic coupling vector
-        tmp_nac = "with ETF[:]*\s*Atom\s*X\s*Y\s*Z\s*[-]*" + ("\s*\d*\s*" + "([-]*\S*)\s*"*3) * molecule.nat
-        nac = re.findall(tmp_nac, log)
-        nac = np.array(nac)
-        nac = nac.astype(float)
+        if (not calc_force_only):
+            # Non-adiabatic coupling vector
+            tmp_nac = "with ETF[:]*\s*Atom\s*X\s*Y\s*Z\s*[-]*" + ("\s*\d*\s*" + "([-]*\S*)\s*"*3) * molecule.nat
+            nac = re.findall(tmp_nac, log)
+            nac = np.array(nac)
+            nac = nac.astype(float)
 
-        num = 0
-        for ist in range(molecule.nst):
-            for jst in range(ist + 1, molecule.nst):
-                molecule.nac[ist, jst] = nac[num].reshape(molecule.nat, 3, order='C')
-                molecule.nac[jst, ist] = -molecule.nac[ist, jst]
-                num += 1
+            num = 0
+            molecule.nac[:, :, :, :] = 0.
+            for ist in range(molecule.nst):
+                for jst in range(ist + 1, molecule.nst):
+                    molecule.nac[ist, jst] = nac[num].reshape(molecule.nat, 3, order='C')
+                    molecule.nac[jst, ist] = -molecule.nac[ist, jst]
+                    num += 1
