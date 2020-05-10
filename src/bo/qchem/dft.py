@@ -54,7 +54,7 @@ class DFT(QChem):
             METHOD {self.functional}
             BASIS {self.basis_set}
             SCF_MAX_CYCLES {self.scf_max_iter}
-            CIS_N_ROOTS  {molecule.nst}
+            CIS_N_ROOTS  {molecule.nst-1}
             CIS_TRIPLETS FALSE
             CALC_NAC TRUE
             CIS_DER_NUMSTATE {molecule.nst}
@@ -86,7 +86,7 @@ class DFT(QChem):
         JOBTYPE force
         METHOD {self.functional}
         BASIS {self.basis_set}
-        CIS_N_ROOTS  {molecule.nst}
+        CIS_N_ROOTS  {molecule.nst-1}
         CIS_TRIPLETS FALSE
         CIS_STATE_DERIV {bo_list[0]}
         $end
@@ -108,9 +108,10 @@ class DFT(QChem):
         for line in subprocess.getoutput(command).split("\n"):
             key, value = line.split("=")
             os.environ[key] = value
+        os.environ["QCSCRATCH"] = self.scr_qm_dir
         os.environ["QCLOCALSCR"] = self.scr_qm_dir
 
-        qm_exec_command = f"$QC/bin/qchem -mpi -np {self.nthreads} qchem.in > log"
+        qm_exec_command = f"$QC/bin/qchem -np {self.nthreads} qchem.in > log"
         
         tmp_dir = os.path.join(base_dir, "QMlog")
         if (os.path.exists(tmp_dir)):
@@ -173,12 +174,12 @@ class DFT(QChem):
         for iiter in range(num_line):
             tmp_force = np.transpose(force[0][18 * iiter:18 * (iiter + 1)].reshape(3, 6, order="C"))
             for iat in range(6):
-                states.force[6 * nline + iat] = tmp_force[iat]
+                molecule.states[bo_list[0]].force[6 * nline + iat] = tmp_force[iat]
             nline += 1
             if (iiter == num_line -1):
                 tmp_force = np.transpose(force[0][18 * (iiter + 1):].reshape(3, dnum, order="C"))
                 for iat in range(dnum):
-                    states.force[6 * nline + iat] = tmp_force[iat]
+                    molecule.states[bo_list[0]].force[6 * nline + iat] = tmp_force[iat]
 
         if (not calc_force_only):
             # Non-adiabatic coupling vector
