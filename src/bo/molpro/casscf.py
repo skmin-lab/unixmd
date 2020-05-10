@@ -9,6 +9,11 @@ class CASSCF(Molpro):
         :param object molecule: molecule object
         :param string basis_set: basis set information
         :param string memory: allocatable memory in the calculations
+        :param string guess: initial guess for MCSCF method
+        :param string guess_path: directory for initial guess file
+        :param integer scf_max_iter: maximum number of SCF iterations
+        :param double scf_en_tol: energy convergence for SCF iterations
+        :param double scf_rho_tol: density convergence for SCF iterations
         :param integer mcscf_max_iter: maximum number of MCSCF iterations
         :param double mcscf_en_tol: energy convergence for MCSCF iterations
         :param double mcscf_grad_tol: gradient convergence for MCSCF iterations
@@ -21,7 +26,7 @@ class CASSCF(Molpro):
         :param double version: version of Molpro program
     """
     def __init__(self, molecule, basis_set="sto-3g", memory="500m", \
-        scf_max_iter=20, scf_en_tol=1E-8, scf_rho_tol=1E-6, \
+        guess="hf", guess_path="./", scf_max_iter=20, scf_en_tol=1E-8, scf_rho_tol=1E-6, \
         mcscf_max_iter=20, mcscf_en_tol=1E-8, mcscf_grad_tol=1E-6, mcscf_step_tol=1E-2, \
         active_elec=2, active_orb=2, cpscf_grad_tol=1E-7, \
         qm_path="./", nthreads=1, version=2015.1):
@@ -29,10 +34,12 @@ class CASSCF(Molpro):
         super(CASSCF, self).__init__(basis_set, memory, qm_path, nthreads, version)
 
         # Initialize Molpro CASSCF variables
-        # Note that Molpro do not need restart option since it automatically search
-        # the MO files for restart if possible
-        # TODO : For restart of previous step, this can be done without removing scratch directory
-        # In addition, Molpro do not provide periodic setting with CASSCF method
+        # Set initial guess for CASSCF calculation
+        # Note that the file name for initial guess should be wf.wfu
+        self.guess = guess
+        self.guess_path = guess_path
+        if (not (self.guess == "hf" or self.guess == "read")):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
 
         # HF calculation for initial guess of CASSCF calculation
         self.scf_max_iter = scf_max_iter
@@ -48,10 +55,12 @@ class CASSCF(Molpro):
         self.active_orb = active_orb
         self.cpscf_grad_tol = cpscf_grad_tol
 
+        # Molpro do not support periodic setting with CASSCF method
+
         # CASSCF calculation do not provide parallel computation
         # If your system provide parallel casscf, then this part should be removed
         if (self.nthreads > 1):
-            raise ValueError ("Parallel CASSCF Not Implemented")
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Parallel CASSCF not implemented! {self.nthreads}")
 
         # Calculate number of frozen, closed and occ orbitals in CASSCF method
         # No positive frozen core orbitals in CASSCF
@@ -76,17 +85,29 @@ class CASSCF(Molpro):
             :param double dt: time interval
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
+        self.copy_files(istep)
         super().get_bo(base_dir, calc_force_only)
         self.write_xyz(molecule)
-        self.get_input(molecule, bo_list, calc_force_only)
+        self.get_input(molecule, istep, bo_list, calc_force_only)
         self.run_QM(base_dir, istep, bo_list)
         self.extract_BO(molecule, bo_list, calc_force_only)
         self.move_dir(base_dir)
 
-    def get_input(self, molecule, bo_list, calc_force_only):
+    def copy_files(self, istep):
+        """ Copy necessary scratch files in previous step
+
+            :param integer istep: current MD step
+        """
+        if (istep >= 0):
+            # After T = 0.0 s
+            shutil.copy(os.path.join(self.scr_qm_dir, "./wfu/wf.wfu"), \
+                os.path.join(self.scr_qm_dir, "../wf.wfu"))
+
+    def get_input(self, molecule, istep, bo_list, calc_force_only):
         """ Generate Molpro input files: molpro.inp
 
             :param object molecule: molecule object
+            :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
@@ -94,11 +115,30 @@ class CASSCF(Molpro):
         input_molpro = ""
 
         # Scratch Block
+        if (self.guess == "read"):
+            wfu_dir = os.path.join(self.scr_qm_dir, "wfu")
+            os.makedirs(wfu_dir)
+            if (istep == -1):
+                guess_file = os.path.join(self.guess_path, "wf.wfu")
+                if (os.path.isfile(guess_file)):
+                    shutil.copy(guess_file, os.path.join(wfu_dir, "wf.wfu"))
+                    restart = "restart,2\n"
+                    hf = False
+                else:
+                    restart = ""
+                    hf = True
+            elif (istep >= 0):
+                shutil.copy("../wf.wfu", os.path.join(wfu_dir, "wf.wfu"))
+                restart = "restart,2\n"
+                hf = False
+        elif (self.guess == "hf"):
+            restart = ""
+            hf = True
+
         input_scr = textwrap.dedent(f"""\
         file,1,int.int,delete
         file,2,wf.wfu,unknown
-        restart,2
-
+        {restart}
         """)
         input_molpro += input_scr
 
@@ -120,15 +160,16 @@ class CASSCF(Molpro):
         input_molpro += input_control
 
         # HF Block: calculate energy option
-        input_hf = textwrap.dedent(f"""\
-        {{hf,maxit={self.scf_max_iter},energy={self.scf_en_tol},accu={self.scf_rho_tol}
-        start,2100.2
-        orbital,2100.2
-        wf,{int(molecule.nelec)},1,0
-        }}
+        if (hf):
+            input_hf = textwrap.dedent(f"""\
+            {{hf,maxit={self.scf_max_iter},energy={self.scf_en_tol},accu={self.scf_rho_tol}
+            start,2100.2
+            orbital,2100.2
+            wf,{int(molecule.nelec)},1,0
+            }}
 
-        """)
-        input_molpro += input_hf
+            """)
+            input_molpro += input_hf
 
         # CASSCF Block: calculate energy option
         input_casscf = textwrap.dedent(f"""\
@@ -261,7 +302,5 @@ class CASSCF(Molpro):
                         molecule.nac[ist, jst] = np.copy(nac)
                     else:
                         molecule.nac[ist, jst] = - molecule.nac[jst, ist]
-
-
 
 
