@@ -20,6 +20,11 @@ CASSCF
    Here, you should refer to manual of Molpro program if you want to see detailed
    lists for **basis_set** variable.
 
+.. note:: Currently, **guess** variable reads the following two strings.
+   One is **hf**, which uses HF orbitlas as initial guess of CASSCF method for every time step.
+   The other is **read**, which reads wf.wfu file generated from previous step.
+   If wf.wfu file exists in **guess_path**, then wf.wfu file is used as initial guess at t = 0.0 s.
+
 +----------------+------------------------------------------------+---------+
 | Keywords       | Work                                           | Default |
 +================+================================================+=========+
@@ -27,13 +32,23 @@ CASSCF
 +----------------+------------------------------------------------+---------+
 | memory         | allocatable memory in the calculations         | 500m    |
 +----------------+------------------------------------------------+---------+
-| max_iter       | maximum number of MCSCF iterations             | 20      |
+| guess          | initial guess for MCSCF method                 | hf      |
 +----------------+------------------------------------------------+---------+
-| scf_en_tol     | energy convergence for MCSCF iterations        | 1E-8    |
+| guess_path     | directory for initial guess file               | ./      |
 +----------------+------------------------------------------------+---------+
-| scf_grad_tol   | gradient convergence for MCSCF iterations      | 1E-6    |
+| scf_max_iter   | maximum number of SCF iterations               | 20      |
 +----------------+------------------------------------------------+---------+
-| scf_step_tol   | step length convergence for MCSCF iterations   | 1E-2    |
+| scf_en_tol     | energy convergence for SCF iterations          | 1E-8    |
++----------------+------------------------------------------------+---------+
+| scf_rho_tol    | density convergence for SCF iterations         | 1E-6    |
++----------------+------------------------------------------------+---------+
+| mcscf_max_iter | maximum number of MCSCF iterations             | 20      |
++----------------+------------------------------------------------+---------+
+| mcscf_en_tol   | energy convergence for MCSCF iterations        | 1E-8    |
++----------------+------------------------------------------------+---------+
+| mcscf_grad_tol | gradient convergence for MCSCF iterations      | 1E-6    |
++----------------+------------------------------------------------+---------+
+| mcscf_step_tol | step length convergence for MCSCF iterations   | 1E-2    |
 +----------------+------------------------------------------------+---------+
 | active_elec    | number of electrons in active space            | 2       |
 +----------------+------------------------------------------------+---------+
