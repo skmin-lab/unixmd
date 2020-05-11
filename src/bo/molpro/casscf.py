@@ -292,7 +292,7 @@ class CASSCF(Molpro):
             for ist in range(molecule.nst):
                 for jst in range(molecule.nst):
                     if (ist == jst):
-                        molecule.nac[ist, jst, :, :] = 0.
+                        molecule.nac[ist, jst] = np.zeros((molecule.nat, molecule.nsp))
                     elif (ist < jst):
                         tmp_c = f'SA-MC NACME FOR STATES {ist + 1:d}.1 - {jst + 1:d}.1\n\n' + \
                             '\s+Atom\s+dE\/dx\s+dE\/dy\s+dE\/dz\n\n' + \
