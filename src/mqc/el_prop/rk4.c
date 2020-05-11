@@ -92,8 +92,7 @@ static void xf_cdot(int nst, int nat, int nsp, int *l_coh, double wsigma,
         if(l_coh[ist] == 1){
             for(iat = 0; iat < nat; iat++){
                 for(isp = 0; isp < nsp; isp++){
-                    qmom[iat][isp] = qmom[iat][isp] + rho[ist] * 
-                    0.5 * (pos[iat][isp] - aux_pos[ist][iat][isp]) / pow(wsigma,2.0) / mass[iat];
+                    qmom[iat][isp] += 0.5 * rho[ist] * (pos[iat][isp] - aux_pos[ist][iat][isp]) / pow(wsigma,2.0) / mass[iat];
                 }
             }
         }
@@ -105,7 +104,7 @@ static void xf_cdot(int nst, int nat, int nsp, int *l_coh, double wsigma,
             if(l_coh[ist] == 1 && l_coh[jst] == 1){
                 for(iat = 0; iat < nat; iat++){
                     for(isp = 0; isp < nsp; isp++){
-                        dec[ist][jst] = dec[ist][jst] + qmom[iat][isp]*(phase[ist][iat][isp]-phase[jst][iat][isp]);
+                        dec[ist][jst] += qmom[iat][isp]*(phase[ist][iat][isp]-phase[jst][iat][isp]);
                     }
                 }
             }
@@ -115,7 +114,7 @@ static void xf_cdot(int nst, int nat, int nsp, int *l_coh, double wsigma,
     for(ist = 0; ist < nst; ist++){
         xfcdot[ist] = 0.0 + 0.0 * I;
         for(jst = 0; jst < nst; jst++){
-            xfcdot[ist] = xfcdot[ist] - rho[jst] * dec[jst][ist] * c[ist];
+            xfcdot[ist] -= - rho[jst] * dec[jst][ist] * c[ist];
         }
     }
     free(rho);
@@ -151,8 +150,7 @@ static void xf_rhodot(int nst, int nat, int nsp, int *l_coh, double wsigma,
         if(l_coh[ist] == 1){
             for(iat = 0; iat < nat; iat++){
                 for(isp = 0; isp < nsp; isp++){
-                    qmom[iat][isp] = qmom[iat][isp] + creal(rho[ist][ist]) * 
-                    0.5 * (pos[iat][isp] - aux_pos[ist][iat][isp]) / pow(wsigma,2.0) / mass[iat];
+                    qmom[iat][isp] += 0.5 * creal(rho[ist][ist]) * (pos[iat][isp] - aux_pos[ist][iat][isp]) / pow(wsigma,2.0) / mass[iat];
                 }
             }
         }
@@ -164,7 +162,7 @@ static void xf_rhodot(int nst, int nat, int nsp, int *l_coh, double wsigma,
             if(l_coh[ist] == 1 && l_coh[jst] == 1){
                 for(iat = 0; iat < nat; iat++){
                     for(isp = 0; isp < nsp; isp++){
-                        dec[ist][jst] = dec[ist][jst] + qmom[iat][isp]*(phase[ist][iat][isp]-phase[jst][iat][isp]);
+                        dec[ist][jst] += qmom[iat][isp]*(phase[ist][iat][isp]-phase[jst][iat][isp]);
                     }
                 }
             }

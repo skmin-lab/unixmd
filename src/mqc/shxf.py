@@ -361,16 +361,19 @@ class SHXF(MQC):
             :param integer one_st: state index that its population is one
         """
         self.phase = np.zeros((molecule.nst, molecule.nat, molecule.nsp))
-        molecule.rho[:, :] = 0. + 0.j
+        molecule.rho = np.zeros((molecule.nst, molecule.nst), dtype=np.complex_)
+        molecule.rho[one_st, one_st] = 1. + 0.j
 
         for ist in range(molecule.nst):
             self.l_coh[ist] = False
             self.l_first[ist] = False
-            if (ist == one_st):
-                molecule.rho[ist, ist] = 1. + 0.j
-                molecule.states[ist].coef /= np.sqrt(molecule.rho[ist, ist].real)
-            else:
-                molecule.states[ist].coef = 0. + 0.j
+        
+        if self.propagation == "coefficient":
+            for ist in range(molecule.nst):
+                if (ist == one_st):
+                    molecule.states[ist].coef /= np.absolute(molecule.states[ist].coef).real
+                else:
+                    molecule.states[ist].coef = 0. + 0.j
  
     def get_phase(self, molecule):
         """ Routine to calculate phase term
