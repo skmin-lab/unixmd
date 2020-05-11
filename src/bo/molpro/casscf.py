@@ -54,6 +54,10 @@ class CASSCF(Molpro):
         self.active_orb = active_orb
         self.cpscf_grad_tol = cpscf_grad_tol
 
+        # Check the closed shell for systems
+        if (not int(molecule.nelec) % 2 == 0):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Only closed shell configuration implemented! {int(molecule.nelec)}")
+
         # Molpro do not support periodic setting with CASSCF method
 
         # CASSCF calculation do not provide parallel computation
