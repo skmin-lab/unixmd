@@ -26,7 +26,7 @@ class CASSCF(Molpro):
         :param double version: version of Molpro program
     """
     def __init__(self, molecule, basis_set="sto-3g", memory="500m", \
-        guess="hf", guess_path="./", scf_max_iter=20, scf_en_tol=1E-8, scf_rho_tol=1E-6, \
+        guess="hf", guess_file="./wf.wfu", scf_max_iter=20, scf_en_tol=1E-8, scf_rho_tol=1E-6, \
         mcscf_max_iter=20, mcscf_en_tol=1E-8, mcscf_grad_tol=1E-6, mcscf_step_tol=1E-2, \
         active_elec=2, active_orb=2, cpscf_grad_tol=1E-7, \
         qm_path="./", nthreads=1, version=2015.1):
@@ -35,16 +35,14 @@ class CASSCF(Molpro):
 
         # Initialize Molpro CASSCF variables
         # Set initial guess for CASSCF calculation
-        # Note that the file name for initial guess should be wf.wfu
         self.guess = guess
-        self.guess_path = guess_path
+        self.guess_file = guess_file
         if (not (self.guess == "hf" or self.guess == "read")):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
 
         # HF calculation for initial guess of CASSCF calculation
         self.scf_max_iter = scf_max_iter
         self.scf_en_tol = scf_en_tol
-        # TODO : this option is not applied to HF calculation
         self.scf_rho_tol = scf_rho_tol
 
         # CASSCF calculation
@@ -120,9 +118,8 @@ class CASSCF(Molpro):
             wfu_dir = os.path.join(self.scr_qm_dir, "wfu")
             os.makedirs(wfu_dir)
             if (istep == -1):
-                guess_file = os.path.join(self.guess_path, "wf.wfu")
-                if (os.path.isfile(guess_file)):
-                    shutil.copy(guess_file, os.path.join(wfu_dir, "wf.wfu"))
+                if (os.path.isfile(self.guess_file)):
+                    shutil.copy(self.guess_file, os.path.join(wfu_dir, "wf.wfu"))
                     restart = "restart,2\n"
                     hf = False
                 else:
