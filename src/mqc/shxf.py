@@ -6,9 +6,6 @@ from misc import eps, au_to_K, call_name
 import random, os, shutil, textwrap
 import numpy as np
 
-""" DENSITY PROPAGATION NOT IMPLEMENTED YET FOR SHXF!!!!!!!!!!!!!
-"""
-
 class Auxiliary_Molecule(object):
     """ Class for auxiliary molecule that is used for the calculation of decoherence term
 
@@ -307,11 +304,6 @@ class SHXF(MQC):
                 self.l_coh[ist] = False
                 self.l_first[ist] = False
 
-#        for ist in range(molecule.nst):
-#            if (self.l_coh[ist]):
-#                print(f" TSHXF DECO T           {ist + 1}", flush=True)
-#            else:
-#                print(f" TSHXF DECO F           {ist + 1}", flush=True)
 
     def check_decoherence(self, molecule):
         """ Routine to check if the electronic state is decohered
@@ -369,12 +361,14 @@ class SHXF(MQC):
             :param integer one_st: state index that its population is one
         """
         self.phase = np.zeros((molecule.nst, molecule.nat, molecule.nsp))
+        molecule.rho[:, :] = 0. + 0.j
+
         for ist in range(molecule.nst):
             self.l_coh[ist] = False
             self.l_first[ist] = False
             if (ist == one_st):
-                molecule.states[ist].coef /= np.sqrt(molecule.rho[ist, ist].real)
                 molecule.rho[ist, ist] = 1. + 0.j
+                molecule.states[ist].coef /= np.sqrt(molecule.rho[ist, ist].real)
             else:
                 molecule.states[ist].coef = 0. + 0.j
  
@@ -401,7 +395,7 @@ class SHXF(MQC):
         if (self.propagation == "coefficient"):
             el_coef_xf(self, molecule)
         elif (self.propagation == "density"):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) density propagator not implemented! {self.propagation}")
+            el_rho_xf(self, molecule)
         else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Other propagator not implemented! {self.propagation}")
 
