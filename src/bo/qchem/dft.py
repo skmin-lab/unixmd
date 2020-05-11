@@ -47,13 +47,50 @@ class DFT(QChem):
         input_molecule += "$end\n\n$rem\n"
         input_qc += input_molecule
 
-        if (not calc_force_only):
-            # Job control to calculate NAC
-            input_nac = textwrap.dedent(f"""\
-            JOBTYPE  SP
+        # Job control to calculate force
+        #TODO: Ehrenfest case
+        input_force = ""
+        for ist in bo_list:
+            input_force += textwrap.dedent(f"""\
+            JOBTYPE force
+            INPUT_BOHR TRUE
             METHOD {self.functional}
             BASIS {self.basis_set}
             SCF_MAX_CYCLES {self.scf_max_iter}
+            CIS_STATE_DERIV {ist}
+            CIS_N_ROOTS  {ist}
+            CIS_TRIPLETS FALSE
+            $end\n
+            """)
+
+            if (len(bo_list) != 1):
+                input_force += textwrap.dedent(f"""\
+                @@@
+
+                $molecule
+                read
+                $end
+                
+                $rem
+                SCF_GUESS read
+                """)
+        input_qc += input_force
+
+        # Job control to calculate NAC
+        if (not calc_force_only and self.calc_coupling):
+            input_nac = textwrap.dedent(f"""\
+            @@@
+
+            $molecule
+            read
+            $end
+
+            $rem
+            JOBTYPE  SP
+            INPUT_BOHR TRUE
+            METHOD {self.functional}
+            BASIS {self.basis_set}
+            SCF_GUESS read
             CIS_N_ROOTS  {molecule.nst-1}
             CIS_TRIPLETS FALSE
             CALC_NAC TRUE
@@ -67,33 +104,8 @@ class DFT(QChem):
             for ist in range(molecule.nst):
                 input_nac += f"{ist}  "
             input_nac += "\n$end\n\n"
-
-            input_nac += textwrap.dedent(f"""\
-            @@@
-
-            $molecule
-            read
-            $end
-
-            $rem
-            SCF_GUESS read
-            """)
-
             input_qc += input_nac
-      
-        # Job control to calculate force
-        input_force = textwrap.dedent(f"""\
-        JOBTYPE force
-        METHOD {self.functional}
-        BASIS {self.basis_set}
-        CIS_N_ROOTS  {molecule.nst-1}
-        CIS_TRIPLETS FALSE
-        CIS_STATE_DERIV {bo_list[0]}
-        $end
-        """)
-
-        input_qc += input_force
-
+        
         file_name = "qchem.in"
         with open(file_name, "w") as f:
             f.write(input_qc)
@@ -111,15 +123,16 @@ class DFT(QChem):
         os.environ["QCSCRATCH"] = self.scr_qm_dir
         os.environ["QCLOCALSCR"] = self.scr_qm_dir
 
+        #TODO: MPI binary
         qm_exec_command = f"$QC/bin/qchem -np {self.nthreads} qchem.in > log"
+        
+        # Run QChem
+        os.system(qm_exec_command)
         
         tmp_dir = os.path.join(base_dir, "QMlog")
         if (os.path.exists(tmp_dir)):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
             shutil.copy("log", os.path.join(tmp_dir, log_step))
-
-        # Run QChem
-        os.system(qm_exec_command)
 
     def extract_BO(self, molecule, bo_list, calc_force_only):
         """ Read the output files to get BO information
@@ -169,27 +182,33 @@ class DFT(QChem):
 
         # QChem provides gradient, not force
         force = -force
-
-        nline = 0
+        
+        # TODO: Ehrenfest case
+        nline = 0; iiter = 0
         for iiter in range(num_line):
             tmp_force = np.transpose(force[0][18 * iiter:18 * (iiter + 1)].reshape(3, 6, order="C"))
             for iat in range(6):
                 molecule.states[bo_list[0]].force[6 * nline + iat] = tmp_force[iat]
             nline += 1
-            if (iiter == num_line -1):
+            
+        if (dnum != 0):
+            if (num_line != 0):
                 tmp_force = np.transpose(force[0][18 * (iiter + 1):].reshape(3, dnum, order="C"))
-                for iat in range(dnum):
-                    molecule.states[bo_list[0]].force[6 * nline + iat] = tmp_force[iat]
+            else:
+                tmp_force = np.transpose(force[0][0:].reshape(3, dnum, order="C"))
+                
+            for iat in range(dnum):
+                molecule.states[bo_list[0]].force[6 * nline + iat] = tmp_force[iat]
 
-        if (not calc_force_only):
-            # Non-adiabatic coupling vector
+        # Non-adiabatic coupling vector
+        if (not calc_force_only and self.calc_coupling):
             tmp_nac = "with ETF[:]*\s*Atom\s*X\s*Y\s*Z\s*[-]*" + ("\s*\d*\s*" + "([-]*\S*)\s*"*3) * molecule.nat
             nac = re.findall(tmp_nac, log)
             nac = np.array(nac)
             nac = nac.astype(float)
 
             num = 0
-            molecule.nac[:, :, :, :] = 0.
+            molecule.nac = np.zeros((molecule.nst, molecule.nst, molecule.nat, molecule.nsp))
             for ist in range(molecule.nst):
                 for jst in range(ist + 1, molecule.nst):
                     molecule.nac[ist, jst] = nac[num].reshape(molecule.nat, 3, order='C')
