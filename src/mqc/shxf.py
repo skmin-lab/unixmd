@@ -368,7 +368,7 @@ class SHXF(MQC):
             self.l_coh[ist] = False
             self.l_first[ist] = False
         
-        if self.propagation == "coefficient":
+        if (self.propagation == "coefficient"):
             for ist in range(molecule.nst):
                 if (ist == one_st):
                     molecule.states[ist].coef /= np.absolute(molecule.states[ist].coef).real
