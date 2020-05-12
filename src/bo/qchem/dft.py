@@ -227,7 +227,7 @@ class DFT(QChem):
             for iiter in range(num_line):
                 tmp_force = np.transpose(force[index][18 * iiter:18 * (iiter + 1)].reshape(3, 6, order="C"))
                 for iat in range(6):
-                    molecule.states[ist].force[6 * nline + iat] =  tmp_force[iat]
+                    molecule.states[ist].force[6 * nline + iat] = np.copy(tmp_force[iat])
                 nline += 1
 
             if (dnum != 0):
@@ -250,6 +250,6 @@ class DFT(QChem):
             molecule.nac = np.zeros((molecule.nst, molecule.nst, molecule.nat, molecule.nsp))
             for ist in range(molecule.nst):
                 for jst in range(ist + 1, molecule.nst):
-                    molecule.nac[ist, jst] = nac[num].reshape(molecule.nat, 3, order='C')
+                    molecule.nac[ist, jst] = np.copy(nac[num].reshape(molecule.nat, 3, order='C'))
                     molecule.nac[jst, ist] = -molecule.nac[ist, jst]
                     num += 1
