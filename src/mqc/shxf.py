@@ -6,9 +6,6 @@ from misc import eps, au_to_K, call_name
 import random, os, shutil, textwrap
 import numpy as np
 
-""" DENSITY PROPAGATION NOT IMPLEMENTED YET FOR SHXF!!!!!!!!!!!!!
-"""
-
 class Auxiliary_Molecule(object):
     """ Class for auxiliary molecule that is used for the calculation of decoherence term
 
@@ -121,9 +118,10 @@ class SHXF(MQC):
             molecule.get_nacme()
 
         self.hop_prob(molecule, -1, unixmd_dir)
-        self.hop_check(molecule, bo_list, -1, unixmd_dir)
-        if (self.l_hop):
-            self.evaluate_hop(molecule)
+        self.hop_check(molecule, bo_list)
+        self.evaluate_hop(molecule, bo_list, -1, unixmd_dir)
+        if (theory.re_calc and self.l_hop):
+            theory.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=True)
 
         self.update_energy(molecule)
 
@@ -155,11 +153,10 @@ class SHXF(MQC):
             self.el_propagator(molecule)
 
             self.hop_prob(molecule, istep, unixmd_dir)
-            self.hop_check(molecule, bo_list, istep, unixmd_dir)
-            if (self.l_hop):
-                self.evaluate_hop(molecule)
-                if (theory.re_calc):
-                    theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=True)
+            self.hop_check(molecule, bo_list)
+            self.evaluate_hop(molecule, bo_list, istep, unixmd_dir)
+            if (theory.re_calc and self.l_hop):
+                theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=True)
 
             thermostat.run(molecule, self)
 
@@ -225,13 +222,11 @@ class SHXF(MQC):
         tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(molecule.nst)])
         typewriter(tmp, unixmd_dir, "SHPROB")
 
-    def hop_check(self, molecule, bo_list, istep, unixmd_dir):
+    def hop_check(self, molecule, bo_list):
         """ Routine to check hopping occurs with random number
 
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation
-            :param integer istep: current MD step
-            :param string unixmd_dir: unixmd directory
         """
         self.rand = random.random()
         for ist in range(molecule.nst):
@@ -242,27 +237,32 @@ class SHXF(MQC):
                 self.rstate = ist
                 bo_list[0] = self.rstate
 
-        # Write SHSTATE file
-        tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
-        typewriter(tmp, unixmd_dir, "SHSTATE")
-
-    def evaluate_hop(self, molecule):
+    def evaluate_hop(self, molecule, bo_list, istep, unixmd_dir):
         """ Routine to evaluate hopping and velocity rescaling
 
             :param object molecule: molecule object
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param integer istep: current MD step
+            :param string unixmd_dir: unixmd directory
         """
-        pot_diff = molecule.states[self.rstate].energy - molecule.states[self.rstate_old].energy
-        if (molecule.ekin < pot_diff):
-            if (not self.force_hop):
-                self.l_hop = False
-                self.rstate = self.rstate_old
-        else:
-            if (molecule.ekin < eps):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin}")
-            fac = 1. - pot_diff / molecule.ekin
-            molecule.vel *= np.sqrt(fac)
-            # Update kinetic energy
-            molecule.update_kinetic()
+        if (self.l_hop):
+            pot_diff = molecule.states[self.rstate].energy - molecule.states[self.rstate_old].energy
+            if (molecule.ekin < pot_diff):
+                if (not self.force_hop):
+                    self.l_hop = False
+                    self.rstate = self.rstate_old
+                    bo_list[0] = self.rstate
+            else:
+                if (molecule.ekin < eps):
+                    raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin}")
+                fac = 1. - pot_diff / molecule.ekin
+                molecule.vel *= np.sqrt(fac)
+                # Update kinetic energy
+                molecule.update_kinetic()
+
+        # Write SHSTATE file
+        tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
+        typewriter(tmp, unixmd_dir, "SHSTATE")
 
     def calculate_force(self, molecule):
         """ Routine to calculate the forces
@@ -304,11 +304,6 @@ class SHXF(MQC):
                 self.l_coh[ist] = False
                 self.l_first[ist] = False
 
-#        for ist in range(molecule.nst):
-#            if (self.l_coh[ist]):
-#                print(f" TSHXF DECO T           {ist + 1}", flush=True)
-#            else:
-#                print(f" TSHXF DECO F           {ist + 1}", flush=True)
 
     def check_decoherence(self, molecule):
         """ Routine to check if the electronic state is decohered
@@ -366,14 +361,19 @@ class SHXF(MQC):
             :param integer one_st: state index that its population is one
         """
         self.phase = np.zeros((molecule.nst, molecule.nat, molecule.nsp))
+        molecule.rho = np.zeros((molecule.nst, molecule.nst), dtype=np.complex_)
+        molecule.rho[one_st, one_st] = 1. + 0.j
+
         for ist in range(molecule.nst):
             self.l_coh[ist] = False
             self.l_first[ist] = False
-            if (ist == one_st):
-                molecule.states[ist].coef /= np.sqrt(molecule.rho[ist, ist].real)
-                molecule.rho[ist, ist] = 1. + 0.j
-            else:
-                molecule.states[ist].coef = 0. + 0.j
+        
+        if (self.propagation == "coefficient"):
+            for ist in range(molecule.nst):
+                if (ist == one_st):
+                    molecule.states[ist].coef /= np.absolute(molecule.states[ist].coef).real
+                else:
+                    molecule.states[ist].coef = 0. + 0.j
  
     def get_phase(self, molecule):
         """ Routine to calculate phase term
@@ -398,7 +398,7 @@ class SHXF(MQC):
         if (self.propagation == "coefficient"):
             el_coef_xf(self, molecule)
         elif (self.propagation == "density"):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) density propagator not implemented! {self.propagation}")
+            el_rho_xf(self, molecule)
         else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Other propagator not implemented! {self.propagation}")
 
