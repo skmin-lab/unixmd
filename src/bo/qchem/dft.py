@@ -211,7 +211,7 @@ class DFT(QChem):
         force = np.array(force)
         force = force.astype(float)
 
-        # QC provides energy gradient not force
+        # QChem provides energy gradient not force
         force = -force
 
         for index, ist in enumerate(bo_list):
