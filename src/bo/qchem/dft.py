@@ -47,9 +47,8 @@ class DFT(QChem):
         """)
 
         for iat in range(molecule.nat):
-            list_pos = list(molecule.pos[iat])
             input_molecule += f"{molecule.symbols[iat]}"\
-                + "".join([f"{list_pos[isp]:15.8f}" for isp in range(molecule.nsp)]) + "\n"
+                + "".join([f"{i:15.8f}" for i in molecule.pos[iat]]) + "\n"
         input_molecule += "$end\n\n"
         input_qc += input_molecule
 
@@ -101,7 +100,7 @@ class DFT(QChem):
                 $molecule
                 read
                 $end
-                
+
                 """)
 
             input_force += textwrap.dedent(f"""\
