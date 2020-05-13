@@ -8,17 +8,19 @@ class DFT(QChem):
     """ Class for DFT method of QChem5.2 program
     """
     def __init__(self, molecule, basis_set="sto-3g", memory="500m", \
-        functional="b3lyp", scf_max_iter=50, scf_convergence=5, \
-        qm_path="/opt/qchem", nthreads=1, version=5.2):
+        functional="blyp", scf_max_iter=50, scf_rho_tol=5, cis_max_iter=30, \
+        cis_en_tol=6, qm_path="./", nthreads=1, version=5.2):
         # Initialize QChem common variables
         super(DFT, self).__init__(basis_set, memory, qm_path, nthreads, version)
 
         self.functional = functional
         self.scf_max_iter = scf_max_iter
         self.nthreads = nthreads
-        self.scf_convergence = scf_convergence
+        self.scf_rho_tol = scf_rho_tol
+        self.cis_max_iter = cis_max_iter
+        self.cis_en_tol = cis_en_tol
 
-        # QChem5.2 can provide NACVs.
+        # QChem can provide NACs
         molecule.l_nacme = False
         self.re_calc = True
 
@@ -35,7 +37,7 @@ class DFT(QChem):
     def get_input(self, molecule, bo_list, calc_force_only):
         """ Generate QChem input files: qchem.in
         """
-        # Make QChem5.2 input file
+        # Make QChem input file
         input_qc = ""
 
         # Molecular information such as charge, geometry
@@ -46,8 +48,8 @@ class DFT(QChem):
 
         for iat in range(molecule.nat):
             list_pos = list(molecule.pos[iat])
-            input_molecule += \
-                f"{molecule.symbols[iat]}{list_pos[0]:15.8f}{list_pos[1]:15.8f}{list_pos[2]:15.8f}\n"
+            input_molecule += f"{molecule.symbols[iat]}"\
+                + "".join([f"{list_pos[isp]:15.8f}" for isp in range(molecule.nsp)]) + "\n"
         input_molecule += "$end\n\n"
         input_qc += input_molecule
 
@@ -56,7 +58,7 @@ class DFT(QChem):
             # Arguments about SCF, xc functional and basis set
             input_nac = textwrap.dedent(f"""\
             $rem
-            JOBTYPE  SP
+            JOBTYPE SP
             INPUT_BOHR TRUE
             METHOD {self.functional}
             BASIS {self.basis_set}
@@ -67,8 +69,10 @@ class DFT(QChem):
 
             # Arguments about TDDFT and NAC
             input_nac += textwrap.dedent(f"""\
-            CIS_N_ROOTS  {molecule.nst-1}
+            CIS_N_ROOTS {molecule.nst-1}
             CIS_TRIPLETS FALSE
+            CIS_CONVERGENCE {self.cis_en_tol}
+            MAX_CIS_CYCLES {self.cis_max_iter}
             CALC_NAC TRUE
             CIS_DER_NUMSTATE {molecule.nst}
             $end
@@ -112,12 +116,14 @@ class DFT(QChem):
             SYM_IGNORE TRUE
             """)
 
-            # When g.s. force is calculated, QC doesn't need CIS option.
+            # When ground state force is calculated, QChem doesn't need CIS option.
             if (ist != 0):
                 input_force += textwrap.dedent(f"""\
                 CIS_N_ROOTS {molecule.nst-1}
                 CIS_STATE_DERIV {ist}
                 CIS_TRIPLETS FALSE
+                CIS_CONVERGENCE {self.cis_en_tol}
+                MAX_CIS_CYCLES {self.cis_max_iter}
                 """)
 
                 # CIS solution isn't saved in scratch.
@@ -205,16 +211,16 @@ class DFT(QChem):
         force = np.array(force)
         force = force.astype(float)
 
-        # QC5.2 provides energy gradient not force
+        # QC provides energy gradient not force
         force = -force
 
         for index, ist in enumerate(bo_list):
-            nline = 0; iiter = 0
+            iline = 0; iiter = 0
             for iiter in range(num_line):
                 tmp_force = np.transpose(force[index][18 * iiter:18 * (iiter + 1)].reshape(3, 6, order="C"))
                 for iat in range(6):
-                    molecule.states[ist].force[6 * nline + iat] = np.copy(tmp_force[iat])
-                nline += 1
+                    molecule.states[ist].force[6 * iline + iat] = np.copy(tmp_force[iat])
+                iline += 1
 
             if (dnum != 0):
                 if (num_line != 0):
@@ -223,9 +229,9 @@ class DFT(QChem):
                     tmp_force = np.transpose(force[index][0:].reshape(3, dnum, order="C"))
 
                 for iat in range(dnum):
-                    molecule.states[ist].force[6 * nline + iat] = np.copy(tmp_force[iat])
+                    molecule.states[ist].force[6 * iline + iat] = np.copy(tmp_force[iat])
 
-        # Non-adiabatic coupling vector
+        # NACs
         if (not calc_force_only and self.calc_coupling):
             tmp_nac = "with ETF[:]*\s*Atom\s*X\s*Y\s*Z\s*[-]*" + ("\s*\d*\s*" + "([-]*\S*)\s*"*3) * molecule.nat
             nac = re.findall(tmp_nac, log)

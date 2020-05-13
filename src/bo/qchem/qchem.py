@@ -11,11 +11,10 @@ class QChem(BO_calculator):
         :param double version: version of Molpro program
     """
     def __init__(self, basis_set, memory, qm_path, nthreads, version):
-
         # Save name of BO calculator and its method
         super().__init__()
 
-        # Initialize QC5.2 common variables
+        # Initialize QChem common variables
         self.basis_set = basis_set
 
         self.memory = memory
