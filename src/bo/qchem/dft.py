@@ -10,7 +10,6 @@ class DFT(QChem):
     def __init__(self, molecule, basis_set="sto-3g", memory="500m", \
         functional="b3lyp", scf_max_iter=50, scf_convergence=5, \
         qm_path="/opt/qchem", nthreads=1, version=5.2):
-
         # Initialize QChem common variables
         super(DFT, self).__init__(basis_set, memory, qm_path, nthreads, version)
 
@@ -36,7 +35,6 @@ class DFT(QChem):
     def get_input(self, molecule, bo_list, calc_force_only):
         """ Generate QChem input files: qchem.in
         """
-
         # Make QChem5.2 input file
         input_qc = ""
 
@@ -50,85 +48,24 @@ class DFT(QChem):
             list_pos = list(molecule.pos[iat])
             input_molecule += \
                 f"{molecule.symbols[iat]}{list_pos[0]:15.8f}{list_pos[1]:15.8f}{list_pos[2]:15.8f}\n"
-        input_molecule += "$end\n\n$rem\n"
+        input_molecule += "$end\n\n"
         input_qc += input_molecule
-
-        # Job control to calculate force
-        input_force = ""
-        for ist in bo_list:
-            input_force += textwrap.dedent(f"""\
-            JOBTYPE force
-            INPUT_BOHR TRUE
-            METHOD {self.functional}
-            BASIS {self.basis_set}
-            SCF_MAX_CYCLES {self.scf_max_iter}
-            SCF_CONVERGENCE {self.scf_convergence}
-            SYMMETRY FALSE
-            SYM_IGNORE TRUE
-            """)
-
-            # When g.s. force is calculated, QC doesn't need CIS option.
-            if (ist != 0):
-                input_force += textwrap.dedent(f"""\
-                CIS_N_ROOTS {molecule.nst-1}
-                CIS_STATE_DERIV {ist}
-                CIS_TRIPLETS FALSE
-                """)
-            input_force += "$end\n\n"
-
-            if (ist == bo_list[-1]):
-                break
-
-            # TO run Ehrenfest dynamics, we need forces of each adiabatic states.
-            if (len(bo_list) != 1):
-                input_force += textwrap.dedent(f"""\
-                @@@
-
-                $molecule
-                read
-                $end
-
-                $rem
-                SCF_GUESS read
-                SKIP_SCFMAN TRUE
-                """)
-
-                # If the first calculation is g.s. calc., data for CIS_GUESS doesn't exist
-                if (ist >= 2):
-                    input_force += textwrap.dedent(f"""\
-                    CIS_GUESS_DISK TRUE
-                    CIS_GUESS_DISK_TYPE 2
-                    """)
-        input_qc += input_force
 
         # Job control to calculate NAC
         if (not calc_force_only and self.calc_coupling):
+            # Arguments about SCF, xc functional and basis set
             input_nac = textwrap.dedent(f"""\
-            @@@
-
-            $molecule
-            read
-            $end
-
             $rem
             JOBTYPE  SP
             INPUT_BOHR TRUE
             METHOD {self.functional}
             BASIS {self.basis_set}
-            SCF_GUESS read
             SCF_CONVERGENCE {self.scf_convergence}
-            SKIP_SCFMAN TRUE
             SYMMETRY FALSE
             SYM_IGNORE TRUE
             """)
 
-            # If the first calculation is g.s. calc., CIS_GUESS doesn't exist
-            if (bo_list[0] != 0):
-                input_nac += textwrap.dedent(f"""\
-                CIS_GUESS_DISK TRUE
-                CIS_GUESS_DISK_TYPE 2
-                """)
-
+            # Arguments about TDDFT and NAC
             input_nac += textwrap.dedent(f"""\
             CIS_N_ROOTS  {molecule.nst-1}
             CIS_TRIPLETS FALSE
@@ -144,6 +81,55 @@ class DFT(QChem):
                 input_nac += f"{ist}  "
             input_nac += "\n$end\n\n"
             input_qc += input_nac
+
+        # Job control to calculate force
+        input_force = ""
+
+        # BOMD: calc_force_only = F, self_calc_coupling = F
+        # In BOMD, read in molecule section, scf_guess and skip_scf are not valid
+        guess = "SAD"; skip = "FALSE"
+        for ist in bo_list:
+            if (not calc_force_only and self.calc_coupling):
+                guess = "READ"; skip = "TRUE"
+                input_force = textwrap.dedent(f"""\
+                @@@
+
+                $molecule
+                read
+                $end
+                
+                """)
+
+            input_force += textwrap.dedent(f"""\
+            $rem
+            JOBTYPE force
+            INPUT_BOHR TRUE
+            METHOD {self.functional}
+            BASIS {self.basis_set}
+            SCF_GUESS {guess}
+            SKIP_SCFMAN {skip}
+            SYMMETRY FALSE
+            SYM_IGNORE TRUE
+            """)
+
+            # When g.s. force is calculated, QC doesn't need CIS option.
+            if (ist != 0):
+                input_force += textwrap.dedent(f"""\
+                CIS_N_ROOTS {molecule.nst-1}
+                CIS_STATE_DERIV {ist}
+                CIS_TRIPLETS FALSE
+                """)
+
+                # CIS solution isn't saved in scratch.
+                if (not calc_force_only and self.calc_coupling):
+                    input_force += textwrap.dedent(f"""\
+                    CIS_GUESS_DISK TRUE
+                    CIS_GUESS_DISK_TYPE 2
+                    SKIP_CIS_RPA TRUE
+                    """)
+            input_force += "$end\n\n"
+
+            input_qc += input_force
 
         file_name = "qchem.in"
         with open(file_name, "w") as f:
@@ -163,7 +149,7 @@ class DFT(QChem):
         os.environ["QCLOCALSCR"] = self.scr_qm_dir
 
         #TODO: MPI binary
-        qm_exec_command = f"$QC/bin/qchem -nt {self.nthreads} qchem.in > log"
+        qm_exec_command = f"$QC/bin/qchem -nt {self.nthreads} qchem.in log save > qcprog.info "
 
         # Run QChem
         os.system(qm_exec_command)
@@ -208,8 +194,8 @@ class DFT(QChem):
         tmp_f = "Gradient of\D*\s*" 
         num_line = int(molecule.nat / 6)
         if (num_line >= 1):
-              tmp_f += ("\s*\d*\s*\d*\s*\d*\s*\d*\s*\d*\s*\d*" 
-                     + ("\s*\d?\s*" + "([-]*\S*)\s*" * 6) * 3) * num_line
+            tmp_f += ("\s*\d*\s*\d*\s*\d*\s*\d*\s*\d*\s*\d*"
+                 + ("\s*\d?\s*" + "([-]*\S*)\s*" * 6) * 3) * num_line
 
         dnum = molecule.nat % 6
         tmp_f += "\s*\d*" * dnum
@@ -251,5 +237,5 @@ class DFT(QChem):
             for ist in range(molecule.nst):
                 for jst in range(ist + 1, molecule.nst):
                     molecule.nac[ist, jst] = np.copy(nac[num].reshape(molecule.nat, 3, order='C'))
-                    molecule.nac[jst, ist] = -molecule.nac[ist, jst]
+                    molecule.nac[jst, ist] = - molecule.nac[ist, jst]
                     num += 1
