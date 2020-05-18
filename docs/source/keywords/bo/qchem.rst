@@ -41,5 +41,5 @@ QChem is a comprehensive ab initio quantum chemistry software for accurate predi
 +--------------------+------------------------------------------------+------------+
 | ``qm_path``        | path for QM binary                             | ``./``     |
 +--------------------+------------------------------------------------+------------+
-| ``version``        | version of Molpro program                      | ``5.2``    |
+| ``version``        | version of QChem program                       | ``5.2``    |
 +--------------------+------------------------------------------------+------------+
