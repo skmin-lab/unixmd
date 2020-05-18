@@ -27,17 +27,17 @@ QChem :cite:`qchem2015` is a comprehensive ab initio quantum chemistry software 
 +--------------------+------------------------------------------------+------------+
 | ``functional``     | xc functional                                  | ``blyp``   |
 +--------------------+------------------------------------------------+------------+
-| ``scf_max_iter``   | maximum number of SCF iterations               | ``20``     |
+| ``scf_max_iter``   | maximum number of SCF iterations               | ``50``     |
 +--------------------+------------------------------------------------+------------+
-| ``scf_rho_tol``    | density convergence for SCF iterations         | ``1E-6``   |
+| ``scf_rho_tol``    | density convergence for SCF iterations         | ``6``      |
 +--------------------+------------------------------------------------+------------+
 | ``cis_max_iter``   | maximum number of CIS iterations               | ``30``     |
 +--------------------+------------------------------------------------+------------+
-| ``cis_en_tol``     | energy convergence for CIS iterations          | ``1E-6``   |
+| ``cis_en_tol``     | energy convergence for CIS iterations          | ``6``      |
 +--------------------+------------------------------------------------+------------+
-| ``cpscf_max_iter`` | maximum number of CIS iterations               | ``30``     |
+| ``cpscf_max_iter`` | maximum number of CP iterations                | ``30``     |
 +--------------------+------------------------------------------------+------------+
-| ``cpscf_en_tol``   | energy convergence for CIS iterations          | ``1E-6``   |
+| ``cpscf_en_tol``   | energy convergence for CP iterations           | ``6``      |
 +--------------------+------------------------------------------------+------------+
 | ``qm_path``        | path for QM binary                             | ``./``     |
 +--------------------+------------------------------------------------+------------+
