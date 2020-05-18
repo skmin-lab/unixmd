@@ -90,6 +90,21 @@ casscf.py
    :members:
    :show-inheritance:
 
+qchem
+-------------------------------------------
+
+qchem.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.qchem.qchem
+   :members:
+   :show-inheritance:
+
+dft.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bo.qchem.dft
+   :members:
+   :show-inheritance:
+
 terachem
 -------------------------------------------
 
@@ -117,21 +132,6 @@ turbomole.py
 dft.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. automodule:: bo.turbomole.dft
-   :members:
-   :show-inheritance:
-
-qchem
--------------------------------------------
-
-qchem.py
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.qchem.qchem
-   :members:
-   :show-inheritance:
-
-dft.py
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.qchem.dft
    :members:
    :show-inheritance:
 
