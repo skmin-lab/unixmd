@@ -37,9 +37,9 @@ QChem :cite:`qchem2015` is a comprehensive ab initio quantum chemistry software 
 +--------------------+------------------------------------------------+------------+
 | ``cpscf_max_iter`` | maximum number of CP iterations                | ``30``     |
 +--------------------+------------------------------------------------+------------+
-| ``cpscf_en_tol``   | energy convergence for CP iterations           | ``6``      |
+| ``cpscf_grad_tol`` | gradient convergence for CP iterations         | ``6``      |
 +--------------------+------------------------------------------------+------------+
-| ``qm_path``        | path for QM binary                             | ``./``     |
+| ``qm_path``        | path for QChem                                 | ``./``     |
 +--------------------+------------------------------------------------+------------+
-| ``version``        | version of QChem program                       | ``5.2``    |
+| ``version``        | QChem version                                  | ``5.2``    |
 +--------------------+------------------------------------------------+------------+
