@@ -40,6 +40,10 @@ Turbomole
 -------------------------------------------
 .. include:: bo/turbomole.rst
 
+QChem
+-------------------------------------------
+.. include:: bo/qchem.rst
+
 Model
 -------------------------------------------
 .. include:: bo/model.rst
