@@ -6,9 +6,9 @@ class QChem(BO_calculator):
 
         :param string basis_set: basis set information
         :param string memory: allocatable memory in the calculations
-        :param string qm_path: path for QM path
+        :param string qm_path: path for QChem
         :param integer nthreads: number of threads in the calculations
-        :param double version: version of Molpro program
+        :param double version: version of QChem program
     """
     def __init__(self, basis_set, memory, qm_path, nthreads, version):
         # Save name of BO calculator and its method
