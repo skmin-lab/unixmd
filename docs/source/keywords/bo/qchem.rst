@@ -1,5 +1,5 @@
 
-QChem is a comprehensive ab initio quantum chemistry software for accurate predictions of molecular structures, reactivities, and vibrational, electronic and NMR spectra.
+QChem :cite:`qchem2015` is a comprehensive ab initio quantum chemistry software for accurate predictions of molecular structures, reactivities, and vibrational, electronic and NMR spectra.
 
 - (TD)DFT is used to provide with a potential energy and its gradient for a certain adiabatic state. In QChem, analytical adiabatic energy gradients and nonadiabatic couplings are provided.
 
