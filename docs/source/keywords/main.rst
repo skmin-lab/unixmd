@@ -32,6 +32,10 @@ Molpro
 -------------------------------------------
 .. include:: bo/molpro.rst
 
+QChem
+-------------------------------------------
+.. include:: bo/qchem.rst
+
 TeraChem
 -------------------------------------------
 .. include:: bo/terachem.rst

@@ -6,10 +6,24 @@ import numpy as np
 
 class DFT(QChem):
     """ Class for DFT method of QChem5.2 program
+
+        :param object molecule: molecule object
+        :param string basis_set: basis set information
+        :param string memory: allocatable memory in the calculations
+        :param integer nthreads: number of threads in the calculation
+        :param string functional: xc functional 
+        :param integer scf_max_iter: maximum number of SCF iterations
+        :param integer scf_rho_tol: density convergence for SCF iterations
+        :param integer cis_max_iter: maximum number of CIS iterations
+        :param integer cis_en_tol: energy convergence for CIS iterations
+        :param integer cpscf_max_iter: maximum number of CP iterations
+        :param integer cpscf_grad_tol: gradient convergence of CP iterations
+        :param string qm_path: path for QChem
+        :param double version: QChem version
     """
-    def __init__(self, molecule, basis_set="sto-3g", memory="500m", \
-        functional="blyp", scf_max_iter=50, scf_rho_tol=5, cis_max_iter=30, \
-        cis_en_tol=6, qm_path="./", nthreads=1, version=5.2):
+    def __init__(self, molecule, basis_set="sto-3g", memory="500m", nthreads=1, \
+        functional="blyp", scf_max_iter=50, scf_rho_tol=5, cis_max_iter=30, cis_en_tol=6, \
+        cpscf_max_iter=30, cpscf_grad_tol=6, qm_path="./", version=5.2):
         # Initialize QChem common variables
         super(DFT, self).__init__(basis_set, memory, qm_path, nthreads, version)
 
@@ -19,6 +33,8 @@ class DFT(QChem):
         self.scf_rho_tol = scf_rho_tol
         self.cis_max_iter = cis_max_iter
         self.cis_en_tol = cis_en_tol
+        self.cpscf_max_iter = cpscf_max_iter
+        self.cpscf_grad_tol = cpscf_grad_tol
 
         # QChem can provide NACs
         molecule.l_nacme = False
@@ -26,6 +42,13 @@ class DFT(QChem):
 
     def get_bo(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from (TD)DFT method
+
+            :param object molecule: molecule object
+            :param string base_dir: base directory
+            :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param double dt: time interval
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         super().get_bo(base_dir, calc_force_only)
         self.write_xyz(molecule)
@@ -36,6 +59,10 @@ class DFT(QChem):
 
     def get_input(self, molecule, bo_list, calc_force_only):
         """ Generate QChem input files: qchem.in
+
+            :param object molecule: molecule object
+            :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
         """
         # Make QChem input file
         input_qc = ""
@@ -61,7 +88,7 @@ class DFT(QChem):
             INPUT_BOHR TRUE
             METHOD {self.functional}
             BASIS {self.basis_set}
-            SCF_CONVERGENCE {self.scf_convergence}
+            SCF_CONVERGENCE {self.scf_rho_tol}
             SYMMETRY FALSE
             SYM_IGNORE TRUE
             """)
@@ -74,6 +101,8 @@ class DFT(QChem):
             MAX_CIS_CYCLES {self.cis_max_iter}
             CALC_NAC TRUE
             CIS_DER_NUMSTATE {molecule.nst}
+            SET_ITER {self.cpscf_max_iter}
+            SET_CONV {self.cpscf_grad_tol}
             $end
 
             $derivative_coupling
@@ -110,7 +139,6 @@ class DFT(QChem):
             METHOD {self.functional}
             BASIS {self.basis_set}
             SCF_GUESS {guess}
-            SKIP_SCFMAN {skip}
             SYMMETRY FALSE
             SYM_IGNORE TRUE
             """)
@@ -123,6 +151,8 @@ class DFT(QChem):
                 CIS_TRIPLETS FALSE
                 CIS_CONVERGENCE {self.cis_en_tol}
                 MAX_CIS_CYCLES {self.cis_max_iter}
+                SET_ITER {self.cpscf_max_iter}
+                SET_CONV {self.cpscf_grad_tol}
                 """)
 
                 # CIS solution isn't saved in scratch.
@@ -142,6 +172,10 @@ class DFT(QChem):
 
     def run_QM(self, base_dir, istep, bo_list):
         """ Run (TD)DFT calculation and save the output files to QMlog directory
+
+            :param string base_dir: base directory
+            :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
         """
         # Set environment variable 
         os.environ["QC"] = self.qm_path
@@ -166,6 +200,10 @@ class DFT(QChem):
 
     def extract_BO(self, molecule, bo_list, calc_force_only):
         """ Read the output files to get BO information
+
+            :param object molecule: molecule object
+            :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         file_name = "log"
         with open(file_name, "r") as f:
