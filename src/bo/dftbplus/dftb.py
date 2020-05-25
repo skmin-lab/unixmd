@@ -246,11 +246,11 @@ class DFTB(DFTBplus):
                 input_dftb += input_ham_spin_w
 
             # TODO : read initial guess from previous step
-#            if (calc_force_only):
-#                input_ham_restart = textwrap.indent(textwrap.dedent(f"""\
-#                  ReadInitialCharges = Yes
-#                """), "  ")
-#                input_dftb += input_ham_restart
+            if (calc_force_only):
+                input_ham_restart = textwrap.indent(textwrap.dedent(f"""\
+                  ReadInitialCharges = Yes
+                """), "  ")
+                input_dftb += input_ham_restart
 
         # TODO: for QM/MM, point_charge??
 
