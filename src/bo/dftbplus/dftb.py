@@ -2,8 +2,7 @@ from __future__ import division
 from build.cioverlap import *
 from bo.dftbplus.dftbplus import DFTBplus
 from bo.dftbplus.dftbpar import spin_w, max_l
-#from misc import eV_to_au, call_name
-from misc import eV_to_au
+from misc import eV_to_au, call_name
 import os, shutil, re, textwrap, struct
 import numpy as np
 
@@ -72,7 +71,7 @@ class DFTB(DFTBplus):
         # DFTB method considers only valence electrons, so core electrons should be removed
         core_elec = 0.
         self.norb = 0
-#        self.check_atom = [0]
+        self.check_atom = [0]
         for iat in range(molecule.nat):
             max_ang = max_l[molecule.symbols[iat]]
             if (max_ang == 's'):
@@ -80,16 +79,16 @@ class DFTB(DFTBplus):
             elif (max_ang == 'p'):
                 self.norb += 4
                 core_elec += 2.
-#            self.check_atom.append(self.norb)
+            self.check_atom.append(self.norb)
 
         # Set new variable to decide the position of atoms in terms of basis functions
-#        self.check_basis = []
-#        for ibasis in range(self.norb):
-#            for iat in range(molecule.nat):
-#                ind_a = self.check_atom[iat] + 1
-#                ind_b = self.check_atom[iat + 1]
-#                if (ibasis + 1 >= ind_a and ibasis + 1 <= ind_b):
-#                    self.check_basis.append(iat + 1)
+        self.check_basis = []
+        for ibasis in range(self.norb):
+            for iat in range(molecule.nat):
+                ind_a = self.check_atom[iat] + 1
+                ind_b = self.check_atom[iat + 1]
+                if (ibasis + 1 >= ind_a and ibasis + 1 <= ind_b):
+                    self.check_basis.append(iat + 1)
 
         # Initialize NACME variables
         # There is no core orbitals in TDDFTB (fixed occupations)
@@ -100,7 +99,6 @@ class DFTB(DFTBplus):
         self.ao_overlap = np.zeros((self.norb, self.norb))
         self.mo_coef_old = np.zeros((self.norb, self.norb))
         self.mo_coef_new = np.zeros((self.norb, self.norb))
-        # TODO : nst can be reduced to nst - 1 since S0 is only reference state (Phi_0)
         self.ci_coef_old = np.zeros((molecule.nst, self.nocc, self.nvirt))
         self.ci_coef_new = np.zeros((molecule.nst, self.nocc, self.nvirt))
 
@@ -149,10 +147,6 @@ class DFTB(DFTBplus):
             :param integer,list bo_list: list of BO states for BO calculation
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        # TODO : Currently, CIoverlap is not correct
-#        if (self.calc_coupling):
-#            raise ValueError (f"( {self.qm_method}.{call_name()} ) only BOMD possible with TDDFTB! {self.qm_method}")
-
         # Make 'geometry.gen' file
         os.system("xyz2gen geometry.xyz")
         if (self.periodic):
@@ -505,7 +499,6 @@ class DFTB(DFTBplus):
         if (self.calc_coupling and not calc_force_only):
             molecule.nacme = np.zeros((molecule.nst, molecule.nst))
             if (istep >= 0):
-                # TODO : current TDNAC gives slightly wrong values
                 self.CI_overlap(molecule, istep, dt)
 
     def CI_overlap(self, molecule, istep, dt):
@@ -519,26 +512,6 @@ class DFTB(DFTBplus):
         # Read upper right block of 'oversqr.dat' file (< t | t+dt >)
         file_name_in = "oversqr.dat"
 
-        # 1st method using np.method
-        # TODO : this part should be removed, only for test purpose
-        self.ao_overlap = np.zeros((self.norb, self.norb))
-        over_mat = np.loadtxt(file_name_in, skiprows=5, dtype=np.float)
-#        nan_ind = np.argwhere(np.isnan(over_mat))
-#        for row, col in nan_ind:
-#            ind_a = self.check_basis[row%self.norb]
-#            ind_b = self.check_basis[col%self.norb]
-#            if (ind_a == ind_b):
-#                if (row%self.norb == col%self.norb):
-#                    over_mat[row, col] = 1.
-#                else:
-#                    over_mat[row, col] = 0.
-        for row in range(self.norb):
-            for col in range(self.norb, 2 * self.norb):
-                self.ao_overlap[row, col - self.norb] = over_mat[row, col]
-#        np.savetxt("test-over1", self.ao_overlap, fmt=f"%6.3f")
-        np.savetxt("test-S", over_mat, fmt=f"%6.3f")
-
-        # 2nd method using direct read - faster than 1st method
         self.ao_overlap = np.zeros((self.norb, self.norb))
         with open(file_name_in, "r") as f_in:
             lines = f_in.readlines()
@@ -553,34 +526,23 @@ class DFTB(DFTBplus):
                     for element in field:
                         # Read right block
                         if (count):
-                            # TODO : how to consider too large value, 26.6 in this case?
-                            # TODO : set to 1?
-                            if (element == 'NaN'):
-                                # TODO : Choose only onsite (same-atom) block, is this essential part?
-#                                ind_a = self.check_basis[row]
-#                                ind_b = self.check_basis[col]
-#                                if (ind_a == ind_b):
-#                                    if (row == col):
-#                                        new_val = 1.
-#                                    else:
-#                                        new_val = 0.
+                            ind_a = self.check_basis[row]
+                            ind_b = self.check_basis[col]
+                            if (ind_a == ind_b):
+                                # Choose onsite (same-atom) block
+                                # Sometimes NaN or too large values appear in the onsite block due to the slater-koster file
+                                # The values set to 1 or 0 regardless of original elements
                                 if (row == col):
-                                    # Diagonal element in onsite (same-atom) block
+                                    # Diagonal element in onsite block
                                     new_val = 1.
                                 else:
-                                    # Off-diagonal element in onsite (same-atom) block
+                                    # Off-diagonal element in onsite block
                                     new_val = 0.
                             else:
+                                # Choose offsite (different-atom) block
                                 new_val = float(element)
-                                # TODO : too large value temporarily changes to 1
-                                # TODO : onsite element should be 1 for diagonal elements
-                                #if (new_val > 1.):
-                                if (row == col):
-                                    new_val = 1.
-                                    #new_val = 0.
                             # Set overlap matrix element
-                            if (col in range(self.norb)):
-                                self.ao_overlap[row, col] = new_val
+                            self.ao_overlap[row, col] = new_val
                         col += 1
                         # Read right block
                         if (col > self.norb - 1):
@@ -588,7 +550,7 @@ class DFTB(DFTBplus):
                             count = True
                     row += 1
                 iline += 1
-        np.savetxt("test-over2", self.ao_overlap, fmt=f"%6.3f")
+#        np.savetxt("test-over", self.ao_overlap, fmt=f"%6.3f")
 
         # Read 'eigenvec.bin.pre' file at time t
         if (istep == 0):
@@ -601,7 +563,7 @@ class DFTB(DFTBplus):
                     dummy = np.fromfile(f_in, dtype=np.integer, count=1)
                     data = np.fromfile(f_in, dtype=np.float64, count=self.norb)
                     self.mo_coef_old[iorb] = data
-            np.savetxt("test-mo1", self.mo_coef_old, fmt=f"%12.6f")
+#            np.savetxt("test-mo1", self.mo_coef_old, fmt=f"%12.6f")
 
         # Read 'eigenvec.bin' file at time t + dt
         file_name_in = "eigenvec.bin"
@@ -613,7 +575,7 @@ class DFTB(DFTBplus):
                 dummy = np.fromfile(f_in, dtype=np.integer, count=1)
                 data = np.fromfile(f_in, dtype=np.float64, count=self.norb)
                 self.mo_coef_new[iorb] = data
-        np.savetxt("test-mo2", self.mo_coef_new, fmt=f"%12.6f")
+#        np.savetxt("test-mo2", self.mo_coef_new, fmt=f"%12.6f")
 
         # Dimension for CI coefficients
         nmat = self.nocc * self.nvirt
@@ -622,10 +584,11 @@ class DFTB(DFTBplus):
         # Read 'SPX.DAT.pre' file at time t
         if (istep == 0):
             file_name_in = "SPX.DAT.pre"
+
+            get_wij_ind_old = np.zeros((nmat, 2), dtype=np.int_)
             with open(file_name_in, "r") as f_in:
                 lines = f_in.readlines()
                 iline = 0
-                get_wij_ind_old = np.zeros((nmat, 2), dtype=np.int_)
                 for line in lines:
                     # Skip first five lines
                     if (iline in range(5, 5 + nmat)):
@@ -636,10 +599,11 @@ class DFTB(DFTBplus):
 
         # Read 'SPX.DAT' file at time t + dt
         file_name_in = "SPX.DAT"
+
+        get_wij_ind_new = np.zeros((nmat, 2), dtype=np.int_)
         with open(file_name_in, "r") as f_in:
             lines = f_in.readlines()
             iline = 0
-            get_wij_ind_new = np.zeros((nmat, 2), dtype=np.int_)
             for line in lines:
                 # Skip first five lines
                 if (iline in range(5, 5 + nmat)):
@@ -651,14 +615,16 @@ class DFTB(DFTBplus):
         # Read 'XplusY.DAT.pre' file at time t
         if (istep == 0):
             file_name_in = "XplusY.DAT.pre"
+
+            self.ci_coef_old = np.zeros((molecule.nst, self.nocc, self.nvirt))
             with open(file_name_in, "r") as f_in:
                 lines = f_in.readlines()
                 iline = 0
                 for line in lines:
                     if (iline == 0):
                         field = line.split()
-                        assert int(field[0]) == nmat
-                        assert int(field[1]) >= molecule.nst - 1
+                        assert (int(field[0]) == nmat)
+                        assert (int(field[1]) >= molecule.nst - 1)
                         # nxply is number of lines for each excited state in 'XplusY.dat'
                         nxply = int(nmat / 6) + 1
                         if (nmat % 6 != 0):
@@ -673,25 +639,27 @@ class DFTB(DFTBplus):
                             if (ist == molecule.nst - 1):
                                 break
                         else:
-                            # TODO : Currently, elements for CI coefficients for S0 state are zero
+                            # Currently, elements for CI coefficients for S0 state are zero (not used values)
                             for element in field:
                                 ind_occ = get_wij_ind_old[ind, 0] - 1
                                 ind_virt = get_wij_ind_old[ind, 1] - self.nocc - 1
                                 self.ci_coef_old[ist + 1, ind_occ, ind_virt] = float(element)
                                 ind += 1
                     iline += 1
-            np.savetxt("test-ci1", self.ci_coef_old[1], fmt=f"%12.6f")
+#            np.savetxt("test-ci1", self.ci_coef_old[1], fmt=f"%12.6f")
 
         # Read 'XplusY.DAT' file at time t + dt
         file_name_in = "XplusY.DAT"
+
+        self.ci_coef_new = np.zeros((molecule.nst, self.nocc, self.nvirt))
         with open(file_name_in, "r") as f_in:
             lines = f_in.readlines()
             iline = 0
             for line in lines:
                 if (iline == 0):
                     field = line.split()
-                    assert int(field[0]) == nmat
-                    assert int(field[1]) >= molecule.nst - 1
+                    assert (int(field[0]) == nmat)
+                    assert (int(field[1]) >= molecule.nst - 1)
                     # nxply is number of lines for each excited state in 'XplusY.dat'
                     nxply = int(nmat / 6) + 1
                     if (nmat % 6 != 0):
@@ -706,14 +674,14 @@ class DFTB(DFTBplus):
                         if (ist == molecule.nst - 1):
                             break
                     else:
-                        # TODO : Currently, elements for CI coefficients for S0 state are zero
+                        # Currently, elements for CI coefficients for S0 state are zero (not used values)
                         for element in field:
                             ind_occ = get_wij_ind_new[ind, 0] - 1
                             ind_virt = get_wij_ind_new[ind, 1] - self.nocc - 1
                             self.ci_coef_new[ist + 1, ind_occ, ind_virt] = float(element)
                             ind += 1
                 iline += 1
-        np.savetxt("test-ci2", self.ci_coef_new[1], fmt=f"%12.6f")
+#        np.savetxt("test-ci2", self.ci_coef_new[1], fmt=f"%12.6f")
 
         # Calculate wavefunction overlap with orbital scheme
         # Reference: J. Phys. Chem. Lett. 2015, 6, 4200-4203
