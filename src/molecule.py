@@ -133,13 +133,13 @@ class Molecule(object):
                 # Read the positions and velocities
                 if (len(line.split()) == 0):
                     break
-                assert len(line.split()) == (1 + 2 * self.nsp)
+                assert (len(line.split()) == (1 + 2 * self.nsp))
                 self.symbols.append(line.split()[0])
                 self.mass.append(data[line.split()[0]])
                 self.pos.append(list(map(float, line.split()[1:(self.nsp + 1)])))
                 self.vel.append(list(map(float, line.split()[(self.nsp + 1):])))
                 count_line += 1
-        assert self.nat == count_line - 2
+        assert (self.nat == count_line - 2)
 
         self.symbols = np.array(self.symbols)
         self.mass = np.array(self.mass)
