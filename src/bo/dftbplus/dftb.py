@@ -20,7 +20,7 @@ class DFTB(DFTBplus):
         :param string ex_symmetry: symmetry (singlet or triplet) in TDDFTB
         :param string sk_path: path for slater-koster files
         :param boolean periodic: use periodicity in the calculations
-        :param double a(b, c)_axis: the length of cell lattice
+        :param double,list cell_length: the length of cell lattice
         :param string qm_path: path for QM binary
         :param string script_path: path for DFTB+ python script (dptools)
         :param integer nthreads: number of threads in the calculations
@@ -30,7 +30,7 @@ class DFTB(DFTBplus):
     """
     def __init__(self, molecule, scc=True, scc_tol=1E-6, max_scc_iter=100, \
         sdftb=False, unpaired_e=0., e_temp=0., mixer="Broyden", \
-        ex_symmetry="singlet", sk_path="./", periodic=False, a_axis=0., b_axis=0., c_axis=0., \
+        ex_symmetry="singlet", sk_path="./", periodic=False, cell_length=[0., 0., 0.], \
         qm_path="./", script_path="./", nthreads=1, mpi=False, mpi_path="./", version=19.1):
         # Initialize DFTB+ common variables
         super().__init__(molecule, sk_path, qm_path, script_path, nthreads, version)
@@ -52,9 +52,9 @@ class DFTB(DFTBplus):
         self.mpi_path = mpi_path
 
         self.periodic = periodic
-        self.a_axis = a_axis
-        self.b_axis = b_axis
-        self.c_axis = c_axis
+        self.a_axis = cell_length[0]
+        self.b_axis = cell_length[1]
+        self.c_axis = cell_length[2]
 
         # Check excitation symmetry in TDDFTB
         if (not (self.ex_symmetry == "singlet" or self.ex_symmetry == "triplet")):
