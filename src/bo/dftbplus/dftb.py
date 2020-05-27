@@ -31,7 +31,7 @@ class DFTB(DFTBplus):
         :param double version: version of DFTB+ program
     """
     def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=100, \
-        guess="h0", guess_file="charges.bin", sdftb=False, unpaired_e=0., e_temp=0., mixer="Broyden", \
+        guess="h0", guess_file="./charges.bin", sdftb=False, unpaired_e=0., e_temp=0., mixer="Broyden", \
         ex_symmetry="singlet", sk_path="./", periodic=False, cell_length=[0., 0., 0.], \
         qm_path="./", script_path="./", nthreads=1, mpi=False, mpi_path="./", version=19.1):
         # Initialize DFTB+ common variables

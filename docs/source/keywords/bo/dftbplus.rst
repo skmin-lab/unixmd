@@ -5,7 +5,11 @@ theory but in an approximate way, typically gaining around two orders of magnitu
 speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 
 - (TD)DFTB is time-dependent density-functional tight-binding method. DFTB+ supports only
-  analytical gradients, not nonadiabatic couplings. Thus, it can be used for only adiabatic dynamics.
+  analytical gradients, not nonadiabatic couplings. Instead, nonadiabatic coupling matrix
+  elements (NACME) is calculated by using our wavefunction overlap :cite:`Ryabinkin2015` routines. 
+  Thus, it can be used for adiabatic dynamics and surface hopping dynamics.
+  For Ehrenfest dynamics, it shows no energy conservation since it cannot calculate
+  nonadiabatic couplings directly which is used for nuclear propagation.
 
 - In general, spin-restricted ensemble-referenced Kohn-Sham (REKS) method can be classified
   as single-state REKS, state-averaged REKS (SA-REKS) and state-interaction SA-REKS (SSR).
@@ -18,7 +22,7 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 +-------------------+------+----+----+-----+
 |                   | BOMD | SH | Eh | nac |
 +===================+======+====+====+=====+
-| (TD)DFTB          | o    | x  | x  | x   |
+| (TD)DFTB          | o    | o  | ?  | x   |
 +-------------------+------+----+----+-----+
 | single-state REKS | o    | x  | x  | x   |
 +-------------------+------+----+----+-----+
@@ -34,6 +38,11 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
    Here, you should refer to manual of DFTB+ program if you want to see detailed
    lists for ``mixer``, ``ex_symmetry`` variables.
 
+.. note:: Currently, ``guess`` variable reads the following two strings.
+   One is ``h0``, which uses zedo charges as initial guess of SCC term for every time step.
+   The other is ``read``, which reads charges.bin file generated from previous step.
+   If ``guess_file`` exists, then charges.bin file is used as initial guess at t = 0.0 s.
+
 +------------------+------------------------------------------------+---------------------+
 | Keywords         | Work                                           | Default             |
 +==================+================================================+=====================+
@@ -43,6 +52,10 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 +------------------+------------------------------------------------+---------------------+
 | ``scc_max_iter`` | maximum number of SCC iterations               | ``100``             |
 +------------------+------------------------------------------------+---------------------+
+| ``guess``        | initial guess for SCC iterations               | ``h0``              |
++------------------+------------------------------------------------+---------------------+
+| ``guess_file``   | initial guess file                             | ``./charges.bin``   |
++------------------+------------------------------------------------+---------------------+
 | ``sdftb``        | include spin-polarisation scheme               | ``False``           |
 +------------------+------------------------------------------------+---------------------+
 | ``unpaired_e``   | number of unpaired electrons                   | ``0.0``             |
@@ -51,7 +64,7 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 +------------------+------------------------------------------------+---------------------+
 | ``mixer``        | charge mixing method used in SCC-DFTB          | ``Broyden``         |
 +------------------+------------------------------------------------+---------------------+
-| ``ex_symmetry``  | symmetry (singlet)            in TD-DFTB       | ``singlet``         |
+| ``ex_symmetry``  | symmetry (singlet) in TD-DFTB                  | ``singlet``         |
 +------------------+------------------------------------------------+---------------------+
 | ``sk_path``      | path for slater-koster files                   | ``./``              |
 +------------------+------------------------------------------------+---------------------+

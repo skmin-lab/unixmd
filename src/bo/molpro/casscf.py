@@ -10,7 +10,7 @@ class CASSCF(Molpro):
         :param string basis_set: basis set information
         :param string memory: allocatable memory in the calculations
         :param string guess: initial guess for MCSCF method
-        :param string guess_path: directory for initial guess file
+        :param string guess_file: initial guess file
         :param integer scf_max_iter: maximum number of SCF iterations
         :param double scf_en_tol: energy convergence for SCF iterations
         :param double scf_rho_tol: density convergence for SCF iterations
@@ -101,7 +101,7 @@ class CASSCF(Molpro):
 
             :param integer istep: current MD step
         """
-        if (istep >= 0):
+        if (self.guess == "read" and istep >= 0):
             # After T = 0.0 s
             shutil.copy(os.path.join(self.scr_qm_dir, "./wfu/wf.wfu"), \
                 os.path.join(self.scr_qm_dir, "../wf.wfu"))
