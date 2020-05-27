@@ -123,6 +123,7 @@ class CASSCF(Molpro):
             os.makedirs(wfu_dir)
             if (istep == -1):
                 if (os.path.isfile(self.guess_file)):
+                    # Copy guess file to currect directory
                     shutil.copy(self.guess_file, os.path.join(wfu_dir, "wf.wfu"))
                     restart = "restart,2\n"
                     hf = False
@@ -130,7 +131,8 @@ class CASSCF(Molpro):
                     restart = ""
                     hf = True
             elif (istep >= 0):
-                shutil.copy("../wf.wfu", os.path.join(wfu_dir, "wf.wfu"))
+                # Move previous file to currect directory
+                os.rename("../wf.wfu", os.path.join(wfu_dir, "wf.wfu"))
                 restart = "restart,2\n"
                 hf = False
         elif (self.guess == "hf"):
