@@ -57,7 +57,9 @@ class DFTB(DFTBplus):
         self.c_axis = cell_length[2]
 
         # Check excitation symmetry in TDDFTB
-        if (not (self.ex_symmetry == "singlet" or self.ex_symmetry == "triplet")):
+        # TODO : Currently, disable triplet excited states with TDDFTB
+#        if (not (self.ex_symmetry == "singlet" or self.ex_symmetry == "triplet")):
+        if (not (self.ex_symmetry == "singlet")):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong symmetry for excited state! {self.ex_symmetry}")
 
         # Set 'l_nacme' and 're_calc' with respect to the computational method
@@ -171,7 +173,7 @@ class DFTB(DFTBplus):
             file_af.close()
             os.rename('tmp.gen', 'geometry.gen')
 
-        # Make 'double.gen' file for overlap in TDDFTB
+        # Make 'double.gen' file for CIoverlap in TDDFTB
         # In this case, we do not need to consider periodicity
         if (self.calc_coupling and not calc_force_only and istep >= 0 and molecule.nst > 1):
             # Move previous files to currect directory
@@ -180,7 +182,7 @@ class DFTB(DFTBplus):
                 os.rename('../eigenvec.bin.pre', './eigenvec.bin.pre')
                 os.rename('../SPX.DAT.pre', './SPX.DAT.pre')
                 os.rename('../XplusY.DAT.pre', './XplusY.DAT.pre')
-            # Open geometry.xyz.pre
+            # Open 'geometry.xyz.pre'
             file_af = open('double.xyz', 'w')
             file_be = open('geometry.xyz.pre', 'r')
             first_row = True
@@ -190,7 +192,7 @@ class DFTB(DFTBplus):
                     first_row = False
                 file_af.write(row)
             file_be.close()
-            # Open geometry.xyz
+            # Open 'geometry.xyz'
             file_be = open('geometry.xyz', 'r')
             iline = 1
             for row in file_be:
@@ -201,183 +203,189 @@ class DFTB(DFTBplus):
             file_af.close()
             os.system("xyz2gen double.xyz")
 
-        # Make 'dftb_in.hsd' file
-        input_dftb = ""
+        # Generate input files for multiple evaluation of force at same geometry
+        irun = 1
+        for ist in bo_list:
+            # Make 'dftb_in.hsd' file
+            input_dftb = ""
 
-        # Geometry Block
-        input_geom = textwrap.dedent(f"""\
-        Geometry = GenFormat{{
-          <<< 'geometry.gen'
-        }}
-        """)
-        input_dftb += input_geom
+            # Geometry Block
+            input_geom = textwrap.dedent(f"""\
+            Geometry = GenFormat{{
+              <<< 'geometry.gen'
+            }}
+            """)
+            input_dftb += input_geom
 
-        # Hamiltonian Block
-        input_ham_init = textwrap.dedent(f"""\
-        Hamiltonian = DFTB{{
-        """)
-        input_dftb += input_ham_init
+            # Hamiltonian Block
+            input_ham_init = textwrap.dedent(f"""\
+            Hamiltonian = DFTB{{
+            """)
+            input_dftb += input_ham_init
 
-        if (self.scc):
-            input_ham_scc = textwrap.indent(textwrap.dedent(f"""\
-              SCC = Yes
-              SCCTolerance = {self.scc_tol}
-              MaxSCCIterations = {self.max_scc_iter}
-              Mixer = {self.mixer}{{}}
-            """), "  ")
-            input_dftb += input_ham_scc
+            if (self.scc):
+                input_ham_scc = textwrap.indent(textwrap.dedent(f"""\
+                  SCC = Yes
+                  SCCTolerance = {self.scc_tol}
+                  MaxSCCIterations = {self.max_scc_iter}
+                  Mixer = {self.mixer}{{}}
+                """), "  ")
+                input_dftb += input_ham_scc
 
-            if (self.sdftb and molecule.nst == 1):
-                input_ham_spin = textwrap.dedent(f"""\
-                SpinPolarisation = Colinear{{
-                  UnpairedElectrons = {self.unpaired_e}
-                }}
-                """)
-                input_dftb += input_ham_spin
+                if (self.sdftb and molecule.nst == 1):
+                    input_ham_spin = textwrap.dedent(f"""\
+                    SpinPolarisation = Colinear{{
+                      UnpairedElectrons = {self.unpaired_e}
+                    }}
+                    """)
+                    input_dftb += input_ham_spin
 
-            if (self.sdftb or self.ex_symmetry == "triplet"):
-                spin_constant = ("\n" + " " * 18).join([f"  {itype} = {{ {spin_w[f'{itype}']} }}" for itype in self.atom_type])
-                input_ham_spin_w = textwrap.indent(textwrap.dedent(f"""\
-                  SpinConstants = {{
-                    ShellResolvedSpin = Yes
-                  {spin_constant}
+                # TODO : Currently, disable triplet excited states with TDDFTB
+#                if (self.sdftb or self.ex_symmetry == "triplet"):
+                if (self.sdftb and molecule.nst == 1):
+                    spin_constant = ("\n" + " " * 18).join([f"  {itype} = {{ {spin_w[f'{itype}']} }}" for itype in self.atom_type])
+                    input_ham_spin_w = textwrap.indent(textwrap.dedent(f"""\
+                      SpinConstants = {{
+                        ShellResolvedSpin = Yes
+                      {spin_constant}
+                      }}
+                    """), "  ")
+                    input_dftb += input_ham_spin_w
+
+                # TODO : read initial guess from previous step
+                # Read 'charges.bin' for Ehrenfest or surface hopping when hop occurs
+                if (calc_force_only or irun > 1):
+                    input_ham_restart = textwrap.indent(textwrap.dedent(f"""\
+                      ReadInitialCharges = Yes
+                    """), "  ")
+                    input_dftb += input_ham_restart
+
+            # TODO: for QM/MM, point_charge??
+
+            if (self.periodic):
+                input_ham_periodic = textwrap.indent(textwrap.dedent(f"""\
+                  KPointsAndWeights = {{
+                    0.0 0.0 0.0 1.0
                   }}
                 """), "  ")
-                input_dftb += input_ham_spin_w
+                input_dftb += input_ham_periodic
 
-            # TODO : read initial guess from previous step
-            if (calc_force_only):
-                input_ham_restart = textwrap.indent(textwrap.dedent(f"""\
-                  ReadInitialCharges = Yes
-                """), "  ")
-                input_dftb += input_ham_restart
-
-        # TODO: for QM/MM, point_charge??
-
-        if (self.periodic):
-            input_ham_periodic = textwrap.indent(textwrap.dedent(f"""\
-              KPointsAndWeights = {{
-                0.0 0.0 0.0 1.0
+            angular_momentum = ("\n" + " " * 10).join([f"  {itype} = '{max_l[f'{itype}']}'" for itype in self.atom_type])
+            input_ham_basic = textwrap.dedent(f"""\
+              Charge = {molecule.charge}
+              Filling = Fermi{{
+                Temperature[K] = {self.e_temp}
               }}
-            """), "  ")
-            input_dftb += input_ham_periodic
-
-        angular_momentum = ("\n" + " " * 10).join([f"  {itype} = '{max_l[f'{itype}']}'" for itype in self.atom_type])
-        input_ham_basic = textwrap.dedent(f"""\
-          Charge = {molecule.charge}
-          Filling = Fermi{{
-            Temperature[K] = {self.e_temp}
-          }}
-          MaxAngularMomentum = {{
-          {angular_momentum}
-          }}
-          SlaterKosterFiles = Type2FileNames{{
-            Prefix = '{self.sk_path}'
-            Separator = '-'
-            Suffix = '.skf'
-            LowerCaseTypeName = No
-          }}
-        }}
-        """)
-        input_dftb += input_ham_basic
-
-        # Analysis Block
-        input_analysis = textwrap.dedent(f"""\
-        Analysis = {{
-          CalculateForces = Yes
-          WriteBandOut = Yes
-          WriteEigenvectors = Yes
-          MullikenAnalysis = Yes
-        }}
-        """)
-        input_dftb += input_analysis
-
-        # Options Block
-        input_options = textwrap.dedent(f"""\
-        Options = {{
-          WriteDetailedXml = Yes
-          WriteDetailedOut = Yes
-          TimingVerbosity = -1
-        }}
-        """)
-        input_dftb += input_options
-
-        # ExcitedState Block
-        if (molecule.nst > 1):
-
-            # Calculate excited state force for target state
-            if (bo_list[0] > 0):
-                ex_force = "Yes"
-                rst = bo_list[0]
-            else:
-                ex_force = "No"
-                rst = bo_list[0] + 1
-
-            # Set number of excitations in TDDFTB
-            # This part can be modified by users
-            if (molecule.nat <= 5):
-                num_ex = molecule.nst + 2
-            elif (molecule.nat > 5 and molecule.nat <= 15):
-                num_ex = 2 * molecule.nst + 2
-            else:
-                num_ex = 3 * molecule.nst + 2
-
-            # Write XplusY data?
-            if (self.calc_coupling):
-                xpy = "Yes"
-            else:
-                xpy = "No"
-
-            input_excited = textwrap.dedent(f"""\
-            ExcitedState = Casida{{
-              NrOfExcitations = {num_ex}
-              StateOfInterest = {rst}
-              Symmetry = {self.ex_symmetry}
-              WriteTransitions = Yes
-              WriteSPTransitions = {xpy}
-              WriteMulliken = Yes
-              WriteXplusY = {xpy}
-              ExcitedStateForces = {ex_force}
+              MaxAngularMomentum = {{
+              {angular_momentum}
+              }}
+              SlaterKosterFiles = Type2FileNames{{
+                Prefix = '{self.sk_path}'
+                Separator = '-'
+                Suffix = '.skf'
+                LowerCaseTypeName = No
+              }}
             }}
             """)
-            input_dftb += input_excited
+            input_dftb += input_ham_basic
 
-        # ParserOptions Block
-        if (self.version == 19.1):
-            parser_version = 7
-        elif (self.version == 20.1):
-            parser_version = 8
-
-        input_parseroptions = textwrap.dedent(f"""\
-        ParserOptions = {{
-          ParserVersion = {parser_version}
-        }}
-        """)
-        input_dftb += input_parseroptions
-
-        # Parallel Block
-        if (self.mpi):
-            if (self.sdftb and self.nthreads > 1):
-                groups = 2
-            else:
-                groups = 1
-            input_parallel = textwrap.dedent(f"""\
-            Parallel = {{
-              Groups = {groups}
-              UseOmpThreads = No
-              Blacs = BlockSize {{ 32 }}
+            # Analysis Block
+            input_analysis = textwrap.dedent(f"""\
+            Analysis = {{
+              CalculateForces = Yes
+              WriteBandOut = Yes
+              WriteEigenvectors = Yes
+              MullikenAnalysis = Yes
             }}
             """)
-            input_dftb += input_parallel
+            input_dftb += input_analysis
 
-        # Write 'dftb_in.hsd.geom' file
-        file_name = "dftb_in.hsd.geom"
-        with open(file_name, "w") as f:
-            f.write(input_dftb)
+            # Options Block
+            input_options = textwrap.dedent(f"""\
+            Options = {{
+              WriteDetailedXml = Yes
+              WriteDetailedOut = Yes
+              TimingVerbosity = -1
+            }}
+            """)
+            input_dftb += input_options
+
+            # ExcitedState Block
+            if (molecule.nst > 1):
+                # Calculate excited state force for target state
+                if (ist > 0):
+                    ex_force = "Yes"
+                    rst = ist
+                else:
+                    ex_force = "No"
+                    rst = ist + 1
+
+                # Set number of excitations in TDDFTB
+                # This part can be modified by users
+                if (molecule.nat <= 5):
+                    num_ex = molecule.nst + 2
+                elif (molecule.nat > 5 and molecule.nat <= 15):
+                    num_ex = 2 * molecule.nst + 2
+                else:
+                    num_ex = 3 * molecule.nst + 2
+
+                # Write XplusY data?
+                if (self.calc_coupling):
+                    xpy = "Yes"
+                else:
+                    xpy = "No"
+
+                input_excited = textwrap.dedent(f"""\
+                ExcitedState = Casida{{
+                  NrOfExcitations = {num_ex}
+                  StateOfInterest = {rst}
+                  Symmetry = {self.ex_symmetry}
+                  WriteTransitions = Yes
+                  WriteSPTransitions = {xpy}
+                  WriteMulliken = Yes
+                  WriteXplusY = {xpy}
+                  ExcitedStateForces = {ex_force}
+                }}
+                """)
+                input_dftb += input_excited
+
+            # ParserOptions Block
+            if (self.version == 19.1):
+                parser_version = 7
+            elif (self.version == 20.1):
+                parser_version = 8
+
+            input_parseroptions = textwrap.dedent(f"""\
+            ParserOptions = {{
+              ParserVersion = {parser_version}
+            }}
+            """)
+            input_dftb += input_parseroptions
+
+            # Parallel Block
+            if (self.mpi):
+                if (self.sdftb and self.nthreads > 1):
+                    groups = 2
+                else:
+                    groups = 1
+                input_parallel = textwrap.dedent(f"""\
+                Parallel = {{
+                  Groups = {groups}
+                  UseOmpThreads = No
+                  Blacs = BlockSize {{ 32 }}
+                }}
+                """)
+                input_dftb += input_parallel
+
+            # Write 'dftb_in.hsd.geom' file
+            file_name = f"dftb_in.hsd.geom.{ist}"
+            with open(file_name, "w") as f:
+                f.write(input_dftb)
+
+            irun += 1
 
         # Write 'dftb_in.hsd.double' file
         if (self.calc_coupling and not calc_force_only and istep >= 0 and molecule.nst > 1):
-
             # New input for dftb
             input_dftb = ""
 
@@ -433,14 +441,23 @@ class DFTB(DFTBplus):
             os.system(command)
 
         # Run DFTB+ method for molecular dynamics
-        shutil.copy("dftb_in.hsd.geom", "dftb_in.hsd")
-        os.system(command)
-
-        # Copy the output file to 'QMlog' directory
         tmp_dir = os.path.join(base_dir, "QMlog")
-        if (os.path.exists(tmp_dir)):
-            log_step = f"log.{istep + 1}.{bo_list[0]}"
-            shutil.copy("log", os.path.join(tmp_dir, log_step))
+        for ist in bo_list:
+            # Copy dftb_in.hsd for target state
+            file_name = f"dftb_in.hsd.geom.{ist}"
+            shutil.copy(file_name, "dftb_in.hsd")
+            os.system(command)
+
+            # Copy detailed.out for target state
+            file_name = f"detailed.out.{ist}"
+            shutil.copy("detailed.out", file_name)
+
+            # Copy the output file to 'QMlog' directory
+            if (os.path.exists(tmp_dir)):
+                detailed_out_step = f"detailed.out.{istep + 1}.{ist}"
+                shutil.copy("detailed.out", os.path.join(tmp_dir, detailed_out_step))
+                log_step = f"log.{istep + 1}.{ist}"
+                shutil.copy("log", os.path.join(tmp_dir, log_step))
 
     def extract_BO(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
         """ Read the output files to get BO information
@@ -488,12 +505,17 @@ class DFTB(DFTBplus):
             for states in molecule.states:
                 states.force = np.zeros((molecule.nat, molecule.nsp))
 
-        tmp_f = 'Total Forces' + '\n\s+\d*\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
-        force = re.findall(tmp_f, detailed_out)
-        force = np.array(force[0])
-        force = force.astype(float)
-        force = force.reshape(molecule.nat, 3, order='C')
-        molecule.states[bo_list[0]].force = np.copy(force)
+        for ist in bo_list:
+            file_name = f"detailed.out.{ist}"
+            with open(file_name, "r") as f:
+                detailed_out = f.read()
+
+            tmp_f = 'Total Forces' + '\n\s+\d*\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
+            force = re.findall(tmp_f, detailed_out)
+            force = np.array(force[0])
+            force = force.astype(float)
+            force = force.reshape(molecule.nat, 3, order='C')
+            molecule.states[ist].force = np.copy(force)
 
         # NACME
         if (self.calc_coupling and not calc_force_only):
