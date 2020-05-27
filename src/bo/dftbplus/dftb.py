@@ -311,7 +311,12 @@ class DFTB(DFTBplus):
             input_dftb += input_options
 
             # ExcitedState Block
-            if (molecule.nst > 1):
+            if (len(bo_list) == 1 or irun > 1):
+                do_excited = True
+            else:
+                do_excited = False
+
+            if (molecule.nst > 1 and do_excited):
                 # Calculate excited state force for target state
                 if (ist > 0):
                     ex_force = "Yes"
@@ -471,7 +476,7 @@ class DFTB(DFTBplus):
         """
         # Read 'detailed.out' file
         # TODO: the qmmm information is written in this file
-        file_name = "detailed.out"
+        file_name = f"detailed.out.{bo_list[0]}"
         with open(file_name, "r") as f:
             detailed_out = f.read()
 
