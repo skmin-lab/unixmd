@@ -12,12 +12,12 @@ class DFTB(DFTBplus):
         :param object molecule: molecule object
         :param boolean scc: include SCC scheme
         :param double scc_tol: energy convergence for SCC iterations
-        :param integer max_scc_iter: maximum number of SCC iterations
+        :param integer scc_max_iter: maximum number of SCC iterations
         :param boolean sdftb: include spin-polarisation scheme
         :param double unpaired_e: number of unpaired electrons
         :param double e_temp: electronic temperature for Fermi-Dirac scheme
         :param string mixer: charge mixing method used in DFTB
-        :param string ex_symmetry: symmetry (singlet or triplet) in TDDFTB
+        :param string ex_symmetry: symmetry (singlet) in TDDFTB
         :param string sk_path: path for slater-koster files
         :param boolean periodic: use periodicity in the calculations
         :param double,list cell_length: the length of cell lattice
@@ -28,7 +28,7 @@ class DFTB(DFTBplus):
         :param string mpi_path: path for MPI binary
         :param double version: version of DFTB+ program
     """
-    def __init__(self, molecule, scc=True, scc_tol=1E-6, max_scc_iter=100, \
+    def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=100, \
         sdftb=False, unpaired_e=0., e_temp=0., mixer="Broyden", \
         ex_symmetry="singlet", sk_path="./", periodic=False, cell_length=[0., 0., 0.], \
         qm_path="./", script_path="./", nthreads=1, mpi=False, mpi_path="./", version=19.1):
@@ -38,7 +38,7 @@ class DFTB(DFTBplus):
         # Initialize DFTB+ DFTB variables
         self.scc = scc
         self.scc_tol = scc_tol
-        self.max_scc_iter = max_scc_iter
+        self.scc_max_iter = scc_max_iter
 
         self.sdftb = sdftb
         self.unpaired_e = unpaired_e
@@ -227,7 +227,7 @@ class DFTB(DFTBplus):
                 input_ham_scc = textwrap.indent(textwrap.dedent(f"""\
                   SCC = Yes
                   SCCTolerance = {self.scc_tol}
-                  MaxSCCIterations = {self.max_scc_iter}
+                  MaxSCCIterations = {self.scc_max_iter}
                   Mixer = {self.mixer}{{}}
                 """), "  ")
                 input_dftb += input_ham_scc

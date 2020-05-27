@@ -10,7 +10,7 @@ class SSR(DFTBplus):
         :param object molecule: molecule object
         :param boolean scc: include SCC scheme
         :param double scc_tol: energy convergence for REKS SCC iterations
-        :param integer max_scc_iter: maximum number of REKS SCC iterations
+        :param integer scc_max_iter: maximum number of REKS SCC iterations
         :param boolean lcdftb: include long-range corrected functional
         :param string lc_method: algorithms for LC-DFTB
         :param boolean ocdftb: include onsite correction (test option)
@@ -26,24 +26,24 @@ class SSR(DFTBplus):
         :param integer mem_level: memory allocation setting, 2 is recommended
         :param string sk_path: path for slater-koster files
         :param boolean periodic: use periodicity in the calculations
-        :param double a(b, c)_axis: the length of cell lattice
+        :param double,list cell_length: the length of cell lattice
         :param string qm_path: path for QM binary
         :param string script_path: path for DFTB+ python script (dptools)
         :param integer nthreads: number of threads in the calculations
         :param double version: version of DFTB+ program
     """
-    def __init__(self, molecule, scc=True, scc_tol=1E-6, max_scc_iter=1000, \
+    def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=1000, \
         lcdftb=True, lc_method="MatrixBased", ocdftb=False, ssr22=True, \
         ssr44=False, use_ssr_state=1, state_l=0, guess=1, shift=0.3, tuning=1., \
         grad_level=1, grad_tol=1E-8, mem_level=2, sk_path="./", periodic=False, \
-        a_axis=0., b_axis=0., c_axis=0., qm_path="./", script_path="./", nthreads=1, version=19.1):
+        cell_length=[0., 0., 0.], qm_path="./", script_path="./", nthreads=1, version=19.1):
         # Initialize DFTB+ common variables
         super(SSR, self).__init__(molecule, sk_path, qm_path, script_path, nthreads, version)
 
         # Initialize DFTB+ SSR variables
         self.scc = scc
         self.scc_tol = scc_tol
-        self.max_scc_iter = max_scc_iter
+        self.scc_max_iter = scc_max_iter
 
         self.lcdftb = lcdftb
         self.lc_method = lc_method
@@ -67,9 +67,9 @@ class SSR(DFTBplus):
         self.mem_level = mem_level
 
         self.periodic = periodic
-        self.a_axis = a_axis
-        self.b_axis = b_axis
-        self.c_axis = c_axis
+        self.a_axis = cell_length[0]
+        self.b_axis = cell_length[1]
+        self.c_axis = cell_length[2]
 
         # Set 'l_nacme' and 're_calc' with respect to the computational method
         # DFTB/SSR can produce NACs, so we do not need to get NACME from CIoverlap
@@ -145,7 +145,7 @@ class SSR(DFTBplus):
             input_ham_scc = textwrap.indent(textwrap.dedent(f"""\
               SCC = Yes
               SCCTolerance = {self.scc_tol}
-              MaxSCCIterations = {self.max_scc_iter}
+              MaxSCCIterations = {self.scc_max_iter}
             """), "  ")
             input_dftb += input_ham_scc
 
