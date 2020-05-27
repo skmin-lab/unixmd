@@ -13,6 +13,8 @@ class DFTB(DFTBplus):
         :param boolean scc: include SCC scheme
         :param double scc_tol: energy convergence for SCC iterations
         :param integer scc_max_iter: maximum number of SCC iterations
+        :param string guess: initial guess for SCC iterations
+        :param string guess_file: initial guess file
         :param boolean sdftb: include spin-polarisation scheme
         :param double unpaired_e: number of unpaired electrons
         :param double e_temp: electronic temperature for Fermi-Dirac scheme
@@ -29,16 +31,22 @@ class DFTB(DFTBplus):
         :param double version: version of DFTB+ program
     """
     def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=100, \
-        sdftb=False, unpaired_e=0., e_temp=0., mixer="Broyden", \
+        guess="h0", guess_file="charges.bin", sdftb=False, unpaired_e=0., e_temp=0., mixer="Broyden", \
         ex_symmetry="singlet", sk_path="./", periodic=False, cell_length=[0., 0., 0.], \
         qm_path="./", script_path="./", nthreads=1, mpi=False, mpi_path="./", version=19.1):
         # Initialize DFTB+ common variables
-        super().__init__(molecule, sk_path, qm_path, script_path, nthreads, version)
+        super(DFTB, self).__init__(molecule, sk_path, qm_path, script_path, nthreads, version)
 
         # Initialize DFTB+ DFTB variables
         self.scc = scc
         self.scc_tol = scc_tol
         self.scc_max_iter = scc_max_iter
+
+        # Set initial guess for SCC term
+        self.guess = guess
+        self.guess_file = guess_file
+        if (not (self.guess == "h0" or self.guess == "read")):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
 
         self.sdftb = sdftb
         self.unpaired_e = unpaired_e
@@ -129,6 +137,7 @@ class DFTB(DFTBplus):
             :param integer istep: current MD step
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
+        # Copy required files for NACME
         if (self.calc_coupling and not calc_force_only and istep >= 0 and molecule.nst > 1):
             # After T = 0.0 s
             shutil.copy(os.path.join(self.scr_qm_dir, "geometry.xyz"), \
@@ -140,6 +149,12 @@ class DFTB(DFTBplus):
                     os.path.join(self.scr_qm_dir, "../SPX.DAT.pre"))
                 shutil.copy(os.path.join(self.scr_qm_dir, "XplusY.DAT"), \
                     os.path.join(self.scr_qm_dir, "../XplusY.DAT.pre"))
+
+        # Copy required files to read initial guess
+        if (self.guess == "read" and istep >= 0):
+            # After T = 0.0 s
+            shutil.copy(os.path.join(self.scr_qm_dir, "charges.bin"), \
+                os.path.join(self.scr_qm_dir, "../charges.bin.pre"))
 
     def get_input(self, molecule, istep, bo_list, calc_force_only):
         """ Generate DFTB+ input files: geometry.gen, dftb_in.hsd
@@ -252,13 +267,31 @@ class DFTB(DFTBplus):
                     """), "  ")
                     input_dftb += input_ham_spin_w
 
-                # TODO : read initial guess from previous step
+                # Read 'charges.bin' from previous step
+                if (irun == 1):
+                    if (self.guess == "read"):
+                        if (istep == -1):
+                            if (os.path.isfile(self.guess_file)):
+                                # Copy guess file to currect directory
+                                shutil.copy(self.guess_file, os.path.join(self.scr_qm_dir, "charges.bin"))
+                                restart = "Yes"
+                            else:
+                                restart = "No"
+                        elif (istep >= 0):
+                            # Move previous file to currect directory
+                            os.rename("../charges.bin.pre", "./charges.bin")
+                            restart = "Yes"
+                    elif (self.guess == "h0"):
+                        restart = "No"
+
                 # Read 'charges.bin' for Ehrenfest or surface hopping when hop occurs
                 if (calc_force_only or irun > 1):
-                    input_ham_restart = textwrap.indent(textwrap.dedent(f"""\
-                      ReadInitialCharges = Yes
-                    """), "  ")
-                    input_dftb += input_ham_restart
+                    restart = "Yes"
+
+                input_ham_restart = textwrap.indent(textwrap.dedent(f"""\
+                  ReadInitialCharges = {restart}
+                """), "  ")
+                input_dftb += input_ham_restart
 
             # TODO: for QM/MM, point_charge??
 
