@@ -101,6 +101,7 @@ class CASSCF(Molpro):
 
             :param integer istep: current MD step
         """
+        # Copy required files to read initial guess
         if (self.guess == "read" and istep >= 0):
             # After T = 0.0 s
             shutil.copy(os.path.join(self.scr_qm_dir, "./wfu/wf.wfu"), \

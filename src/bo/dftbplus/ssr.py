@@ -1,8 +1,11 @@
 from __future__ import division
 from bo.dftbplus.dftbplus import DFTBplus
 from bo.dftbplus.dftbpar import spin_w, onsite_uu, onsite_ud, max_l
+from misc import call_name
 import os, shutil, re, textwrap
 import numpy as np
+
+# TODO : DFTB/SSR input should be modified after 20.1 version is released!!
 
 class SSR(DFTBplus):
     """ Class for SSR method of DFTB+ program

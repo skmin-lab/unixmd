@@ -3,7 +3,7 @@ from build.cioverlap import *
 from bo.dftbplus.dftbplus import DFTBplus
 from bo.dftbplus.dftbpar import spin_w, max_l
 from misc import eV_to_au, call_name
-import os, shutil, re, textwrap, struct
+import os, shutil, re, textwrap
 import numpy as np
 
 class DFTB(DFTBplus):
