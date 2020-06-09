@@ -137,7 +137,7 @@ class SSR(TeraChem):
 #            input_terachem += input_dft_guess
 
         # REKS Block
-        if (self.reks22):
+        if (self.ssr22):
 
             # Energy functional options
             if (molecule.nst == 1):
