@@ -10,15 +10,15 @@ class SSR(TeraChem):
         :param string basis_set: basis set information
         :param string functional: level of DFT theory
         :param string precision: precision in the calculations
-        :param double scf_tol: energy convergence for SCF iterations
-        :param integer max_scf_iter: maximum number of SCF iterations
-        :param string reks22: use REKS(2,2) calculation?
-        :param double reks_scf_tol: energy convergence for REKS SCF iterations
-        :param integer reks_max_scf_iter: maximum number of REKS SCF iterations
+        :param double scf_rho_tol: wavefunction convergence for SCF iterations
+        :param integer scf_max_iter: maximum number of SCF iterations
+        :param boolean ssr22: use REKS(2,2) calculation?
+        :param double reks_rho_tol: DIIS error for REKS SCF iterations
+        :param integer reks_max_iter: maximum number of REKS SCF iterations
         :param string reks_diis: DIIS acceleration in REKS SCF iterations
         :param double shift: level shifting value in REKS SCF iterations
         :param integer use_ssr_state: calculate SSR state, if not, treat SA-REKS
-        :param double cpreks_max_tol: gradient tolerance for CP-REKS equations
+        :param double cpreks_grad_tol: gradient tolerance for CP-REKS equations
         :param integer cpreks_max_iter: maximum number of CP-REKS iterations
         :param string qm_path: path for QM binary
         :param integer ngpus: number of GPUs
@@ -26,32 +26,32 @@ class SSR(TeraChem):
         :param double version: version of TeraChem program
     """
     def __init__(self, molecule, ngpus=1, gpu_id="1", precision="dynamic", \
-        version=1.92, functional="hf", basis_set="sto-3g", scf_tol=1E-2, \
-        max_scf_iter=300, reks22="yes", reks_scf_tol=1E-6, \
-        reks_max_scf_iter=1000, reks_diis="yes", shift=0.3, use_ssr_state=1, \
-        cpreks_max_tol=1E-6, cpreks_max_iter=1000, qm_path="./"):
+        version=1.92, functional="hf", basis_set="sto-3g", scf_rho_tol=1E-2, \
+        scf_max_iter=300, ssr22=True, reks_rho_tol=1E-6, \
+        reks_max_iter=1000, reks_diis="yes", shift=0.3, use_ssr_state=1, \
+        cpreks_grad_tol=1E-6, cpreks_max_iter=1000, qm_path="./"):
         # Initialize TeraChem common variables
         super(SSR, self).__init__(functional, basis_set, qm_path, ngpus, \
             gpu_id, precision, version)
 
         # Initialize TeraChem SSR variables
-        self.scf_tol = scf_tol
-        self.max_scf_iter = max_scf_iter
+        self.scf_rho_tol = scf_rho_tol
+        self.scf_max_iter = scf_max_iter
 
-        self.reks22 = reks22
-        if (self.reks22 == "yes"):
+        self.ssr22 = ssr22
+        if (self.ssr22):
             if (molecule.nst > 2):
-                raise ValueError ("3state REKS with gradient Not Implemented")
-            self.reks_scf_tol = reks_scf_tol
-            self.reks_max_scf_iter = reks_max_scf_iter
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) 3-state REKS not implemented! {molecule.nst}")
+            self.reks_rho_tol = reks_rho_tol
+            self.reks_max_iter = reks_max_iter
             self.reks_diis = reks_diis
             self.shift = shift
             self.use_ssr_state = use_ssr_state
             if (molecule.nst > 1):
-                self.cpreks_max_tol = cpreks_max_tol
+                self.cpreks_grad_tol = cpreks_grad_tol
                 self.cpreks_max_iter = cpreks_max_iter
         else:
-            raise ValueError("reks22 should be switched on in our interface")
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Other active space not implemented! {self.ssr22}")
 
         # Set 'l_nacme' with respect to the computational method
         # SSR can produce NACs, so we do not need to get NACME from CIoverlap
@@ -120,8 +120,8 @@ class SSR(TeraChem):
         input_dft = textwrap.dedent(f"""\
         method {self.functional}
         basis {self.basis_set}
-        convthre {self.scf_tol}
-        maxit {self.max_scf_iter}
+        convthre {self.scf_rho_tol}
+        maxit {self.scf_max_iter}
         charge {molecule.charge}
 
         """)
@@ -137,7 +137,7 @@ class SSR(TeraChem):
 #            input_terachem += input_dft_guess
 
         # REKS Block
-        if (self.reks22 == "yes"):
+        if (self.reks22):
 
             # Energy functional options
             if (molecule.nst == 1):
@@ -170,9 +170,9 @@ class SSR(TeraChem):
             reks_guess = 0
 
             input_reks_basic = textwrap.dedent(f"""\
-            reks22 {self.reks22}
-            reks_convthre {self.reks_scf_tol}
-            reks_maxit {self.reks_max_scf_iter}
+            reks22 yes
+            reks_convthre {self.reks_rho_tol}
+            reks_maxit {self.reks_max_iter}
             reks_diis {self.reks_diis}
             reks_shift {self.shift}
             sa_reks {sa_reks}
@@ -182,7 +182,7 @@ class SSR(TeraChem):
             input_terachem += input_reks_basic
             if (molecule.nst > 1):
                 input_cpreks = textwrap.dedent(f"""\
-                cpreks_thresh {self.cpreks_max_tol}
+                cpreks_thresh {self.cpreks_grad_tol}
                 cpreks_maxit {self.cpreks_max_iter}
                 """)
                 input_terachem += input_cpreks

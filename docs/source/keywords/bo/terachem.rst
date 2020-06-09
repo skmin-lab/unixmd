@@ -43,15 +43,15 @@ determined from the **use_ssr_state** argument.
 +-------------------+------------------------------------------------+---------+
 | precision         | precision in the calculations                  | dynamic |
 +-------------------+------------------------------------------------+---------+
-| scf_tol           | energy convergence for SCF iterations          | 1E-2    |
+| scf_rho_tol       | wavefunction convergence for SCF iterations    | 1E-2    |
 +-------------------+------------------------------------------------+---------+
-| max_scf_iter      | maximum number of SCF iterations               | 300     |
+| scf_max_iter      | maximum number of SCF iterations               | 300     |
 +-------------------+------------------------------------------------+---------+
 | reks22            | use REKS(2,2) calculation?                     | yes     |
 +-------------------+------------------------------------------------+---------+
-| reks_scf_tol      | energy convergence for REKS SCF iterations     | 1E-6    |
+| reks_rho_tol      | DIIS error for REKS SCF iterations             | 1E-6    |
 +-------------------+------------------------------------------------+---------+
-| reks_max_scf_iter | maximum number of REKS SCF iterations          | 1000    |
+| reks_max_iter     | maximum number of REKS SCF iterations          | 1000    |
 +-------------------+------------------------------------------------+---------+
 | reks_diis         | DIIS acceleration in REKS SCF iterations       | yes     |
 +-------------------+------------------------------------------------+---------+
@@ -59,7 +59,7 @@ determined from the **use_ssr_state** argument.
 +-------------------+------------------------------------------------+---------+
 | use_ssr_state     | calculate SSR state, if not, treat SA-REKS     | 1       |
 +-------------------+------------------------------------------------+---------+
-| cpreks_max_tol    | gradient tolerance for CP-REKS equations       | 1E-6    |
+| cpreks_grad_tol   | gradient tolerance for CP-REKS equations       | 1E-6    |
 +-------------------+------------------------------------------------+---------+
 | cpreks_max_iter   | maximum number of CP-REKS iterations           | 1000    |
 +-------------------+------------------------------------------------+---------+
