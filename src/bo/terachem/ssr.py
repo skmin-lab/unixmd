@@ -1,5 +1,6 @@
 from __future__ import division
 from bo.terachem.terachem import TeraChem
+from misc import call_name
 import os, shutil, re, textwrap
 import numpy as np
 
@@ -13,6 +14,8 @@ class SSR(TeraChem):
         :param double scf_rho_tol: wavefunction convergence for SCF iterations
         :param integer scf_max_iter: maximum number of SCF iterations
         :param boolean ssr22: use REKS(2,2) calculation?
+        :param string guess: initial guess for REKS SCF iterations
+        :param string guess_file: initial guess file
         :param double reks_rho_tol: DIIS error for REKS SCF iterations
         :param integer reks_max_iter: maximum number of REKS SCF iterations
         :param double shift: level shifting value in REKS SCF iterations
@@ -26,8 +29,8 @@ class SSR(TeraChem):
     """
     def __init__(self, molecule, ngpus=1, gpu_id="1", precision="dynamic", \
         version=1.92, functional="hf", basis_set="sto-3g", scf_rho_tol=1E-2, \
-        scf_max_iter=300, ssr22=True, reks_rho_tol=1E-6, \
-        reks_max_iter=1000, shift=0.3, use_ssr_state=True, \
+        scf_max_iter=300, ssr22=True, guess="dft", guess_file="./c0", \
+        reks_rho_tol=1E-6, reks_max_iter=1000, shift=0.3, use_ssr_state=True, \
         cpreks_grad_tol=1E-6, cpreks_max_iter=1000, qm_path="./"):
         # Initialize TeraChem common variables
         super(SSR, self).__init__(functional, basis_set, qm_path, ngpus, \
@@ -45,6 +48,13 @@ class SSR(TeraChem):
             self.reks_max_iter = reks_max_iter
             self.shift = shift
             self.use_ssr_state = use_ssr_state
+
+            # Set initial guess for REKS SCF iterations
+            self.guess = guess
+            self.guess_file = guess_file
+            if (not (self.guess == "dft" or self.guess == "read")):
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
+
             if (molecule.nst > 1):
                 self.cpreks_grad_tol = cpreks_grad_tol
                 self.cpreks_max_iter = cpreks_max_iter
