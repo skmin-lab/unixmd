@@ -16,7 +16,7 @@ class SSR(TeraChem):
         :param double reks_rho_tol: DIIS error for REKS SCF iterations
         :param integer reks_max_iter: maximum number of REKS SCF iterations
         :param double shift: level shifting value in REKS SCF iterations
-        :param integer use_ssr_state: calculate SSR state, if not, treat SA-REKS
+        :param boolean use_ssr_state: calculate SSR state, if not, treat SA-REKS
         :param double cpreks_grad_tol: gradient tolerance for CP-REKS equations
         :param integer cpreks_max_iter: maximum number of CP-REKS iterations
         :param string qm_path: path for QM binary
@@ -27,7 +27,7 @@ class SSR(TeraChem):
     def __init__(self, molecule, ngpus=1, gpu_id="1", precision="dynamic", \
         version=1.92, functional="hf", basis_set="sto-3g", scf_rho_tol=1E-2, \
         scf_max_iter=300, ssr22=True, reks_rho_tol=1E-6, \
-        reks_max_iter=1000, shift=0.3, use_ssr_state=1, \
+        reks_max_iter=1000, shift=0.3, use_ssr_state=True, \
         cpreks_grad_tol=1E-6, cpreks_max_iter=1000, qm_path="./"):
         # Initialize TeraChem common variables
         super(SSR, self).__init__(functional, basis_set, qm_path, ngpus, \
@@ -54,13 +54,13 @@ class SSR(TeraChem):
         # Set 'l_nacme' with respect to the computational method
         # SSR can produce NACs, so we do not need to get NACME from CIoverlap
         # When we calculate SA-REKS state, NACME can be obtained directly from diabetic Hamiltonian
-        if (self.use_ssr_state == 1):
+        if (self.use_ssr_state):
             molecule.l_nacme = False
         else:
             # TODO : diabatic SH?
             molecule.l_nacme = True
 
-        if (molecule.nst > 1 and self.use_ssr_state == 0):
+        if (molecule.nst > 1 and not self.use_ssr_state):
             # SA-REKS state with SH
             # TODO : diabatic SH?
             self.re_calc = True
@@ -141,7 +141,7 @@ class SSR(TeraChem):
             if (molecule.nst == 1):
                 sa_reks = 0
             elif (molecule.nst == 2):
-                if (self.use_ssr_state == 1):
+                if (self.use_ssr_state):
                     sa_reks = 2
                 else:
                     sa_reks = 1
@@ -234,7 +234,7 @@ class SSR(TeraChem):
                 energy = energy.astype(float)
                 molecule.states[0].energy = energy[0]
             else:
-                if (self.use_ssr_state == 1):
+                if (self.use_ssr_state):
                     # SSR state
                     energy = re.findall('SSR state\s\d\s+([-]\S+)', log_out)
                     energy = np.array(energy)

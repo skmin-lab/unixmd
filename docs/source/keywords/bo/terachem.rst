@@ -55,7 +55,7 @@ determined from the **use_ssr_state** argument.
 +-------------------+------------------------------------------------+---------+
 | shift             | level shifting value in REKS SCF iterations    | 0.3     |
 +-------------------+------------------------------------------------+---------+
-| use_ssr_state     | calculate SSR state, if not, treat SA-REKS     | 1       |
+| use_ssr_state     | calculate SSR state, if not, treat SA-REKS     | True    |
 +-------------------+------------------------------------------------+---------+
 | cpreks_grad_tol   | gradient tolerance for CP-REKS equations       | 1E-6    |
 +-------------------+------------------------------------------------+---------+
