@@ -53,20 +53,9 @@ class SSR(TeraChem):
 
         # Set 'l_nacme' with respect to the computational method
         # SSR can produce NACs, so we do not need to get NACME from CIoverlap
-        # When we calculate SA-REKS state, NACME can be obtained directly from diabetic Hamiltonian
-        if (self.use_ssr_state):
-            molecule.l_nacme = False
-        else:
-            # TODO : diabatic SH?
-            molecule.l_nacme = True
-
-        if (molecule.nst > 1 and not self.use_ssr_state):
-            # SA-REKS state with SH
-            # TODO : diabatic SH?
-            self.re_calc = True
-        else:
-            # SSR state or single-state REKS
-            self.re_calc = False
+        # SSR can compute the gradient of several states simultaneously.
+        molecule.l_nacme = False
+        self.re_calc = False
 
     def get_bo(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from SSR method
@@ -148,12 +137,11 @@ class SSR(TeraChem):
 
             # NAC calculation options
             if (self.calc_coupling and sa_reks == 2):
-                # SSR state with SH, Eh
+                # SHXF, SH, Eh : SSR state
                 reks_target = 12
                 self.nac = "Yes"
             else:
-                # Any method with BOMD / SA-REKS state with SH
-                # TODO : diabatic SH?
+                # BOMD : SSR state, SA-REKS state or single-state REKS
                 reks_target = bo_list[0] + 1
                 self.nac = "No"
 
@@ -260,7 +248,7 @@ class SSR(TeraChem):
                 states.force = np.zeros((molecule.nat, molecule.nsp))
 
         if (self.nac == "Yes"):
-            # SSR state with SH, Eh
+            # SHXF, SH, Eh : SSR state
             for ist in range(molecule.nst):
                 tmp_f = f'Eigen state {ist + 1} gradient\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
                     '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
@@ -270,8 +258,6 @@ class SSR(TeraChem):
                 force = force.reshape(molecule.nat, 3, order='C')
                 molecule.states[ist].force = - np.copy(force)
         else:
-            # SH : SA-REKS state
-            # TODO : diabatic SH?
             # BOMD : SSR state, SA-REKS state or single-state REKS
             tmp_f = 'Gradient units are Hartree/Bohr\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
 	              '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
@@ -282,7 +268,6 @@ class SSR(TeraChem):
             molecule.states[bo_list[0]].force = - np.copy(force)
 
         # NAC
-        # TODO : NACME - diabatic SH?
         if (not calc_force_only and self.nac == "Yes"):
 
             # 1.92 version do not show H vector
