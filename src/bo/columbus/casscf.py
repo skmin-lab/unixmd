@@ -147,10 +147,10 @@ class CASSCF(Columbus):
         # Job control setting in colinp script of Columbus
         if (calc_force_only):
             # Start from 'mocoef' file
-            stdin += "5\n1\n1\n3\n11\n1\nn\n\n3\nn\n8\n4\n7\n\n"
+            stdin += "5\n1\n1\n3\n11\n1\nn\n3\ny\n8\n4\n7\n\n"
         else:
             # Start from SCF calculation
-            stdin += "5\n1\n1\n2\n3\n11\n1\nn\n\n3\nn\n8\n4\n7\n\n"
+            stdin += "5\n1\n1\n2\n3\n11\n1\nn\n3\ny\n8\n4\n7\n\n"
 
         file_name = "stdin"
         with open(file_name, "w") as f:
