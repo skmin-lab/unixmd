@@ -77,22 +77,55 @@ class SSR(TeraChem):
             :param double dt: time interval
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
+        self.copy_files(istep)
         super().get_bo(base_dir, calc_force_only)
         self.write_xyz(molecule)
-        self.get_input(molecule, bo_list, calc_force_only)
+        self.get_input(molecule, bo_list)
         self.run_QM(base_dir, istep, bo_list)
-        self.extract_BO(molecule, bo_list, calc_force_only)
+        self.extract_BO(molecule, bo_list)
         self.move_dir(base_dir)
 
-    def get_input(self, molecule, bo_list, calc_force_only):
+    def copy_files(self, istep):
+        """ Copy necessary scratch files in previous step
+
+            :param integer istep: current MD step
+        """
+        # Copy required files to read initial guess
+        if (self.guess == "read" and istep >= 0):
+            # After T = 0.0 s
+            shutil.copy(os.path.join(self.scr_qm_dir, "./scr/c0"), \
+                os.path.join(self.scr_qm_dir, "../c0"))
+
+    def get_input(self, molecule, bo_list):
         """ Generate TeraChem input files: input.tcin
 
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation
-            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # Make 'input.tcin' file
         input_terachem = ""
+
+        # Guess Block
+        if (self.guess == "read"):
+            c0_dir = os.path.join(self.scr_qm_dir, "scr")
+            os.makedirs(c0_dir)
+            if (istep == -1):
+                if (os.path.isfile(self.guess_file)):
+                    # Copy guess file to currect directory
+                    shutil.copy(self.guess_file, os.path.join(c0_dir, "c0"))
+                    restart = 1
+                    dft = False
+                else:
+                    restart = 0
+                    dft = True
+            elif (istep >= 0):
+                # Move previous file to currect directory
+                os.rename("../c0", os.path.join(c0_dir, "c0"))
+                restart = 1
+                dft = False
+        elif (self.guess == "dft"):
+            restart = 0
+            dft = True
 
         # Control Block
         input_control = \
@@ -113,25 +146,23 @@ class SSR(TeraChem):
         """)
         input_terachem += input_system
 
-        # DFT Block
-        input_dft = textwrap.dedent(f"""\
+        # Setting Block
+        input_setting = textwrap.dedent(f"""\
         method {self.functional}
         basis {self.basis_set}
-        convthre {self.scf_rho_tol}
-        maxit {self.scf_max_iter}
         charge {molecule.charge}
 
         """)
-        input_terachem += input_dft
+        input_terachem += input_setting
 
-        # Options for SCF initial guess
-        # TODO : read information from previous step
-#        if (calc_force_only):
-#            guess = 1
-#            input_dft_guess = textwrap.dedent(f"""\
-#            guess scr/c0
-#            """)
-#            input_terachem += input_dft_guess
+        # DFT Block
+        if (dft):
+            input_dft = textwrap.dedent(f"""\
+            convthre {self.scf_rho_tol}
+            maxit {self.scf_max_iter}
+
+            """)
+            input_terachem += input_dft
 
         # REKS Block
         if (self.ssr22):
@@ -157,14 +188,6 @@ class SSR(TeraChem):
 
             # TODO: pointcharges? in qmmm?
 
-            # Options for REKS SCF initial guess
-            # TODO : read information from previous step
-#            if (restart):
-#                reks_guess = 1
-#            else:
-#                reks_guess = 0
-            reks_guess = 0
-
             input_reks_basic = textwrap.dedent(f"""\
             reks22 yes
             reks_convthre {self.reks_rho_tol}
@@ -173,9 +196,16 @@ class SSR(TeraChem):
             reks_shift {self.shift}
             sa_reks {sa_reks}
             reks_target {reks_target}
-            reks_guess {reks_guess}
             """)
             input_terachem += input_reks_basic
+
+            if (restart == 1):
+                input_reks_guess = textwrap.dedent(f"""\
+                reks_guess {restart}
+                guess ./scr/c0
+                """)
+                input_terachem += input_reks_guess
+
             if (molecule.nst > 1):
                 input_cpreks = textwrap.dedent(f"""\
                 cpreks_thresh {self.cpreks_grad_tol}
@@ -207,12 +237,11 @@ class SSR(TeraChem):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
             shutil.copy("log", os.path.join(tmp_dir, log_step))
 
-    def extract_BO(self, molecule, bo_list, calc_force_only):
+    def extract_BO(self, molecule, bo_list):
         """ Read the output files to get BO information
 
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation
-            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # Read 'log' file
         file_name = "log"
@@ -220,42 +249,40 @@ class SSR(TeraChem):
             log_out = f.read()
 
         # Energy
-        if (not calc_force_only):
-            for states in molecule.states:
-                states.energy = 0.
+        for states in molecule.states:
+            states.energy = 0.
 
-            if (molecule.nst == 1):
-                # Single-state REKS
-                tmp_e = 'REKS energy:\s+([-]\S+)'
+        if (molecule.nst == 1):
+            # Single-state REKS
+            tmp_e = 'REKS energy:\s+([-]\S+)'
+            energy = re.findall(tmp_e, log_out)
+            energy = np.array(energy)
+            energy = energy.astype(float)
+            molecule.states[0].energy = energy[0]
+        else:
+            if (self.use_ssr_state):
+                # SSR state
+                energy = re.findall('SSR state\s\d\s+([-]\S+)', log_out)
+                energy = np.array(energy)
+                energy = energy.astype(float)
+                for ist in range(molecule.nst):
+                    molecule.states[ist].energy = energy[ist]
+            else:
+                # SA-REKS state
+                tmp_e = '\(GSS\):\s+([-]\S+)'
                 energy = re.findall(tmp_e, log_out)
                 energy = np.array(energy)
                 energy = energy.astype(float)
                 molecule.states[0].energy = energy[0]
-            else:
-                if (self.use_ssr_state):
-                    # SSR state
-                    energy = re.findall('SSR state\s\d\s+([-]\S+)', log_out)
-                    energy = np.array(energy)
-                    energy = energy.astype(float)
-                    for ist in range(molecule.nst):
-                        molecule.states[ist].energy = energy[ist]
-                else:
-                    # SA-REKS state
-                    tmp_e = '\(GSS\):\s+([-]\S+)'
-                    energy = re.findall(tmp_e, log_out)
-                    energy = np.array(energy)
-                    energy = energy.astype(float)
-                    molecule.states[0].energy = energy[0]
-                    tmp_e = '\(OSS\):\s+([-]\S+)'
-                    energy = re.findall(tmp_e, log_out)
-                    energy = np.array(energy)
-                    energy = energy.astype(float)
-                    molecule.states[1].energy = energy[0]
+                tmp_e = '\(OSS\):\s+([-]\S+)'
+                energy = re.findall(tmp_e, log_out)
+                energy = np.array(energy)
+                energy = energy.astype(float)
+                molecule.states[1].energy = energy[0]
 
         # Force
-        if (not calc_force_only):
-            for states in molecule.states:
-                states.force = np.zeros((molecule.nat, molecule.nsp))
+        for states in molecule.states:
+            states.force = np.zeros((molecule.nat, molecule.nsp))
 
         if (self.nac == "Yes"):
             # SHXF, SH, Eh : SSR state
@@ -278,7 +305,7 @@ class SSR(TeraChem):
             molecule.states[bo_list[0]].force = - np.copy(force)
 
         # NAC
-        if (not calc_force_only and self.nac == "Yes"):
+        if (self.nac == "Yes"):
 
             # 1.92 version do not show H vector
             if (self.version == 1.92):
@@ -320,7 +347,7 @@ class SSR(TeraChem):
                             nac = np.array(nac[kst])
                             nac = nac.astype(float)
                             nac = nac.reshape(molecule.nat, 3, order='C')
-                            molecule.nac[ist, jst] = nac
+                            molecule.nac[ist, jst] = np.copy(nac)
                         kst += 1
                     else:
                         molecule.nac[ist, jst] = - molecule.nac[jst, ist]
