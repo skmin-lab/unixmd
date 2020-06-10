@@ -53,8 +53,6 @@ determined from the **use_ssr_state** argument.
 +-------------------+------------------------------------------------+---------+
 | reks_max_iter     | maximum number of REKS SCF iterations          | 1000    |
 +-------------------+------------------------------------------------+---------+
-| reks_diis         | DIIS acceleration in REKS SCF iterations       | yes     |
-+-------------------+------------------------------------------------+---------+
 | shift             | level shifting value in REKS SCF iterations    | 0.3     |
 +-------------------+------------------------------------------------+---------+
 | use_ssr_state     | calculate SSR state, if not, treat SA-REKS     | 1       |

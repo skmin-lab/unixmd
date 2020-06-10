@@ -15,7 +15,6 @@ class SSR(TeraChem):
         :param boolean ssr22: use REKS(2,2) calculation?
         :param double reks_rho_tol: DIIS error for REKS SCF iterations
         :param integer reks_max_iter: maximum number of REKS SCF iterations
-        :param string reks_diis: DIIS acceleration in REKS SCF iterations
         :param double shift: level shifting value in REKS SCF iterations
         :param integer use_ssr_state: calculate SSR state, if not, treat SA-REKS
         :param double cpreks_grad_tol: gradient tolerance for CP-REKS equations
@@ -28,7 +27,7 @@ class SSR(TeraChem):
     def __init__(self, molecule, ngpus=1, gpu_id="1", precision="dynamic", \
         version=1.92, functional="hf", basis_set="sto-3g", scf_rho_tol=1E-2, \
         scf_max_iter=300, ssr22=True, reks_rho_tol=1E-6, \
-        reks_max_iter=1000, reks_diis="yes", shift=0.3, use_ssr_state=1, \
+        reks_max_iter=1000, shift=0.3, use_ssr_state=1, \
         cpreks_grad_tol=1E-6, cpreks_max_iter=1000, qm_path="./"):
         # Initialize TeraChem common variables
         super(SSR, self).__init__(functional, basis_set, qm_path, ngpus, \
@@ -44,7 +43,6 @@ class SSR(TeraChem):
                 raise ValueError (f"( {self.qm_method}.{call_name()} ) 3-state REKS not implemented! {molecule.nst}")
             self.reks_rho_tol = reks_rho_tol
             self.reks_max_iter = reks_max_iter
-            self.reks_diis = reks_diis
             self.shift = shift
             self.use_ssr_state = use_ssr_state
             if (molecule.nst > 1):
@@ -173,7 +171,7 @@ class SSR(TeraChem):
             reks22 yes
             reks_convthre {self.reks_rho_tol}
             reks_maxit {self.reks_max_iter}
-            reks_diis {self.reks_diis}
+            reks_diis yes
             reks_shift {self.shift}
             sa_reks {sa_reks}
             reks_target {reks_target}
