@@ -59,9 +59,6 @@ class Eh(MQC):
             unixmd_dir, SH_chk=False)
         self.print_init(molecule, theory, thermostat, debug)
 
-        if (molecule.l_nacme):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Ehrenfest dynamics needs NAC! {molecule.l_nacme}")
-
         # Calculate initial input geometry at t = 0.0 s
         theory.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=False)
         if (not molecule.l_nacme):

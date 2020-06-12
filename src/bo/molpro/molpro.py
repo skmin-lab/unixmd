@@ -23,8 +23,6 @@ class Molpro(BO_calculator):
         self.version = version
 
         if (self.version != 2015.1):
-            raise ValueError ("Other Versions Not Implemented")
-
-
+            raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")
 
 

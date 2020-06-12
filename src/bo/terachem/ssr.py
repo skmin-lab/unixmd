@@ -336,7 +336,7 @@ class SSR(TeraChem):
             for ist in range(molecule.nst):
                 for jst in range(molecule.nst):
                     if (ist == jst):
-                        molecule.nac[ist, jst, :, :] = 0.
+                        molecule.nac[ist, jst] = np.zeros((molecule.nat, molecule.nsp))
                     elif (ist < jst):
                         if (self.version == 1.92):
                             molecule.nac[ist, jst] = Hvec

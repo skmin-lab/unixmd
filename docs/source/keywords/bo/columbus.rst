@@ -24,8 +24,8 @@ CASSCF
 
 .. note:: Currently, ``guess`` variable reads the following two strings.
    One is ``hf``, which uses HF orbitlas as initial guess of CASSCF method for every time step.
-   The other is ``read``, which reads wf.wfu file generated from previous step.
-   If ``guess_file`` exists, then wf.wfu file is used as initial guess at t = 0.0 s.
+   The other is ``read``, which reads mocoef file generated from previous step.
+   If ``guess_file`` exists, then mocoef file is used as initial guess at t = 0.0 s.
 
 +--------------------+-----------------------------------------------------+--------------+
 | Keywords           | Work                                                | Default      |

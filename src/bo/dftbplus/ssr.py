@@ -395,7 +395,7 @@ class SSR(DFTBplus):
             for ist in range(molecule.nst):
                 for jst in range(molecule.nst):
                     if (ist == jst):
-                        molecule.nac[ist, jst, :, :] = 0.
+                        molecule.nac[ist, jst] = np.zeros((molecule.nat, molecule.nsp))
                     elif (ist < jst):
                         tmp_c = 'non-adiabatic coupling' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
                         nac = re.findall(tmp_c, log_out)
