@@ -1,7 +1,7 @@
 from __future__ import division
 from bo.columbus.columbus import Columbus
 from bo.columbus.colbasis import *
-from misc import data, au_to_A, A_to_au, amu_to_au
+from misc import data, au_to_A, A_to_au, amu_to_au, call_name
 import os, shutil, re, textwrap
 import numpy as np
 
@@ -18,17 +18,24 @@ class CASSCF(Columbus):
         :param double version: version of Columbus program
     """
     def __init__(self, molecule, basis_set="6-31g*", memory="500", \
-        scf_en_tol=9, scf_max_iter=40, mcscf_en_tol=8, mcscf_max_iter=100, \
-        cpscf_grad_tol=6, cpscf_max_iter=100, \
+        guess="hf", guess_file="./mocoef", scf_en_tol=9, scf_max_iter=40, \
+        mcscf_en_tol=8, mcscf_max_iter=100, cpscf_grad_tol=6, cpscf_max_iter=100, \
         active_elec=2, active_orb=2, qm_path="./", nthreads=1, version=7.0):
         # Initialize Columbus common variables
         super(CASSCF, self).__init__(molecule, basis_set, memory, qm_path, nthreads, version)
 
         # Initialize Columbus CASSCF variables
-        # TODO : restart option? from mocoef file
+        # Set initial guess for CASSCF calculation
+        self.guess = guess
+        self.guess_file = guess_file
+        if (not (self.guess == "hf" or self.guess == "read")):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
+
+        # HF calculation for initial guess of CASSCF calculation
         self.scf_en_tol = scf_en_tol
         self.scf_max_iter = scf_max_iter
 
+        # CASSCF calculation
         self.mcscf_en_tol = mcscf_en_tol
         self.mcscf_max_iter = mcscf_max_iter
         self.active_elec = active_elec
@@ -38,7 +45,7 @@ class CASSCF(Columbus):
 
         # CASSCF calculation do not support parallel computation
         if (self.nthreads > 1):
-            raise ValueError ("Parallel CASSCF Not Implemented")
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Parallel CASSCF not implemented! {self.nthreads}")
 
         # Calculate number of frozen, closed and occ orbitals in CASSCF method
         # Note that there is no positive frozen core orbitals in CASSCF
@@ -48,7 +55,7 @@ class CASSCF(Columbus):
 
         # Check the closed shell for systems
         if (not int(molecule.nelec) % 2 == 0):
-            raise ValueError ("Only closed shell configuration Implemented")
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Only closed shell configuration implemented! {int(molecule.nelec)}")
 
         # Set 'l_nacme' with respect to the computational method
         # CASSCF can produce NACs, so we do not need to get NACME from CIoverlap
@@ -67,12 +74,24 @@ class CASSCF(Columbus):
             :param double dt: time interval
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
+        self.copy_files(istep)
         super().get_bo(base_dir, calc_force_only)
         self.write_xyz(molecule)
         self.get_input(molecule, bo_list, calc_force_only)
         self.run_QM(base_dir, istep, bo_list)
         self.extract_BO(molecule, bo_list, calc_force_only)
         self.move_dir(base_dir)
+
+    def copy_files(self, istep):
+        """ Copy necessary scratch files in previous step
+
+            :param integer istep: current MD step
+        """
+        # Copy required files to read initial guess
+        if (self.guess == "read" and istep >= 0):
+            # After T = 0.0 s
+            shutil.copy(os.path.join(self.scr_qm_dir, "./MOCOEFS/mocoef_mc.sp"), \
+                os.path.join(self.scr_qm_dir, "../mocoef"))
 
     def get_input(self, molecule, bo_list, calc_force_only):
         """ Generate Columbus input files: geom, prepin, stdin, mcscfin, transmomin, etc
@@ -93,6 +112,26 @@ class CASSCF(Columbus):
         file_name = "geom"
         with open(file_name, "w") as f:
             f.write(geom)
+
+        # Scratch Block
+        if (self.guess == "read"):
+            if (istep == -1):
+                if (os.path.isfile(self.guess_file)):
+                    # Copy guess file to currect directory
+                    shutil.copy(self.guess_file, os.path.join(self.scr_qm_dir, "mocoef"))
+                    restart = 1
+                    hf = False
+                else:
+                    restart = 0
+                    hf = True
+            elif (istep >= 0):
+                # Move previous file to currect directory
+                os.rename("../mocoef", os.path.join(self.scr_qm_dir, "mocoef"))
+                restart = 1
+                hf = False
+        elif (self.guess == "hf"):
+            restart = 0
+            hf = True
 
         # Set basis sets information
         # TODO : move to columbus.py, this is common part
@@ -117,7 +156,7 @@ class CASSCF(Columbus):
         elif (self.basis_set == "6-311g+*"):
             tmp_basis = "\n".join([f"{s_311pgs[f'{itype}']}" for itype in self.atom_type])
         else:
-            raise ValueError ("Basis set not yet implemented in Columbus input: add manually (colbasis.py)")
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) No basis set in colbasis.py! {self.basis_set}")
 
         # Generate new prepinp script
         shutil.copy(os.path.join(self.qm_path, "prepinp"), "prepinp_copy")
@@ -150,12 +189,15 @@ class CASSCF(Columbus):
 
         # Generate 'stdin' file used in colinp script of Columbus
         # DALTON, SCF input setting in colinp script of Columbus
-        if (calc_force_only):
-            # Here, n in DALTON means no change of basis set
-            # Here, y in SCF setting means automatic re-building using 'makscfky' file
-            stdin = f"\ny\n1\nn\nno\nn\n2\ny\n"
+        if (hf):
+            if (calc_force_only):
+                # Here, n in DALTON means no change of basis set
+                # When we compute once more, do not include SCF calculation
+                stdin = f"\ny\n1\nn\nno\nn\n"
+            else:
+                stdin = f"\ny\n1\nn\nno\n2\nyes\n{self.docc_orb}\nyes\nyes\n{self.scf_max_iter}\n{self.scf_en_tol}\nno\n1\n\n"
         else:
-            stdin = f"\ny\n1\nn\nno\n2\nyes\n{self.docc_orb}\nyes\nyes\n{self.scf_max_iter}\n{self.scf_en_tol}\nno\n1\n\n"
+            stdin = f"\ny\n1\nn\nno\nn\n"
 
         # MCSCF input setting in colinp script of Columbus
         if (calc_force_only):
@@ -171,8 +213,12 @@ class CASSCF(Columbus):
             # Here, y in job control setting means discard of already existing 'control.run' file
             stdin += "5\n1\ny\n1\n3\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
         else:
-            # Start from SCF calculation
-            stdin += "5\n1\n1\n2\n3\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
+            if (restart == 1):
+                # Start from MCSCF calculation
+                stdin += "5\n1\n1\n3\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
+            else:
+                # Start from SCF calculation
+                stdin += "5\n1\n1\n2\n3\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
 
         file_name = "stdin"
         with open(file_name, "w") as f:
@@ -252,10 +298,6 @@ class CASSCF(Columbus):
 
         # Copy 'daltcomm' files
         shutil.copy("daltcomm", "daltcomm.new")
-
-        # Copy 'mocoef' file to scratch directory
-        if (calc_force_only):
-            shutil.copy("MOCOEFS/mocoef_mc.sp", "mocoef")
 
     def run_QM(self, base_dir, istep, bo_list):
         """ Run CASSCF calculation and save the output files to QMlog directory
