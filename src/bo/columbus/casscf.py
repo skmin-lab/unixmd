@@ -1,6 +1,5 @@
 from __future__ import division
 from bo.columbus.columbus import Columbus
-from bo.columbus.colbasis import *
 from misc import data, au_to_A, A_to_au, amu_to_au, call_name
 import os, shutil, re, textwrap
 import numpy as np
@@ -140,31 +139,6 @@ class CASSCF(Columbus):
             restart = 1
             hf = False
 
-        # Set basis sets information
-        # TODO : move to columbus.py, this is common part
-        if (self.basis_set == "cc-pvdz"):
-            tmp_basis = "\n".join([f"{cc_pvdz[f'{itype}']}" for itype in self.atom_type])
-        elif (self.basis_set == "cc-pvtz"):
-            tmp_basis = "\n".join([f"{cc_pvtz[f'{itype}']}" for itype in self.atom_type])
-        elif (self.basis_set == "cc-pvqz"):
-            tmp_basis = "\n".join([f"{cc_pvqz[f'{itype}']}" for itype in self.atom_type])
-        elif (self.basis_set == "3-21g*"):
-            tmp_basis = "\n".join([f"{t_21gs[f'{itype}']}" for itype in self.atom_type])
-        elif (self.basis_set == "3-21+g*"):
-            tmp_basis = "\n".join([f"{t_21pgs[f'{itype}']}" for itype in self.atom_type])
-        elif (self.basis_set == "6-31g"):
-            tmp_basis = "\n".join([f"{s_31g[f'{itype}']}" for itype in self.atom_type])
-        elif (self.basis_set == "6-31g*"):
-            tmp_basis = "\n".join([f"{s_31gs[f'{itype}']}" for itype in self.atom_type])
-        elif (self.basis_set == "6-31+g*"):
-            tmp_basis = "\n".join([f"{s_31pgs[f'{itype}']}" for itype in self.atom_type])
-        elif (self.basis_set == "6-311g*"):
-            tmp_basis = "\n".join([f"{s_311gs[f'{itype}']}" for itype in self.atom_type])
-        elif (self.basis_set == "6-311g+*"):
-            tmp_basis = "\n".join([f"{s_311pgs[f'{itype}']}" for itype in self.atom_type])
-        else:
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) No basis set in colbasis.py! {self.basis_set}")
-
         # Generate new prepinp script
         shutil.copy(os.path.join(self.qm_path, "prepinp"), "prepinp_copy")
 
@@ -185,7 +159,7 @@ class CASSCF(Columbus):
         else:
             prepin = "1\nc1\ngeom\n\n"
 
-        prepin += tmp_basis
+        prepin += self.basis_nums
         prepin += "\ny\n\n"
 
         file_name = "prepin"
