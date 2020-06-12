@@ -18,19 +18,23 @@ class CASSCF(Columbus):
         :param double version: version of Columbus program
     """
     def __init__(self, molecule, basis_set="6-31g*", memory="500", \
+        scf_en_tol=9, scf_max_iter=40, mcscf_en_tol=8, mcscf_max_iter=100, \
+        cpscf_grad_tol=6, cpscf_max_iter=100, \
         active_elec=2, active_orb=2, qm_path="./", nthreads=1, version=7.0):
         # Initialize Columbus common variables
         super(CASSCF, self).__init__(molecule, basis_set, memory, qm_path, nthreads, version)
 
         # Initialize Columbus CASSCF variables
         # TODO : restart option? from mocoef file
-#        self.max_iter = max_iter
-#        self.scf_en_tol = scf_en_tol
-#        self.scf_grad_tol = scf_grad_tol
-#        self.scf_step_tol = scf_step_tol
+        self.scf_en_tol = scf_en_tol
+        self.scf_max_iter = scf_max_iter
+
+        self.mcscf_en_tol = mcscf_en_tol
+        self.mcscf_max_iter = mcscf_max_iter
         self.active_elec = active_elec
         self.active_orb = active_orb
-#        self.cpscf_grad_tol = cpscf_grad_tol
+        self.cpscf_grad_tol = cpscf_grad_tol
+        self.cpscf_max_iter = cpscf_max_iter
 
         # CASSCF calculation do not support parallel computation
         if (self.nthreads > 1):
@@ -151,10 +155,11 @@ class CASSCF(Columbus):
             # Here, y in SCF setting means automatic re-building using 'makscfky' file
             stdin = f"\ny\n1\nn\nno\nn\n2\ny\n"
         else:
-            stdin = f"\ny\n1\nn\nno\n2\nyes\n{self.docc_orb}\nyes\nno\n\n"
+            stdin = f"\ny\n1\nn\nno\n2\nyes\n{self.docc_orb}\nyes\nyes\n{self.scf_max_iter}\n{self.scf_en_tol}\nno\n1\n\n"
 
         # MCSCF input setting in colinp script of Columbus
         if (calc_force_only):
+            # Here, y in MCSCF setting means skip of writting DRT table
             # Here, y in MCSCF setting means overwritting of 'cigrdin' file
             stdin += f"3\nn\n3\ny\n" + "\t" * 14 + "\ny\n"
         else:
@@ -177,27 +182,36 @@ class CASSCF(Columbus):
 
         # Manually modify input files
         # Modify 'mcscfin' files
-        if (not calc_force_only):
-            file_name = "mcscfin"
-            with open(file_name, "r") as f:
-                mcscfin = f.readlines()
+        file_name = "mcscfin"
+        with open(file_name, "r") as f:
+            mcscfin = f.readlines()
 
-            mcscf_length = len(mcscfin)
+        mcscf_length = len(mcscfin)
+        if (calc_force_only):
+            target_line = mcscf_length
+        else:
             target_line = mcscf_length - 3
 
-            new_mcscf = ""
-            for i in range (target_line):
+        new_mcscf = ""
+        for i in range(target_line):
+            if ("niter" in mcscfin[i]):
+                new_mcscf += f"  niter={self.mcscf_max_iter},\n"
+            elif ("tol(1)" in mcscfin[i]):
+                new_mcscf += f"  tol(1)=1.e-{self.mcscf_en_tol},\n"
+            else:
                 new_mcscf += mcscfin[i]
+
+        if (not calc_force_only):
             new_mcscf += f"  NAVST(1) = {molecule.nst},\n"
-            for i in range (molecule.nst):
+            for i in range(molecule.nst):
                 new_mcscf += f"  WAVST(1,{i + 1})=1 ,\n"
             new_mcscf += " &end\n"
 
-            os.rename("mcscfin", "mcscfin.old")
+        os.rename("mcscfin", "mcscfin.old")
 
-            file_name = "mcscfin"
-            with open(file_name, "w") as f:
-                f.write(new_mcscf)
+        file_name = "mcscfin"
+        with open(file_name, "w") as f:
+            f.write(new_mcscf)
 
         # Modify 'transmomin' files
         transmomin = "MCSCF\n"
@@ -207,13 +221,34 @@ class CASSCF(Columbus):
 
         # NAC part
         if (not calc_force_only):
-            for i in range (molecule.nst):
-                for j in range (i):
+            for i in range(molecule.nst):
+                for j in range(i):
                     transmomin += f"1  {i + 1}  1  {j + 1}\n"
 
         file_name = "transmomin"
         with open(file_name, "w") as f:
             f.write(transmomin)
+
+        # Manually modify input files
+        # Modify 'cigrdin' files
+        file_name = "cigrdin"
+        with open(file_name, "r") as f:
+            cigrdin = f.readlines()
+
+        new_cigrd = ""
+        for line in cigrdin:
+            if ("nmiter" in line):
+                new_cigrd += f" nmiter= {self.cpscf_max_iter}, print=0, fresdd=1,\n"
+            elif ("rtol" in line):
+                new_cigrd += f" rtol=1e-{self.cpscf_grad_tol}, dtol=1e-6,\n"
+            else:
+                new_cigrd += line
+
+        os.rename("cigrdin", "cigrdin.old")
+
+        file_name = "cigrdin"
+        with open(file_name, "w") as f:
+            f.write(new_cigrd)
 
         # Copy 'daltcomm' files
         shutil.copy("daltcomm", "daltcomm.new")
