@@ -129,7 +129,12 @@ class CASSCF(Columbus):
         os.chmod("prepinp_fix", 0o755)
 
         # Generate 'prepin' file used in prepinp script of Columbus
-        prepin = "1\nc1\ngeom\n\n"
+        if (calc_force_only):
+            # Here, y means overwritting of 'inpcol' file
+            prepin = "1\ny\nc1\ngeom\n\n"
+        else:
+            prepin = "1\nc1\ngeom\n\n"
+
         prepin += tmp_basis
         prepin += "\ny\n\n"
 
@@ -141,16 +146,28 @@ class CASSCF(Columbus):
 
         # Generate 'stdin' file used in colinp script of Columbus
         # DALTON, SCF input setting in colinp script of Columbus
-        stdin = f"\ny\n1\nn\nno\n2\nyes\n{self.docc_orb}\nyes\nno\n\n"
+        if (calc_force_only):
+            # Here, n in DALTON means no change of basis set
+            # Here, y in SCF setting means automatic re-building using 'makscfky' file
+            stdin = f"\ny\n1\nn\nno\nn\n2\ny\n"
+        else:
+            stdin = f"\ny\n1\nn\nno\n2\nyes\n{self.docc_orb}\nyes\nno\n\n"
+
         # MCSCF input setting in colinp script of Columbus
-        stdin += f"3\nn\n3\n1\n{int(molecule.nelec)}\n1\n1\n0\n0\n{self.closed_orb}\n{self.active_orb}\nn\n" + "\t" * 14 + "\n"
+        if (calc_force_only):
+            # Here, y in MCSCF setting means overwritting of 'cigrdin' file
+            stdin += f"3\nn\n3\ny\n" + "\t" * 14 + "\ny\n"
+        else:
+            stdin += f"3\nn\n3\n1\n{int(molecule.nelec)}\n1\n1\n0\n0\n{self.closed_orb}\n{self.active_orb}\nn\n" + "\t" * 14 + "\n"
+
         # Job control setting in colinp script of Columbus
         if (calc_force_only):
             # Start from 'mocoef' file
-            stdin += "5\n1\n1\n3\n11\n1\nn\n\n3\nn\n8\n4\n7\n\n"
+            # Here, y in job control setting means discard of already existing 'control.run' file
+            stdin += "5\n1\ny\n1\n3\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
         else:
             # Start from SCF calculation
-            stdin += "5\n1\n1\n2\n3\n11\n1\nn\n\n3\nn\n8\n4\n7\n\n"
+            stdin += "5\n1\n1\n2\n3\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
 
         file_name = "stdin"
         with open(file_name, "w") as f:
@@ -160,26 +177,27 @@ class CASSCF(Columbus):
 
         # Manually modify input files
         # Modify 'mcscfin' files
-        file_name = "mcscfin"
-        with open(file_name, "r") as f:
-            mcscfin = f.readlines()
+        if (not calc_force_only):
+            file_name = "mcscfin"
+            with open(file_name, "r") as f:
+                mcscfin = f.readlines()
 
-        mcscf_length = len(mcscfin)
-        target_line = mcscf_length - 3
+            mcscf_length = len(mcscfin)
+            target_line = mcscf_length - 3
 
-        new_mcscf = ""
-        for i in range (target_line):
-            new_mcscf += mcscfin[i]
-        new_mcscf += f"  NAVST(1) = {molecule.nst},\n"
-        for i in range (molecule.nst):
-            new_mcscf += f"  WAVST(1,{i + 1})=1 ,\n"
-        new_mcscf += " &end\n"
+            new_mcscf = ""
+            for i in range (target_line):
+                new_mcscf += mcscfin[i]
+            new_mcscf += f"  NAVST(1) = {molecule.nst},\n"
+            for i in range (molecule.nst):
+                new_mcscf += f"  WAVST(1,{i + 1})=1 ,\n"
+            new_mcscf += " &end\n"
 
-        os.rename("mcscfin", "mcscfin.old")
+            os.rename("mcscfin", "mcscfin.old")
 
-        file_name = "mcscfin"
-        with open(file_name, "w") as f:
-            f.write(new_mcscf)
+            file_name = "mcscfin"
+            with open(file_name, "w") as f:
+                f.write(new_mcscf)
 
         # Modify 'transmomin' files
         transmomin = "MCSCF\n"
