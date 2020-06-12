@@ -77,7 +77,7 @@ class CASSCF(Columbus):
         self.copy_files(istep)
         super().get_bo(base_dir, calc_force_only)
         self.write_xyz(molecule)
-        self.get_input(molecule, bo_list, calc_force_only)
+        self.get_input(molecule, istep, bo_list, calc_force_only)
         self.run_QM(base_dir, istep, bo_list)
         self.extract_BO(molecule, bo_list, calc_force_only)
         self.move_dir(base_dir)
@@ -93,10 +93,11 @@ class CASSCF(Columbus):
             shutil.copy(os.path.join(self.scr_qm_dir, "./MOCOEFS/mocoef_mc.sp"), \
                 os.path.join(self.scr_qm_dir, "../mocoef"))
 
-    def get_input(self, molecule, bo_list, calc_force_only):
+    def get_input(self, molecule, istep, bo_list, calc_force_only):
         """ Generate Columbus input files: geom, prepin, stdin, mcscfin, transmomin, etc
 
             :param object molecule: molecule object
+            :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
@@ -132,6 +133,12 @@ class CASSCF(Columbus):
         elif (self.guess == "hf"):
             restart = 0
             hf = True
+
+        if (calc_force_only and self.guess == "hf"):
+            shutil.copy(os.path.join(self.scr_qm_dir, "./MOCOEFS/mocoef_mc.sp"), \
+                os.path.join(self.scr_qm_dir, "mocoef"))
+            restart = 1
+            hf = False
 
         # Set basis sets information
         # TODO : move to columbus.py, this is common part
@@ -190,13 +197,9 @@ class CASSCF(Columbus):
         # Generate 'stdin' file used in colinp script of Columbus
         # DALTON, SCF input setting in colinp script of Columbus
         if (hf):
-            if (calc_force_only):
-                # Here, n in DALTON means no change of basis set
-                # When we compute once more, do not include SCF calculation
-                stdin = f"\ny\n1\nn\nno\nn\n"
-            else:
-                stdin = f"\ny\n1\nn\nno\n2\nyes\n{self.docc_orb}\nyes\nyes\n{self.scf_max_iter}\n{self.scf_en_tol}\nno\n1\n\n"
+            stdin = f"\ny\n1\nn\nno\n2\nyes\n{self.docc_orb}\nyes\nyes\n{self.scf_max_iter}\n{self.scf_en_tol}\nno\n1\n\n"
         else:
+            # Here, n in DALTON means no change of basis set
             stdin = f"\ny\n1\nn\nno\nn\n"
 
         # MCSCF input setting in colinp script of Columbus
@@ -313,8 +316,12 @@ class CASSCF(Columbus):
         # Copy the output file to 'QMlog' directory
         tmp_dir = os.path.join(base_dir, "QMlog")
         if (os.path.exists(tmp_dir)):
-            log_step = f"log.{istep + 1}.{bo_list[0]}"
+            log_step = f"runls.{istep + 1}.{bo_list[0]}"
             shutil.copy("runls", os.path.join(tmp_dir, log_step))
+        # Remove scratch 'WORK' directory
+        tmp_dir = os.path.join(self.scr_qm_dir, "WORK")
+        if (os.path.exists(tmp_dir)):
+            shutil.rmtree(tmp_dir)
 
     def extract_BO(self, molecule, bo_list, calc_force_only):
         """ Read the output files to get BO information
