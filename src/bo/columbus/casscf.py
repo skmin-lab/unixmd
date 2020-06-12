@@ -10,6 +10,14 @@ class CASSCF(Columbus):
         :param object molecule: molecule object
         :param string basis_set: basis set information
         :param string memory: allocatable memory in the calculations
+        :param string guess: initial guess for MCSCF method
+        :param string guess_file: initial guess file
+        :param integer scf_en_tol: energy convergence for SCF iterations
+        :param integer scf_max_iter: maximum number of SCF iterations
+        :param integer mcscf_en_tol: energy convergence for MCSCF iterations
+        :param integer mcscf_max_iter: maximum number of MCSCF iterations
+        :param integer cpscf_grad_tol: gradient tolerance for CP-MCSCF equations
+        :param integer cpscf_max_iter: maximum number of iterations for CP-MCSCF equations
         :param integer active_elec: number of electrons in active space
         :param integer active_orb: number of orbitals in active space
         :param string qm_path: path for QM binary
@@ -338,14 +346,14 @@ class CASSCF(Columbus):
             force = np.array(force[0])
             force = force.astype(float)
             force = force.reshape(molecule.nat, 3, order='C')
-            molecule.states[bo_list[0]].force = - np.copy(force)
+            molecule.states[ist].force = - np.copy(force)
 
         # NAC
         if (not calc_force_only and self.calc_coupling):
             for ist in range(molecule.nst):
                 for jst in range(molecule.nst):
                     if (ist == jst):
-                        molecule.nac[ist, jst, :, :] = 0.
+                        molecule.nac[ist, jst] = np.zeros((molecule.nat, molecule.nsp))
                     elif (ist < jst):
                         # Read 'cartgrd.nad.drt1.state?.drt1.state?.sp' file
                         file_name = f"GRADIENTS/cartgrd.nad.drt1.state{jst + 1}.drt1.state{ist + 1}.sp"
