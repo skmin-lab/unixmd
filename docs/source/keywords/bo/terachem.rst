@@ -28,47 +28,54 @@ SSR
 
 UNI-xMD automatically determines single-state REKS as BO interfaces for ground state BOMD.
 When we include the excited states, SA-REKS or SSR methods can be exploited and these are
-determined from the **use_ssr_state** argument.
+determined from the ``use_ssr_state`` argument.
 
 .. note:: Our interface script is generated with 1.92, 1.93 version of TeraChem program.
    Here, you should refer to manual of TeraChem program if you want to see detailed
-   lists for **basis_set**, **functional**, **precision** variables.
+   lists for ``basis_set``, ``functional``, ``precision`` variables.
 
-+-------------------+------------------------------------------------+---------+
-| Keywords          | Work                                           | Default |
-+===================+================================================+=========+
-| basis_set         | basis set information                          | sto-3g  |
-+-------------------+------------------------------------------------+---------+
-| functional        | functional in the calculations                 | hf      |
-+-------------------+------------------------------------------------+---------+
-| precision         | precision in the calculations                  | dynamic |
-+-------------------+------------------------------------------------+---------+
-| scf_tol           | energy convergence for SCF iterations          | 1E-2    |
-+-------------------+------------------------------------------------+---------+
-| max_scf_iter      | maximum number of SCF iterations               | 300     |
-+-------------------+------------------------------------------------+---------+
-| reks22            | use REKS(2,2) calculation?                     | yes     |
-+-------------------+------------------------------------------------+---------+
-| reks_scf_tol      | energy convergence for REKS SCF iterations     | 1E-6    |
-+-------------------+------------------------------------------------+---------+
-| reks_max_scf_iter | maximum number of REKS SCF iterations          | 1000    |
-+-------------------+------------------------------------------------+---------+
-| reks_diis         | DIIS acceleration in REKS SCF iterations       | yes     |
-+-------------------+------------------------------------------------+---------+
-| shift             | level shifting value in REKS SCF iterations    | 0.3     |
-+-------------------+------------------------------------------------+---------+
-| use_ssr_state     | calculate SSR state, if not, treat SA-REKS     | 1       |
-+-------------------+------------------------------------------------+---------+
-| cpreks_max_tol    | gradient tolerance for CP-REKS equations       | 1E-6    |
-+-------------------+------------------------------------------------+---------+
-| cpreks_max_iter   | maximum number of CP-REKS iterations           | 1000    |
-+-------------------+------------------------------------------------+---------+
-| qm_path           | path for QM binary                             | ./      |
-+-------------------+------------------------------------------------+---------+
-| ngpus             | number of GPUs                                 | 1       |
-+-------------------+------------------------------------------------+---------+
-| gpu_id            | ID of used GPUs                                | 1       |
-+-------------------+------------------------------------------------+---------+
-| version           | version of TeraChem program                    | 1.92    |
-+-------------------+------------------------------------------------+---------+
+.. note:: Currently, ``guess`` variable reads the following two strings.
+   One is ``dft``, which uses DFT orbitlas as initial guess of REKS method for every time step.
+   The other is ``read``, which reads c0 file generated from previous step.
+   If ``guess_file`` exists, then c0 file is used as initial guess at t = 0.0 s.
+
++---------------------+---------------------------------------------+-------------+
+| Keywords            | Work                                        | Default     |
++=====================+=============================================+=============+
+| ``basis_set``       | basis set information                       | ``sto-3g``  |
++---------------------+---------------------------------------------+-------------+
+| ``functional``      | functional in the calculations              | ``hf``      |
++---------------------+---------------------------------------------+-------------+
+| ``precision``       | precision in the calculations               | ``dynamic`` |
++---------------------+---------------------------------------------+-------------+
+| ``scf_rho_tol``     | wavefunction convergence for SCF iterations | ``1E-2``    |
++---------------------+---------------------------------------------+-------------+
+| ``scf_max_iter``    | maximum number of SCF iterations            | ``300``     |
++---------------------+---------------------------------------------+-------------+
+| ``ssr22``           | use REKS(2,2) calculation?                  | ``True``    |
++---------------------+---------------------------------------------+-------------+
+| ``guess``           | initial guess for REKS SCF iterations       | ``dft``     |
++--------------------+----------------------------------------------+-------------+
+| ``guess_file``      | initial guess file                          | ``./c0``    |
++--------------------+----------------------------------------------+-------------+
+| ``reks_rho_tol``    | DIIS error for REKS SCF iterations          | ``1E-6``    |
++---------------------+---------------------------------------------+-------------+
+| ``reks_max_iter``   | maximum number of REKS SCF iterations       | ``1000``    |
++---------------------+---------------------------------------------+-------------+
+| ``shift``           | level shifting value in REKS SCF iterations | ``0.3``     |
++---------------------+---------------------------------------------+-------------+
+| ``use_ssr_state``   | calculate SSR state, if not, treat SA-REKS  | ``True``    |
++---------------------+---------------------------------------------+-------------+
+| ``cpreks_grad_tol`` | gradient tolerance for CP-REKS equations    | ``1E-6``    |
++---------------------+---------------------------------------------+-------------+
+| ``cpreks_max_iter`` | maximum number of CP-REKS iterations        | ``1000``    |
++---------------------+---------------------------------------------+-------------+
+| ``qm_path``         | path for QM binary                          | ``./``      |
++---------------------+---------------------------------------------+-------------+
+| ``ngpus``           | number of GPUs                              | ``1``       |
++---------------------+---------------------------------------------+-------------+
+| ``gpu_id``          | ID of used GPUs                             | ``1``       |
++---------------------+---------------------------------------------+-------------+
+| ``version``         | version of TeraChem program                 | ``1.92``    |
++---------------------+---------------------------------------------+-------------+
 

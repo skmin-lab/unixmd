@@ -1,5 +1,6 @@
 from __future__ import division
 from bo.terachem.terachem import TeraChem
+from misc import call_name
 import os, shutil, re, textwrap
 import numpy as np
 
@@ -10,15 +11,16 @@ class SSR(TeraChem):
         :param string basis_set: basis set information
         :param string functional: level of DFT theory
         :param string precision: precision in the calculations
-        :param double scf_tol: energy convergence for SCF iterations
-        :param integer max_scf_iter: maximum number of SCF iterations
-        :param string reks22: use REKS(2,2) calculation?
-        :param double reks_scf_tol: energy convergence for REKS SCF iterations
-        :param integer reks_max_scf_iter: maximum number of REKS SCF iterations
-        :param string reks_diis: DIIS acceleration in REKS SCF iterations
+        :param double scf_rho_tol: wavefunction convergence for SCF iterations
+        :param integer scf_max_iter: maximum number of SCF iterations
+        :param boolean ssr22: use REKS(2,2) calculation?
+        :param string guess: initial guess for REKS SCF iterations
+        :param string guess_file: initial guess file
+        :param double reks_rho_tol: DIIS error for REKS SCF iterations
+        :param integer reks_max_iter: maximum number of REKS SCF iterations
         :param double shift: level shifting value in REKS SCF iterations
-        :param integer use_ssr_state: calculate SSR state, if not, treat SA-REKS
-        :param double cpreks_max_tol: gradient tolerance for CP-REKS equations
+        :param boolean use_ssr_state: calculate SSR state, if not, treat SA-REKS
+        :param double cpreks_grad_tol: gradient tolerance for CP-REKS equations
         :param integer cpreks_max_iter: maximum number of CP-REKS iterations
         :param string qm_path: path for QM binary
         :param integer ngpus: number of GPUs
@@ -26,49 +28,44 @@ class SSR(TeraChem):
         :param double version: version of TeraChem program
     """
     def __init__(self, molecule, ngpus=1, gpu_id="1", precision="dynamic", \
-        version=1.92, functional="hf", basis_set="sto-3g", scf_tol=1E-2, \
-        max_scf_iter=300, reks22="yes", reks_scf_tol=1E-6, \
-        reks_max_scf_iter=1000, reks_diis="yes", shift=0.3, use_ssr_state=1, \
-        cpreks_max_tol=1E-6, cpreks_max_iter=1000, qm_path="./"):
+        version=1.92, functional="hf", basis_set="sto-3g", scf_rho_tol=1E-2, \
+        scf_max_iter=300, ssr22=True, guess="dft", guess_file="./c0", \
+        reks_rho_tol=1E-6, reks_max_iter=1000, shift=0.3, use_ssr_state=True, \
+        cpreks_grad_tol=1E-6, cpreks_max_iter=1000, qm_path="./"):
         # Initialize TeraChem common variables
         super(SSR, self).__init__(functional, basis_set, qm_path, ngpus, \
             gpu_id, precision, version)
 
         # Initialize TeraChem SSR variables
-        self.scf_tol = scf_tol
-        self.max_scf_iter = max_scf_iter
+        self.scf_rho_tol = scf_rho_tol
+        self.scf_max_iter = scf_max_iter
 
-        self.reks22 = reks22
-        if (self.reks22 == "yes"):
+        self.ssr22 = ssr22
+        if (self.ssr22):
             if (molecule.nst > 2):
-                raise ValueError ("3state REKS with gradient Not Implemented")
-            self.reks_scf_tol = reks_scf_tol
-            self.reks_max_scf_iter = reks_max_scf_iter
-            self.reks_diis = reks_diis
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) 3-state REKS not implemented! {molecule.nst}")
+            self.reks_rho_tol = reks_rho_tol
+            self.reks_max_iter = reks_max_iter
             self.shift = shift
             self.use_ssr_state = use_ssr_state
+
+            # Set initial guess for REKS SCF iterations
+            self.guess = guess
+            self.guess_file = guess_file
+            if (not (self.guess == "dft" or self.guess == "read")):
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
+
             if (molecule.nst > 1):
-                self.cpreks_max_tol = cpreks_max_tol
+                self.cpreks_grad_tol = cpreks_grad_tol
                 self.cpreks_max_iter = cpreks_max_iter
         else:
-            raise ValueError("reks22 should be switched on in our interface")
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Other active space not implemented! {self.ssr22}")
 
         # Set 'l_nacme' with respect to the computational method
         # SSR can produce NACs, so we do not need to get NACME from CIoverlap
-        # When we calculate SA-REKS state, NACME can be obtained directly from diabetic Hamiltonian
-        if (self.use_ssr_state == 1):
-            molecule.l_nacme = False
-        else:
-            # TODO : diabatic SH?
-            molecule.l_nacme = True
-
-        if (molecule.nst > 1 and self.use_ssr_state == 0):
-            # SA-REKS state with SH
-            # TODO : diabatic SH?
-            self.re_calc = True
-        else:
-            # SSR state or single-state REKS
-            self.re_calc = False
+        # SSR can compute the gradient of several states simultaneously.
+        molecule.l_nacme = False
+        self.re_calc = False
 
     def get_bo(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from SSR method
@@ -80,22 +77,55 @@ class SSR(TeraChem):
             :param double dt: time interval
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
+        self.copy_files(istep)
         super().get_bo(base_dir, calc_force_only)
         self.write_xyz(molecule)
-        self.get_input(molecule, bo_list, calc_force_only)
+        self.get_input(molecule, bo_list)
         self.run_QM(base_dir, istep, bo_list)
-        self.extract_BO(molecule, bo_list, calc_force_only)
+        self.extract_BO(molecule, bo_list)
         self.move_dir(base_dir)
 
-    def get_input(self, molecule, bo_list, calc_force_only):
+    def copy_files(self, istep):
+        """ Copy necessary scratch files in previous step
+
+            :param integer istep: current MD step
+        """
+        # Copy required files to read initial guess
+        if (self.guess == "read" and istep >= 0):
+            # After T = 0.0 s
+            shutil.copy(os.path.join(self.scr_qm_dir, "./scr/c0"), \
+                os.path.join(self.scr_qm_dir, "../c0"))
+
+    def get_input(self, molecule, bo_list):
         """ Generate TeraChem input files: input.tcin
 
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation
-            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # Make 'input.tcin' file
         input_terachem = ""
+
+        # Guess Block
+        if (self.guess == "read"):
+            c0_dir = os.path.join(self.scr_qm_dir, "scr")
+            os.makedirs(c0_dir)
+            if (istep == -1):
+                if (os.path.isfile(self.guess_file)):
+                    # Copy guess file to currect directory
+                    shutil.copy(self.guess_file, os.path.join(c0_dir, "c0"))
+                    restart = 1
+                    dft = False
+                else:
+                    restart = 0
+                    dft = True
+            elif (istep >= 0):
+                # Move previous file to currect directory
+                os.rename("../c0", os.path.join(c0_dir, "c0"))
+                restart = 1
+                dft = False
+        elif (self.guess == "dft"):
+            restart = 0
+            dft = True
 
         # Control Block
         input_control = \
@@ -116,73 +146,69 @@ class SSR(TeraChem):
         """)
         input_terachem += input_system
 
-        # DFT Block
-        input_dft = textwrap.dedent(f"""\
+        # Setting Block
+        input_setting = textwrap.dedent(f"""\
         method {self.functional}
         basis {self.basis_set}
-        convthre {self.scf_tol}
-        maxit {self.max_scf_iter}
         charge {molecule.charge}
 
         """)
-        input_terachem += input_dft
+        input_terachem += input_setting
 
-        # Options for SCF initial guess
-        # TODO : read information from previous step
-#        if (calc_force_only):
-#            guess = 1
-#            input_dft_guess = textwrap.dedent(f"""\
-#            guess scr/c0
-#            """)
-#            input_terachem += input_dft_guess
+        # DFT Block
+        if (dft):
+            input_dft = textwrap.dedent(f"""\
+            convthre {self.scf_rho_tol}
+            maxit {self.scf_max_iter}
+
+            """)
+            input_terachem += input_dft
 
         # REKS Block
-        if (self.reks22 == "yes"):
+        if (self.ssr22):
 
             # Energy functional options
             if (molecule.nst == 1):
                 sa_reks = 0
             elif (molecule.nst == 2):
-                if (self.use_ssr_state == 1):
+                if (self.use_ssr_state):
                     sa_reks = 2
                 else:
                     sa_reks = 1
 
             # NAC calculation options
             if (self.calc_coupling and sa_reks == 2):
-                # SSR state with SH, Eh
+                # SHXF, SH, Eh : SSR state
                 reks_target = 12
                 self.nac = "Yes"
             else:
-                # Any method with BOMD / SA-REKS state with SH
-                # TODO : diabatic SH?
+                # BOMD : SSR state, SA-REKS state or single-state REKS
                 reks_target = bo_list[0] + 1
                 self.nac = "No"
 
             # TODO: pointcharges? in qmmm?
 
-            # Options for REKS SCF initial guess
-            # TODO : read information from previous step
-#            if (restart):
-#                reks_guess = 1
-#            else:
-#                reks_guess = 0
-            reks_guess = 0
-
             input_reks_basic = textwrap.dedent(f"""\
-            reks22 {self.reks22}
-            reks_convthre {self.reks_scf_tol}
-            reks_maxit {self.reks_max_scf_iter}
-            reks_diis {self.reks_diis}
+            reks22 yes
+            reks_convthre {self.reks_rho_tol}
+            reks_maxit {self.reks_max_iter}
+            reks_diis yes
             reks_shift {self.shift}
             sa_reks {sa_reks}
             reks_target {reks_target}
-            reks_guess {reks_guess}
             """)
             input_terachem += input_reks_basic
+
+            if (restart == 1):
+                input_reks_guess = textwrap.dedent(f"""\
+                reks_guess {restart}
+                guess ./scr/c0
+                """)
+                input_terachem += input_reks_guess
+
             if (molecule.nst > 1):
                 input_cpreks = textwrap.dedent(f"""\
-                cpreks_thresh {self.cpreks_max_tol}
+                cpreks_thresh {self.cpreks_grad_tol}
                 cpreks_maxit {self.cpreks_max_iter}
                 """)
                 input_terachem += input_cpreks
@@ -211,12 +237,11 @@ class SSR(TeraChem):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
             shutil.copy("log", os.path.join(tmp_dir, log_step))
 
-    def extract_BO(self, molecule, bo_list, calc_force_only):
+    def extract_BO(self, molecule, bo_list):
         """ Read the output files to get BO information
 
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation
-            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # Read 'log' file
         file_name = "log"
@@ -224,45 +249,43 @@ class SSR(TeraChem):
             log_out = f.read()
 
         # Energy
-        if (not calc_force_only):
-            for states in molecule.states:
-                states.energy = 0.
+        for states in molecule.states:
+            states.energy = 0.
 
-            if (molecule.nst == 1):
-                # Single-state REKS
-                tmp_e = 'REKS energy:\s+([-]\S+)'
+        if (molecule.nst == 1):
+            # Single-state REKS
+            tmp_e = 'REKS energy:\s+([-]\S+)'
+            energy = re.findall(tmp_e, log_out)
+            energy = np.array(energy)
+            energy = energy.astype(float)
+            molecule.states[0].energy = energy[0]
+        else:
+            if (self.use_ssr_state):
+                # SSR state
+                energy = re.findall('SSR state\s\d\s+([-]\S+)', log_out)
+                energy = np.array(energy)
+                energy = energy.astype(float)
+                for ist in range(molecule.nst):
+                    molecule.states[ist].energy = energy[ist]
+            else:
+                # SA-REKS state
+                tmp_e = '\(GSS\):\s+([-]\S+)'
                 energy = re.findall(tmp_e, log_out)
                 energy = np.array(energy)
                 energy = energy.astype(float)
                 molecule.states[0].energy = energy[0]
-            else:
-                if (self.use_ssr_state == 1):
-                    # SSR state
-                    energy = re.findall('SSR state\s\d\s+([-]\S+)', log_out)
-                    energy = np.array(energy)
-                    energy = energy.astype(float)
-                    for ist in range(molecule.nst):
-                        molecule.states[ist].energy = energy[ist]
-                else:
-                    # SA-REKS state
-                    tmp_e = '\(GSS\):\s+([-]\S+)'
-                    energy = re.findall(tmp_e, log_out)
-                    energy = np.array(energy)
-                    energy = energy.astype(float)
-                    molecule.states[0].energy = energy[0]
-                    tmp_e = '\(OSS\):\s+([-]\S+)'
-                    energy = re.findall(tmp_e, log_out)
-                    energy = np.array(energy)
-                    energy = energy.astype(float)
-                    molecule.states[1].energy = energy[0]
+                tmp_e = '\(OSS\):\s+([-]\S+)'
+                energy = re.findall(tmp_e, log_out)
+                energy = np.array(energy)
+                energy = energy.astype(float)
+                molecule.states[1].energy = energy[0]
 
         # Force
-        if (not calc_force_only):
-            for states in molecule.states:
-                states.force = np.zeros((molecule.nat, molecule.nsp))
+        for states in molecule.states:
+            states.force = np.zeros((molecule.nat, molecule.nsp))
 
         if (self.nac == "Yes"):
-            # SSR state with SH, Eh
+            # SHXF, SH, Eh : SSR state
             for ist in range(molecule.nst):
                 tmp_f = f'Eigen state {ist + 1} gradient\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
                     '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
@@ -272,8 +295,6 @@ class SSR(TeraChem):
                 force = force.reshape(molecule.nat, 3, order='C')
                 molecule.states[ist].force = - np.copy(force)
         else:
-            # SH : SA-REKS state
-            # TODO : diabatic SH?
             # BOMD : SSR state, SA-REKS state or single-state REKS
             tmp_f = 'Gradient units are Hartree/Bohr\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
 	              '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
@@ -284,8 +305,7 @@ class SSR(TeraChem):
             molecule.states[bo_list[0]].force = - np.copy(force)
 
         # NAC
-        # TODO : NACME - diabatic SH?
-        if (not calc_force_only and self.nac == "Yes"):
+        if (self.nac == "Yes"):
 
             # 1.92 version do not show H vector
             if (self.version == 1.92):
@@ -316,7 +336,7 @@ class SSR(TeraChem):
             for ist in range(molecule.nst):
                 for jst in range(molecule.nst):
                     if (ist == jst):
-                        molecule.nac[ist, jst, :, :] = 0.
+                        molecule.nac[ist, jst] = np.zeros((molecule.nat, molecule.nsp))
                     elif (ist < jst):
                         if (self.version == 1.92):
                             molecule.nac[ist, jst] = Hvec
@@ -327,7 +347,7 @@ class SSR(TeraChem):
                             nac = np.array(nac[kst])
                             nac = nac.astype(float)
                             nac = nac.reshape(molecule.nat, 3, order='C')
-                            molecule.nac[ist, jst] = nac
+                            molecule.nac[ist, jst] = np.copy(nac)
                         kst += 1
                     else:
                         molecule.nac[ist, jst] = - molecule.nac[jst, ist]
