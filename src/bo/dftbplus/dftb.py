@@ -32,7 +32,7 @@ class DFTB(DFTBplus):
     """
     def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=100, \
         guess="h0", guess_file="./charges.bin", sdftb=False, unpaired_e=0., e_temp=0., mixer="Broyden", \
-        ex_symmetry="singlet", sk_path="./", periodic=False, cell_length=[0., 0., 0.], \
+        ex_symmetry="singlet", sk_path="./", periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.,], \
         qm_path="./", script_path="./", nthreads=1, mpi=False, mpi_path="./", version=19.1):
         # Initialize DFTB+ common variables
         super(DFTB, self).__init__(molecule, sk_path, qm_path, script_path, nthreads, version)
@@ -60,9 +60,12 @@ class DFTB(DFTBplus):
         self.mpi_path = mpi_path
 
         self.periodic = periodic
-        self.a_axis = cell_length[0]
-        self.b_axis = cell_length[1]
-        self.c_axis = cell_length[2]
+        self.a_axis = np.zeros(3)
+        self.b_axis = np.zeros(3)
+        self.c_axis = np.zeros(3)
+        self.a_axis = cell_length[0:3]
+        self.b_axis = cell_length[3:6]
+        self.c_axis = cell_length[6:9]
 
         # Check excitation symmetry in TDDFTB
         # TODO : Currently, disable triplet excited states with TDDFTB
@@ -179,9 +182,9 @@ class DFTB(DFTBplus):
             # Add gamma-point and cell lattice information
             geom_periodic = textwrap.dedent(f"""\
             {0.0:15.8f} {0.0:15.8f} {0.0:15.8f}
-            {self.a_axis:15.8f} {0.0:15.8f} {0.0:15.8f}
-            {0.0:15.8f} {self.b_axis:15.8f} {0.0:15.8f}
-            {0.0:15.8f} {0.0:15.8f} {self.c_axis:15.8f}
+            {self.a_axis[0]:15.8f} {self.a_axis[1]:15.8f} {self.a_axis[2]:15.8f}
+            {self.b_axis[0]:15.8f} {self.b_axis[1]:15.8f} {self.b_axis[2]:15.8f}
+            {self.c_axis[0]:15.8f} {self.c_axis[1]:15.8f} {self.c_axis[2]:15.8f}
             """)
             file_af.write(geom_periodic)
             file_be.close()

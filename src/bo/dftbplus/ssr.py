@@ -39,7 +39,8 @@ class SSR(DFTBplus):
         lcdftb=True, lc_method="MatrixBased", ocdftb=False, ssr22=True, \
         ssr44=False, use_ssr_state=1, state_l=0, guess=1, shift=0.3, tuning=1., \
         grad_level=1, grad_tol=1E-8, mem_level=2, sk_path="./", periodic=False, \
-        cell_length=[0., 0., 0.], qm_path="./", script_path="./", nthreads=1, version=19.1):
+        cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.], qm_path="./", \
+        script_path="./", nthreads=1, version=19.1):
         # Initialize DFTB+ common variables
         super(SSR, self).__init__(molecule, sk_path, qm_path, script_path, nthreads, version)
 
@@ -70,9 +71,12 @@ class SSR(DFTBplus):
         self.mem_level = mem_level
 
         self.periodic = periodic
-        self.a_axis = cell_length[0]
-        self.b_axis = cell_length[1]
-        self.c_axis = cell_length[2]
+        self.a_axis = np.zeros(3)
+        self.b_axis = np.zeros(3)
+        self.c_axis = np.zeros(3)
+        self.a_axis = cell_length[0:3]
+        self.b_axis = cell_length[3:6]
+        self.c_axis = cell_length[6:9]
 
         # Set 'l_nacme' and 're_calc' with respect to the computational method
         # DFTB/SSR can produce NACs, so we do not need to get NACME from CIoverlap
@@ -118,9 +122,9 @@ class SSR(DFTBplus):
             # Add gamma-point and cell lattice information
             geom_periodic = textwrap.dedent(f"""\
             {0.0:15.8f} {0.0:15.8f} {0.0:15.8f}
-            {self.a_axis:15.8f} {0.0:15.8f} {0.0:15.8f}
-            {0.0:15.8f} {self.b_axis:15.8f} {0.0:15.8f}
-            {0.0:15.8f} {0.0:15.8f} {self.c_axis:15.8f}
+            {self.a_axis[0]:15.8f} {self.a_axis[1]:15.8f} {self.a_axis[2]:15.8f}
+            {self.b_axis[0]:15.8f} {self.b_axis[1]:15.8f} {self.b_axis[2]:15.8f}
+            {self.c_axis[0]:15.8f} {self.c_axis[1]:15.8f} {self.c_axis[2]:15.8f}
             """)
             file_af.write(geom_periodic)
             file_be.close()
