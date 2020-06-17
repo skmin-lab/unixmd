@@ -268,12 +268,16 @@ class Molecule(object):
         {"-" * 68}
         {"Molecule Information":>43s}
         {"-" * 68}
-          Number of Atoms          = {self.nat:>16d}
+          Number of Atoms (QM)     = {self.nat_qm:>16d}
+        """)
+        if (self.nat_mm > 0):
+            molecule_info += f"  Number of Atoms (MM)     = {self.nat_mm:>16d}\n"
+        molecule_info += textwrap.indent(textwrap.dedent(f"""\
           Degrees of Freedom       = {int(self.dof):>16d}
           Charge                   = {int(self.charge):>16d}
           Number of Electrons      = {int(self.nelec):>16d}
           Number of States         = {self.nst:>16d}
-        """)
+        """), "  ")
         ### TODO: Model case
         print (molecule_info, flush=True)
 

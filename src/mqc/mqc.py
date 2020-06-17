@@ -71,11 +71,12 @@ class MQC(object):
         """
         pass
 
-    def print_init(self, molecule, theory, thermostat, debug):
+    def print_init(self, molecule, theory, field, thermostat, debug):
         """ Routine to print the initial information of dynamics
 
             :param object molecule: molecule object
             :param object theory: theory object containing on-the-fly calculation infomation
+            :param object field: force field object containing MM calculation infomation
             :param object thermostat: thermostat type
             :param integer debug: verbosity level for standard output
         """
@@ -89,12 +90,16 @@ class MQC(object):
         {"-" * 68}
           QM Program               = {theory.qm_prog:>16s}
           QM Method                = {theory.qm_method:>16s}
+        """)
+        if (molecule.nat_mm > 0):
+            dynamics_info += f"  MM Program               = {field.mm_prog:>16s}\n"
+        dynamics_info += textwrap.indent(textwrap.dedent(f"""\
 
           MQC Method               = {self.md_type:>16s}
           Time Interval (fs)       = {self.dt / fs_to_au:16.6f}
           Initial State (0:GS)     = {self.istate:>16d}
           Nuclear Step             = {self.nsteps:>16d}
-        """)
+        """), "  ")
         if (self.md_type != "BOMD"):
             dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
             dynamics_info += f"  Propagation Scheme       = {self.propagation:>16s}\n"
