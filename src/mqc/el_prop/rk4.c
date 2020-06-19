@@ -114,7 +114,7 @@ static void xf_cdot(int nst, int nat, int nsp, int *l_coh, double wsigma,
     for(ist = 0; ist < nst; ist++){
         xfcdot[ist] = 0.0 + 0.0 * I;
         for(jst = 0; jst < nst; jst++){
-            xfcdot[ist] -= - rho[jst] * dec[jst][ist] * c[ist];
+            xfcdot[ist] -= rho[jst] * dec[jst][ist] * c[ist];
         }
     }
     free(rho);
