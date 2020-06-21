@@ -13,22 +13,17 @@ class Tinker(MM_calculator):
 
         self.scheme = scheme
 
-        if (not (self.scheme == "additivie" or self.scheme == "subtractive")):
+        if (not (self.scheme == "additive" or self.scheme == "subtractive")):
             raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong QM/MM scheme given! {self.scheme}")
 
-#    def get_mm(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
     def get_mm(self, molecule, base_dir):
         """ Extract energy and gradient from Tinker
 
             :param object molecule: molecule object
             :param string base_dir: base directory
-            :param integer istep: current MD step
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param double dt: time interval
-            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         super().get_mm(base_dir)
-#        self.write_xyz(molecule)
+        self.write_xyz(molecule)
 #        self.get_input(molecule, bo_list)
 #        self.run_QM(base_dir, istep, bo_list)
 #        self.extract_BO(molecule, bo_list)
@@ -39,15 +34,30 @@ class Tinker(MM_calculator):
 
             :param object molecule: molecule object
         """
-        # TODO : pass a choice for QMMM scheme as argument
         if (self.scheme == "additive"):
-        elif (self.scheme == "subtractive"):
+            # Atoms in MM region
+            file_name = "tinker.xyz.2"
+            with open(file_name, "w") as ftj:
+                ftj.write(f"{molecule.nat_mm}\n\n")
+                for iat in range(molecule.nat_qm, molecule.nat):
+                    ftj.write(f"{molecule.symbols[iat]:4}")
+                    ftj.write("".join([f"{i:15.8f}" for i in molecule.pos[iat] * au_to_A]) + "\n")
 
-#        file_name = "tinker.xyz"
-#        with open(file_name, "w") as ftj:
-#            ftj.write(f"{molecule.nat}\n\n")
-#            for iat in range(molecule.nat):
-#                ftj.write(f"{molecule.symbols[iat]:4}")
-#                ftj.write("".join([f"{i:15.8f}" for i in molecule.pos[iat] * au_to_A]) + "\n")
+        elif (self.scheme == "subtractive"):
+            # Atoms in QM + MM region
+            file_name = "tinker.xyz.12"
+            with open(file_name, "w") as ftj:
+                ftj.write(f"{molecule.nat}\n\n")
+                for iat in range(molecule.nat):
+                    ftj.write(f"{molecule.symbols[iat]:4}")
+                    ftj.write("".join([f"{i:15.8f}" for i in molecule.pos[iat] * au_to_A]) + "\n")
+            # Atoms in QM region
+            file_name = "tinker.xyz.1"
+            with open(file_name, "w") as ftj:
+                ftj.write(f"{molecule.nat_qm}\n\n")
+                for iat in range(molecule.nat_qm):
+                    ftj.write(f"{molecule.symbols[iat]:4}")
+                    ftj.write("".join([f"{i:15.8f}" for i in molecule.pos[iat] * au_to_A]) + "\n")
+
 
 
