@@ -1,5 +1,4 @@
 from __future__ import division
-from misc import au_to_A
 import os, shutil
 
 class MM_calculator(object):
@@ -22,19 +21,6 @@ class MM_calculator(object):
         os.makedirs(self.scr_mm_dir)
         # Move to the scratch directory
         os.chdir(self.scr_mm_dir)
-
-    def write_xyz(self, molecule):
-        """ Make current geometry file
-
-            :param object molecule: molecule object
-        """
-        # TODO : pass a choice for QMMM scheme as argument
-        file_name = "geometry.xyz"
-        with open(file_name, "w") as ftj:
-            ftj.write(f"{molecule.nat}\n\n")
-            for iat in range(molecule.nat):
-                ftj.write(f"{molecule.symbols[iat]:4}")
-                ftj.write("".join([f"{i:15.8f}" for i in molecule.pos[iat] * au_to_A]) + "\n")
 
     def move_dir(self, base_dir):
         """ Move to the base directory
