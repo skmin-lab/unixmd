@@ -43,7 +43,7 @@ class SHXF(MQC):
         :param double wsigma: width of nuclear wave packet of auxiliary trajectory
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_adjnac=True, threshold=0.01, wsigma=0.1):
+        propagation="density", l_adjnac=True, vel_rescale=0, threshold=0.01, wsigma=0.1):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
             propagation, l_adjnac)
@@ -57,6 +57,8 @@ class SHXF(MQC):
         self.acc_prob = np.zeros(molecule.nst + 1)
 
         self.l_hop = False
+        
+        self.vel_rescale = vel_rescale
 
         # Initialize XF related variables
         self.l_coh = []
@@ -245,7 +247,7 @@ class SHXF(MQC):
             :param integer istep: current MD step
             :param string unixmd_dir: unixmd directory
         """
-        if (self.l_hop):
+        if (self.l_hop):        
             pot_diff = molecule.states[self.rstate].energy - molecule.states[self.rstate_old].energy
             if (molecule.ekin < pot_diff):
                 if (not self.force_hop):
@@ -255,8 +257,31 @@ class SHXF(MQC):
             else:
                 if (molecule.ekin < eps):
                     raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin}")
-                fac = 1. - pot_diff / molecule.ekin
-                molecule.vel *= np.sqrt(fac)
+                 
+                if (self.vel_rescale == 0):
+                    fac = 1. - pot_diff / molecule.ekin
+                    molecule.vel *= np.sqrt(fac)
+                 
+                elif (self.vel_rescale == 1):
+                    a = np.sum(molecule.mass * np.sum(molecule.nac[self.rstate_old,self.rstate] ** 2., axis=1))
+                    b = 2. * np.sum(molecule.mass * np.sum(molecule.nac[self.rstate_old, self.rstate] * molecule.vel, axis=1))
+                    c = 2. * pot_diff
+                    det = b ** 2. - 4. * a * c
+                    
+                    if (det < 0.):
+                        self.l_hop = False
+                        self.rstate = self.rstate_old
+                        bo_list[0] = self.rstate
+                    else:
+                        if(b < 0.):
+                            x = 0.5 * (- b - np.sqrt(det)) / a 
+                    
+                        else:
+                            x = 0.5 * (- b + np.sqrt(det)) / a 
+                    
+                        for iat in range(molecule.nat):
+                            molecule.vel[iat, :] += x * molecule.nac[self.rstate_old, self.rstate, iat, :]
+                
                 # Update kinetic energy
                 molecule.update_kinetic()
 
