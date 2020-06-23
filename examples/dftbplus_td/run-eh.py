@@ -22,9 +22,9 @@ qm = bo.dftbplus.DFTB(molecule=mol, scc_tol=1E-6, scc_max_iter=200, \
     qm_path="/home/islee/program/dftb/dftbreks-19.1/", nthreads=1, \
     script_path="/opt/dftbplus-19.1/tools/dptools/", version=19.1)
 
-md = mqc.BOMD(molecule=mol, nsteps=400, dt=0.125, istate=0)
+md = mqc.Eh(molecule=mol, nsteps=400, dt=0.125, istate=2, propagation="density")
 
 bathT = rescale1(temperature=300.0, nrescale=20)
 
-md.run(molecule=mol, theory=qm, thermostat=bathT, input_dir="./TRAJ-bomd", save_scr=True, save_QMlog=False, debug=0)
+md.run(molecule=mol, theory=qm, thermostat=bathT, input_dir="./TRAJ-eh", save_scr=True, save_QMlog=False, debug=0)
 
