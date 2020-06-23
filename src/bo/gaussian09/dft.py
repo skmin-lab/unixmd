@@ -17,7 +17,7 @@ class DFT(Gaussian09):
         :param string g09_root_path: path for Gaussian09 root
         :param string version: version of Gaussian09 program
     """
-    def __init__(self, molecule, nthreads=8, memory="4gb", \
+    def __init__(self, molecule, nthreads=1, memory="1gb", \
         functional="BLYP", basis_set="STO-3G", \
         guess="Harris", guess_file="./g09.chk", \
         g09_root_path="/opt/gaussian/", version="Revision A.02"):
@@ -89,7 +89,8 @@ class DFT(Gaussian09):
                     shutil.copy(self.guess_file, os.path.join(self.scr_qm_dir, "g09.chk"))
                     restart = True
                 else:
-                    print(f"( {self.qm_method}.{call_name()} ) Make the initial guess of density only for the 1st step.\n")
+                    # TODO : Printout about reading a checkpoint file for the initial guess
+                    # print(f"( {self.qm_method}.{call_name()} ) Make the initial guess of density only for the 1st step.\n", flush=True)
                     restart = False
             elif (istep >= 0):
                 # Move previous file to currect directory
