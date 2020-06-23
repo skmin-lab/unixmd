@@ -15,7 +15,13 @@ because it doesn't explicitly provide with nonadiabatic coupling vectors.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note:: Our interface script is generated with Revision A.02 version of Gaussian09 program.
-   Please refer to the manual for the detailed lists for **basis_set** and **functional** variable.
+   Please refer to the manual for the detailed lists for ``basis_set`` and ``functional`` variable.
+
+.. note:: Currently, ``guess`` variable reads the following two strings.
+   One is ``Harris``, which uses the default option (diagonalization of Harris functional) is used 
+   for the initial guess of SCF iterations for every time step.
+   The other is ``read``, which reads the checkpoint file generated from previous step.
+   If ``guess_file`` exists, then the checkpoint file is used as initial guess at t = 0.0 s.
 
 +-------------------+------------------------------------------------+---------------------+
 | Keywords          | Work                                           | Default             |
