@@ -39,9 +39,9 @@ class CT(MQC):
         self.d0 = np.zeros((self.nst_pairs, self.nat, self.nsp))
         self.r0 = np.zeros((self.nst_pairs, self.nat, self.nsp))
 
-        self.qmom_center = np.array(np.zeros((self.ntrajs, self.nst_pairs, self.nat, self.nsp)))
-        self.qmom_center_old = np.array(np.zeros((self.ntrajs, self.nst_pairs, self.nat, self.nsp)))
-        self.k_lk = np.array(np.zeros((self.ntrajs, self.nst, self.nst)))
+        self.qmom_center = np.zeros((self.ntrajs, self.nst_pairs, self.nat, self.nsp))
+        self.qmom_center_old = np.zeros((self.ntrajs, self.nst_pairs, self.nat, self.nsp))
+        self.k_lk = np.zeros((self.ntrajs, self.nst, self.nst))
 
     def run(self):
         """ Run MQC dynamics according to CTMQC
