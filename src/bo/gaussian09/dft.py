@@ -1,6 +1,6 @@
 from __future__ import division
 from bo.gaussian09.gaussian09 import Gaussian09
-from misc import au_to_A, eV_to_au
+from misc import au_to_A, eV_to_au, call_name
 import os, shutil, re, textwrap, subprocess
 import numpy as np
 
@@ -12,17 +12,26 @@ class DFT(Gaussian09):
         :param string memory: allocatable memory in the calculations
         :param string functional: level of DFT theory
         :param string basis_set: basis set information
+        :param string guess: initial guess type
+        :param string guess_file: initial guess file
         :param string g09_root_path: path for Gaussian09 root
         :param string version: version of Gaussian09 program
     """
-    def __init__(self, molecule, nthreads=8, memory="4gb", \
+    def __init__(self, molecule, nthreads=1, memory="1gb", \
         functional="BLYP", basis_set="STO-3G", \
+        guess="Harris", guess_file="./g09.chk", \
         g09_root_path="/opt/gaussian/", version="Revision A.02"):
         # Initialize Gaussian09 common variables
         super(DFT, self).__init__(basis_set, memory, nthreads, g09_root_path, version)
 
         # Initialize Gaussian09 DFT variables
         self.functional = functional
+
+        # Set initial guess for DFT calculation
+        self.guess = guess
+        self.guess_file = os.path.abspath(guess_file)
+        if (not (self.guess == "Harris" or self.guess == "read")):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
 
         # Set 'l_nacme' with respect to the computational method
         molecule.l_nacme = True
@@ -43,11 +52,23 @@ class DFT(Gaussian09):
             :param double dt: time interval
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
+        self.copy_files(istep)
         super().get_bo(base_dir, calc_force_only)
         self.get_input(molecule, istep, bo_list)
         self.run_QM(base_dir, istep, bo_list)
         self.extract_BO(molecule, bo_list, calc_force_only)
         self.move_dir(base_dir)
+
+    def copy_files(self, istep):
+        """ Copy necessary scratch files in previous step
+
+            :param integer istep: current MD step
+        """
+        # Copy required files to read initial guess
+        if (self.guess == "read" and istep >= 0):
+            # After T = 0.0 s
+            shutil.copy(os.path.join(self.scr_qm_dir, "g09.chk"), \
+                os.path.join(self.scr_qm_dir, "../g09.chk.pre"))
 
     def get_input(self, molecule, istep, bo_list):
         """ Generate Gaussian09 input files: g09.inp
@@ -60,6 +81,24 @@ class DFT(Gaussian09):
         if (self.calc_coupling):
             raise ValueError ("only BOMD possible with TDDFT")
 
+        # Read check-point file from previous step
+        if (self.guess == "read"):
+            if (istep == -1):
+                if (os.path.isfile(self.guess_file)):
+                    # Copy guess file to currect directory
+                    shutil.copy(self.guess_file, os.path.join(self.scr_qm_dir, "g09.chk"))
+                    restart = True
+                else:
+                    # TODO : Printout about reading a checkpoint file for the initial guess
+                    # print(f"( {self.qm_method}.{call_name()} ) Make the initial guess of density only for the 1st step.\n", flush=True)
+                    restart = False
+            elif (istep >= 0):
+                # Move previous file to currect directory
+                os.rename("../g09.chk.pre", "./g09.chk")
+                restart = True
+        elif (self.guess == "Harris"):
+            restart = False
+
         # Make 'g09.inp' file
         input_g09 = ""
 
@@ -67,8 +106,11 @@ class DFT(Gaussian09):
         input_route = textwrap.dedent(f"""\
         %nproc={self.nthreads}
         %mem={self.memory}
-        %chk=g{istep}.chk
+        %chk=g09.chk
         # {self.functional}/{self.basis_set} force""")
+
+        if (restart):
+            input_route += f" Guess=Read"
 
         if (bo_list[0] != 0):
             input_route += f" td(Root={bo_list[0]}, Nstates={molecule.nst - 1})\n\n"
