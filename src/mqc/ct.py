@@ -7,9 +7,41 @@ class CT(MQC):
     """
     def __init__(self, molecules, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", l_adjnac=True, threshold=1.0e-4, dist_cutoff=2.0/0.529166):
+        # Read total number of trajectories
+        self.ntrajs = len(molecules)
 
-        # Initialize input values
-        pass
+        # Initialize input values: initial coef. and density of each trajectories
+        for itraj in range(self.ntrajs):
+            super().__init__(molecules[itraj], istate, dt, nsteps, nesteps, \
+                propagation, l_adjnac)
+
+        self.nsp = molecules[0].nsp
+        self.nst = molecules[0].nst
+        self.nat = molecules[0].nat
+
+        # Initialize XF variables
+        self.nst_pairs = self.nst * (self.nst - 1) 
+
+        self.phase = np.zeros((self.ntrajs, self.nst, self.nat, self.nsp))
+        self.qmom  = np.zeros((self.ntrajs, self.nst_pairs, self.nat, self.nsp))
+        self.sigma = np.zeros((self.ntrajs, self.nat, self.nsp))
+        self.sigma[:] = 0.08753727/self.ntrajs
+
+        self.xfforce = np.zeros((self.ntrajs, self.nat, self.nsp))
+        self.xfcdot  = np.zeros((self.ntrajs, self.nst), dtype=complex)
+
+        # Trajectory-dependent temporaries to obtain qmom
+        self.prod_g_ij = np.zeros((self.ntrajs, self.ntrajs))
+        self.g_i = np.zeros((self.ntrajs))
+        self.w_ij = np.zeros((self.ntrajs, self.ntrajs, self.nat, self.nsp))
+        self.slope = np.zeros((self.ntrajs, self.nat, self.nsp))
+        self.w0 = np.zeros((self.ntrajs, self.nst_pairs, self.nat, self.nsp))
+        self.d0 = np.zeros((self.nst_pairs, self.nat, self.nsp))
+        self.r0 = np.zeros((self.nst_pairs, self.nat, self.nsp))
+
+        self.qmom_center = np.array(np.zeros((self.ntrajs, self.nst_pairs, self.nat, self.nsp)))
+        self.qmom_center_old = np.array(np.zeros((self.ntrajs, self.nst_pairs, self.nat, self.nsp)))
+        self.k_lk = np.array(np.zeros((self.ntrajs, self.nst, self.nst)))
 
     def run(self):
         """ Run MQC dynamics according to CTMQC
