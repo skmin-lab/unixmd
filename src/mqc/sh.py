@@ -35,7 +35,14 @@ class SH(MQC):
         self.l_hop = False
         self.force_hop = False
 
-        self.vel_rescale = vel_rescale
+        if (vel_rescale == "simple"):
+            self.vel_rescale = vel_rescale
+        elif (vel_rescale == "nac"):
+            if (molecule.l_nacme): 
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Nonadiabatic coupling vectors are not available! l_nacme: {molecule.l_nacme}")
+            self.vel_rescale = vel_rescale
+        else
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
 
     def run(self, molecule, theory, thermostat, input_dir="./", \
         save_QMlog=False, save_scr=True, debug=0):
@@ -213,8 +220,6 @@ class SH(MQC):
                 
                 elif (self.vel_rescale == "nac"):
                     
-                    if (molecule.l_namce): 
-                        raise ValueError (f"( {self.md_type}.{call_name()} ) Nonadiabatic coupling vectors are not available! l_nacme: {molecule.l_namce}")
                     a = np.sum(molecule.mass * np.sum(molecule.nac[self.rstate_old, self.rstate] ** 2., axis=1))
                     b = 2. * np.sum(molecule.mass * np.sum(molecule.nac[self.rstate_old, self.rstate] * molecule.vel, axis=1))
                     c = 2. * pot_diff
@@ -231,10 +236,7 @@ class SH(MQC):
                         else:
                             x = 0.5 * (- b + np.sqrt(det)) / a 
                     
-                        for iat in range(molecule.nat):
-                            molecule.vel[iat, :] += x * molecule.nac[self.rstate_old, self.rstate, iat, :]
-                else:
-                    raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
+                        molecule.vel += x * molecule.nac[self.rstate_old, self.rstate]
 
                 # Update kinetic energy
                 molecule.update_kinetic()
