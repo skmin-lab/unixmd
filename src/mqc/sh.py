@@ -16,9 +16,10 @@ class SH(MQC):
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
+        :param string vel_rescale: velocity rescaling method after hop
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_adjnac=True, vel_rescale=0):
+        propagation="density", l_adjnac=True, vel_rescale="simple"):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
             propagation, l_adjnac)
@@ -206,12 +207,15 @@ class SH(MQC):
                 if (molecule.ekin < eps):
                     raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin}")
                 
-                if (self.vel_rescale == 0):
+                if (self.vel_rescale == "simple"):
                     fac = 1. - pot_diff / molecule.ekin
                     molecule.vel *= np.sqrt(fac)
                 
-                elif (self.vel_rescale == 1):
-                    a = np.sum(molecule.mass * np.sum(molecule.nac[self.rstate_old,self.rstate] ** 2., axis=1))
+                elif (self.vel_rescale == "nac"):
+                    
+                    if (molecule.l_namce): 
+                        raise ValueError (f"( {self.md_type}.{call_name()} ) Nonadiabatic coupling vectors are not available! l_nacme: {molecule.l_namce}")
+                    a = np.sum(molecule.mass * np.sum(molecule.nac[self.rstate_old, self.rstate] ** 2., axis=1))
                     b = 2. * np.sum(molecule.mass * np.sum(molecule.nac[self.rstate_old, self.rstate] * molecule.vel, axis=1))
                     c = 2. * pot_diff
                     det = b ** 2. - 4. * a * c
@@ -229,6 +233,8 @@ class SH(MQC):
                     
                         for iat in range(molecule.nat):
                             molecule.vel[iat, :] += x * molecule.nac[self.rstate_old, self.rstate, iat, :]
+                else:
+                    raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
 
                 # Update kinetic energy
                 molecule.update_kinetic()
