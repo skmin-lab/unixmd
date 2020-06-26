@@ -40,8 +40,9 @@ class SH(MQC):
         elif (vel_rescale == "nac"):
             if (molecule.l_nacme): 
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Nonadiabatic coupling vectors are not available! l_nacme: {molecule.l_nacme}")
-            self.vel_rescale = vel_rescale
-        else
+            else:
+                self.vel_rescale = vel_rescale
+        else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
 
     def run(self, molecule, theory, thermostat, input_dir="./", \

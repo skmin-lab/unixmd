@@ -65,8 +65,8 @@ class SHXF(MQC):
             if (molecule.l_nacme): 
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Nonadiabatic coupling vectors are not available! l_nacme: {molecule.l_nacme}")
             else:
-            self.vel_rescale = vel_rescale
-        else
+                self.vel_rescale = vel_rescale
+        else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
 
         # Initialize XF related variables
