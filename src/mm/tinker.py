@@ -8,12 +8,15 @@ class Tinker(MM_calculator):
 
         :param object molecule: molecule object
     """
-    def __init__(self, molecule, scheme=None, periodic=False, \
+    def __init__(self, molecule, scheme=None, do_charge=False, do_vdw=False, periodic=False, \
         cell_par=[0., 0., 0., 0., 0., 0.], xyz_file="./tinker.xyz", key_file="./tinker.key"):
         # Save name of MM calculator
         super().__init__()
 
         self.scheme = scheme
+
+        self.do_charge = do_charge
+        self.do_vdw = do_vdw
 
         self.periodic = periodic
         self.cell_par = cell_par
@@ -172,5 +175,45 @@ class Tinker(MM_calculator):
             with open(file_name, "w") as f_xyz:
                 f_xyz.write(input_xyz1)
 
+        # Set non-bonded interaction for the systems; charge term from 'tinker.key' file
+        # This is mechanical embedding for charge-charge interaction
+        # To deal with charge-charge interaction with electrostatic interaction,
+        # set do_vdw=True in the initialization of theory object, not field object
+        file_be = open('tinker.key', 'r')
+        file_af = open('tmp.key', 'w')
+        is_charge = False
+        for line in file_be:
+            if ("chargeterm" in line):
+                is_charge = True
+                line = ""
+                if (not self.do_charge):
+                    line = "chargeterm none\n"
+            file_af.write(line)
+        # If chargeterm keyword does not exist, add chargeterm keyword to last line
+        if (not is_charge and not self.do_charge):
+            line = "chargeterm none\n"
+            file_af.write(line)
+        file_be.close()
+        file_af.close()
+        os.rename('tmp.key', 'tinker.key')
+
+        # Set non-bonded interaction for the systems; vdw term from 'tinker.key' file
+        file_be = open('tinker.key', 'r')
+        file_af = open('tmp.key', 'w')
+        is_vdw = False
+        for line in file_be:
+            if ("vdwterm" in line):
+                is_vdw = True
+                line = ""
+                if (not self.do_vdw):
+                    line = "vdwterm none\n"
+            file_af.write(line)
+        # If vdwterm keyword does not exist, add vdwterm keyword to last line
+        if (not is_vdw and not self.do_vdw):
+            line = "vdwterm none\n"
+            file_af.write(line)
+        file_be.close()
+        file_af.close()
+        os.rename('tmp.key', 'tinker.key')
 
 
