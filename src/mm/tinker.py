@@ -1,7 +1,7 @@
 from __future__ import division
 from mm.mm_calculator import MM_calculator
 from misc import au_to_A, call_name
-import os, shutil
+import os, shutil, textwrap
 
 class Tinker(MM_calculator):
     """ Class for Tinker program
@@ -215,5 +215,31 @@ class Tinker(MM_calculator):
         file_be.close()
         file_af.close()
         os.rename('tmp.key', 'tinker.key')
+
+        # Turn off unnecessary interactions in 'tinker.key' file
+        file_name = "tinker.key"
+        with open(file_name, "a") as f_xyz:
+            input_interaction = textwrap.dedent(f"""\
+            angangterm none
+            chgdplterm none
+            dipoleterm none
+            extraterm none
+            impropterm none
+            imptorsterm none
+            metalterm none
+            mpoleterm none
+            opbendterm none
+            opdistterm none
+            pitorsterm none
+            polarizeterm none
+            restrainterm none
+            rxnfieldterm none
+            solvateterm none
+            strbndterm none
+            strtorterm none
+            tortorterm none
+            ureyterm none
+            """)
+            f_xyz.write(input_interaction)
 
 
