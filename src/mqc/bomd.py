@@ -64,7 +64,7 @@ class BOMD(MQC):
         # Calculate initial input geometry at t = 0.0 s
         theory.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=False)
         if (molecule.nat_mm > 0):
-            field.get_mm(molecule, base_dir)
+            field.get_mm(molecule, base_dir, -1)
 
         self.update_energy(molecule)
 

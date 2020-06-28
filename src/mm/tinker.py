@@ -10,7 +10,7 @@ class Tinker(MM_calculator):
     """
     def __init__(self, molecule, scheme=None, do_charge=False, do_vdw=False, periodic=False, \
         cell_par=[0., 0., 0., 0., 0., 0.], xyz_file="./tinker.xyz", key_file="./tinker.key",
-        qm_path="./", nthreads=1, version=8.7):
+        mm_path="./", nthreads=1, version=8.7):
         # Save name of MM calculator
         super().__init__()
 
@@ -25,7 +25,7 @@ class Tinker(MM_calculator):
         self.xyz_file = xyz_file
         self.key_file = key_file
 
-        self.qm_path = qm_path
+        self.mm_path = mm_path
         self.nthreads = nthreads
         self.version = version
 
@@ -35,15 +35,16 @@ class Tinker(MM_calculator):
         if (not (self.scheme == "additive" or self.scheme == "subtractive")):
             raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong QM/MM scheme given! {self.scheme}")
 
-    def get_mm(self, molecule, base_dir):
+    def get_mm(self, molecule, base_dir, istep):
         """ Extract energy and gradient from Tinker
 
             :param object molecule: molecule object
             :param string base_dir: base directory
+            :param integer istep: current MD step
         """
         super().get_mm(base_dir)
         self.get_input(molecule)
-#        self.run_QM(base_dir, istep, bo_list)
+        self.run_MM(base_dir, istep)
 #        self.extract_BO(molecule, bo_list)
         self.move_dir(base_dir)
 
@@ -249,5 +250,44 @@ class Tinker(MM_calculator):
             ureyterm none
             """)
             f_xyz.write(input_interaction)
+
+    def run_MM(self, base_dir, istep):
+        """ Run Tinker calculation and save the output files to MMlog directory
+
+            :param string base_dir: base directory
+            :param integer istep: current MD step
+        """
+        # Set correct binary for Tinker calculation
+        binary1 = os.path.join(self.mm_path, "testgrad")
+        binary2 = os.path.join(self.mm_path, "testgrad.x")
+        if (os.path.isfile(binary1)):
+            mm_command = binary1
+        elif (os.path.isfile(binary2)):
+            mm_command = binary2
+        else:
+            raise ValueError (f"( {self.mm_prog}.{call_name()} ) No testgrad binary in the Tinker directory! {self.mm_path}")
+
+        # OpenMP setting
+        os.environ["OMP_NUM_THREADS"] = f"{self.nthreads}"
+        # Run Tinker method
+        if (self.scheme == "additive"):
+            command = f"{mm_command} tinker.xyz.2 -k tinker.key y n n > tinker.out.2"
+            os.system(command)
+        elif (self.scheme == "subtractive"):
+            command = f"{mm_command} tinker.xyz.12 -k tinker.key y n n > tinker.out.12"
+            os.system(command)
+            command = f"{mm_command} tinker.xyz.1 -k tinker.key y n n > tinker.out.1"
+            os.system(command)
+        # Copy the output file to 'MMlog' directory
+        tmp_dir = os.path.join(base_dir, "MMlog")
+        if (os.path.exists(tmp_dir)):
+            if (self.scheme == "additive"):
+                log_step = f"tinker.out.2.{istep + 1}"
+                shutil.copy("tinker.out.2", os.path.join(tmp_dir, log_step))
+            elif (self.scheme == "subtractive"):
+                log_step = f"tinker.out.12.{istep + 1}"
+                shutil.copy("tinker.out.12", os.path.join(tmp_dir, log_step))
+                log_step = f"tinker.out.1.{istep + 1}"
+                shutil.copy("tinker.out.1", os.path.join(tmp_dir, log_step))
 
 
