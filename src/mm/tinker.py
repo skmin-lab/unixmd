@@ -9,7 +9,8 @@ class Tinker(MM_calculator):
         :param object molecule: molecule object
     """
     def __init__(self, molecule, scheme=None, do_charge=False, do_vdw=False, periodic=False, \
-        cell_par=[0., 0., 0., 0., 0., 0.], xyz_file="./tinker.xyz", key_file="./tinker.key"):
+        cell_par=[0., 0., 0., 0., 0., 0.], xyz_file="./tinker.xyz", key_file="./tinker.key",
+        qm_path="./", nthreads=1, version=8.7):
         # Save name of MM calculator
         super().__init__()
 
@@ -23,6 +24,13 @@ class Tinker(MM_calculator):
 
         self.xyz_file = xyz_file
         self.key_file = key_file
+
+        self.qm_path = qm_path
+        self.nthreads = nthreads
+        self.version = version
+
+        if (not self.version == 8.7):
+            raise ValueError (f"( {self.mm_prog}.{call_name()} ) Other version not implemented! {self.version}")
 
         if (not (self.scheme == "additive" or self.scheme == "subtractive")):
             raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong QM/MM scheme given! {self.scheme}")
