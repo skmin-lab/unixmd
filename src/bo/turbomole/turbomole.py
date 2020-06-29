@@ -1,5 +1,6 @@
 from __future__ import division
 from bo.bo_calculator import BO_calculator
+from misc import call_name
 
 class Turbomole(BO_calculator):
     """ Class for common parts of Turbomole program
@@ -25,6 +26,6 @@ class Turbomole(BO_calculator):
         self.version = version
 
         if (self.version != 6.4):
-            raise ValueError ("TURBOMOMLE6.4 is ONLY available!")
+            raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")
 
 
