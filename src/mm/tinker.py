@@ -1,7 +1,8 @@
 from __future__ import division
 from mm.mm_calculator import MM_calculator
 from misc import au_to_A, call_name
-import os, shutil, textwrap
+import os, shutil, re, textwrap
+import numpy as np
 
 class Tinker(MM_calculator):
     """ Class for Tinker program
@@ -35,17 +36,18 @@ class Tinker(MM_calculator):
         if (not (self.scheme == "additive" or self.scheme == "subtractive")):
             raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong QM/MM scheme given! {self.scheme}")
 
-    def get_mm(self, molecule, base_dir, istep):
+    def get_mm(self, molecule, base_dir, istep, bo_list):
         """ Extract energy and gradient from Tinker
 
             :param object molecule: molecule object
             :param string base_dir: base directory
             :param integer istep: current MD step
+            :param integer,list bo_list: list of BO states for BO calculation
         """
         super().get_mm(base_dir)
         self.get_input(molecule)
         self.run_MM(base_dir, istep)
-#        self.extract_BO(molecule, bo_list)
+        self.extract_MM(molecule, bo_list)
         self.move_dir(base_dir)
 
     def get_input(self, molecule):
@@ -94,9 +96,12 @@ class Tinker(MM_calculator):
                         col = 0
                         field = line.split()
                         for element in field:
-                            if (col > 4):
-                                # Read right block; atom type and topology information
+                            if (col == 5):
+                                # Read right block; atom type information
                                 input_geom += f" {element:6s}"
+                            elif (col > 5):
+                                # Read right block; topology information
+                                input_geom += f" {int(element) - molecule.nat_qm:6d}"
                             col += 1
                         input_xyz2 += input_geom + "\n"
                     iline += 1
@@ -289,5 +294,97 @@ class Tinker(MM_calculator):
                 shutil.copy("tinker.out.12", os.path.join(tmp_dir, log_step))
                 log_step = f"tinker.out.1.{istep + 1}"
                 shutil.copy("tinker.out.1", os.path.join(tmp_dir, log_step))
+
+    def extract_MM(self, molecule, bo_list):
+        """ Read the output files to get MM information
+
+            :param object molecule: molecule object
+            :param integer,list bo_list: list of BO states for BO calculation
+        """
+        # Energy; initialize the energy at MM level
+        mm_energy = 0.
+
+        if (self.scheme == "additive"):
+
+            # Read 'tinker.out.2' file
+            file_name = "tinker.out.2"
+            with open(file_name, "r") as f:
+                tinker_out2 = f.read()
+
+            tmp_e = 'Total Potential Energy :' + '\s+([-]*\S+)\s+' + 'Kcal/mole'
+            energy = re.findall(tmp_e, tinker_out2)
+            energy = np.array(energy)
+            energy = energy.astype(float)
+            mm_energy += energy[0]
+
+        elif (self.scheme == "subtractive"):
+
+            # Read 'tinker.out.12' file
+            file_name = "tinker.out.12"
+            with open(file_name, "r") as f:
+                tinker_out12 = f.read()
+
+            tmp_e = 'Total Potential Energy :' + '\s+([-]*\S+)\s+' + 'Kcal/mole'
+            energy = re.findall(tmp_e, tinker_out12)
+            energy = np.array(energy)
+            energy = energy.astype(float)
+            mm_energy += energy[0]
+
+            # Read 'tinker.out.1' file
+            file_name = "tinker.out.1"
+            with open(file_name, "r") as f:
+                tinker_out1 = f.read()
+
+            tmp_e = 'Total Potential Energy :' + '\s+([-]*\S+)\s+' + 'Kcal/mole'
+            energy = re.findall(tmp_e, tinker_out1)
+            energy = np.array(energy)
+            energy = energy.astype(float)
+            mm_energy -= energy[0]
+
+        # Add energy of MM part to total energy
+        for ist in range(molecule.nst):
+            molecule.states[ist].energy += mm_energy
+
+        # Force; initialize the force at MM level
+        mm_force = np.zeros((molecule.nat, molecule.nsp))
+
+        if (self.scheme == "additive"):
+
+            tmp_f = 'Cartesian Gradient Breakdown over Individual Atoms :' + \
+                '\n\n\s+Type\s+Atom\s+dE/dX\s+dE/dY\s+dE/dZ\s+Norm\n\n' + \
+                '\s+Anlyt\s+\S+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\s+\S+\n' * molecule.nat_mm
+            force = re.findall(tmp_f, tinker_out2)
+            force = np.array(force[0])
+            force = force.astype(float)
+            force = force.reshape(molecule.nat_mm, 3, order='C')
+            # Tinker calculates gradient, not force
+            for iat in range(molecule.nat_mm):
+                mm_force[iat + molecule.nat_qm] -= force[iat]
+
+        elif (self.scheme == "subtractive"):
+
+            tmp_f = 'Cartesian Gradient Breakdown over Individual Atoms :' + \
+                '\n\n\s+Type\s+Atom\s+dE/dX\s+dE/dY\s+dE/dZ\s+Norm\n\n' + \
+                '\s+Anlyt\s+\S+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\s+\S+\n' * molecule.nat
+            force = re.findall(tmp_f, tinker_out12)
+            force = np.array(force[0])
+            force = force.astype(float)
+            force = force.reshape(molecule.nat, 3, order='C')
+            # Tinker calculates gradient, not force
+            mm_force -= np.copy(force)
+
+            tmp_f = 'Cartesian Gradient Breakdown over Individual Atoms :' + \
+                '\n\n\s+Type\s+Atom\s+dE/dX\s+dE/dY\s+dE/dZ\s+Norm\n\n' + \
+                '\s+Anlyt\s+\S+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\s+\S+\n' * molecule.nat_qm
+            force = re.findall(tmp_f, tinker_out1)
+            force = np.array(force[0])
+            force = force.astype(float)
+            force = force.reshape(molecule.nat_qm, 3, order='C')
+            # Tinker calculates gradient, not force
+            for iat in range(molecule.nat_qm):
+                mm_force[iat] += force[iat]
+
+        # Add force of MM part to total force
+        molecule.states[bo_list[0]].force += np.copy(mm_force)
 
 
