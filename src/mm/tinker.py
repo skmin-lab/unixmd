@@ -230,6 +230,39 @@ class Tinker(MM_calculator):
         file_af.close()
         os.rename('tmp.key', 'tinker.key')
 
+        # Set periodicity for the systems
+        if (self.periodic):
+            file_be = open('tinker.key', 'r')
+            file_af = open('tmp.key', 'w')
+            for line in file_be:
+                if ("a-axis" in line):
+                    line = ""
+                elif ("b-axis" in line):
+                    line = ""
+                elif ("c-axis" in line):
+                    line = ""
+                elif ("alpha" in line):
+                    line = ""
+                elif ("beta" in line):
+                    line = ""
+                elif ("gamma" in line):
+                    line = ""
+                file_af.write(line)
+            # Add periodic keywords to last line
+            input_periodic = textwrap.dedent(f"""\
+            a-axis {self.cell_par[0]}
+            b-axis {self.cell_par[1]}
+            c-axis {self.cell_par[2]}
+            alpha {self.cell_par[3]}
+            beta {self.cell_par[4]}
+            gamma {self.cell_par[5]}
+
+            """)
+            file_af.write(input_periodic)
+            file_be.close()
+            file_af.close()
+            os.rename('tmp.key', 'tinker.key')
+
         # Turn off unnecessary interactions in 'tinker.key' file
         file_name = "tinker.key"
         with open(file_name, "a") as f_xyz:
@@ -253,6 +286,7 @@ class Tinker(MM_calculator):
             strtorterm none
             tortorterm none
             ureyterm none
+
             """)
             f_xyz.write(input_interaction)
 
