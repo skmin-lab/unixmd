@@ -77,6 +77,8 @@ class BOMD(MQC):
             self.cl_update_position(molecule)
 
             theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=False)
+            if (molecule.nat_mm > 0):
+                field.get_mm(molecule, base_dir, istep, bo_list)
 
             self.cl_update_velocity(molecule)
 
@@ -94,6 +96,11 @@ class BOMD(MQC):
             tmp_dir = os.path.join(unixmd_dir, "scr_qm")
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
+
+            if (molecule.nat_mm > 0):
+                tmp_dir = os.path.join(unixmd_dir, "scr_mm")
+                if (os.path.exists(tmp_dir)):
+                    shutil.rmtree(tmp_dir)
 
     def calculate_force(self, molecule):
         """ Routine to calculate the forces

@@ -1,6 +1,6 @@
 from __future__ import division
 from mm.mm_calculator import MM_calculator
-from misc import au_to_A, call_name
+from misc import au_to_A, kcalmol_to_au, call_name
 import os, shutil, re, textwrap
 import numpy as np
 
@@ -375,9 +375,9 @@ class Tinker(MM_calculator):
             energy = energy.astype(float)
             mm_energy -= energy[0]
 
-        # Add energy of MM part to total energy
+        # Add energy of MM part to total energy; kcal/mol to hartree
         for ist in range(molecule.nst):
-            molecule.states[ist].energy += mm_energy
+            molecule.states[ist].energy += mm_energy * kcalmol_to_au
 
         # Force; initialize the force at MM level
         mm_force = np.zeros((molecule.nat, molecule.nsp))
@@ -418,7 +418,7 @@ class Tinker(MM_calculator):
             for iat in range(molecule.nat_qm):
                 mm_force[iat] += force[iat]
 
-        # Add force of MM part to total force
-        molecule.states[bo_list[0]].force += np.copy(mm_force)
+        # Add force of MM part to total force; kcal/(mol*A) to hartree/bohr
+        molecule.states[bo_list[0]].force += np.copy(mm_force) * kcalmol_to_au * au_to_A
 
 
