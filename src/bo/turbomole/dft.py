@@ -1,8 +1,8 @@
 from __future__ import division
 from bo.turbomole.turbomole import Turbomole
+from misc import call_name
 import os, shutil, re, textwrap
 import numpy as np
-from misc import call_name
 
 class DFT(Turbomole):
     """ Class for (TD)DFT method of Turbomole program
@@ -20,8 +20,7 @@ class DFT(Turbomole):
         :param double version: version of Turbomole program
     """
     def __init__(self, molecule, functional="b-lyp", basis_set="SV(P)", memory="", \
-        scf_max_iter=50, scf_en_tol=1E-8, qm_path="./", qm_bin_path="./", qm_scripts_path="./", \
-        nthreads=1, version=6.4):
+        scf_max_iter=50, scf_en_tol=1E-8, qm_path="./", nthreads=1, version=6.4):
         # Initialize Turbomole common variables
         super(DFT, self).__init__(functional, basis_set, memory, qm_path, nthreads, version)
 
@@ -68,12 +67,12 @@ class DFT(Turbomole):
         command = f"{x2t_command} geometry.xyz > coord" 
         os.system(command)
 
-        self.get_input(molecule, bo_list, calc_force_only)
-        self.run_QM(molecule, base_dir, istep, bo_list, calc_force_only)
-        self.extract_BO(molecule, istep, bo_list, dt, calc_force_only)
+        self.get_input(molecule, bo_list)
+        self.run_QM(molecule, base_dir, istep, bo_list)
+        self.extract_BO(molecule, bo_list)
         self.move_dir(base_dir)
 
-    def get_input(self, molecule, bo_list, calc_force_only):
+    def get_input(self, molecule, bo_list):
         """ Generate Turbomole input files: define.in, control, etc
 
             :param object molecule: molecule object
@@ -150,7 +149,6 @@ class DFT(Turbomole):
 
         control = ""
         control += f"$exopt {bo_list[0]}\n"
-        control += f"$mo output format(3(2x,d15.8))\n"
 
         iline = 0
         while "$scfiterlimit" not in control_prev[iline]:
@@ -174,7 +172,7 @@ class DFT(Turbomole):
         with open(file_name, "w") as f:
             f.write(control)
 
-    def run_QM(self, molecule, base_dir, istep, bo_list, calc_force_only):
+    def run_QM(self, molecule, base_dir, istep, bo_list):
         """ Run (TD)DFT calculation and save the output files to QMlog directory
 
             :param string base_dir: base directory
@@ -193,7 +191,7 @@ class DFT(Turbomole):
             grad_command = os.path.join(self.qm_bin_path, "grad")
             command = f"{grad_command} >& grad.out"
             os.system(command)
-            if (molecule.nst != 1):
+            if (molecule.nst > 1):
                 grad_command = os.path.join(self.qm_bin_path, "escf")
                 command = f"{grad_command} >& escf.out"
                 os.system(command)
@@ -207,7 +205,7 @@ class DFT(Turbomole):
         if (os.path.exists(tmp_dir)):
             shutil.copy("gradient", os.path.join(tmp_dir, f"grad.{istep + 1}"))
 
-    def extract_BO(self, molecule, istep, bo_list, dt, calc_force_only):
+    def extract_BO(self, molecule, bo_list):
         """ Read the output files to get BO information
 
             :param object molecule: molecule object
@@ -221,20 +219,18 @@ class DFT(Turbomole):
         bo_out = bo_out.replace('D', 'E')
 
         # Energy of running state
-        if (not calc_force_only):
-            for states in molecule.states:
-                states.energy = 0.
+        for states in molecule.states:
+            states.energy = 0.
 
-            find_e = "energy =\s+([-]\d+[.]\d+)"
-            energy = re.findall(find_e, bo_out)
-            energy = np.array(energy)
-            energy = energy.astype(float)
-            molecule.states[bo_list[0]].energy = energy[0]
+        find_e = "energy =\s+([-]\d+[.]\d+)"
+        energy = re.findall(find_e, bo_out)
+        energy = np.array(energy)
+        energy = energy.astype(float)
+        molecule.states[bo_list[0]].energy = energy[0]
         
         # Force of running state
-        if (not calc_force_only):
-            for states in molecule.states:
-                states.force = np.zeros((molecule.nat, molecule.nsp))
+        for states in molecule.states:
+            states.force = np.zeros((molecule.nat, molecule.nsp))
 
         find_grad = "\s+([-]*\d*[.]\d+[E][-|+]\d+)"
         grad = re.findall(find_grad, bo_out)
