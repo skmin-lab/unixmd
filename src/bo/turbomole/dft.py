@@ -11,11 +11,9 @@ class DFT(Turbomole):
         :param string functional: level of DFT theory
         :param string basis_set: basis set information
         :param string memory: allocatable memory in the calculations
-        :param integer max_iter: maximum number of SCF iterations
+        :param integer scf_max_iter: maximum number of SCF iterations
         :param double scf_en_tol: energy convergence for SCF iterations
         :param string qm_path: path for QM turbomole
-        :param string qm_bin_path: path for QM binary
-        :param string qm_scripts_path: path for QM scripts
         :param integer nthreads: number of threads in the calculations
         :param double version: version of Turbomole program
     """
@@ -40,13 +38,10 @@ class DFT(Turbomole):
         # Set 'l_nacme' with respect to the computational method
         # TDDFT cannot produce NAC between ground and first excited state,
         # so we need to get NACME from CIoverlap
-        molecule.l_nacme = False 
+        molecule.l_nacme = False
 
         # Re-calculation of excited state forces is not needed for ground state dynamics
-        if (molecule.nst > 1):
-            self.re_calc = True
-        else:
-            self.re_calc = False
+        self.re_calc = False
 
     def get_bo(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from (TD)DFT method
@@ -58,14 +53,8 @@ class DFT(Turbomole):
             :param double dt: time interval
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        if (self.calc_coupling):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) BOMD is only valid! {self.calc_coupling}")
-
         super().get_bo(base_dir, calc_force_only)
         self.write_xyz(molecule)
-        x2t_command = os.path.join(self.qm_scripts_path, "x2t")
-        command = f"{x2t_command} geometry.xyz > coord" 
-        os.system(command)
 
         self.get_input(molecule, bo_list)
         self.run_QM(molecule, base_dir, istep, bo_list)
@@ -78,6 +67,13 @@ class DFT(Turbomole):
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation
         """
+        if (self.calc_coupling):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) BOMD is only valid! {self.calc_coupling}")
+
+        x2t_command = os.path.join(self.qm_scripts_path, "x2t")
+        command = f"{x2t_command} geometry.xyz > coord"
+        os.system(command)
+
         input_define = ""
 
         # Job title
@@ -85,7 +81,7 @@ class DFT(Turbomole):
 
 
         """)
-        input_define += input_title 
+        input_define += input_title
 
         # Molcule geometry
         input_geom = textwrap.dedent(f"""\
@@ -121,7 +117,7 @@ class DFT(Turbomole):
         """)
         input_define += input_functional
 
-        # TODO: TDA or RPA
+        # TODO: TDA or RPA (rpas -> ciss)
         # Excited state calculation
         input_ES = textwrap.dedent(f"""\
         ex
@@ -174,7 +170,7 @@ class DFT(Turbomole):
 
     def run_QM(self, molecule, base_dir, istep, bo_list):
         """ Run (TD)DFT calculation and save the output files to QMlog directory
-            
+
             :param object molecule: molecule object
             :param string base_dir: base directory
             :param integer istep: current MD step
@@ -211,9 +207,7 @@ class DFT(Turbomole):
 
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation
-            :param boolean calc_force_only: logical to decide whether calculate force only
         """
-
         file_name = "gradient"
         with open(file_name, "r") as f:
             bo_out = f.read()
@@ -228,7 +222,7 @@ class DFT(Turbomole):
         energy = np.array(energy)
         energy = energy.astype(float)
         molecule.states[bo_list[0]].energy = energy[0]
-        
+
         # Force of running state
         for states in molecule.states:
             states.force = np.zeros((molecule.nat, molecule.nsp))
@@ -239,7 +233,7 @@ class DFT(Turbomole):
         grad = grad.astype(float)
         grad = grad.reshape(molecule.nat, 3, order='C')
         molecule.states[bo_list[0]].force = - np.copy(grad)
-        
+
         # Energy of other states (except running state)
         if (molecule.nst > 1):
             if (bo_list[0] != 0):
@@ -249,12 +243,13 @@ class DFT(Turbomole):
 
             with open(file_name, "r") as f:
                 bo_out = f.read()
-            find_e ='Total energy:\s+([-]\d+[.]\d+)'
+            find_e = 'Total energy:\s+([-]\d+[.]\d+)'
             energy = re.findall(find_e, bo_out)
             energy = np.array(energy)
             energy = energy.astype(float)
             for ist in range(molecule.nst):
-                molecule.states[ist].energy = energy[ist]
+                if (ist != bo_list[0]):
+                    molecule.states[ist].energy = energy[ist]
 
         # NACME
         # Turbomole cannot provides NACVs between excited states
