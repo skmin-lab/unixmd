@@ -2,6 +2,7 @@ from __future__ import division
 from bo.turbomole.turbomole import Turbomole
 import os, shutil, re, textwrap
 import numpy as np
+from misc import call_name
 
 class DFT(Turbomole):
     """ Class for (TD)DFT method of Turbomole program
@@ -18,7 +19,7 @@ class DFT(Turbomole):
         :param integer nthreads: number of threads in the calculations
         :param double version: version of Turbomole program
     """
-    def __init__(self, molecule, functional="b-lyp", basis_set="STO-3g", memory="", \
+    def __init__(self, molecule, functional="b-lyp", basis_set="SV(P)", memory="", \
         scf_max_iter=50, scf_en_tol=1E-8, qm_path="./", qm_bin_path="./", qm_scripts_path="./", \
         nthreads=1, version=6.4):
         # Initialize Turbomole common variables
@@ -40,7 +41,7 @@ class DFT(Turbomole):
         # Set 'l_nacme' with respect to the computational method
         # TDDFT cannot produce NAC between ground and first excited state,
         # so we need to get NACME from CIoverlap
-        molecule.l_nacme = True
+        molecule.l_nacme = False 
 
         # Re-calculation of excited state forces is not needed for ground state dynamics
         if (molecule.nst > 1):
@@ -58,23 +59,21 @@ class DFT(Turbomole):
             :param double dt: time interval
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-#        if (self.calc_coupling):
-#            raise ValueError ("only BOMD possible with TDDFT")
+        if (self.calc_coupling):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) BOMD is only valid! {self.calc_coupling}")
 
         super().get_bo(base_dir, calc_force_only)
         self.write_xyz(molecule)
         x2t_command = os.path.join(self.qm_scripts_path, "x2t")
         command = f"{x2t_command} geometry.xyz > coord" 
         os.system(command)
-        # TODO : should be removed?
-        #os.system("cp coord coord.ref")
 
-        self.get_input(molecule, bo_list)
-        self.run_QM(base_dir, istep, bo_list)
-        self.extract_BO(molecule, bo_list, calc_force_only)
+        self.get_input(molecule, bo_list, calc_force_only)
+        self.run_QM(molecule, base_dir, istep, bo_list, calc_force_only)
+        self.extract_BO(molecule, istep, bo_list, dt, calc_force_only)
         self.move_dir(base_dir)
 
-    def get_input(self, molecule, bo_list):
+    def get_input(self, molecule, bo_list, calc_force_only):
         """ Generate Turbomole input files: define.in, control, etc
 
             :param object molecule: molecule object
@@ -123,6 +122,7 @@ class DFT(Turbomole):
         """)
         input_define += input_functional
 
+        # TODO: TDA or RPA
         # Excited state calculation
         input_ES = textwrap.dedent(f"""\
         ex
@@ -150,6 +150,8 @@ class DFT(Turbomole):
 
         control = ""
         control += f"$exopt {bo_list[0]}\n"
+        control += f"$mo output format(3(2x,d15.8))\n"
+
         iline = 0
         while "$scfiterlimit" not in control_prev[iline]:
             control += control_prev[iline]
@@ -172,7 +174,7 @@ class DFT(Turbomole):
         with open(file_name, "w") as f:
             f.write(control)
 
-    def run_QM(self, base_dir, istep, bo_list):
+    def run_QM(self, molecule, base_dir, istep, bo_list, calc_force_only):
         """ Run (TD)DFT calculation and save the output files to QMlog directory
 
             :param string base_dir: base directory
@@ -191,7 +193,7 @@ class DFT(Turbomole):
             grad_command = os.path.join(self.qm_bin_path, "grad")
             command = f"{grad_command} >& grad.out"
             os.system(command)
-            if (self.calc_coupling):
+            if (molecule.nst != 1):
                 grad_command = os.path.join(self.qm_bin_path, "escf")
                 command = f"{grad_command} >& escf.out"
                 os.system(command)
@@ -205,7 +207,7 @@ class DFT(Turbomole):
         if (os.path.exists(tmp_dir)):
             shutil.copy("gradient", os.path.join(tmp_dir, f"grad.{istep + 1}"))
 
-    def extract_BO(self, molecule, bo_list, calc_force_only):
+    def extract_BO(self, molecule, istep, bo_list, dt, calc_force_only):
         """ Read the output files to get BO information
 
             :param object molecule: molecule object
@@ -223,7 +225,6 @@ class DFT(Turbomole):
             for states in molecule.states:
                 states.energy = 0.
 
-            # TODO : should be checked when implementing CIoverlap
             find_e = "energy =\s+([-]\d+[.]\d+)"
             energy = re.findall(find_e, bo_out)
             energy = np.array(energy)
@@ -243,7 +244,7 @@ class DFT(Turbomole):
         molecule.states[bo_list[0]].force = - np.copy(grad)
         
         # Energy of other states (except running state)
-        if (not calc_force_only and self.calc_coupling):
+        if (molecule.nst != 1):
             if (bo_list[0] != 0):
                 file_name = "egrad.out"
             else:
@@ -258,8 +259,5 @@ class DFT(Turbomole):
             for ist in range(molecule.nst):
                 molecule.states[ist].energy = energy[ist]
 
-
         # NACME
-        # TODO
-
-
+        # Turbomole cannot provides NACVs between excited states
