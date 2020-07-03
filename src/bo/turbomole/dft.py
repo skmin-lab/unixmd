@@ -174,7 +174,8 @@ class DFT(Turbomole):
 
     def run_QM(self, molecule, base_dir, istep, bo_list):
         """ Run (TD)DFT calculation and save the output files to QMlog directory
-
+            
+            :param object molecule: molecule object
             :param string base_dir: base directory
             :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
@@ -240,7 +241,7 @@ class DFT(Turbomole):
         molecule.states[bo_list[0]].force = - np.copy(grad)
         
         # Energy of other states (except running state)
-        if (molecule.nst != 1):
+        if (molecule.nst > 1):
             if (bo_list[0] != 0):
                 file_name = "egrad.out"
             else:
