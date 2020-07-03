@@ -384,39 +384,39 @@ class Tinker(MM_calculator):
 
         if (self.scheme == "additive"):
 
-            tmp_f = 'Cartesian Gradient Breakdown over Individual Atoms :' + \
+            tmp_g = 'Cartesian Gradient Breakdown over Individual Atoms :' + \
                 '\n\n\s+Type\s+Atom\s+dE/dX\s+dE/dY\s+dE/dZ\s+Norm\n\n' + \
                 '\s+Anlyt\s+\S+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\s+\S+\n' * molecule.nat_mm
-            force = re.findall(tmp_f, tinker_out2)
-            force = np.array(force[0])
-            force = force.astype(float)
-            force = force.reshape(molecule.nat_mm, 3, order='C')
+            grad = re.findall(tmp_g, tinker_out2)
+            grad = np.array(grad[0])
+            grad = grad.astype(float)
+            grad = grad.reshape(molecule.nat_mm, 3, order='C')
             # Tinker calculates gradient, not force
             for iat in range(molecule.nat_mm):
-                mm_force[iat + molecule.nat_qm] -= force[iat]
+                mm_force[iat + molecule.nat_qm] -= grad[iat]
 
         elif (self.scheme == "subtractive"):
 
-            tmp_f = 'Cartesian Gradient Breakdown over Individual Atoms :' + \
+            tmp_g = 'Cartesian Gradient Breakdown over Individual Atoms :' + \
                 '\n\n\s+Type\s+Atom\s+dE/dX\s+dE/dY\s+dE/dZ\s+Norm\n\n' + \
                 '\s+Anlyt\s+\S+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\s+\S+\n' * molecule.nat
-            force = re.findall(tmp_f, tinker_out12)
-            force = np.array(force[0])
-            force = force.astype(float)
-            force = force.reshape(molecule.nat, 3, order='C')
+            grad = re.findall(tmp_g, tinker_out12)
+            grad = np.array(grad[0])
+            grad = grad.astype(float)
+            grad = grad.reshape(molecule.nat, 3, order='C')
             # Tinker calculates gradient, not force
-            mm_force -= np.copy(force)
+            mm_force -= np.copy(grad)
 
-            tmp_f = 'Cartesian Gradient Breakdown over Individual Atoms :' + \
+            tmp_g = 'Cartesian Gradient Breakdown over Individual Atoms :' + \
                 '\n\n\s+Type\s+Atom\s+dE/dX\s+dE/dY\s+dE/dZ\s+Norm\n\n' + \
                 '\s+Anlyt\s+\S+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\s+\S+\n' * molecule.nat_qm
-            force = re.findall(tmp_f, tinker_out1)
-            force = np.array(force[0])
-            force = force.astype(float)
-            force = force.reshape(molecule.nat_qm, 3, order='C')
+            grad = re.findall(tmp_g, tinker_out1)
+            grad = np.array(grad[0])
+            grad = grad.astype(float)
+            grad = grad.reshape(molecule.nat_qm, 3, order='C')
             # Tinker calculates gradient, not force
             for iat in range(molecule.nat_qm):
-                mm_force[iat] += force[iat]
+                mm_force[iat] += grad[iat]
 
         # Add force of MM part to total force; kcal/(mol*A) to hartree/bohr
         molecule.states[bo_list[0]].force += np.copy(mm_force) * kcalmol_to_au * au_to_A
