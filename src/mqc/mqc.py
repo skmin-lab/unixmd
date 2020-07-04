@@ -91,7 +91,7 @@ class MQC(object):
           QM Program               = {theory.qm_prog:>16s}
           QM Method                = {theory.qm_method:>16s}
         """)
-        if (molecule.nat_mm > 0):
+        if (molecule.qmmm):
             dynamics_info += f"  MM Program               = {field.mm_prog:>16s}\n"
         dynamics_info += textwrap.indent(textwrap.dedent(f"""\
 

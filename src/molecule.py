@@ -24,7 +24,7 @@ class Molecule(object):
         :param string geometry: initial cartesian coordinates for position and velocities in the extended xyz format
         :param integer nsp: dimension of space where the molecule is
         :param integer nstates: number of BO states
-        :param integer natoms_qm: number of atoms in QM region
+        :param boolean qmmm: use QMMM scheme for the calculation of large systems
         :param integer natoms_mm: number of atoms in MM region
         :param integer dof: degrees of freedom (if model is False, molecular dof is given)
         :param string unit_pos: unit of position (A = angstrom, au = atomic unit [bohr])
@@ -32,7 +32,7 @@ class Molecule(object):
         :param double charge: total charge of the system
         :param boolean model: is the system a model system?
     """
-    def __init__(self, geometry, nsp=3, nstates=3, natoms_qm=0, natoms_mm=0, dof=None, \
+    def __init__(self, geometry, nsp=3, nstates=3, qmmm=False, natoms_mm=None, dof=None, \
         unit_pos='A', unit_vel='au', charge=0., model=False):
         # Save name of Molecule class
         self.mol_type = self.__class__.__name__
@@ -49,19 +49,20 @@ class Molecule(object):
         self.symbols = []
         self.read_geometry(geometry, unit_pos, unit_vel)
 
-        # Initialize environment in QM/MM method
-        self.nat_qm = natoms_qm
+        # Initialize QM/MM method
+        self.qmmm = qmmm
         self.nat_mm = natoms_mm
-        if (self.nat_mm == 0):
-            if (self.nat_qm == 0):
-                self.nat_qm = self.nat
-            else:
-                assert (self.nat == self.nat_qm)
+        if (self.qmmm):
+            if (self.nat_mm == None):
+                raise ValueError (f"( {self.mol_type}.{call_name()} ) Number of atoms in MM region is essential for QMMM! {self.nat_mm}")
+            self.nat_qm = self.nat - self.nat_mm
         else:
-            assert (self.nat == self.nat_qm + self.nat_mm)
+            if (self.nat_mm != None):
+                raise ValueError (f"( {self.mol_type}.{call_name()} ) Number of atoms in MM region is not necessary! {self.nat_mm}")
+            self.nat_qm = self.nat
 
         # Initialize system charge and number of electrons
-        if (not model):
+        if (not self.model):
             self.charge = charge
             self.get_nr_electrons()
         else:
@@ -69,7 +70,7 @@ class Molecule(object):
             self.nelec = 0
 
         # Initialize degrees of freedom
-        if (model):
+        if (self.model):
             if (dof == None):
                 self.dof = self.nat * self.nsp
             else:
@@ -270,7 +271,7 @@ class Molecule(object):
         {"-" * 68}
           Number of Atoms (QM)     = {self.nat_qm:>16d}
         """)
-        if (self.nat_mm > 0):
+        if (self.qmmm):
             molecule_info += f"  Number of Atoms (MM)     = {self.nat_mm:>16d}\n"
         molecule_info += textwrap.indent(textwrap.dedent(f"""\
           Degrees of Freedom       = {int(self.dof):>16d}
