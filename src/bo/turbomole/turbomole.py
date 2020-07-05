@@ -9,7 +9,7 @@ class Turbomole(BO_calculator):
         :param string functional: xc functional information
         :param string basis_set: basis set information
         :param string memory: allocatable memory in the calculations
-        :param string qm_path: path for QM binary
+        :param string qm_path: path for QM
         :param integer nthreads: number of threads in the calculations
         :param double version: version of Turbomole program
     """
@@ -34,7 +34,6 @@ class Turbomole(BO_calculator):
             os.environ["PARA_ARCH"] = "SMP"
             os.environ["PARNODES"] = f"{self.nthreads}"
             self.qm_bin_path = os.path.join(self.qm_path, "bin/em64t-unknown-linux-gnu_smp/")
-            
 
         if (self.version != 6.4):
             raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")

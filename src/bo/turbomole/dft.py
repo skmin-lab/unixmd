@@ -10,15 +10,15 @@ class DFT(Turbomole):
         :param object molecule: molecule object
         :param string functional: level of DFT theory
         :param string basis_set: basis set information
-        :param string memory: allocatable memory in the calculations
+        :param integer memory: allocatable memory in the calculations
         :param integer scf_max_iter: maximum number of SCF iterations
-        :param double scf_en_tol: energy convergence for SCF iterations
+        :param integer scf_en_tol: energy convergence for SCF iterations
         :param string qm_path: path for QM turbomole
         :param integer nthreads: number of threads in the calculations
         :param double version: version of Turbomole program
     """
-    def __init__(self, molecule, functional="b-lyp", basis_set="SV(P)", memory="", \
-        scf_max_iter=50, scf_en_tol=1E-8, qm_path="./", nthreads=1, version=6.4):
+    def __init__(self, molecule, functional="b-lyp", basis_set="SV(P)", memory="50", \
+        scf_max_iter=50, scf_en_tol=5, qm_path="./", nthreads=1, version=6.4):
         # Initialize Turbomole common variables
         super(DFT, self).__init__(functional, basis_set, memory, qm_path, nthreads, version)
 
@@ -134,16 +134,23 @@ class DFT(Turbomole):
             control_prev = f.readlines()
 
         control = ""
+
+        # Root state to calculate gradient
         control += f"$exopt {bo_list[0]}\n"
 
+        # Memory to use
+        control += f"$maxcor {self.memory}\n"
+
         iline = 0
+        # SCF options such as iteration and energy tolerance
         while "$scfiterlimit" not in control_prev[iline]:
             control += control_prev[iline]
             iline += 1
         scfiter = f"$scfiterlimit   {self.scf_max_iter}\n"
         control += scfiter
-        iline += 1
+        control += f"$scfconv {self.scf_en_tol}"
 
+        # Calculate energy gradient
         while "$dft" not in control_prev[iline]:
             control += control_prev[iline]
             iline += 1
@@ -168,9 +175,6 @@ class DFT(Turbomole):
         """
         # Run dscf
         scf_command = os.path.join(self.qm_bin_path, "dscf")
-        # OpenMP setting
-        # TODO : parallel implementation
-        #os.environ["OMP_NUM_THREADS"] = f"{self.nthreads}"
         command = f"{scf_command} >& dscf.out"
         os.system(command)
         
