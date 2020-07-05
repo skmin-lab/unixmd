@@ -27,13 +27,10 @@ class DFT(Turbomole):
 
         # TODO : parallel implementation
         #self.qm_bin_path = os.path.join(self.qm_path, "bin/em64t-unknown-linux-gnu_smp/")
-        self.qm_bin_path = os.path.join(self.qm_path, "bin/em64t-unknown-linux-gnu/")
-        self.qm_scripts_path = os.path.join(self.qm_path, "scripts/")
 
         # TODO : parallel implementation
         #os.environ["PARA_ARCH"] = "SMP"
         #os.environ["PARNODES"] = f"{self.nthreads}"
-        os.environ["TURBODIR"] = qm_path
 
         # Set 'l_nacme' with respect to the computational method
         # TDDFT cannot produce NAC between ground and first excited state,

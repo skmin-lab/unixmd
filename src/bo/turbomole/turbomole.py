@@ -1,6 +1,7 @@
 from __future__ import division
 from bo.bo_calculator import BO_calculator
 from misc import call_name
+import os
 
 class Turbomole(BO_calculator):
     """ Class for common parts of Turbomole program
@@ -21,11 +22,14 @@ class Turbomole(BO_calculator):
         self.basis_set = basis_set
 
         self.memory = memory
-        self.qm_path = qm_path
         self.nthreads = nthreads
         self.version = version
 
+        self.qm_path = qm_path
+        self.qm_bin_path = os.path.join(self.qm_path, "bin/em64t-unknown-linux-gnu/")
+        self.qm_scripts_path = os.path.join(self.qm_path, "scripts/")
+        os.environ["TURBODIR"] = qm_path
+
         if (self.version != 6.4):
             raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")
-
 
