@@ -26,9 +26,15 @@ class Turbomole(BO_calculator):
         self.version = version
 
         self.qm_path = qm_path
-        self.qm_bin_path = os.path.join(self.qm_path, "bin/em64t-unknown-linux-gnu/")
-        self.qm_scripts_path = os.path.join(self.qm_path, "scripts/")
         os.environ["TURBODIR"] = qm_path
+        self.qm_scripts_path = os.path.join(self.qm_path, "scripts/")
+        if (self.nthreads == 1):
+            self.qm_bin_path = os.path.join(self.qm_path, "bin/em64t-unknown-linux-gnu/")
+        else:
+            os.environ["PARA_ARCH"] = "SMP"
+            os.environ["PARNODES"] = f"{self.nthreads}"
+            self.qm_bin_path = os.path.join(self.qm_path, "bin/em64t-unknown-linux-gnu_smp/")
+            
 
         if (self.version != 6.4):
             raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")

@@ -25,13 +25,6 @@ class DFT(Turbomole):
         self.scf_max_iter = scf_max_iter
         self.scf_en_tol = scf_en_tol
 
-        # TODO : parallel implementation
-        #self.qm_bin_path = os.path.join(self.qm_path, "bin/em64t-unknown-linux-gnu_smp/")
-
-        # TODO : parallel implementation
-        #os.environ["PARA_ARCH"] = "SMP"
-        #os.environ["PARNODES"] = f"{self.nthreads}"
-
         # Set 'l_nacme' with respect to the computational method
         # TDDFT cannot produce NAC between ground and first excited state,
         # so we need to get NACME from CIoverlap
@@ -180,7 +173,7 @@ class DFT(Turbomole):
         #os.environ["OMP_NUM_THREADS"] = f"{self.nthreads}"
         command = f"{scf_command} >& dscf.out"
         os.system(command)
-
+        
         if (bo_list[0] == 0):
             grad_command = os.path.join(self.qm_bin_path, "grad")
             command = f"{grad_command} >& grad.out"
