@@ -80,8 +80,8 @@ def wf_overlap(theory, molecule, istep_py, dt_py):
             theory.mo_coef_old[iorb, jorb] = mo_coef_new[iorb][jorb]
 
     for ist in range(nst):
-        for iorb in range(nvirt):
-            for jorb in range(nocc):
+        for iorb in range(nocc):
+            for jorb in range(nvirt):
                 theory.ci_coef_old[ist, iorb, jorb] = ci_coef_new[ist][iorb][jorb]
 
     # Deallocate NACME variables
