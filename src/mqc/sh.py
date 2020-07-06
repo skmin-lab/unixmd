@@ -45,7 +45,7 @@ class SH(MQC):
         else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
 
-    def run(self, molecule, theory, thermostat, input_dir="./", \
+    def run(self, molecule, theory, thermostat=None, input_dir="./", \
         save_QMlog=False, save_scr=True, debug=0):
         """ Run MQC dynamics according to surface hopping dynamics
 
@@ -122,7 +122,8 @@ class SH(MQC):
             if (theory.re_calc and self.l_hop):
                 theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=True)
 
-            thermostat.run(molecule, self)
+            if (thermostat != None):
+                thermostat.run(molecule, self)
 
             self.update_energy(molecule)
 

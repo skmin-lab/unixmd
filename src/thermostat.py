@@ -18,32 +18,6 @@ class thermo(object):
         self.temp = temperature
 
 
-class none(thermo):
-    """ No temperature control; the NVE case
-    """
-    def __init__(self):
-        pass
-
-    def run(self, molecule, md):
-        """ Control the temperature (dummy in this case)
-
-            :param object molecule: molecule object
-            :param object md: MQC object, the MD theory
-        """
-        pass
-
-    def print_init(self):
-        """ Print information about thermostat
-        """
-        thermostat_info = textwrap.dedent(f"""\
-        {"-" * 68}
-        {"Thermostat Information":>44s}
-        {"-" * 68}
-          Thermostat               = {"no thermostat":>16s}
-        """)
-        print (thermostat_info, flush=True)
-
-
 class rescale1(thermo):
     """ Rescale the velocities in a given period
 
