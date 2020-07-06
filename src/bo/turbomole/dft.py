@@ -26,8 +26,9 @@ class DFT(Turbomole):
         self.scf_en_tol = scf_en_tol
 
         # Set 'l_nacme' with respect to the computational method
-        # TDDFT cannot produce NAC between ground and first excited state,
-        # so we need to get NACME from CIoverlap
+        # TDDFT cannot produce NAC between excited states,
+        # so we need to get NACME from CIoverlap but Turbomole does not provide AO overlap.
+        # Hence, CIoverlap is not valid yet.
         molecule.l_nacme = False
 
         # Re-calculation of excited state forces is not needed for ground state dynamics
@@ -146,9 +147,10 @@ class DFT(Turbomole):
         while "$scfiterlimit" not in control_prev[iline]:
             control += control_prev[iline]
             iline += 1
-        scfiter = f"$scfiterlimit   {self.scf_max_iter}\n"
-        control += scfiter
-        control += f"$scfconv {self.scf_en_tol}"
+
+        control += f"$scfiterlimit   {self.scf_max_iter}\n"
+        iline += 1
+        control += f"$scfconv {self.scf_en_tol}\n"
 
         # Calculate energy gradient
         while "$dft" not in control_prev[iline]:
@@ -177,7 +179,7 @@ class DFT(Turbomole):
         scf_command = os.path.join(self.qm_bin_path, "dscf")
         command = f"{scf_command} >& dscf.out"
         os.system(command)
-        
+
         if (bo_list[0] == 0):
             grad_command = os.path.join(self.qm_bin_path, "grad")
             command = f"{grad_command} >& grad.out"
@@ -194,7 +196,13 @@ class DFT(Turbomole):
         # Copy the output file to 'QMlog' directory
         tmp_dir = os.path.join(base_dir, "QMlog")
         if (os.path.exists(tmp_dir)):
-            shutil.copy("gradient", os.path.join(tmp_dir, f"grad.{istep + 1}"))
+            shutil.copy("dscf.out", os.path.join(tmp_dir, f"dscf.out.{istep + 1}"))
+            if (bo_list[0] == 0):
+                shutil.copy("grad.out", os.path.join(tmp_dir, f"grad.{istep + 1}"))
+                if (molecule.nst > 1):
+                    shutil.copy("escf.out", os.path.join(tmp_dir, f"escf.{istep + 1}"))
+            else:
+                shutil.copy("egrad.out", os.path.join(tmp_dir, f"egrad.{istep + 1}"))
 
     def extract_BO(self, molecule, bo_list):
         """ Read the output files to get BO information
