@@ -1,6 +1,5 @@
 from __future__ import division
 from misc import eps, au_to_K, call_name
-from mqc.shxf import SHXF
 import textwrap
 import numpy as np
 
@@ -47,8 +46,8 @@ class rescale1(thermo):
         alpha = np.sqrt(self.temp / ctemp)
         molecule.vel *= alpha
 
-        # TODO : import direct md object?
-        if (isinstance(md, SHXF)):
+        # Rescale the auxiliary velocities for DISH-XF
+        if (md.md_type == "SHXF"):
             md.aux.vel *= alpha
             md.aux.vel_old *= alpha
 
@@ -91,8 +90,8 @@ class rescale2(thermo):
             alpha = np.sqrt(self.temp / ctemp)
             molecule.vel *= alpha
 
-            # TODO : import direct md object?
-            if (isinstance(md, SHXF)):
+            # Rescale the auxiliary velocities for DISH-XF
+            if (md.md_type == "SHXF"):
                 md.aux.vel *= alpha
                 md.aux.vel_old *= alpha
 
