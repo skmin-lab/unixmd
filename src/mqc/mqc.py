@@ -106,6 +106,10 @@ class MQC(object):
         print (dynamics_info, flush=True)
 
         # Print thermostat information
-        thermostat.print_init()
+        if (thermostat != None):
+            thermostat.print_init()
+        else:
+            thermostat_info = "  No Thermostat: Total energy is conserved!\n"
+            print (thermostat_info, flush=True)
 
 

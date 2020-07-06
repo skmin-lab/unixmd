@@ -1,6 +1,5 @@
 from __future__ import division
 from misc import eps, au_to_K, call_name
-from mqc.shxf import SHXF
 import textwrap
 import numpy as np
 
@@ -16,32 +15,6 @@ class thermo(object):
 
         # Initialize input values
         self.temp = temperature
-
-
-class none(thermo):
-    """ No temperature control; the NVE case
-    """
-    def __init__(self):
-        pass
-
-    def run(self, molecule, md):
-        """ Control the temperature (dummy in this case)
-
-            :param object molecule: molecule object
-            :param object md: MQC object, the MD theory
-        """
-        pass
-
-    def print_init(self):
-        """ Print information about thermostat
-        """
-        thermostat_info = textwrap.dedent(f"""\
-        {"-" * 68}
-        {"Thermostat Information":>44s}
-        {"-" * 68}
-          Thermostat               = {"no thermostat":>16s}
-        """)
-        print (thermostat_info, flush=True)
 
 
 class rescale1(thermo):
@@ -73,8 +46,8 @@ class rescale1(thermo):
         alpha = np.sqrt(self.temp / ctemp)
         molecule.vel *= alpha
 
-        # TODO : import direct md object?
-        if (isinstance(md, SHXF)):
+        # Rescale the auxiliary velocities for DISH-XF
+        if (md.md_type == "SHXF"):
             md.aux.vel *= alpha
             md.aux.vel_old *= alpha
 
@@ -117,8 +90,8 @@ class rescale2(thermo):
             alpha = np.sqrt(self.temp / ctemp)
             molecule.vel *= alpha
 
-            # TODO : import direct md object?
-            if (isinstance(md, SHXF)):
+            # Rescale the auxiliary velocities for DISH-XF
+            if (md.md_type == "SHXF"):
                 md.aux.vel *= alpha
                 md.aux.vel_old *= alpha
 

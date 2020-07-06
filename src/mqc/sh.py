@@ -16,9 +16,10 @@ class SH(MQC):
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
+        :param string vel_rescale: velocity rescaling method after hop
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_adjnac=True):
+        propagation="density", l_adjnac=True, vel_rescale="simple"):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
             propagation, l_adjnac)
@@ -34,7 +35,17 @@ class SH(MQC):
         self.l_hop = False
         self.force_hop = False
 
-    def run(self, molecule, theory, thermostat, input_dir="./", \
+        if (vel_rescale == "simple"):
+            self.vel_rescale = vel_rescale
+        elif (vel_rescale == "nac"):
+            if (molecule.l_nacme): 
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Nonadiabatic coupling vectors are not available! l_nacme: {molecule.l_nacme}")
+            else:
+                self.vel_rescale = vel_rescale
+        else:
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
+
+    def run(self, molecule, theory, thermostat=None, input_dir="./", \
         save_QMlog=False, save_scr=True, debug=0):
         """ Run MQC dynamics according to surface hopping dynamics
 
@@ -111,7 +122,8 @@ class SH(MQC):
             if (theory.re_calc and self.l_hop):
                 theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=True)
 
-            thermostat.run(molecule, self)
+            if (thermostat != None):
+                thermostat.run(molecule, self)
 
             self.update_energy(molecule)
 
@@ -203,35 +215,37 @@ class SH(MQC):
             else:
                 if (molecule.ekin < eps):
                     raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin}")
-                fac = 1. - pot_diff / molecule.ekin
-                molecule.vel *= np.sqrt(fac)
+                
+                if (self.vel_rescale == "simple"):
+                    fac = 1. - pot_diff / molecule.ekin
+                    molecule.vel *= np.sqrt(fac)
+                
+                elif (self.vel_rescale == "nac"):
+                    
+                    a = np.sum(molecule.mass * np.sum(molecule.nac[self.rstate_old, self.rstate] ** 2., axis=1))
+                    b = 2. * np.sum(molecule.mass * np.sum(molecule.nac[self.rstate_old, self.rstate] * molecule.vel, axis=1))
+                    c = 2. * pot_diff
+                    det = b ** 2. - 4. * a * c
+                    
+                    if (det < 0.):
+                        self.l_hop = False
+                        self.rstate = self.rstate_old
+                        bo_list[0] = self.rstate
+                    else:
+                        if(b < 0.):
+                            x = 0.5 * (- b - np.sqrt(det)) / a 
+                    
+                        else:
+                            x = 0.5 * (- b + np.sqrt(det)) / a 
+                    
+                        molecule.vel += x * molecule.nac[self.rstate_old, self.rstate]
+
                 # Update kinetic energy
                 molecule.update_kinetic()
 
         # Write SHSTATE file
         tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
         typewriter(tmp, unixmd_dir, "SHSTATE")
-
-#        a = 0.
-#        b = 0.
-#        for iat in range(molecule.nat):
-#            for isp in range(molecule.nsp):
-#                a += 0.5 * molecule.mass[iat] * molecule.nac[rstate_old, self.rstate, iat, isp] * molecule.nac[rstate_old, self.rstate, iat, isp]
-#                b += molecule.mass[iat] * molecule.nac[rstate_old, self.rstate, iat, isp] * molecule.vel[iat, isp]
-#
-#        pot_diff = molecule.states[self.rstate].energy - molecule.states[rstate_old].energy
-#        det = b ** 2. - 4. * a * pot_diff
-#
-#        if (det < 0.):
-#            self.l_hop = False
-#            self.rstate = self.rstate_old
-#        else:
-#            if(b < 0.):
-#                x = (- b - np.sqrt(det)) / a * 0.5
-#            else:
-#                x = (- b + np.sqrt(det)) / a * 0.5
-#            for iat in range(molecule.nat):
-#                molecule.vel[iat, :] += x * molecule.nac[rstate_old, self.rstate, iat, :]
 
     def calculate_force(self, molecule):
         """ Routine to calculate the forces

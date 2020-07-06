@@ -27,6 +27,8 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 +----------------+------------------------------------------------------+---------+
 | l_adjnac       | adjust nonadiabatic coupling                         | True    |
 +----------------+------------------------------------------------------+---------+
+| vel_rescale    | velocity rescaling method after hop                  | simple  |
++----------------+------------------------------------------------------+---------+
 | threshold      | electronic density threshold for decoherence term    | 0.01    |
 +----------------+------------------------------------------------------+---------+
 | wsigma         | width of nuclear wave packet of auxiliary trajectory | 0.1     |
