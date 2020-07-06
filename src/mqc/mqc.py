@@ -81,7 +81,7 @@ class MQC(object):
             :param integer debug: verbosity level for standard output
         """
         # Print molecule information: coordinate, velocity
-        molecule.print_init()
+        molecule.print_init(field)
 
         # Print dynamics information
         dynamics_info = textwrap.dedent(f"""\
@@ -91,7 +91,7 @@ class MQC(object):
           QM Program               = {theory.qm_prog:>16s}
           QM Method                = {theory.qm_method:>16s}
         """)
-        if (molecule.qmmm):
+        if (molecule.qmmm and field != None):
             dynamics_info += f"  MM Program               = {field.mm_prog:>16s}\n"
         dynamics_info += textwrap.indent(textwrap.dedent(f"""\
 

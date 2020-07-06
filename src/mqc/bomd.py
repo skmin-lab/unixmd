@@ -17,7 +17,7 @@ class BOMD(MQC):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, None, None, None)
 
-    def run(self, molecule, theory, field, thermostat=None, input_dir="./", \
+    def run(self, molecule, theory, field=None, thermostat=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
         """ Run MQC dynamics according to BOMD
 
@@ -46,7 +46,7 @@ class BOMD(MQC):
         if (save_QMlog):
             os.makedirs(QMlog_dir)
 
-        if (molecule.qmmm):
+        if (molecule.qmmm and field != None):
             MMlog_dir = os.path.join(base_dir, "MMlog")
             if (os.path.exists(MMlog_dir)):
                 shutil.rmtree(MMlog_dir)
@@ -63,7 +63,7 @@ class BOMD(MQC):
 
         # Calculate initial input geometry at t = 0.0 s
         theory.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=False)
-        if (molecule.qmmm):
+        if (molecule.qmmm and field != None):
             field.get_mm(molecule, base_dir, -1, bo_list)
 
         self.update_energy(molecule)
@@ -77,7 +77,7 @@ class BOMD(MQC):
             self.cl_update_position(molecule)
 
             theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=False)
-            if (molecule.qmmm):
+            if (molecule.qmmm and field != None):
                 field.get_mm(molecule, base_dir, istep, bo_list)
 
             self.cl_update_velocity(molecule)
@@ -98,7 +98,7 @@ class BOMD(MQC):
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
 
-            if (molecule.qmmm):
+            if (molecule.qmmm and field != None):
                 tmp_dir = os.path.join(unixmd_dir, "scr_mm")
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)

@@ -233,8 +233,10 @@ class Molecule(object):
 
         self.nelec -= self.charge
 
-    def print_init(self):
+    def print_init(self, field):
         """ Print initial information about molecule.py
+
+            :param object field: force field object containing MM calculation infomation
         """
         geom_info = textwrap.dedent(f"""\
         {"-" * 68}
@@ -271,7 +273,7 @@ class Molecule(object):
         {"-" * 68}
           Number of Atoms (QM)     = {self.nat_qm:>16d}
         """)
-        if (self.qmmm):
+        if (self.qmmm and field != None):
             molecule_info += f"  Number of Atoms (MM)     = {self.nat_mm:>16d}\n"
         molecule_info += textwrap.indent(textwrap.dedent(f"""\
           Degrees of Freedom       = {int(self.dof):>16d}
