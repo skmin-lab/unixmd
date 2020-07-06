@@ -13,17 +13,22 @@ class DFT(Turbomole):
         :param integer memory: allocatable memory in the calculations
         :param integer scf_max_iter: maximum number of SCF iterations
         :param integer scf_en_tol: energy convergence for SCF iterations
+        :param integer cis_max_iter: maximum number of CIS iterations
+        :param integer cis_en_tol: energy convergence for CIS iterations
         :param string qm_path: path for QM turbomole
         :param integer nthreads: number of threads in the calculations
         :param double version: version of Turbomole program
     """
     def __init__(self, molecule, functional="b-lyp", basis_set="SV(P)", memory=50, \
-        scf_max_iter=50, scf_en_tol=6, qm_path="./", nthreads=1, version=6.4):
+        scf_max_iter=50, scf_en_tol=6, cis_max_iter=25, cis_en_tol=6, \
+        qm_path="./", nthreads=1, version=6.4):
         # Initialize Turbomole common variables
         super(DFT, self).__init__(functional, basis_set, memory, qm_path, nthreads, version)
 
         self.scf_max_iter = scf_max_iter
         self.scf_en_tol = scf_en_tol
+        self.cis_max_iter = cis_max_iter
+        self.cis_en_tol = cis_en_tol
 
         # Set 'l_nacme' with respect to the computational method
         # TDDFT cannot produce NAC between excited states,
@@ -152,6 +157,11 @@ class DFT(Turbomole):
         iline += 1
         control += f"$scfconv {self.scf_en_tol}\n"
 
+        if (molecule.nst > 1):
+            control += f"$rpacor {self.memory}\n"
+            control += f"$rpaconv {self.cis_en_tol}\n"
+            control += f"$escfiterlimit {self.cis_max_iter}\n"
+            
         # Calculate energy gradient
         while "$dft" not in control_prev[iline]:
             control += control_prev[iline]
