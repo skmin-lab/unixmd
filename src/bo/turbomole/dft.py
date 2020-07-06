@@ -208,11 +208,11 @@ class DFT(Turbomole):
         if (os.path.exists(tmp_dir)):
             shutil.copy("dscf.out", os.path.join(tmp_dir, f"dscf.out.{istep + 1}"))
             if (bo_list[0] == 0):
-                shutil.copy("grad.out", os.path.join(tmp_dir, f"grad.{istep + 1}"))
+                shutil.copy("grad.out", os.path.join(tmp_dir, f"grad.out.{istep + 1}"))
                 if (molecule.nst > 1):
-                    shutil.copy("escf.out", os.path.join(tmp_dir, f"escf.{istep + 1}"))
+                    shutil.copy("escf.out", os.path.join(tmp_dir, f"escf.out.{istep + 1}"))
             else:
-                shutil.copy("egrad.out", os.path.join(tmp_dir, f"egrad.{istep + 1}"))
+                shutil.copy("egrad.out", os.path.join(tmp_dir, f"egrad.out.{istep + 1}"))
 
     def extract_BO(self, molecule, bo_list):
         """ Read the output files to get BO information
