@@ -1,7 +1,7 @@
 from __future__ import division
 from mqc.mqc import MQC
 from fileio import touch_file, write_md_output, write_final_xyz
-from misc import au_to_K
+from misc import au_to_K, call_name
 import os, shutil, textwrap
 import numpy as np
 
@@ -52,6 +52,13 @@ class BOMD(MQC):
                 shutil.rmtree(MMlog_dir)
             if (save_MMlog):
                 os.makedirs(MMlog_dir)
+
+        if ((molecule.qmmm and field == None) or (not molecule.qmmm and field != None)):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Both molecule.qmmm and field object is necessary! {molecule.qmmm} and {field}")
+
+        # Check compatibility for QM and MM objects
+        if (molecule.qmmm and field != None):
+            self.check_qmmm(theory, field)
 
         # Initialize UNI-xMD
         os.chdir(base_dir)
@@ -174,5 +181,27 @@ class BOMD(MQC):
             for ist in range(molecule.nst):
                 DEBUG1 += f"{molecule.states[ist].energy:17.8f} "
             print (DEBUG1, flush=True)
+
+    def check_qmmm(self, theory, field):
+         """ Routine to check compatibility between QM and MM objects
+
+             :param object theory: theory object containing on-the-fly calculation infomation
+             :param object field: force field object containing MM calculation infomation
+         """
+         # Now check MM object
+         if (field.mm_prog == "Tinker"):
+             # Now check QM object
+             if (theory.qm_prog == "dftbplus"):
+                 if (theory.qm_method == "SSR"):
+                     do_qmmm = True
+                 else:
+                     do_qmmm = False
+             else:
+                 do_qmmm = False
+         else:
+             do_qmmm = False
+
+         if (not do_qmmm):
+             raise ValueError (f"( {self.md_type}.{call_name()} ) Not compatible objects in QMMM! {theory.qm_prog}.{theory.qm_method} and {field.mm_prog}")
 
 
