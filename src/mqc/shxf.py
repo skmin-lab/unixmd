@@ -87,7 +87,7 @@ class SHXF(MQC):
         # Initialize auxiliary molecule object
         self.aux = Auxiliary_Molecule(molecule)
 
-    def run(self, molecule, theory, thermostat, input_dir="./", \
+    def run(self, molecule, theory, thermostat=None, input_dir="./", \
         save_QMlog=False, save_scr=True, debug=0):
         """ Run MQC dynamics according to decoherence-induced surface hopping dynamics
 
@@ -169,7 +169,8 @@ class SHXF(MQC):
             if (theory.re_calc and self.l_hop):
                 theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=True)
 
-            thermostat.run(molecule, self)
+            if (thermostat != None):
+                thermostat.run(molecule, self)
 
             self.update_energy(molecule)
 
