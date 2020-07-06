@@ -183,25 +183,25 @@ class BOMD(MQC):
             print (DEBUG1, flush=True)
 
     def check_qmmm(self, theory, field):
-         """ Routine to check compatibility between QM and MM objects
+        """ Routine to check compatibility between QM and MM objects
 
-             :param object theory: theory object containing on-the-fly calculation infomation
-             :param object field: force field object containing MM calculation infomation
-         """
-         # Now check MM object
-         if (field.mm_prog == "Tinker"):
-             # Now check QM object
-             if (theory.qm_prog == "dftbplus"):
-                 if (theory.qm_method == "SSR"):
-                     do_qmmm = True
-                 else:
-                     do_qmmm = False
-             else:
-                 do_qmmm = False
-         else:
-             do_qmmm = False
+            :param object theory: theory object containing on-the-fly calculation infomation
+            :param object field: force field object containing MM calculation infomation
+        """
+        # Now check MM object
+        if (field.mm_prog == "Tinker"):
+            # Now check QM object
+            if (theory.qm_prog == "dftbplus"):
+                if (theory.qm_method == "SSR"):
+                    do_qmmm = True
+                else:
+                    do_qmmm = False
+            else:
+                do_qmmm = False
+        else:
+            do_qmmm = False
 
-         if (not do_qmmm):
-             raise ValueError (f"( {self.md_type}.{call_name()} ) Not compatible objects in QMMM! {theory.qm_prog}.{theory.qm_method} and {field.mm_prog}")
+        if (not do_qmmm):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Not compatible objects in QMMM! {theory.qm_prog}.{theory.qm_method} and {field.mm_prog}")
 
 
