@@ -11,7 +11,7 @@ class Auxiliary_Molecule(object):
 
         :param object molecule: molecule object
     """
-    def __init__(self, molecule):
+    def __init__(self, molecule, one_dim):
         # Initialize auxiliary molecule
         self.pos = []
         self.vel = []
@@ -44,7 +44,7 @@ class SHXF(MQC):
         :param double wsigma: width of nuclear wave packet of auxiliary trajectory
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_adjnac=True, vel_rescale="simple", threshold=0.01, wsigma=0.1):
+        propagation="density", l_adjnac=True, vel_rescale="simple", threshold=0.01, wsigma=0.1, one_dim=False):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
             propagation, l_adjnac)
@@ -85,7 +85,7 @@ class SHXF(MQC):
         self.lower_th = self.threshold
 
         # Initialize auxiliary molecule object
-        self.aux = Auxiliary_Molecule(molecule)
+        self.aux = Auxiliary_Molecule(molecule, one_dim)
 
     def run(self, molecule, theory, thermostat=None, input_dir="./", \
         save_QMlog=False, save_scr=True, debug=0):
