@@ -1,4 +1,5 @@
 from __future__ import division
+from build.cioverlap import *
 from bo.gaussian09.gaussian09 import Gaussian09
 from misc import au_to_A, eV_to_au, call_name
 import os, shutil, re, textwrap, subprocess
@@ -42,6 +43,24 @@ class DFT(Gaussian09):
         else:
             self.re_calc = False
 
+        # MO dimension, initialized later by reading Gaussian log
+        self.nbasis = 0
+        self.norb = 0
+        self.nfc = 0
+        self.nocc = 0
+        self.nvirt = 0
+
+        # Temporaries for NACME calculation, also initialized later if not allocated
+        # ao_overlap - the nr. of AOs, the nr. of AOs
+        # mo_coef - the nr. of MOs, the nr. of AOs
+        # ci_coef - the nr. BO states, the nr. of occ, the nr. of virt
+        self.pos_old = np.zeros((molecule.nat, molecule.nsp))
+        self.ao_overlap = []
+        self.mo_coef_old = []
+        self.mo_coef_new = []
+        self.ci_coef_old = []
+        self.ci_coef_new = []
+
     def get_bo(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
         """ Extract energy, gradient from (TD)DFT method
 
@@ -52,34 +71,40 @@ class DFT(Gaussian09):
             :param double dt: time interval
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        self.copy_files(istep)
+        self.copy_files(molecule, istep, calc_force_only)
         super().get_bo(base_dir, calc_force_only)
-        self.get_input(molecule, istep, bo_list)
-        self.run_QM(base_dir, istep, bo_list)
-        self.extract_BO(molecule, bo_list, calc_force_only)
+        self.get_input(molecule, istep, bo_list, calc_force_only)
+        self.run_QM(molecule, base_dir, istep, bo_list, calc_force_only)
+        self.extract_BO(molecule, istep, bo_list, dt, calc_force_only)
         self.move_dir(base_dir)
 
-    def copy_files(self, istep):
+    def copy_files(self, molecule, istep, calc_force_only):
         """ Copy necessary scratch files in previous step
 
+            :param object molecule: molecule object
             :param integer istep: current MD step
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
+        # Copy required files for NACME
+        if (self.calc_coupling and not calc_force_only and istep >= 0 and molecule.nst > 1):
+            if (istep == 0):
+                shutil.copy(os.path.join(self.scr_qm_dir, "g09.rwf"), \
+                    os.path.join(self.scr_qm_dir, "../g09.rwf.pre"))
+
         # Copy required files to read initial guess
         if (self.guess == "read" and istep >= 0):
             # After T = 0.0 s
             shutil.copy(os.path.join(self.scr_qm_dir, "g09.chk"), \
                 os.path.join(self.scr_qm_dir, "../g09.chk.pre"))
 
-    def get_input(self, molecule, istep, bo_list):
+    def get_input(self, molecule, istep, bo_list, calc_force_only):
         """ Generate Gaussian09 input files: g09.inp
 
             :param object molecule: molecule object
             :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        # TODO : currently, CIoverlap is not correct -> only BOMD possible with TDDFT
-        if (self.calc_coupling):
-            raise ValueError ("only BOMD possible with TDDFT")
 
         # Read check-point file from previous step
         if (self.guess == "read"):
@@ -106,7 +131,13 @@ class DFT(Gaussian09):
         input_route = textwrap.dedent(f"""\
         %nproc={self.nthreads}
         %mem={self.memory}
-        %chk=g09.chk
+        %chk=g09.chk\n""")
+
+        if (self.calc_coupling and not calc_force_only and molecule.nst > 1):
+            input_route = input_route + textwrap.dedent(f"""\
+            %rwf=g09.rwf\n""")
+
+        input_route = input_route + textwrap.dedent(f"""\
         # {self.functional}/{self.basis_set} force""")
 
         if (restart):
@@ -138,12 +169,57 @@ class DFT(Gaussian09):
         with open(file_name, "w") as f:
             f.write(input_g09)
 
-    def run_QM(self, base_dir, istep, bo_list):
+        # Write "doubled" molecule input
+        if (self.calc_coupling and not calc_force_only and istep >= 0 and molecule.nst > 1):
+            if (istep == 0):
+                os.rename('../g09.rwf.pre', './g09.rwf.pre')
+            input_g09 = ""
+       
+            # Stop the run after L302 calculating overlap
+            # Keep running the job regardless of interatomic distances; IOp(2/12=3)
+            input_route = textwrap.dedent(f"""\
+            %nproc={self.nthreads}
+            %mem={self.memory}
+            %kjob l302
+            %rwf=g09_double.rwf
+            # {self.functional}/{self.basis_set} IOp(2/12=3) """)
+
+            input_route += f"\n\n"
+            input_g09 += input_route
+        
+            # Title section block
+            input_title = f"g09 double input\n\n"
+            input_g09 += input_title
+
+            # Molecule specification block
+            input_molecule = textwrap.dedent(f"""\
+            {int(molecule.charge)} 1
+            """)
+            for iat in range(molecule.nat):
+                list_pos = list(self.pos_old[iat] * au_to_A)
+                input_molecule += \
+                    f"{molecule.symbols[iat]}{list_pos[0]:15.8f}{list_pos[1]:15.8f}{list_pos[2]:15.8f}\n"
+
+            for iat in range(molecule.nat):
+                list_pos = list(molecule.pos[iat] * au_to_A)
+                input_molecule += \
+                    f"{molecule.symbols[iat]}{list_pos[0]:15.8f}{list_pos[1]:15.8f}{list_pos[2]:15.8f}\n"
+            input_molecule += "\n"
+            input_g09 += input_molecule
+
+            file_name = "g09_double.inp"
+            with open(file_name, "w") as f:
+                f.write(input_g09)
+
+
+    def run_QM(self, molecule, base_dir, istep, bo_list, calc_force_only):
         """ Run (TD)DFT calculation and save the output files to QMlog directory
 
+            :param object molecule: molecule object
             :param string base_dir: base directory
             :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # Set environment variables
         # TODO : move to gaussian09.py
@@ -167,12 +243,21 @@ class DFT(Gaussian09):
         if (os.path.exists(tmp_dir)):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
             shutil.copy("log", os.path.join(tmp_dir, log_step))
+        
+        # Run Gaussin09 for the overlap matrix
+        if (self.calc_coupling and not calc_force_only and istep >= 0 and molecule.nst > 1):
+           qm_command = os.path.join(self.g09_root_path, "g09/g09")
+           command = f"{qm_command} < g09_double.inp > log_double"
+           os.system(command)
 
-    def extract_BO(self, molecule, bo_list, calc_force_only):
+
+    def extract_BO(self, molecule, istep, bo_list, dt, calc_force_only):
         """ Read the output files to get BO information
 
             :param object molecule: molecule object
+            :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
+            :param double dt: time interval
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
         file_name = "log"
@@ -212,6 +297,184 @@ class DFT(Gaussian09):
         molecule.states[bo_list[0]].force = np.copy(force)
 
         # NACME
-        pass
+        if (self.calc_coupling and not calc_force_only):
+            molecule.nacme = np.zeros((molecule.nst, molecule.nst))
+            if (istep == -1):
+                self.init_buffer(molecule)
+            else:
+                self.CI_overlap(molecule, istep, dt)
+            
+            # Save geometry in the buffer
+            self.pos_old = molecule.pos.copy() 
 
+    def init_buffer(self, molecule):
+        """ Initialize buffer variables to get NACME
 
+            :param object molecule: molecule object
+        """
+        file_name = "log"
+        with open(file_name, "r") as f:
+            log = f.read()
+            
+        self.nbasis = re.findall('NBasis=\s+(\d+)\s+', log)
+        self.nbasis = int(self.nbasis[0])
+        self.nfc = re.findall('NFC=\s+(\d+)\s+', log)
+        self.nfc = int(self.nfc[0])
+        self.nocc = re.findall('NOA=\s+(\d+)\s+', log)
+        self.nocc = int(self.nocc[0])
+        self.nvirt = re.findall('NVA=\s+(\d+)\s+', log)
+        self.nvirt = int(self.nvirt[0])
+        self.norb = self.nocc + self.nvirt
+   
+        self.ao_overlap = np.zeros((self.nbasis, self.nbasis))
+        self.mo_coef_old = np.zeros((self.norb, self.nbasis))
+        self.mo_coef_new = np.zeros((self.norb, self.nbasis))
+        self.ci_coef_old = np.zeros((molecule.nst, self.nocc, self.nvirt))
+        self.ci_coef_new = np.zeros((molecule.nst, self.nocc, self.nvirt))
+
+    def CI_overlap(self, molecule, istep, dt):
+        """ Read the necessary files and calculate NACME from tdnac.c routine,
+            note that only reading of several files is required in this method
+
+            :param object molecule: molecule object
+            :param integer istep: current MD step
+            :param double dt: time interval
+        """
+        # Read overlap
+        path_rwfdump = os.path.join(self.g09_root_path, "g09/rwfdump")
+        os.system(path_rwfdump+' g09_double.rwf ao_overlap.dat 514R')
+
+        with open('ao_overlap.dat', "r") as f:
+            log = f.read()
+            
+        tmp = re.findall('[-]?\d+\.\d+D[+-]\d\d', log)
+        tmp = [float(x.replace('D', 'e')) for x in tmp]
+        
+        tmp_ovr = np.zeros((self.nbasis * 2, self.nbasis * 2))
+
+        cnt = 0
+        for mu in range(self.nbasis * 2):
+            for nu in range(mu + 1):
+                tmp_ovr[mu, nu] = tmp[cnt]
+                cnt += 1
+
+        tmp_ovr = tmp_ovr + np.transpose(tmp_ovr) - np.diag(np.diag(tmp_ovr))
+
+        # Debug
+        tmp_full_11 = tmp_ovr[:self.nbasis, :self.nbasis].copy()
+        tmp_full_22 = tmp_ovr[self.nbasis:, self.nbasis:].copy()
+        #for iorb in range(2 * self.nbasis):
+        #    print(' '.join([str(x) for x in tmp_ovr[iorb, :]]))
+        #for iorb in range(self.nbasis):
+        #    print(' '.join([str(x) for x in tmp_full_11[iorb, :]]))
+        #for iorb in range(self.nbasis):
+        #    print(' '.join([str(x) for x in tmp_full_22[iorb, :]]))
+        #exit()
+
+        # Slicing the components between t and t+dt
+        self.ao_overlap = tmp_ovr[self.nbasis:, :self.nbasis].copy()
+
+        # TODO: Make reading function to simplify code
+        # Read mo coefficients
+        if (istep == 0):
+            os.system(path_rwfdump+' g09.rwf.pre mo_coef.dat 524R')
+
+            with open('mo_coef.dat', "r") as f:
+                log = f.read()
+                
+            tmp = re.findall('[-]?\d+\.\d+D[+-]\d\d', log)
+            tmp = np.array([x.replace('D','e') for x in tmp], dtype=np.float)
+
+            tmp_mo = tmp.reshape(self.nbasis, self.nbasis)
+
+            # Debug
+            #mo_coef_full = tmp_mo.copy()
+            #S = np.dot(mo_coef_full, np.dot(tmp_full_22, np.transpose(mo_coef_full)))
+            #for iorb in range(self.nbasis):
+            #    print(' '.join([str(x) for x in S[iorb]]))
+            #exit()
+
+            # TODO: Resume work after c code is corrected
+
+            tmp_mo = tmp_mo[self.nfc:self.nbasis]
+            self.mo_coef_old = tmp_buf.copy()
+
+        os.system(path_rwfdump+' g09.rwf mo_coef.dat 524R')
+
+        with open('mo_coef.dat', "r") as f:
+            log = f.read()
+            
+        tmp = re.findall('[-]?\d+\.\d+D[+-]\d\d', log)
+        
+        tmp_buf = np.zeros((self.nbasis, self.nbasis))
+
+        cnt = 0
+        for iorb in range(self.nbasis):
+            for mu in range(self.nbasis):
+                tmp_buf[iorb][mu] = float(tmp[cnt].replace('D','e'))
+                cnt += 1
+
+        tmp_buf = tmp_buf[self.nfc:self.nbasis, self.nfc:self.nbasis]
+        self.mo_coef_new = tmp_buf.copy()
+        
+        # Read CI coefficients
+        if (istep == 0):
+            os.system(path_rwfdump+' g09.rwf.pre xy_coef.dat 635R')
+
+            with open('xy_coef.dat', "r") as f:
+                log = f.read()
+                
+            tmp = re.findall('[-]?\d+\.\S+[+-]\d+', log)
+
+            # Drop the first 12 dummy elements
+            tmp = tmp[12:]
+
+            # Gaussian deals with 4 times as much roots as the input NStates value. 
+            # the nr. of excitation function => nocc \times nvirt
+            # spin degrees of freedom => 2
+            # X+Y, X-Y => 2
+            roots = (molecule.nst - 1) * 4
+            num_coef = 4 * (self.nocc * self.nvirt) * roots
+
+            tmp = tmp[:num_coef]
+            tmp = [t.replace('D','e') for t in tmp]
+            tmp = np.array(tmp, dtype=np.float)
+            xpy, xmy = tmp.reshape(2, roots, 2, -1)
+            x = 0.5 * (xpy + xmy)
+
+            # Drop beta part and unrequested excited states
+            x = x[:(molecule.nst - 1), 0, :]
+
+            self.ci_coef_old[1:] = x.reshape(-1, self.nocc, self.nvirt)
+
+        os.system(path_rwfdump+' g09.rwf xy_coef.dat 635R')
+
+        with open('xy_coef.dat', "r") as f:
+            log = f.read()
+            
+        tmp = re.findall('[-]?\d+\.\S+[+-]\d+', log)
+
+        # Drop the first 12 dummy elements
+        tmp = tmp[12:]
+
+        # Gaussian deals with 4 times as much roots as the input NStates value. 
+        # the nr. of excitation function => nocc \times nvirt
+        # spin degrees of freedom => 2
+        # X+Y, X-Y => 2
+        roots = (molecule.nst - 1) * 4
+        num_coef = 4 * (self.nocc * self.nvirt) * roots
+
+        tmp = tmp[:num_coef]
+        tmp = np.array([x.replace('D','e') for x in tmp], dtype=np.float)
+        xpy, xmy = tmp.reshape(2, roots, 2, -1)
+        x = 0.5 * (xpy + xmy)
+
+        # Drop beta part and unrequested excited states
+        x = x[:(molecule.nst - 1), 0, :]
+
+        self.ci_coef_new[1:] = x.reshape(-1, self.nocc, self.nvirt)
+
+        # Calculate wavefunction overlap with orbital scheme
+        # Reference: J. Phys. Chem. Lett. 2015, 6, 4200-4203
+        wf_overlap(self, molecule, istep, dt)
+         
