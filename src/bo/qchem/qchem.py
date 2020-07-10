@@ -1,5 +1,6 @@
 from __future__ import division
 from bo.bo_calculator import BO_calculator
+from misc import call_name
 
 class QChem(BO_calculator):
     """ Class for common parts of QChem program

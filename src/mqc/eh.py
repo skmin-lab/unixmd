@@ -23,7 +23,7 @@ class Eh(MQC):
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
             propagation, l_adjnac)
 
-    def run(self, molecule, theory, thermostat, input_dir="./", \
+    def run(self, molecule, theory, thermostat=None, input_dir="./", \
         save_QMlog=False, save_scr=True, debug=0):
         """ Run MQC dynamics according to Ehrenfest dynamics
 
@@ -88,7 +88,8 @@ class Eh(MQC):
 
             self.el_propagator(molecule)
 
-            thermostat.run(molecule, self)
+            if (thermostat != None):
+                thermostat.run(molecule, self)
 
             self.update_energy(molecule)
 
