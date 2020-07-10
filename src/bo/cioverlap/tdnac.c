@@ -231,11 +231,11 @@ static void TD_NAC(int istep, int nst, int nbasis, int norb, int nocc, int nvirt
     debug = 0;
 
     for(iorb = 0; iorb < norb; iorb++){
-        mo_overlap[iorb] = malloc(nbasis * sizeof(double));
-        permut_mat[iorb] = malloc(nbasis * sizeof(double));
-        for(ibasis = 0; ibasis < nbasis; ibasis++){
-            mo_overlap[iorb][ibasis] = 0.0;
-            permut_mat[iorb][ibasis] = 0.0;
+        mo_overlap[iorb] = malloc(norb * sizeof(double));
+        permut_mat[iorb] = malloc(norb * sizeof(double));
+        for(jorb = 0; jorb < norb; jorb++){
+            mo_overlap[iorb][jorb] = 0.0;
+            permut_mat[iorb][jorb] = 0.0;
         }
     }
 
