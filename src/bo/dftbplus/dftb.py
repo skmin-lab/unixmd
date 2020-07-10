@@ -106,11 +106,9 @@ class DFTB(DFTBplus):
         # Initialize NACME variables
         # There is no core orbitals in TDDFTB (fixed occupations)
         # nocc is number of occupied orbitals and nvirt is number of virtual orbitals
-        self.nocc = int(int(molecule.nelec - core_elec) / 2)
-        self.nvirt = self.nbasis - self.nocc
-
-        # DFTB carries only valence orbitals, so there's no frozen core
         self.norb = self.nbasis
+        self.nocc = int(int(molecule.nelec - core_elec) / 2)
+        self.nvirt = self.norb - self.nocc
 
         self.ao_overlap = np.zeros((self.nbasis, self.nbasis))
         self.mo_coef_old = np.zeros((self.norb, self.nbasis))
