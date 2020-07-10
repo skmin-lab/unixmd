@@ -228,7 +228,7 @@ static void TD_NAC(int istep, int nst, int norb, int nocc, int nvirt, double dt,
     int debug;
 
     // This is temporary option to print several variables
-    debug = 0;
+    debug = 1;
 
     for(iorb = 0; iorb < norb; iorb++){
         mo_overlap[iorb] = malloc(norb * sizeof(double));
