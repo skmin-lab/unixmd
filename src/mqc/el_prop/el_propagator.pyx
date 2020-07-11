@@ -45,7 +45,7 @@ def el_coef_xf(xfvars, molecule):
    
     
     wsigma = xfvars.wsigma
-    nat, nsp = molecule.nat, molecule.nsp
+    nat, nsp = xfvars.aux.nat, xfvars.aux.nsp
     mass = <double*> PyMem_Malloc(nat * sizeof(double))
     pos = <double**> PyMem_Malloc(nat * sizeof(double*))
     aux_pos = <double***> PyMem_Malloc(nst * sizeof(double**))
@@ -65,9 +65,9 @@ def el_coef_xf(xfvars, molecule):
     
     for iat in range(nat):
         pos[iat] = <double*> PyMem_Malloc(nsp * sizeof(double))
-        mass[iat] = molecule.mass[iat]
+        mass[iat] = xfvars.aux.mass[iat]
         for isp in range(nsp):
-            pos[iat][isp] = xfvars.pos_old[iat, isp]
+            pos[iat][isp] = xfvars.pos_0[iat, isp]
     for ist in range(nst):
         aux_pos[ist] = <double**> PyMem_Malloc(nat * sizeof(double*))
         phase[ist] = <double**> PyMem_Malloc(nat * sizeof(double*))
@@ -192,7 +192,7 @@ def el_rho_xf(xfvars, molecule):
     rho = <double complex**> PyMem_Malloc(nst * sizeof(double complex*))
 
     wsigma = xfvars.wsigma
-    nat, nsp = molecule.nat, molecule.nsp
+    nat, nsp = xfvars.aux.nat, xfvars.aux.nsp
     mass = <double*> PyMem_Malloc(nat * sizeof(double))
     pos = <double**> PyMem_Malloc(nat * sizeof(double*))
     aux_pos = <double***> PyMem_Malloc(nst * sizeof(double**))
@@ -215,9 +215,9 @@ def el_rho_xf(xfvars, molecule):
     # xf related variables allocataion
     for iat in range(nat):
         pos[iat] = <double*> PyMem_Malloc(nsp * sizeof(double))
-        mass[iat] = molecule.mass[iat]
+        mass[iat] = xfvars.aux.mass[iat]
         for isp in range(nsp):
-            pos[iat][isp] = xfvars.pos_old[iat, isp]
+            pos[iat][isp] = xfvars.pos_0[iat, isp]
     for ist in range(nst):
         aux_pos[ist] = <double**> PyMem_Malloc(nat * sizeof(double*))
         phase[ist] = <double**> PyMem_Malloc(nat * sizeof(double*))
