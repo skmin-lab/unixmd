@@ -193,7 +193,7 @@ class DFT(Gaussian09):
 
             # Molecule specification block
             input_molecule = textwrap.dedent(f"""\
-            {int(molecule.charge)} 1
+            {2 * int(molecule.charge)} 1
             """)
             for iat in range(molecule.nat):
                 list_pos = list(self.pos_old[iat] * au_to_A)
@@ -353,16 +353,16 @@ class DFT(Gaussian09):
         tmp_ovr = np.zeros((self.nbasis * 2, self.nbasis * 2))
 
         cnt = 0
-        for mu in range(self.nbasis * 2):
-            for nu in range(mu + 1):
-                tmp_ovr[mu, nu] = tmp[cnt]
+        for ibasis in range(self.nbasis * 2):
+            for jbasis in range(ibasis + 1):
+                tmp_ovr[ibasis, jbasis] = tmp[cnt]
                 cnt += 1
 
         tmp_ovr = tmp_ovr + np.transpose(tmp_ovr) - np.diag(np.diag(tmp_ovr))
 
         # Debug
-        tmp_full_11 = tmp_ovr[:self.nbasis, :self.nbasis].copy()
-        tmp_full_22 = tmp_ovr[self.nbasis:, self.nbasis:].copy()
+        #tmp_full_11 = tmp_ovr[:self.nbasis, :self.nbasis].copy()
+        #tmp_full_22 = tmp_ovr[self.nbasis:, self.nbasis:].copy()
         #for iorb in range(2 * self.nbasis):
         #    print(' '.join([str(x) for x in tmp_ovr[iorb, :]]))
         #for iorb in range(self.nbasis):
@@ -372,7 +372,10 @@ class DFT(Gaussian09):
         #exit()
 
         # Slicing the components between t and t+dt
-        self.ao_overlap = tmp_ovr[self.nbasis:, :self.nbasis].copy()
+        self.ao_overlap = tmp_ovr[:self.nbasis, self.nbasis:].copy()
+        #for ibasis in range(self.nbasis):
+        #    print(' '.join([str(x) for x in self.ao_overlap[ibasis, :]]))
+        #exit()
 
         # TODO: Make reading function to simplify code
         # Read mo coefficients
@@ -387,17 +390,12 @@ class DFT(Gaussian09):
 
             tmp_mo = tmp.reshape(self.nbasis, self.nbasis)
 
-            # Debug
-            #mo_coef_full = tmp_mo.copy()
-            #S = np.dot(mo_coef_full, np.dot(tmp_full_22, np.transpose(mo_coef_full)))
-            #for iorb in range(self.nbasis):
-            #    print(' '.join([str(x) for x in S[iorb]]))
-            #exit()
-
-            # TODO: Resume work after c code is corrected
-
             tmp_mo = tmp_mo[self.nfc:self.nbasis]
-            self.mo_coef_old = tmp_buf.copy()
+            self.mo_coef_old = tmp_mo.copy()
+            #test = np.dot(self.mo_coef_old, np.dot(tmp_full_11, np.transpose(self.mo_coef_old)))
+            #for iorb in range(self.norb):
+            #    print(' '.join([str(x) for x in test[iorb, :]]))
+            #exit()
 
         os.system(path_rwfdump+' g09.rwf mo_coef.dat 524R')
 
@@ -405,18 +403,18 @@ class DFT(Gaussian09):
             log = f.read()
             
         tmp = re.findall('[-]?\d+\.\d+D[+-]\d\d', log)
-        
-        tmp_buf = np.zeros((self.nbasis, self.nbasis))
+        tmp = np.array([x.replace('D','e') for x in tmp], dtype=np.float)
 
-        cnt = 0
-        for iorb in range(self.nbasis):
-            for mu in range(self.nbasis):
-                tmp_buf[iorb][mu] = float(tmp[cnt].replace('D','e'))
-                cnt += 1
+        tmp_mo = tmp.reshape(self.nbasis, self.nbasis)
 
-        tmp_buf = tmp_buf[self.nfc:self.nbasis, self.nfc:self.nbasis]
-        self.mo_coef_new = tmp_buf.copy()
-        
+        tmp_mo = tmp_mo[self.nfc:self.nbasis]
+        self.mo_coef_new = tmp_mo.copy()
+  
+        #test = np.dot(self.mo_coef_old, np.dot(self.ao_overlap, np.transpose(self.mo_coef_new)))
+        #for iorb in range(self.norb):
+        #    print(' '.join([str(x) for x in test[iorb, :]]))
+        #exit()
+
         # Read CI coefficients
         if (istep == 0):
             os.system(path_rwfdump+' g09.rwf.pre xy_coef.dat 635R')
@@ -477,4 +475,3 @@ class DFT(Gaussian09):
         # Calculate wavefunction overlap with orbital scheme
         # Reference: J. Phys. Chem. Lett. 2015, 6, 4200-4203
         wf_overlap(self, molecule, istep, dt)
-         

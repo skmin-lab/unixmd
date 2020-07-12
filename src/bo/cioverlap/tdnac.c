@@ -23,14 +23,14 @@ static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **per
             for(ibasis = 0; ibasis < nbasis; ibasis++){
                 for(jbasis = 0; jbasis < nbasis; jbasis++){
                     mo_overlap[iorb][jorb] += mo_coef_old[iorb][ibasis] * ao_overlap[ibasis][jbasis] * mo_coef_new[jorb][jbasis];
-                    // Save the sign of overlap elements for calculating permutation matrix
-                    if(mo_overlap[iorb][jorb] < 0.0){
-                        tmp_sign[iorb][jorb] = -1.0;
-                    }
-                    else{
-                        tmp_sign[iorb][jorb] = 1.0;
-                    }
                 }
+            }
+            // Save the sign of overlap elements for calculating permutation matrix
+            if(mo_overlap[iorb][jorb] < 0.0){
+                tmp_sign[iorb][jorb] = -1.0;
+            }
+            else{
+                tmp_sign[iorb][jorb] = 1.0;
             }
 
         }
@@ -110,13 +110,28 @@ static void CI_phase_order(int nst, int norb, int nocc, int nvirt, double ***ci_
     // CI coefficients for S_0 are zero
     for(ist = 1; ist < nst; ist++){
 
+        //for(iorb = 0; iorb < norb; iorb++){
+        //    for(aorb = 0; aorb < norb; aorb++){
+        //        // Assign CI coefficients at time t to new symmetric array
+        //        if(iorb < nocc && aorb >= nvirt){
+        //            tmp_ci[iorb][aorb] = ci_coef_new[ist][iorb][aorb - nocc];
+        //        }
+        //        else if(iorb >= nvirt && aorb < nocc){
+        //            tmp_ci[iorb][aorb] = ci_coef_new[ist][aorb][iorb - nocc];
+        //        }
+        //        else{
+        //            tmp_ci[iorb][aorb] = 0.0;
+        //        }
+        //        // Initialize new empty array for phase correction
+        //        tmp_ci_new[iorb][aorb] = 0.0;
+        //    }
+        //}
         for(iorb = 0; iorb < norb; iorb++){
             for(aorb = 0; aorb < norb; aorb++){
-                // Assign CI coefficients at time t to new symmetric array
-                if(iorb < nocc && aorb >= nvirt){
+                if(iorb < nocc && aorb >= nocc){
                     tmp_ci[iorb][aorb] = ci_coef_new[ist][iorb][aorb - nocc];
                 }
-                else if(iorb >= nvirt && aorb < nocc){
+                else if(iorb >= nocc && aorb < nocc){
                     tmp_ci[iorb][aorb] = ci_coef_new[ist][aorb][iorb - nocc];
                 }
                 else{
