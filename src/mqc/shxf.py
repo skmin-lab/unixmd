@@ -96,7 +96,7 @@ class SHXF(MQC):
         for ist in range(molecule.nst):
             self.l_coh.append(False)
             self.l_first.append(False)
-        self.tot_E = np.array(np.zeros((molecule.nst)))
+#        self.tot_E = np.array(np.zeros((molecule.nst)))
         self.threshold = threshold
         self.wsigma = wsigma
 
@@ -414,10 +414,11 @@ class SHXF(MQC):
         for ist in range(molecule.nst):
             if (self.l_coh[ist]):
                 if (self.l_first[ist]):
-                    self.tot_E[ist] = molecule.ekin + molecule.states[ist].energy
+#                    self.tot_E[ist] = molecule.ekin + molecule.states[ist].energy
                     self.aux.vel[ist] = self.aux.vel[self.rstate]
                 else:
-                    alpha = self.tot_E[ist] - molecule.states[ist].energy
+                    ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
+                    alpha = ekin_old + molecule.states[ist].energy_old - molecule.states[ist].energy
                     if (alpha < eps):
                         self.aux.vel[ist] = 0.
                     else:
@@ -426,8 +427,7 @@ class SHXF(MQC):
                             self.aux.vel[ist] = np.sqrt(alpha)
                         else:
                             alpha /= molecule.ekin
-                            alpha = np.sqrt(alpha)
-                            self.aux.vel[ist] = molecule.vel * alpha
+                            self.aux.vel[ist] = molecule.vel * np.sqrt(alpha)
             else:
                 if (self.one_dim):
                     self.aux.vel[ist] = self.aux.vel[self.rstate]
