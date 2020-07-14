@@ -13,7 +13,6 @@ class Auxiliary_Molecule(object):
     """
     def __init__(self, molecule, one_dim):
         # Initialize auxiliary molecule
-        
 #        self.one_dim = one_dim
 
         self.pos = []
@@ -104,7 +103,7 @@ class SHXF(MQC):
         self.lower_th = self.threshold
 
         # Initialize auxiliary molecule object
-        self.aux = Auxiliary_Molecule(molecule, one_dim)
+        self.aux = Auxiliary_Molecule(molecule, self.one_dim)
         self.pos_0 = np.zeros((self.aux.nat, self.aux.nsp))
         self.phase = np.array(np.zeros((molecule.nst, self.aux.nat, self.aux.nsp)))
 
@@ -400,7 +399,7 @@ class SHXF(MQC):
                         else:
                             self.aux.pos[ist] += self.aux.vel[ist] * self.dt
 
-        self.pos_0 = self.aux.pos[self.rstate]
+        self.pos_0 = np.copy(self.aux.pos[self.rstate])
 
         # Get auxiliary velocity
         
@@ -466,7 +465,7 @@ class SHXF(MQC):
                     self.phase[ist] = 0.
                 else:
                     for iat in range(self.aux.nat):
-                       self.phase[ist, iat] += molecule.mass[iat] * \
+                        self.phase[ist, iat] += molecule.mass[iat] * \
                            (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
 
     def el_propagator(self, molecule):
