@@ -14,13 +14,13 @@ class Auxiliary_Molecule(object):
     def __init__(self, molecule, one_dim):
         # Initialize auxiliary molecule
         
-        self.one_dim = one_dim
+#        self.one_dim = one_dim
 
         self.pos = []
         self.vel = []
         self.vel_old = []
         
-        if (self.one_dim):
+        if (one_dim):
             
             self.nat = 1
             self.nsp = 1
@@ -96,7 +96,6 @@ class SHXF(MQC):
         for ist in range(molecule.nst):
             self.l_coh.append(False)
             self.l_first.append(False)
-        self.phase = np.array(np.zeros((molecule.nst, molecule.nat, molecule.nsp)))
         self.tot_E = np.array(np.zeros((molecule.nst)))
         self.threshold = threshold
         self.wsigma = wsigma
@@ -106,8 +105,8 @@ class SHXF(MQC):
 
         # Initialize auxiliary molecule object
         self.aux = Auxiliary_Molecule(molecule, one_dim)
-        # TODO: pos_i\0 to aux obj??? 1D, it seems right, but full dimension, unnecessary
         self.pos_0 = np.zeros((self.aux.nat, self.aux.nsp))
+        self.phase = np.array(np.zeros((molecule.nst, self.aux.nat, self.aux.nsp)))
 
     def run(self, molecule, theory, thermostat=None, input_dir="./", \
         save_QMlog=False, save_scr=True, debug=0):
@@ -391,20 +390,17 @@ class SHXF(MQC):
                     if (self.one_dim):
                         self.aux.pos[ist] = np.zeros((self.aux.nat, self.aux.nsp))
                     else:
-                        self.aux.pos[ist] = np.copy(molecule.pos)
+                        self.aux.pos[ist] = molecule.pos
                 else:
                     if (self.one_dim):
                         self.aux.pos[ist] += self.aux.vel[ist] * self.dt
                     else:
                         if (ist == self.rstate):
-                            self.aux.pos[ist] = np.copy(molecule.pos)
+                            self.aux.pos[ist] = molecule.pos
                         else:
                             self.aux.pos[ist] += self.aux.vel[ist] * self.dt
 
-        if (self.one_dim):
-            self.pos_0 = np.copy(self.aux.pos[self.rstate])
-        else:
-            self.pos_0 = np.copy(molecule.pos)
+        self.pos_0 = self.aux.pos[self.rstate]
 
         # Get auxiliary velocity
         
@@ -413,17 +409,17 @@ class SHXF(MQC):
         if (self.one_dim):
             self.aux.vel[self.rstate] = np.sqrt(2. * molecule.ekin / self.aux.mass[0])
         else:
-            self.aux.vel[self.rstate] = np.copy(molecule.vel)
+            self.aux.vel[self.rstate] = molecule.vel
 
         for ist in range(molecule.nst):
             if (self.l_coh[ist]):
                 if (self.l_first[ist]):
                     self.tot_E[ist] = molecule.ekin + molecule.states[ist].energy
-                    self.aux.vel[ist] = np.copy(self.aux.vel[self.rstate])
+                    self.aux.vel[ist] = self.aux.vel[self.rstate]
                 else:
                     alpha = self.tot_E[ist] - molecule.states[ist].energy
                     if (alpha < eps):
-                        self.aux.vel[ist] *= 0.
+                        self.aux.vel[ist] = 0.
                     else:
                         if (self.one_dim):
                             alpha /= 0.5 * self.aux.mass[0]
@@ -434,9 +430,9 @@ class SHXF(MQC):
                             self.aux.vel[ist] = molecule.vel * alpha
             else:
                 if (self.one_dim):
-                    self.aux.vel[ist] = np.copy(self.aux.vel[self.rstate])
+                    self.aux.vel[ist] = self.aux.vel[self.rstate]
                 else:
-                    self.aux.vel[ist] = np.copy(molecule.vel)
+                    self.aux.vel[ist] = molecule.vel
 
     def set_decoherence(self, molecule, one_st):
         """ Routine to reset coefficient/density if the state is decohered
@@ -469,8 +465,9 @@ class SHXF(MQC):
                 if (self.l_first[ist]):
                     self.phase[ist] = 0.
                 else:
-                    self.phase[ist] += molecule.mass * \
-                        (self.aux.vel[ist] - self.aux.vel_old[ist])
+                    for iat in range(self.aux.nat):
+                       self.phase[ist, iat] += molecule.mass[iat] * \
+                           (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
 
     def el_propagator(self, molecule):
         """ Routine to propagate BO coefficients or density matrix
