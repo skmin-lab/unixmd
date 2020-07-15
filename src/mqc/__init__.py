@@ -6,3 +6,4 @@ from mqc import sh
 from .sh import SH
 from mqc import shxf
 from .shxf import SHXF
+from .ehxf import EhXF
