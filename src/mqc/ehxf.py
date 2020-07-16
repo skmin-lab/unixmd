@@ -203,8 +203,18 @@ class EhXF(MQC):
                 self.rforce -= 2. * molecule.rho.real[ist, ist] * molecule.rho.real[jst, jst] \
                     * np.sum(qmom*(self.phase[ist]-self.phase[jst])) * self.phase[jst]
 
+    def update_energy(self, molecule):
+        """ Routine to update the energy of molecules in Ehrenfest dynamics
 
-    
+            :param object molecule: molecule object
+        """
+        # Update kinetic energy
+        molecule.update_kinetic()
+        molecule.epot = 0.
+        for ist, istate in enumerate(molecule.states):
+            molecule.epot += molecule.rho.real[ist, ist] * molecule.states[ist].energy
+        molecule.etot = molecule.epot + molecule.ekin
+
     def check_coherence(self, molecule):
         """ Routine to check coherence among BO states
 
@@ -315,18 +325,6 @@ class EhXF(MQC):
                            (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
             else:
                 self.phase[ist] = np.zeros((self.aux.nat, self.aux.nsp))
-
-    def update_energy(self, molecule):
-        """ Routine to update the energy of molecules in Ehrenfest dynamics
-
-            :param object molecule: molecule object
-        """
-        # Update kinetic energy
-        molecule.update_kinetic()
-        molecule.epot = 0.
-        for ist, istate in enumerate(molecule.states):
-            molecule.epot += molecule.rho.real[ist, ist] * molecule.states[ist].energy
-        molecule.etot = molecule.epot + molecule.ekin
 
     def el_propagator(self, molecule):
         """ Routine to propagate BO coefficients or density matrix
