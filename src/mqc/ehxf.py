@@ -13,38 +13,24 @@ class Auxiliary_Molecule(object):
     """
     def __init__(self, molecule):
         # Initialize auxiliary molecule
-#        self.one_dim = one_dim
 
         self.pos = []
         self.vel = []
         self.vel_old = []
         
-#        if (one_dim):
-#            
-#            self.nat = 1
-#            self.nsp = 1
-#
-#            self.mass = np.zeros((self.nat))
-#            self.pos = np.zeros((molecule.nst, self.nat, self.nsp))
-#            self.vel = np.zeros((molecule.nst, self.nat, self.nsp))
-#            self.vel_old = np.copy(self.vel)
-#            self.mass[0] = 1. / np.sum(1. / molecule.mass)
-#        
-#        else:
-            
         self.nat = molecule.nat
         self.nsp = molecule.nsp
 
         for ist in range(molecule.nst):
+            
             self.pos.append(molecule.pos)
             self.vel.append(molecule.vel)
             self.vel_old.append(molecule.vel)
-
+        
+        self.mass = np.copy(molecule.mass)
         self.pos = np.array(self.pos)
         self.vel = np.array(self.vel)
         self.vel_old = np.array(self.vel_old)
-
-        self.mass = np.copy(molecule.mass)
 
 
 class EhXF(MQC):
@@ -65,13 +51,11 @@ class EhXF(MQC):
             propagation, l_adjnac)
         
         # Initialize XF related variables
-#        self.one_dim = one_dim
         self.l_coh = []
         self.l_first = []
         for ist in range(molecule.nst):
             self.l_coh.append(False)
             self.l_first.append(False)
-#        self.tot_E = np.array(np.zeros((molecule.nst)))
         self.threshold = threshold
         self.wsigma = wsigma
 
@@ -81,7 +65,7 @@ class EhXF(MQC):
         # Initialize auxiliary molecule object
         self.aux = Auxiliary_Molecule(molecule)
         self.pos_0 = np.zeros((self.aux.nat, self.aux.nsp))
-        self.phase = np.array(np.zeros((molecule.nst, self.aux.nat, self.aux.nsp)))
+        self.phase = np.zeros((molecule.nst, self.aux.nat, self.aux.nsp))
 
     def run(self, molecule, theory, thermostat=None, input_dir="./", \
         save_QMlog=False, save_scr=True, debug=0):
@@ -201,20 +185,10 @@ class EhXF(MQC):
         for ist in range(molecule.nst):
             for jst in range(molecule.nst):
                 self.rforce -= 2. * molecule.rho.real[ist, ist] * molecule.rho.real[jst, jst] \
-                    * np.sum(qmom*(self.phase[ist]-self.phase[jst])) * self.phase[jst]
+                    * np.sum(qmom * (self.phase[ist] - self.phase[jst])) * self.phase[jst]
 
-    def update_energy(self, molecule):
-        """ Routine to update the energy of molecules in Ehrenfest dynamics
 
-            :param object molecule: molecule object
-        """
-        # Update kinetic energy
-        molecule.update_kinetic()
-        molecule.epot = 0.
-        for ist, istate in enumerate(molecule.states):
-            molecule.epot += molecule.rho.real[ist, ist] * molecule.states[ist].energy
-        molecule.etot = molecule.epot + molecule.ekin
-
+    
     def check_coherence(self, molecule):
         """ Routine to check coherence among BO states
 
@@ -267,7 +241,6 @@ class EhXF(MQC):
                 self.aux.pos[ist] = molecule.pos
 
         self.pos_0 = np.copy(molecule.pos)
-#        print(f"POS_0, POS_1, POS_2:  {self.pos_0[0, 0]} {self.aux.pos[0, 0, 0]}, {self.aux.pos[1, 0 ,0]}")
 
         # Get auxiliary velocity
         
@@ -287,7 +260,6 @@ class EhXF(MQC):
                         self.aux.vel[ist] = molecule.vel * np.sqrt(alpha)
             else:
                 self.aux.vel[ist] = molecule.vel
-#        print(f"VEL_0, VEL_1, VEL_2:  {molecule.vel[0, 0]} {self.aux.vel[0, 0, 0]}, {self.aux.vel[1, 0 ,0]}")
 
     def set_decoherence(self, molecule, one_st):
         """ Routine to reset coefficient/density if the state is decohered
@@ -318,13 +290,25 @@ class EhXF(MQC):
         for ist in range(molecule.nst):
             if (self.l_coh[ist]):
                 if (self.l_first[ist]):
-                    self.phase[ist] = 0.
+                    self.phase[ist] = np.zeros((self.aux.nat, self.aux.nsp))
                 else:
                     for iat in range(self.aux.nat):
                         self.phase[ist, iat] += molecule.mass[iat] * \
-                           (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
+                            (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
             else:
                 self.phase[ist] = np.zeros((self.aux.nat, self.aux.nsp))
+
+    def update_energy(self, molecule):
+        """ Routine to update the energy of molecules in Ehrenfest dynamics
+
+            :param object molecule: molecule object
+        """
+        # Update kinetic energy
+        molecule.update_kinetic()
+        molecule.epot = 0.
+        for ist, istate in enumerate(molecule.states):
+            molecule.epot += molecule.rho.real[ist, ist] * molecule.states[ist].energy
+        molecule.etot = molecule.epot + molecule.ekin
 
     def el_propagator(self, molecule):
         """ Routine to propagate BO coefficients or density matrix
