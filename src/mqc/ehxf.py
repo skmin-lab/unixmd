@@ -13,7 +13,6 @@ class Auxiliary_Molecule(object):
     """
     def __init__(self, molecule):
         # Initialize auxiliary molecule
-
         self.pos = []
         self.vel = []
         self.vel_old = []
@@ -69,7 +68,7 @@ class EhXF(MQC):
 
     def run(self, molecule, theory, thermostat=None, input_dir="./", \
         save_QMlog=False, save_scr=True, debug=0):
-        """ Run MQC dynamics according to Ehrenfest dynamics
+        """ Run MQC dynamics according to Ehrenfest-XF dynamics
 
             :param object molecule: molecule object
             :param object theory: theory object containing on-the-fly calculation infomation
@@ -160,7 +159,7 @@ class EhXF(MQC):
                 shutil.rmtree(tmp_dir)
 
     def calculate_force(self, molecule):
-        """ Calculate the Ehrenfest force
+        """ Calculate the Ehrenfest-XF force
 
             :param object molecule: molecule object
         """
@@ -188,7 +187,7 @@ class EhXF(MQC):
                     * np.sum(qmom * (self.phase[ist] - self.phase[jst])) * self.phase[jst]
 
     def update_energy(self, molecule):
-        """ Routine to update the energy of molecules in Ehrenfest dynamics
+        """ Routine to update the energy of molecules in Ehrenfest-XF dynamics
 
             :param object molecule: molecule object
         """
@@ -221,7 +220,6 @@ class EhXF(MQC):
             for ist in range(molecule.nst):
                 self.l_coh[ist] = False
                 self.l_first[ist] = False
-
 
     def check_decoherence(self, molecule):
         """ Routine to check if the electronic state is decohered
