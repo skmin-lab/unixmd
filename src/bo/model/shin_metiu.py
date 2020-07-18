@@ -20,7 +20,7 @@ class Shin_Metiu(Model):
         # Shin-Metiu model can compute the gradient of several states simultaneously
         self.re_calc = False
 
-    def get_bo(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
+    def get_data(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from Shin-Metiu BO calculation
 
             :param object molecule: molecule object
@@ -30,7 +30,7 @@ class Shin_Metiu(Model):
             :param double dt: time interval
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        super().get_bo(base_dir, calc_force_only)
+        super().get_data(base_dir, calc_force_only)
         self.get_input(molecule)
         self.run_QM(base_dir, istep, bo_list)
         self.extract_BO(molecule, bo_list, calc_force_only)

@@ -144,7 +144,7 @@ class SHXF(MQC):
         self.print_init(molecule, qm, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
-        qm.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=False)
+        qm.get_data(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=False)
         if (not molecule.l_nacme):
             molecule.get_nacme()
 
@@ -152,7 +152,7 @@ class SHXF(MQC):
         self.hop_check(molecule, bo_list)
         self.evaluate_hop(molecule, bo_list, -1, unixmd_dir)
         if (qm.re_calc and self.l_hop):
-            qm.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=True)
+            qm.get_data(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=True)
 
         self.update_energy(molecule)
 
@@ -171,7 +171,7 @@ class SHXF(MQC):
             self.cl_update_position(molecule)
 
             molecule.backup_bo()
-            qm.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=False)
+            qm.get_data(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=False)
 
             if (not molecule.l_nacme):
                 molecule.adjust_nac()
@@ -187,7 +187,7 @@ class SHXF(MQC):
             self.hop_check(molecule, bo_list)
             self.evaluate_hop(molecule, bo_list, istep, unixmd_dir)
             if (qm.re_calc and self.l_hop):
-                qm.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=True)
+                qm.get_data(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=True)
 
             if (thermostat != None):
                 thermostat.run(molecule, self)

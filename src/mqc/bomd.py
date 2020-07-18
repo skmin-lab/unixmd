@@ -69,7 +69,7 @@ class BOMD(MQC):
         self.print_init(molecule, qm, mm, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
-        qm.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=False)
+        qm.get_data(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=False)
         if (molecule.qmmm and mm != None):
             mm.get_data(molecule, base_dir, -1, bo_list)
 
@@ -83,7 +83,7 @@ class BOMD(MQC):
 
             self.cl_update_position(molecule)
 
-            qm.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=False)
+            qm.get_data(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=False)
             if (molecule.qmmm and mm != None):
                 mm.get_data(molecule, base_dir, istep, bo_list)
 

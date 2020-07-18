@@ -79,7 +79,7 @@ class CASSCF(Molpro):
         molecule.l_nacme = False
         self.re_calc = True
 
-    def get_bo(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
+    def get_data(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from CASSCF method
 
             :param object molecule: molecule object
@@ -90,7 +90,7 @@ class CASSCF(Molpro):
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
         self.copy_files(istep)
-        super().get_bo(base_dir, calc_force_only)
+        super().get_data(base_dir, calc_force_only)
         self.write_xyz(molecule)
         self.get_input(molecule, istep, bo_list, calc_force_only)
         self.run_QM(base_dir, istep, bo_list)

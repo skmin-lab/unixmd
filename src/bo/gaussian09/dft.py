@@ -42,7 +42,7 @@ class DFT(Gaussian09):
         else:
             self.re_calc = False
 
-    def get_bo(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
+    def get_data(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
         """ Extract energy, gradient from (TD)DFT method
 
             :param object molecule: molecule object
@@ -53,7 +53,7 @@ class DFT(Gaussian09):
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
         self.copy_files(istep)
-        super().get_bo(base_dir, calc_force_only)
+        super().get_data(base_dir, calc_force_only)
         self.get_input(molecule, istep, bo_list)
         self.run_QM(base_dir, istep, bo_list)
         self.extract_BO(molecule, bo_list, calc_force_only)
