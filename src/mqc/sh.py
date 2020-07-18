@@ -45,12 +45,12 @@ class SH(MQC):
         else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
 
-    def run(self, molecule, theory, thermostat=None, input_dir="./", \
+    def run(self, molecule, qm, thermostat=None, input_dir="./", \
         save_QMlog=False, save_scr=True, debug=0):
         """ Run MQC dynamics according to surface hopping dynamics
 
             :param object molecule: molecule object
-            :param object theory: theory object containing on-the-fly calculation infomation
+            :param object qm: qm object containing on-the-fly calculation infomation
             :param object thermostat: thermostat type
             :param string input_dir: location of input directory
             :param boolean save_QMlog: logical for saving QM calculation log
@@ -75,26 +75,26 @@ class SH(MQC):
         # Initialize UNI-xMD
         os.chdir(base_dir)
         bo_list = [self.rstate]
-        theory.calc_coupling = True
+        qm.calc_coupling = True
 
-        touch_file(molecule, theory.calc_coupling, self.propagation, \
+        touch_file(molecule, qm.calc_coupling, self.propagation, \
             unixmd_dir, SH_chk=True)
-        self.print_init(molecule, theory, thermostat, debug)
+        self.print_init(molecule, qm, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
-        theory.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=False)
+        qm.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=False)
         if (not molecule.l_nacme):
             molecule.get_nacme()
 
         self.hop_prob(molecule, -1, unixmd_dir)
         self.hop_check(molecule, bo_list)
         self.evaluate_hop(molecule, bo_list, -1, unixmd_dir)
-        if (theory.re_calc and self.l_hop):
-            theory.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=True)
+        if (qm.re_calc and self.l_hop):
+            qm.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=True)
 
         self.update_energy(molecule)
 
-        write_md_output(molecule, theory.calc_coupling, -1, \
+        write_md_output(molecule, qm.calc_coupling, -1, \
             self.propagation, unixmd_dir)
         self.print_step(molecule, -1, debug)
 
@@ -104,7 +104,7 @@ class SH(MQC):
             self.cl_update_position(molecule)
 
             molecule.backup_bo()
-            theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=False)
+            qm.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=False)
 
             if (not molecule.l_nacme):
                 molecule.adjust_nac()
@@ -119,15 +119,15 @@ class SH(MQC):
             self.hop_prob(molecule, istep, unixmd_dir)
             self.hop_check(molecule, bo_list)
             self.evaluate_hop(molecule, bo_list, istep, unixmd_dir)
-            if (theory.re_calc and self.l_hop):
-                theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=True)
+            if (qm.re_calc and self.l_hop):
+                qm.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=True)
 
             if (thermostat != None):
                 thermostat.run(molecule, self)
 
             self.update_energy(molecule)
 
-            write_md_output(molecule, theory.calc_coupling, istep, \
+            write_md_output(molecule, qm.calc_coupling, istep, \
                 self.propagation, unixmd_dir)
             self.print_step(molecule, istep, debug)
             if (istep == self.nsteps - 1):
@@ -276,16 +276,16 @@ class SH(MQC):
         else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Other propagator not implemented! {self.propagation}")
 
-    def print_init(self, molecule, theory, thermostat, debug):
+    def print_init(self, molecule, qm, thermostat, debug):
         """ Routine to print the initial information of dynamics
 
             :param object molecule: molecule object
-            :param object theory: theory object containing on-the-fly calculation infomation
+            :param object qm: qm object containing on-the-fly calculation infomation
             :param object thermostat: thermostat type
             :param integer debug: verbosity level for standard output
         """
-        # Print initial information about molecule, theory and thermostat
-        super().print_init(molecule, theory, thermostat, debug)
+        # Print initial information about molecule, qm and thermostat
+        super().print_init(molecule, qm, thermostat, debug)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\

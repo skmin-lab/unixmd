@@ -71,28 +71,28 @@ class MQC(object):
         """
         pass
 
-    def print_init(self, molecule, theory, field, thermostat, debug):
+    def print_init(self, molecule, qm, mm, thermostat, debug):
         """ Routine to print the initial information of dynamics
 
             :param object molecule: molecule object
-            :param object theory: theory object containing on-the-fly calculation infomation
-            :param object field: force field object containing MM calculation infomation
+            :param object qm: qm object containing on-the-fly calculation infomation
+            :param object mm: force mm object containing MM calculation infomation
             :param object thermostat: thermostat type
             :param integer debug: verbosity level for standard output
         """
         # Print molecule information: coordinate, velocity
-        molecule.print_init(field)
+        molecule.print_init(mm)
 
         # Print dynamics information
         dynamics_info = textwrap.dedent(f"""\
         {"-" * 68}
         {"Dynamics Information":>43s}
         {"-" * 68}
-          QM Program               = {theory.qm_prog:>16s}
-          QM Method                = {theory.qm_method:>16s}
+          QM Program               = {qm.qm_prog:>16s}
+          QM Method                = {qm.qm_method:>16s}
         """)
-        if (molecule.qmmm and field != None):
-            dynamics_info += f"  MM Program               = {field.mm_prog:>16s}\n"
+        if (molecule.qmmm and mm != None):
+            dynamics_info += f"  MM Program               = {mm.mm_prog:>16s}\n"
         dynamics_info += textwrap.indent(textwrap.dedent(f"""\
 
           MQC Method               = {self.md_type:>16s}

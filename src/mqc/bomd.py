@@ -17,13 +17,13 @@ class BOMD(MQC):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, None, None, None)
 
-    def run(self, molecule, theory, field=None, thermostat=None, input_dir="./", \
+    def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
         """ Run MQC dynamics according to BOMD
 
             :param object molecule: molecule object
-            :param object theory: theory object containing on-the-fly calculation infomation
-            :param object field: force field object containing MM calculation infomation
+            :param object qm: qm object containing on-the-fly calculation infomation
+            :param object mm: force mm object containing MM calculation infomation
             :param object thermostat: thermostat type
             :param string input_dir: location of input directory
             :param boolean save_QMlog: logical for saving QM calculation log
@@ -46,36 +46,36 @@ class BOMD(MQC):
         if (save_QMlog):
             os.makedirs(QMlog_dir)
 
-        if (molecule.qmmm and field != None):
+        if (molecule.qmmm and mm != None):
             MMlog_dir = os.path.join(base_dir, "MMlog")
             if (os.path.exists(MMlog_dir)):
                 shutil.rmtree(MMlog_dir)
             if (save_MMlog):
                 os.makedirs(MMlog_dir)
 
-        if ((molecule.qmmm and field == None) or (not molecule.qmmm and field != None)):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Both molecule.qmmm and field object is necessary! {molecule.qmmm} and {field}")
+        if ((molecule.qmmm and mm == None) or (not molecule.qmmm and mm != None)):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Both molecule.qmmm and mm object is necessary! {molecule.qmmm} and {mm}")
 
         # Check compatibility for QM and MM objects
-        if (molecule.qmmm and field != None):
-            self.check_qmmm(theory, field)
+        if (molecule.qmmm and mm != None):
+            self.check_qmmm(qm, mm)
 
         # Initialize UNI-xMD
         os.chdir(base_dir)
         bo_list = [self.istate]
-        theory.calc_coupling = False
+        qm.calc_coupling = False
 
-        touch_file(molecule, theory.calc_coupling, None, unixmd_dir, SH_chk=False)
-        self.print_init(molecule, theory, field, thermostat, debug)
+        touch_file(molecule, qm.calc_coupling, None, unixmd_dir, SH_chk=False)
+        self.print_init(molecule, qm, mm, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
-        theory.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=False)
-        if (molecule.qmmm and field != None):
-            field.get_mm(molecule, base_dir, -1, bo_list)
+        qm.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=False)
+        if (molecule.qmmm and mm != None):
+            mm.get_mm(molecule, base_dir, -1, bo_list)
 
         self.update_energy(molecule)
 
-        write_md_output(molecule, theory.calc_coupling, -1, None, unixmd_dir)
+        write_md_output(molecule, qm.calc_coupling, -1, None, unixmd_dir)
         self.print_step(molecule, -1, debug)
 
         # Main MD loop
@@ -83,9 +83,9 @@ class BOMD(MQC):
 
             self.cl_update_position(molecule)
 
-            theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=False)
-            if (molecule.qmmm and field != None):
-                field.get_mm(molecule, base_dir, istep, bo_list)
+            qm.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=False)
+            if (molecule.qmmm and mm != None):
+                mm.get_mm(molecule, base_dir, istep, bo_list)
 
             self.cl_update_velocity(molecule)
 
@@ -94,7 +94,7 @@ class BOMD(MQC):
 
             self.update_energy(molecule)
 
-            write_md_output(molecule, theory.calc_coupling, istep, None, unixmd_dir)
+            write_md_output(molecule, qm.calc_coupling, istep, None, unixmd_dir)
             self.print_step(molecule, istep, debug)
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, istep, unixmd_dir)
@@ -105,7 +105,7 @@ class BOMD(MQC):
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
 
-            if (molecule.qmmm and field != None):
+            if (molecule.qmmm and mm != None):
                 tmp_dir = os.path.join(unixmd_dir, "scr_mm")
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
@@ -127,17 +127,17 @@ class BOMD(MQC):
         molecule.epot = molecule.states[self.istate].energy
         molecule.etot = molecule.epot + molecule.ekin
 
-    def print_init(self, molecule, theory, field, thermostat, debug):
+    def print_init(self, molecule, qm, mm, thermostat, debug):
         """ Routine to print the initial information of dynamics
 
             :param object molecule: molecule object
-            :param object theory: theory object containing on-the-fly calculation infomation
-            :param object field: force field object containing MM calculation infomation
+            :param object qm: qm object containing on-the-fly calculation infomation
+            :param object mm: force mm object containing MM calculation infomation
             :param object thermostat: thermostat type
             :param integer debug: verbosity level for standard output
         """
-        # Print initial information about molecule, theory, field and thermostat
-        super().print_init(molecule, theory, field, thermostat, debug)
+        # Print initial information about molecule, qm, mm and thermostat
+        super().print_init(molecule, qm, mm, thermostat, debug)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
@@ -182,17 +182,17 @@ class BOMD(MQC):
                 DEBUG1 += f"{molecule.states[ist].energy:17.8f} "
             print (DEBUG1, flush=True)
 
-    def check_qmmm(self, theory, field):
+    def check_qmmm(self, qm, mm):
         """ Routine to check compatibility between QM and MM objects
 
-            :param object theory: theory object containing on-the-fly calculation infomation
-            :param object field: force field object containing MM calculation infomation
+            :param object qm: qm object containing on-the-fly calculation infomation
+            :param object mm: force mm object containing MM calculation infomation
         """
         # Now check MM object
-        if (field.mm_prog == "Tinker"):
+        if (mm.mm_prog == "Tinker"):
             # Now check QM object
-            if (theory.qm_prog == "dftbplus"):
-                if (theory.qm_method == "SSR"):
+            if (qm.qm_prog == "dftbplus"):
+                if (qm.qm_method == "SSR"):
                     do_qmmm = True
                 else:
                     do_qmmm = False
@@ -202,6 +202,6 @@ class BOMD(MQC):
             do_qmmm = False
 
         if (not do_qmmm):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Not compatible objects in QMMM! {theory.qm_prog}.{theory.qm_method} and {field.mm_prog}")
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Not compatible objects in QMMM! {qm.qm_prog}.{qm.qm_method} and {mm.mm_prog}")
 
 
