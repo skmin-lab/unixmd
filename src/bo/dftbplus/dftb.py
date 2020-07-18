@@ -83,20 +83,20 @@ class DFTB(DFTBplus):
         # Set new variable to decide the position of basis functions in terms of atoms
         # DFTB method considers only valence electrons, so core electrons should be removed
         core_elec = 0.
-        self.norb = 0
+        self.nbasis = 0
         self.check_atom = [0]
         for iat in range(molecule.nat):
             max_ang = max_l[molecule.symbols[iat]]
             if (max_ang == 's'):
-                self.norb += 1
+                self.nbasis += 1
             elif (max_ang == 'p'):
-                self.norb += 4
+                self.nbasis += 4
                 core_elec += 2.
-            self.check_atom.append(self.norb)
+            self.check_atom.append(self.nbasis)
 
         # Set new variable to decide the position of atoms in terms of basis functions
         self.check_basis = []
-        for ibasis in range(self.norb):
+        for ibasis in range(self.nbasis):
             for iat in range(molecule.nat):
                 ind_a = self.check_atom[iat] + 1
                 ind_b = self.check_atom[iat + 1]
@@ -106,12 +106,13 @@ class DFTB(DFTBplus):
         # Initialize NACME variables
         # There is no core orbitals in TDDFTB (fixed occupations)
         # nocc is number of occupied orbitals and nvirt is number of virtual orbitals
+        self.norb = self.nbasis
         self.nocc = int(int(molecule.nelec - core_elec) / 2)
         self.nvirt = self.norb - self.nocc
 
-        self.ao_overlap = np.zeros((self.norb, self.norb))
-        self.mo_coef_old = np.zeros((self.norb, self.norb))
-        self.mo_coef_new = np.zeros((self.norb, self.norb))
+        self.ao_overlap = np.zeros((self.nbasis, self.nbasis))
+        self.mo_coef_old = np.zeros((self.norb, self.nbasis))
+        self.mo_coef_new = np.zeros((self.norb, self.nbasis))
         self.ci_coef_old = np.zeros((molecule.nst, self.nocc, self.nvirt))
         self.ci_coef_new = np.zeros((molecule.nst, self.nocc, self.nvirt))
 
@@ -575,14 +576,14 @@ class DFTB(DFTBplus):
         # Read upper right block of 'oversqr.dat' file (< t | t+dt >)
         file_name_in = "oversqr.dat"
 
-        self.ao_overlap = np.zeros((self.norb, self.norb))
+        self.ao_overlap = np.zeros((self.nbasis, self.nbasis))
         with open(file_name_in, "r") as f_in:
             lines = f_in.readlines()
             row = 0
             iline = 0
             for line in lines:
                 # Skip first five lines and read upper block
-                if (iline in range(5, 5 + self.norb)):
+                if (iline in range(5, 5 + self.nbasis)):
                     col = 0
                     count = False
                     field = line.split()
@@ -608,8 +609,8 @@ class DFTB(DFTBplus):
                             self.ao_overlap[row, col] = new_val
                         col += 1
                         # Read right block
-                        if (col > self.norb - 1):
-                            col -= self.norb
+                        if (col > self.nbasis - 1):
+                            col -= self.nbasis
                             count = True
                     row += 1
                 iline += 1
@@ -619,24 +620,24 @@ class DFTB(DFTBplus):
         if (istep == 0):
             file_name_in = "eigenvec.bin.pre"
 
-            self.mo_coef_old = np.zeros((self.norb, self.norb))
+            self.mo_coef_old = np.zeros((self.norb, self.nbasis))
             with open(file_name_in, "rb") as f_in:
                 dummy = np.fromfile(f_in, dtype=np.integer, count=1)
                 for iorb in range(self.norb):
                     dummy = np.fromfile(f_in, dtype=np.integer, count=1)
-                    data = np.fromfile(f_in, dtype=np.float64, count=self.norb)
+                    data = np.fromfile(f_in, dtype=np.float64, count=self.nbasis)
                     self.mo_coef_old[iorb] = data
 #            np.savetxt("test-mo1", self.mo_coef_old, fmt=f"%12.6f")
 
         # Read 'eigenvec.bin' file at time t + dt
         file_name_in = "eigenvec.bin"
 
-        self.mo_coef_new = np.zeros((self.norb, self.norb))
+        self.mo_coef_new = np.zeros((self.norb, self.nbasis))
         with open(file_name_in, "rb") as f_in:
             dummy = np.fromfile(f_in, dtype=np.integer, count=1)
             for iorb in range(self.norb):
                 dummy = np.fromfile(f_in, dtype=np.integer, count=1)
-                data = np.fromfile(f_in, dtype=np.float64, count=self.norb)
+                data = np.fromfile(f_in, dtype=np.float64, count=self.nbasis)
                 self.mo_coef_new[iorb] = data
 #        np.savetxt("test-mo2", self.mo_coef_new, fmt=f"%12.6f")
 
