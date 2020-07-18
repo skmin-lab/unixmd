@@ -8,7 +8,7 @@ class MM_calculator(object):
         # Save name of MM calculator
         self.mm_prog = self.__class__.__name__
 
-    def get_mm(self, base_dir):
+    def get_data(self, base_dir):
         """ Make scratch directory and copy geometry file
 
             :param string base_dir: base directory

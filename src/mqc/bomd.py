@@ -71,7 +71,7 @@ class BOMD(MQC):
         # Calculate initial input geometry at t = 0.0 s
         qm.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=False)
         if (molecule.qmmm and mm != None):
-            mm.get_mm(molecule, base_dir, -1, bo_list)
+            mm.get_data(molecule, base_dir, -1, bo_list)
 
         self.update_energy(molecule)
 
@@ -85,7 +85,7 @@ class BOMD(MQC):
 
             qm.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=False)
             if (molecule.qmmm and mm != None):
-                mm.get_mm(molecule, base_dir, istep, bo_list)
+                mm.get_data(molecule, base_dir, istep, bo_list)
 
             self.cl_update_velocity(molecule)
 
