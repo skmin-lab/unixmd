@@ -10,7 +10,7 @@ class BO_calculator(object):
         self.qm_prog = str(self.__class__).split('.')[1]
         self.qm_method = self.__class__.__name__
 
-    def get_bo(self, base_dir, calc_force_only):
+    def get_data(self, base_dir, calc_force_only):
         """ Make scratch directory and copy geometry file
 
             :param string base_dir: base directory
