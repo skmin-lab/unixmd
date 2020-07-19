@@ -112,4 +112,26 @@ class MQC(object):
             thermostat_info = "  No Thermostat: Total energy is conserved!\n"
             print (thermostat_info, flush=True)
 
+    def check_qmmm(self, qm, mm):
+        """ Routine to check compatibility between QM and MM objects
+
+            :param object qm: qm object containing on-the-fly calculation infomation
+            :param object mm: force mm object containing MM calculation infomation
+        """
+        # Now check MM object
+        if (mm.mm_prog == "Tinker"):
+            # Now check QM object
+            if (qm.qm_prog == "dftbplus"):
+                if (qm.qm_method == "SSR"):
+                    do_qmmm = True
+                else:
+                    do_qmmm = False
+            else:
+                do_qmmm = False
+        else:
+            do_qmmm = False
+
+        if (not do_qmmm):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Not compatible objects in QMMM! {qm.qm_prog}.{qm.qm_method} and {mm.mm_prog}")
+
 
