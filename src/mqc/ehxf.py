@@ -44,7 +44,7 @@ class EhXF(MQC):
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_adjnac=True, threshold=0.01, wsigma=0.1):
+        propagation="density", l_adjnac=True, threshold=0.01, wsigma=0.1, qmom_force=False):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
             propagation, l_adjnac)
@@ -60,6 +60,8 @@ class EhXF(MQC):
 
         self.upper_th = 1. - self.threshold
         self.lower_th = self.threshold
+
+        self.qmom_force = qmom_force
 
         # Initialize auxiliary molecule object
         self.aux = Auxiliary_Molecule(molecule)
@@ -173,18 +175,19 @@ class EhXF(MQC):
                 self.rforce += 2. * molecule.nac[ist, jst] * molecule.rho.real[ist, jst] \
                     * (molecule.states[ist].energy - molecule.states[jst].energy)
         
-        # Calculate quantum momentum
-        qmom = np.zeros((molecule.nat, molecule.nsp))
-        for ist in range(molecule.nst):
-            for iat in range(molecule.nat):
-                qmom[iat] += molecule.rho.real[ist, ist] * (self.pos_0[iat] - self.aux.pos[ist, iat]) / molecule.mass[iat]
-        qmom /= 2. * self.wsigma ** 2
-    
-        # Calculate XF force
-        for ist in range(molecule.nst):
-            for jst in range(molecule.nst):
-                self.rforce -= 2. * molecule.rho.real[ist, ist] * molecule.rho.real[jst, jst] \
-                    * np.sum(qmom * (self.phase[ist] - self.phase[jst])) * self.phase[jst]
+        if (self.qmom_force):
+            # Calculate quantum momentum
+            qmom = np.zeros((molecule.nat, molecule.nsp))
+            for ist in range(molecule.nst):
+                for iat in range(molecule.nat):
+                    qmom[iat] += molecule.rho.real[ist, ist] * (self.pos_0[iat] - self.aux.pos[ist, iat]) / molecule.mass[iat]
+            qmom /= 2. * self.wsigma ** 2
+        
+            # Calculate XF force
+            for ist in range(molecule.nst):
+                for jst in range(molecule.nst):
+                    self.rforce -= 2. * molecule.rho.real[ist, ist] * molecule.rho.real[jst, jst] \
+                        * np.sum(qmom * (self.phase[ist] - self.phase[jst])) * self.phase[jst]
 
     def update_energy(self, molecule):
         """ Routine to update the energy of molecules in Ehrenfest-XF dynamics
