@@ -82,21 +82,20 @@ class SH(MQC):
         self.print_init(molecule, qm, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
-        qm.get_data(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=False)
+        qm.get_data(molecule, base_dir, bo_list, self.dt, istep=-1, calc_force_only=False)
         if (not molecule.l_nacme):
             molecule.get_nacme()
 
-        self.hop_prob(molecule, -1, unixmd_dir)
+        self.hop_prob(molecule, unixmd_dir, istep=-1)
         self.hop_check(molecule, bo_list)
-        self.evaluate_hop(molecule, bo_list, -1, unixmd_dir)
+        self.evaluate_hop(molecule, bo_list, unixmd_dir, istep=-1)
         if (qm.re_calc and self.l_hop):
-            qm.get_data(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=True)
+            qm.get_data(molecule, base_dir, bo_list, self.dt, istep=-1, calc_force_only=True)
 
         self.update_energy(molecule)
 
-        write_md_output(molecule, qm.calc_coupling, -1, \
-            self.propagation, unixmd_dir)
-        self.print_step(molecule, -1, debug)
+        write_md_output(molecule, qm.calc_coupling, self.propagation, unixmd_dir, istep=-1)
+        self.print_step(molecule, debug, istep=-1)
 
         # Main MD loop
         for istep in range(self.nsteps):
@@ -104,7 +103,7 @@ class SH(MQC):
             self.cl_update_position(molecule)
 
             molecule.backup_bo()
-            qm.get_data(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=False)
+            qm.get_data(molecule, base_dir, bo_list, self.dt, istep=istep, calc_force_only=False)
 
             if (not molecule.l_nacme):
                 molecule.adjust_nac()
@@ -116,22 +115,21 @@ class SH(MQC):
 
             self.el_propagator(molecule)
 
-            self.hop_prob(molecule, istep, unixmd_dir)
+            self.hop_prob(molecule, unixmd_dir, istep=istep)
             self.hop_check(molecule, bo_list)
-            self.evaluate_hop(molecule, bo_list, istep, unixmd_dir)
+            self.evaluate_hop(molecule, bo_list, unixmd_dir, istep=istep)
             if (qm.re_calc and self.l_hop):
-                qm.get_data(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=True)
+                qm.get_data(molecule, base_dir, bo_list, self.dt, istep=istep, calc_force_only=True)
 
             if (thermostat != None):
                 thermostat.run(molecule, self)
 
             self.update_energy(molecule)
 
-            write_md_output(molecule, qm.calc_coupling, istep, \
-                self.propagation, unixmd_dir)
-            self.print_step(molecule, istep, debug)
+            write_md_output(molecule, qm.calc_coupling, self.propagation, unixmd_dir, istep=istep)
+            self.print_step(molecule, debug, istep=istep)
             if (istep == self.nsteps - 1):
-                write_final_xyz(molecule, istep, unixmd_dir)
+                write_final_xyz(molecule, unixmd_dir, istep=istep)
 
         # Delete scratch directory
         if (not save_scr):
@@ -139,12 +137,12 @@ class SH(MQC):
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
 
-    def hop_prob(self, molecule, istep, unixmd_dir):
+    def hop_prob(self, molecule, unixmd_dir, istep):
         """ Routine to calculate hopping probabilities
 
             :param object molecule: molecule object
-            :param integer istep: current MD step
             :param string unixmd_dir: md directory
+            :param integer istep: current MD step
         """
         # Reset surface hopping variables
         self.rstate_old = self.rstate
@@ -197,13 +195,13 @@ class SH(MQC):
                 self.rstate = ist
                 bo_list[0] = self.rstate
 
-    def evaluate_hop(self, molecule, bo_list, istep, unixmd_dir):
+    def evaluate_hop(self, molecule, bo_list, unixmd_dir, istep):
         """ Routine to evaluate hopping and velocity rescaling
 
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation
-            :param integer istep: current MD step
             :param string unixmd_dir: unixmd directory
+            :param integer istep: current MD step
         """
         if (self.l_hop):        
             pot_diff = molecule.states[self.rstate].energy - molecule.states[self.rstate_old].energy
@@ -313,12 +311,12 @@ class SH(MQC):
 
         print (dynamics_step_info, flush=True)
 
-    def print_step(self, molecule, istep, debug):
+    def print_step(self, molecule, debug, istep):
         """ Routine to print each steps infomation about dynamics
 
             :param object molecule: molecule object
-            :param integer istep: current MD step
             :param integer debug: verbosity level for standard output
+            :param integer istep: current MD step
         """
         if (istep == -1):
             max_prob = 0.

@@ -9,7 +9,7 @@ class Theory2(Program_Name):
         molecule.l_namce = 
         self.re_calc = 
 
-    def get_data(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
+    def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
 
     def get_input():
 

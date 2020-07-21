@@ -67,14 +67,14 @@ class SSR(TeraChem):
         molecule.l_nacme = False
         self.re_calc = False
 
-    def get_data(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
+    def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from SSR method
 
             :param object molecule: molecule object
             :param string base_dir: base directory
-            :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
             :param double dt: time interval
+            :param integer istep: current MD step
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
         self.copy_files(istep)

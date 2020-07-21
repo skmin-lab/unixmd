@@ -60,15 +60,14 @@ class Eh(MQC):
         self.print_init(molecule, qm, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
-        qm.get_data(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=False)
+        qm.get_data(molecule, base_dir, bo_list, self.dt, istep=-1, calc_force_only=False)
         if (not molecule.l_nacme):
             molecule.get_nacme()
 
         self.update_energy(molecule)
 
-        write_md_output(molecule, qm.calc_coupling, -1, \
-            self.propagation, unixmd_dir)
-        self.print_step(molecule, -1, debug)
+        write_md_output(molecule, qm.calc_coupling, self.propagation, unixmd_dir, istep=-1)
+        self.print_step(molecule, debug, istep=-1)
 
         # Main MD loop
         for istep in range(self.nsteps):
@@ -76,7 +75,7 @@ class Eh(MQC):
             self.cl_update_position(molecule)
 
             molecule.backup_bo()
-            qm.get_data(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=False)
+            qm.get_data(molecule, base_dir, bo_list, self.dt, istep=istep, calc_force_only=False)
 
             if (not molecule.l_nacme):
                 molecule.adjust_nac()
@@ -93,11 +92,10 @@ class Eh(MQC):
 
             self.update_energy(molecule)
 
-            write_md_output(molecule, qm.calc_coupling, istep, \
-                self.propagation, unixmd_dir)
-            self.print_step(molecule, istep, debug)
+            write_md_output(molecule, qm.calc_coupling, self.propagation, unixmd_dir, istep=istep)
+            self.print_step(molecule, debug, istep=istep)
             if (istep == self.nsteps - 1):
-                write_final_xyz(molecule, istep, unixmd_dir)
+                write_final_xyz(molecule, unixmd_dir, istep=istep)
 
         # Delete scratch directory
         if (not save_scr):
@@ -176,12 +174,12 @@ class Eh(MQC):
 
         print (dynamics_step_info, flush=True)
 
-    def print_step(self, molecule, istep, debug):
+    def print_step(self, molecule, debug, istep):
         """ Routine to print each steps infomation about dynamics
 
             :param object molecule: molecule object
-            :param integer istep: current MD step
             :param integer debug: verbosity level for standard output
+            :param integer istep: current MD step
         """
         ctemp = molecule.ekin * 2. / float(molecule.dof) * au_to_K
         norm = 0.

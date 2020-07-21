@@ -36,13 +36,13 @@ class Tinker(MM_calculator):
         if (not (self.scheme == "additive" or self.scheme == "subtractive")):
             raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong QM/MM scheme given! {self.scheme}")
 
-    def get_data(self, molecule, base_dir, istep, bo_list):
+    def get_data(self, molecule, base_dir, bo_list, istep):
         """ Extract energy and gradient from Tinker
 
             :param object molecule: molecule object
             :param string base_dir: base directory
-            :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
+            :param integer istep: current MD step
         """
         super().get_data(base_dir)
         self.get_input(molecule)
