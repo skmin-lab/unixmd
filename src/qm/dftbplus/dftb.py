@@ -131,7 +131,7 @@ class DFTB(DFTBplus):
         self.write_xyz(molecule)
         self.get_input(molecule, istep, bo_list, calc_force_only)
         self.run_QM(molecule, base_dir, istep, bo_list, calc_force_only)
-        self.extract_BO(molecule, base_dir, istep, bo_list, dt, calc_force_only)
+        self.extract_QM(molecule, base_dir, istep, bo_list, dt, calc_force_only)
         self.move_dir(base_dir)
 
     def copy_files(self, molecule, istep, calc_force_only):
@@ -501,7 +501,7 @@ class DFTB(DFTBplus):
                 log_step = f"log.{istep + 1}.{ist}"
                 shutil.copy("log", os.path.join(tmp_dir, log_step))
 
-    def extract_BO(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
+    def extract_QM(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
         """ Read the output files to get BO information
 
             :param object molecule: molecule object

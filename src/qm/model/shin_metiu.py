@@ -33,7 +33,7 @@ class Shin_Metiu(Model):
         super().get_data(base_dir, calc_force_only)
         self.get_input(molecule)
         self.run_QM(base_dir, istep, bo_list)
-        self.extract_BO(molecule, bo_list, calc_force_only)
+        self.extract_QM(molecule, bo_list, calc_force_only)
         self.move_dir(base_dir)
 
     def get_input(self, molecule):
@@ -67,7 +67,7 @@ class Shin_Metiu(Model):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
             shutil.copy("metiu.log", os.path.join(tmp_dir, log_step))
 
-    def extract_BO(self, molecule, bo_list, calc_force_only):
+    def extract_QM(self, molecule, bo_list, calc_force_only):
         """ Read the output files to get BO information
 
             :param object molecule: molecule object

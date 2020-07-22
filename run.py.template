@@ -1,5 +1,5 @@
 from molecule import Molecule
-import bo
+import qm
 import mqc
 from thermostat import *
 from misc import data
@@ -12,11 +12,11 @@ SYMBOL  COORDINATES  VELOCITIES
 
 mol = Molecule(geometry=geom, nstates=NSTATES)
 
-qm = bo.QM_PROG.QM_METHOD(ARGUMENTS)
+qm = qm.QM_PROG.QM_METHOD(ARGUMENTS)
 
 md = mqc.MDTYPE(ARGUMETNS)
 
 bathT = THERMOSTAT(ARGUMENTS)
 
-md.run(molecule=mol, theory=qm, thermostat=bathT, input_dir=INPUT_DIR)
+md.run(molecule=mol, qm=qm, thermostat=bathT, input_dir=INPUT_DIR)
 

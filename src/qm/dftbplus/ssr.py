@@ -98,7 +98,7 @@ class SSR(DFTBplus):
         self.write_xyz(molecule)
         self.get_input(molecule, bo_list)
         self.run_QM(base_dir, istep, bo_list)
-        self.extract_BO(molecule, bo_list)
+        self.extract_QM(molecule, bo_list)
         self.move_dir(base_dir)
 
     def get_input(self, molecule, bo_list):
@@ -330,7 +330,7 @@ class SSR(DFTBplus):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
             shutil.copy("log", os.path.join(tmp_dir, log_step))
 
-    def extract_BO(self, molecule, bo_list):
+    def extract_QM(self, molecule, bo_list):
         """ Read the output files to get BO information
 
             :param object molecule: molecule object

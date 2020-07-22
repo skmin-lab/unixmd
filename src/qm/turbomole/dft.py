@@ -54,7 +54,7 @@ class DFT(Turbomole):
 
         self.get_input(molecule, bo_list)
         self.run_QM(molecule, base_dir, istep, bo_list)
-        self.extract_BO(molecule, bo_list)
+        self.extract_QM(molecule, bo_list)
         self.move_dir(base_dir)
 
     def get_input(self, molecule, bo_list):
@@ -214,7 +214,7 @@ class DFT(Turbomole):
             else:
                 shutil.copy("egrad.out", os.path.join(tmp_dir, f"egrad.out.{istep + 1}"))
 
-    def extract_BO(self, molecule, bo_list):
+    def extract_QM(self, molecule, bo_list):
         """ Read the output files to get BO information
 
             :param object molecule: molecule object
