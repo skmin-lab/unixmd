@@ -47,6 +47,6 @@ class DFTBplus(QM_calculator):
         os.environ["PYTHONPATH"] += os.pathsep + os.path.join(lib_dir)
 
         # Check the atomic species
-        self.atom_type = set(molecule.symbols)
+        self.atom_type = set(molecule.symbols[0:molecule.nat_qm])
 
 

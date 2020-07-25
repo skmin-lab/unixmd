@@ -33,8 +33,8 @@ class QM_calculator(object):
         """
         file_name = "geometry.xyz"
         with open(file_name, "w") as ftj:
-            ftj.write(f"{molecule.nat}\n\n")
-            for iat in range(molecule.nat):
+            ftj.write(f"{molecule.nat_qm}\n\n")
+            for iat in range(molecule.nat_qm):
                 ftj.write(f"{molecule.symbols[iat]:4}")
                 ftj.write("".join([f"{i:15.8f}" for i in molecule.pos[iat] * au_to_A]) + "\n")
 

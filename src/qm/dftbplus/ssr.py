@@ -116,7 +116,7 @@ class SSR(DFTBplus):
             first_row = True
             for row in file_be:
                 if (first_row):
-                    row = f'{molecule.nat} S\n'
+                    row = f'{molecule.nat_qm} S\n'
                     first_row = False
                 file_af.write(row)
             # Add gamma-point and cell lattice information
@@ -372,43 +372,84 @@ class SSR(DFTBplus):
             molecule.states[ist].energy = energy[ist]
 
         # Force
-        for states in molecule.states:
-            states.force = np.zeros((molecule.nat, molecule.nsp))
+        # TODO : Is double check needed for QMMM (molecule.qmmm and mm != None)
+        if (molecule.qmmm):
+            for states in molecule.states:
+                states.force[0:molecule.nat_qm] = np.zeros(molecule.nsp)
+        else:
+            for states in molecule.states:
+                states.force = np.zeros((molecule.nat_qm, molecule.nsp))
 
         if (self.nac == "Yes"):
             # SHXF, SH, Eh : SSR state
-            for ist in range(molecule.nst):
-                tmp_f = f' {ist + 1} st state \(SSR\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
-                force = re.findall(tmp_f, log_out)
-                force = np.array(force[0])
-                force = force.astype(float)
-                force = force.reshape(molecule.nat, 3, order='C')
-                molecule.states[ist].force = - np.copy(force)
+            # TODO : Is double check needed for QMMM (molecule.qmmm and mm != None)
+            if (molecule.qmmm):
+                for ist in range(molecule.nst):
+                    tmp_g = f' {ist + 1} st state \(SSR\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+                    grad = re.findall(tmp_g, log_out)
+                    grad = np.array(grad[0])
+                    grad = grad.astype(float)
+                    grad = grad.reshape(molecule.nat_qm, 3, order='C')
+                    molecule.states[ist].force[0:molecule.nat_qm] = - grad
+            else:
+                for ist in range(molecule.nst):
+                    tmp_g = f' {ist + 1} st state \(SSR\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+                    grad = re.findall(tmp_g, log_out)
+                    grad = np.array(grad[0])
+                    grad = grad.astype(float)
+                    grad = grad.reshape(molecule.nat_qm, 3, order='C')
+                    molecule.states[ist].force = - np.copy(grad)
         else:
             # BOMD : SSR state, SA-REKS state or single-state REKS
-            tmp_f = f' {bo_list[0] + 1} state \(\w+[-]*\w+\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
-            force = re.findall(tmp_f, log_out)
-            force = np.array(force[0])
-            force = force.astype(float)
-            force = force.reshape(molecule.nat, 3, order='C')
-            molecule.states[bo_list[0]].force = - np.copy(force)
+            # TODO : Is double check needed for QMMM (molecule.qmmm and mm != None)
+            if (molecule.qmmm):
+                tmp_g = f' {bo_list[0] + 1} state \(\w+[-]*\w+\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+                grad = re.findall(tmp_g, log_out)
+                grad = np.array(grad[0])
+                grad = grad.astype(float)
+                grad = grad.reshape(molecule.nat_qm, 3, order='C')
+                molecule.states[bo_list[0]].force[0:molecule.nat_qm] = - grad
+            else:
+                tmp_g = f' {bo_list[0] + 1} state \(\w+[-]*\w+\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+                grad = re.findall(tmp_g, log_out)
+                grad = np.array(grad[0])
+                grad = grad.astype(float)
+                grad = grad.reshape(molecule.nat_qm, 3, order='C')
+                molecule.states[bo_list[0]].force = - np.copy(grad)
 
         # NAC
         if (self.nac == "Yes"):
             kst = 0
-            for ist in range(molecule.nst):
-                for jst in range(molecule.nst):
-                    if (ist == jst):
-                        molecule.nac[ist, jst] = np.zeros((molecule.nat, molecule.nsp))
-                    elif (ist < jst):
-                        tmp_c = 'non-adiabatic coupling' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
-                        nac = re.findall(tmp_c, log_out)
-                        nac = np.array(nac[kst])
-                        nac = nac.astype(float)
-                        nac = nac.reshape(molecule.nat, 3, order='C')
-                        molecule.nac[ist, jst] = np.copy(nac)
-                        kst += 1
-                    else:
-                        molecule.nac[ist, jst] = - molecule.nac[jst, ist]
+            # TODO : Is double check needed for QMMM (molecule.qmmm and mm != None)
+            if (molecule.qmmm):
+                for ist in range(molecule.nst):
+                    for jst in range(molecule.nst):
+                        if (ist == jst):
+                            molecule.nac[ist, jst, 0:molecule.nat_qm] = np.zeros(molecule.nsp)
+                        elif (ist < jst):
+                            tmp_c = 'non-adiabatic coupling' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+                            nac = re.findall(tmp_c, log_out)
+                            nac = np.array(nac[kst])
+                            nac = nac.astype(float)
+                            nac = nac.reshape(molecule.nat_qm, 3, order='C')
+                            molecule.nac[ist, jst, 0:molecule.nat_qm] = nac
+                            kst += 1
+                        else:
+                            molecule.nac[ist, jst, 0:molecule.nat_qm] = - molecule.nac[jst, ist, 0:molecule.nat_qm]
+            else:
+                for ist in range(molecule.nst):
+                    for jst in range(molecule.nst):
+                        if (ist == jst):
+                            molecule.nac[ist, jst] = np.zeros((molecule.nat_qm, molecule.nsp))
+                        elif (ist < jst):
+                            tmp_c = 'non-adiabatic coupling' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+                            nac = re.findall(tmp_c, log_out)
+                            nac = np.array(nac[kst])
+                            nac = nac.astype(float)
+                            nac = nac.reshape(molecule.nat_qm, 3, order='C')
+                            molecule.nac[ist, jst] = nac
+                            kst += 1
+                        else:
+                            molecule.nac[ist, jst] = - molecule.nac[jst, ist]
 
 
