@@ -216,6 +216,13 @@ class Molecule(object):
         """
         self.ekin = np.sum(0.5 * self.mass * np.sum(self.vel ** 2, axis=1))
 
+    def reset_bo(self):
+        """ Reset BO energies and forces
+        """
+        for states in self.states:
+            states.energy = 0.
+            states.force = np.zeros((self.nat, self.nsp))
+
     def backup_bo(self):
         """ Backup BO energies and nonadiabatic couplings
         """

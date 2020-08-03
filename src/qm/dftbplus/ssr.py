@@ -348,9 +348,6 @@ class SSR(DFTBplus):
 #            detailed_out = f.read()
 
         # Energy
-        for states in molecule.states:
-            states.energy = 0.
-
         if (molecule.nst == 1):
             # Single-state REKS
             tmp_e = 'Spin' + '\n\s+\w+\s+([-]\S+)(?:\s+\S+){3}' * molecule.nst
@@ -372,14 +369,6 @@ class SSR(DFTBplus):
             molecule.states[ist].energy = energy[ist]
 
         # Force
-        # TODO : Is double check needed for QMMM (molecule.qmmm and mm != None)
-        if (molecule.qmmm):
-            for states in molecule.states:
-                states.force[0:molecule.nat_qm] = np.zeros(molecule.nsp)
-        else:
-            for states in molecule.states:
-                states.force = np.zeros((molecule.nat_qm, molecule.nsp))
-
         if (self.nac == "Yes"):
             # SHXF, SH, Eh : SSR state
             # TODO : Is double check needed for QMMM (molecule.qmmm and mm != None)

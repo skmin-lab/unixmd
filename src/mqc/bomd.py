@@ -23,7 +23,7 @@ class BOMD(MQC):
 
             :param object molecule: molecule object
             :param object qm: qm object containing on-the-fly calculation infomation
-            :param object mm: force mm object containing MM calculation infomation
+            :param object mm: mm object containing MM calculation infomation
             :param object thermostat: thermostat type
             :param string input_dir: location of input directory
             :param boolean save_QMlog: logical for saving QM calculation log
@@ -69,6 +69,7 @@ class BOMD(MQC):
         self.print_init(molecule, qm, mm, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
+        molecule.reset_bo()
         qm.get_data(molecule, base_dir, bo_list, self.dt, istep=-1, calc_force_only=False)
         if (molecule.qmmm and mm != None):
             mm.get_data(molecule, base_dir, bo_list, istep=-1)
@@ -83,6 +84,7 @@ class BOMD(MQC):
 
             self.cl_update_position(molecule)
 
+            molecule.reset_bo()
             qm.get_data(molecule, base_dir, bo_list, self.dt, istep=istep, calc_force_only=False)
             if (molecule.qmmm and mm != None):
                 mm.get_data(molecule, base_dir, bo_list, istep=istep)
@@ -132,7 +134,7 @@ class BOMD(MQC):
 
             :param object molecule: molecule object
             :param object qm: qm object containing on-the-fly calculation infomation
-            :param object mm: force mm object containing MM calculation infomation
+            :param object mm: mm object containing MM calculation infomation
             :param object thermostat: thermostat type
             :param integer debug: verbosity level for standard output
         """
