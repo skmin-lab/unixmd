@@ -68,15 +68,17 @@ class EhXF(MQC):
         self.pos_0 = np.zeros((self.aux.nat, self.aux.nsp))
         self.phase = np.zeros((molecule.nst, self.aux.nat, self.aux.nsp))
 
-    def run(self, molecule, qm, thermostat=None, input_dir="./", \
-        save_QMlog=False, save_scr=True, debug=0):
+    def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
+        save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
         """ Run MQC dynamics according to Ehrenfest-XF dynamics
 
             :param object molecule: molecule object
             :param object qm: qm object containing on-the-fly calculation infomation
+            :param object mm: mm object containing MM calculation infomation
             :param object thermostat: thermostat type
             :param string input_dir: location of input directory
             :param boolean save_QMlog: logical for saving QM calculation log
+            :param boolean save_MMlog: logical for saving MM calculation log
             :param boolean save_scr: logical for saving scratch directory
             :param integer debug: verbosity level for standard output
         """
@@ -95,17 +97,33 @@ class EhXF(MQC):
         if (save_QMlog):
             os.makedirs(QMlog_dir)
 
+        if (molecule.qmmm and mm != None):
+            MMlog_dir = os.path.join(base_dir, "MMlog")
+            if (os.path.exists(MMlog_dir)):
+                shutil.rmtree(MMlog_dir)
+            if (save_MMlog):
+                os.makedirs(MMlog_dir)
+
+        if ((molecule.qmmm and mm == None) or (not molecule.qmmm and mm != None)):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Both molecule.qmmm and mm object is necessary! {molecule.qmmm} and {mm}")
+
+        # Check compatibility for QM and MM objects
+        if (molecule.qmmm and mm != None):
+            self.check_qmmm(qm, mm)
+
         # Initialize UNI-xMD
         os.chdir(base_dir)
         bo_list = [ist for ist in range(molecule.nst)]
         qm.calc_coupling = True
 
-        touch_file(molecule, qm.calc_coupling, self.propagation, \
-            unixmd_dir, SH_chk=False)
-        self.print_init(molecule, qm, thermostat, debug)
+        touch_file(molecule, qm.calc_coupling, self.propagation, unixmd_dir, SH_chk=False)
+        self.print_init(molecule, qm, mm, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
+        molecule.reset_bo()
         qm.get_data(molecule, base_dir, bo_list, self.dt, istep=-1, calc_force_only=False)
+        if (molecule.qmmm and mm != None):
+            mm.get_data(molecule, base_dir, bo_list, istep=-1, calc_force_only=False)
         if (not molecule.l_nacme):
             molecule.get_nacme()
 
@@ -125,7 +143,10 @@ class EhXF(MQC):
             self.cl_update_position(molecule)
 
             molecule.backup_bo()
+            molecule.reset_bo()
             qm.get_data(molecule, base_dir, bo_list, self.dt, istep=istep, calc_force_only=False)
+            if (molecule.qmmm and mm != None):
+                mm.get_data(molecule, base_dir, bo_list, istep=istep, calc_force_only=False)
 
             if (not molecule.l_nacme):
                 molecule.adjust_nac()
@@ -157,6 +178,11 @@ class EhXF(MQC):
             tmp_dir = os.path.join(unixmd_dir, "scr_qm")
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
+
+            if (molecule.qmmm and mm != None):
+                tmp_dir = os.path.join(unixmd_dir, "scr_mm")
+                if (os.path.exists(tmp_dir)):
+                    shutil.rmtree(tmp_dir)
 
     def calculate_force(self, molecule):
         """ Calculate the Ehrenfest-XF force
@@ -319,16 +345,17 @@ class EhXF(MQC):
         else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Other propagator not implemented! {self.propagation}")
 
-    def print_init(self, molecule, qm, thermostat, debug):
+    def print_init(self, molecule, qm, mm, thermostat, debug):
         """ Routine to print the initial information of dynamics
 
             :param object molecule: molecule object
             :param object qm: qm object containing on-the-fly calculation infomation
+            :param object mm: mm object containing MM calculation infomation
             :param object thermostat: thermostat type
             :param integer debug: verbosity level for standard output
         """
         # Print initial information about molecule, qm and thermostat
-        super().print_init(molecule, qm, thermostat, debug)
+        super().print_init(molecule, qm, mm, thermostat, debug)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
