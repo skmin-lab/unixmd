@@ -72,7 +72,7 @@ class BOMD(MQC):
         molecule.reset_bo()
         qm.get_data(molecule, base_dir, bo_list, self.dt, istep=-1, calc_force_only=False)
         if (molecule.qmmm and mm != None):
-            mm.get_data(molecule, base_dir, bo_list, istep=-1)
+            mm.get_data(molecule, base_dir, bo_list, istep=-1, calc_force_only=False)
 
         self.update_energy(molecule)
 
@@ -87,7 +87,7 @@ class BOMD(MQC):
             molecule.reset_bo()
             qm.get_data(molecule, base_dir, bo_list, self.dt, istep=istep, calc_force_only=False)
             if (molecule.qmmm and mm != None):
-                mm.get_data(molecule, base_dir, bo_list, istep=istep)
+                mm.get_data(molecule, base_dir, bo_list, istep=istep, calc_force_only=False)
 
             self.cl_update_velocity(molecule)
 

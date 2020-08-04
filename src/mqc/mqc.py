@@ -76,7 +76,7 @@ class MQC(object):
 
             :param object molecule: molecule object
             :param object qm: qm object containing on-the-fly calculation infomation
-            :param object mm: force mm object containing MM calculation infomation
+            :param object mm: mm object containing MM calculation infomation
             :param object thermostat: thermostat type
             :param integer debug: verbosity level for standard output
         """
@@ -119,7 +119,7 @@ class MQC(object):
         """ Routine to check compatibility between QM and MM objects
 
             :param object qm: qm object containing on-the-fly calculation infomation
-            :param object mm: force mm object containing MM calculation infomation
+            :param object mm: mm object containing MM calculation infomation
         """
         # Now check MM object
         if (mm.mm_prog == "Tinker"):

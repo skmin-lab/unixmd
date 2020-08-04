@@ -36,18 +36,20 @@ class Tinker(MM_calculator):
         if (not (self.scheme == "additive" or self.scheme == "subtractive")):
             raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong QM/MM scheme given! {self.scheme}")
 
-    def get_data(self, molecule, base_dir, bo_list, istep):
+    def get_data(self, molecule, base_dir, bo_list, istep, calc_force_only):
         """ Extract energy and gradient from Tinker
 
             :param object molecule: molecule object
             :param string base_dir: base directory
             :param integer,list bo_list: list of BO states for BO calculation
             :param integer istep: current MD step
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        super().get_data(base_dir)
-        self.get_input(molecule)
-        self.run_MM(base_dir, istep)
-        self.extract_MM(molecule, bo_list)
+        super().get_data(base_dir, calc_force_only)
+        if (not calc_force_only):
+            self.get_input(molecule)
+            self.run_MM(base_dir, istep)
+        self.extract_MM(molecule, bo_list, calc_force_only)
         self.move_dir(base_dir)
 
     def get_input(self, molecule):
@@ -329,55 +331,57 @@ class Tinker(MM_calculator):
                 log_step = f"tinker.out.1.{istep + 1}"
                 shutil.copy("tinker.out.1", os.path.join(tmp_dir, log_step))
 
-    def extract_MM(self, molecule, bo_list):
+    def extract_MM(self, molecule, bo_list, calc_force_only):
         """ Read the output files to get MM information
 
             :param object molecule: molecule object
             :param integer,list bo_list: list of BO states for BO calculation
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        # Energy; initialize the energy at MM level
-        mm_energy = 0.
+        if (not calc_force_only):
+            # Energy; initialize the energy at MM level
+            mm_energy = 0.
 
-        if (self.scheme == "additive"):
+            if (self.scheme == "additive"):
 
-            # Read 'tinker.out.2' file
-            file_name = "tinker.out.2"
-            with open(file_name, "r") as f:
-                tinker_out2 = f.read()
+                # Read 'tinker.out.2' file
+                file_name = "tinker.out.2"
+                with open(file_name, "r") as f:
+                    tinker_out2 = f.read()
 
-            tmp_e = 'Total Potential Energy :' + '\s+([-]*\S+)\s+' + 'Kcal/mole'
-            energy = re.findall(tmp_e, tinker_out2)
-            energy = np.array(energy)
-            energy = energy.astype(float)
-            mm_energy += energy[0]
+                tmp_e = 'Total Potential Energy :' + '\s+([-]*\S+)\s+' + 'Kcal/mole'
+                energy = re.findall(tmp_e, tinker_out2)
+                energy = np.array(energy)
+                energy = energy.astype(float)
+                mm_energy += energy[0]
 
-        elif (self.scheme == "subtractive"):
+            elif (self.scheme == "subtractive"):
 
-            # Read 'tinker.out.12' file
-            file_name = "tinker.out.12"
-            with open(file_name, "r") as f:
-                tinker_out12 = f.read()
+                # Read 'tinker.out.12' file
+                file_name = "tinker.out.12"
+                with open(file_name, "r") as f:
+                    tinker_out12 = f.read()
 
-            tmp_e = 'Total Potential Energy :' + '\s+([-]*\S+)\s+' + 'Kcal/mole'
-            energy = re.findall(tmp_e, tinker_out12)
-            energy = np.array(energy)
-            energy = energy.astype(float)
-            mm_energy += energy[0]
+                tmp_e = 'Total Potential Energy :' + '\s+([-]*\S+)\s+' + 'Kcal/mole'
+                energy = re.findall(tmp_e, tinker_out12)
+                energy = np.array(energy)
+                energy = energy.astype(float)
+                mm_energy += energy[0]
 
-            # Read 'tinker.out.1' file
-            file_name = "tinker.out.1"
-            with open(file_name, "r") as f:
-                tinker_out1 = f.read()
+                # Read 'tinker.out.1' file
+                file_name = "tinker.out.1"
+                with open(file_name, "r") as f:
+                    tinker_out1 = f.read()
 
-            tmp_e = 'Total Potential Energy :' + '\s+([-]*\S+)\s+' + 'Kcal/mole'
-            energy = re.findall(tmp_e, tinker_out1)
-            energy = np.array(energy)
-            energy = energy.astype(float)
-            mm_energy -= energy[0]
+                tmp_e = 'Total Potential Energy :' + '\s+([-]*\S+)\s+' + 'Kcal/mole'
+                energy = re.findall(tmp_e, tinker_out1)
+                energy = np.array(energy)
+                energy = energy.astype(float)
+                mm_energy -= energy[0]
 
-        # Add energy of MM part to total energy; kcal/mol to hartree
-        for ist in range(molecule.nst):
-            molecule.states[ist].energy += mm_energy * kcalmol_to_au
+            # Add energy of MM part to total energy; kcal/mol to hartree
+            for ist in range(molecule.nst):
+                molecule.states[ist].energy += mm_energy * kcalmol_to_au
 
         # Force; initialize the force at MM level
         mm_force = np.zeros((molecule.nat, molecule.nsp))

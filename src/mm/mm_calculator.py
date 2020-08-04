@@ -8,17 +8,19 @@ class MM_calculator(object):
         # Save name of MM calculator
         self.mm_prog = self.__class__.__name__
 
-    def get_data(self, base_dir):
+    def get_data(self, base_dir, calc_force_only):
         """ Make scratch directory and copy geometry file
 
             :param string base_dir: base directory
+            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # Make 'scr_mm' directory
         unixmd_dir = os.path.join(base_dir, "md")
         self.scr_mm_dir = os.path.join(unixmd_dir, "scr_mm")
-        if (os.path.exists(self.scr_mm_dir)):
-            shutil.rmtree(self.scr_mm_dir)
-        os.makedirs(self.scr_mm_dir)
+        if (not calc_force_only):
+            if (os.path.exists(self.scr_mm_dir)):
+                shutil.rmtree(self.scr_mm_dir)
+            os.makedirs(self.scr_mm_dir)
         # Move to the scratch directory
         os.chdir(self.scr_mm_dir)
 
