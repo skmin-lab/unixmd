@@ -354,7 +354,7 @@ class EhXF(MQC):
             :param object thermostat: thermostat type
             :param integer debug: verbosity level for standard output
         """
-        # Print initial information about molecule, qm and thermostat
+        # Print initial information about molecule, qm, mm and thermostat
         super().print_init(molecule, qm, mm, thermostat, debug)
 
         # Print dynamics information for start line
