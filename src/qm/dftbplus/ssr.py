@@ -371,7 +371,6 @@ class SSR(DFTBplus):
         # Force
         if (self.nac == "Yes"):
             # SHXF, SH, Eh : SSR state
-            # TODO : Is double check needed for QMMM (molecule.qmmm and mm != None)
             if (molecule.qmmm):
                 for ist in range(molecule.nst):
                     tmp_g = f' {ist + 1} st state \(SSR\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
@@ -390,7 +389,6 @@ class SSR(DFTBplus):
                     molecule.states[ist].force = - np.copy(grad)
         else:
             # BOMD : SSR state, SA-REKS state or single-state REKS
-            # TODO : Is double check needed for QMMM (molecule.qmmm and mm != None)
             if (molecule.qmmm):
                 tmp_g = f' {bo_list[0] + 1} state \(\w+[-]*\w+\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
                 grad = re.findall(tmp_g, log_out)
@@ -409,36 +407,27 @@ class SSR(DFTBplus):
         # NAC
         if (self.nac == "Yes"):
             kst = 0
-            # TODO : Is double check needed for QMMM (molecule.qmmm and mm != None)
             if (molecule.qmmm):
                 for ist in range(molecule.nst):
-                    for jst in range(molecule.nst):
-                        if (ist == jst):
-                            molecule.nac[ist, jst, 0:molecule.nat_qm] = np.zeros(molecule.nsp)
-                        elif (ist < jst):
-                            tmp_c = 'non-adiabatic coupling' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-                            nac = re.findall(tmp_c, log_out)
-                            nac = np.array(nac[kst])
-                            nac = nac.astype(float)
-                            nac = nac.reshape(molecule.nat_qm, 3, order='C')
-                            molecule.nac[ist, jst, 0:molecule.nat_qm] = nac
-                            kst += 1
-                        else:
-                            molecule.nac[ist, jst, 0:molecule.nat_qm] = - molecule.nac[jst, ist, 0:molecule.nat_qm]
+                    for jst in range(ist + 1, molecule.nst):
+                        tmp_c = 'non-adiabatic coupling' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+                        nac = re.findall(tmp_c, log_out)
+                        nac = np.array(nac[kst])
+                        nac = nac.astype(float)
+                        nac = nac.reshape(molecule.nat_qm, 3, order='C')
+                        molecule.nac[ist, jst, 0:molecule.nat_qm] = nac
+                        molecule.nac[jst, ist, 0:molecule.nat_qm] = - nac
+                        kst += 1
             else:
                 for ist in range(molecule.nst):
-                    for jst in range(molecule.nst):
-                        if (ist == jst):
-                            molecule.nac[ist, jst] = np.zeros((molecule.nat_qm, molecule.nsp))
-                        elif (ist < jst):
-                            tmp_c = 'non-adiabatic coupling' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-                            nac = re.findall(tmp_c, log_out)
-                            nac = np.array(nac[kst])
-                            nac = nac.astype(float)
-                            nac = nac.reshape(molecule.nat_qm, 3, order='C')
-                            molecule.nac[ist, jst] = nac
-                            kst += 1
-                        else:
-                            molecule.nac[ist, jst] = - molecule.nac[jst, ist]
+                    for jst in range(ist + 1, molecule.nst):
+                        tmp_c = 'non-adiabatic coupling' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+                        nac = re.findall(tmp_c, log_out)
+                        nac = np.array(nac[kst])
+                        nac = nac.astype(float)
+                        nac = nac.reshape(molecule.nat_qm, 3, order='C')
+                        molecule.nac[ist, jst] = nac
+                        molecule.nac[jst, ist] = - nac
+                        kst += 1
 
 

@@ -216,12 +216,20 @@ class Molecule(object):
         """
         self.ekin = np.sum(0.5 * self.mass * np.sum(self.vel ** 2, axis=1))
 
-    def reset_bo(self):
-        """ Reset BO energies and forces
+    def reset_bo(self, calc_coupling):
+        """ Reset BO energies, forces and nonadiabatic couplings
+
+            :param boolean calc_coupling: check whether the dynamics includes coupling calculation
         """
         for states in self.states:
             states.energy = 0.
             states.force = np.zeros((self.nat, self.nsp))
+
+        if (calc_coupling):
+            if (self.l_nacme):
+                self.nacme = np.zeros((self.nst, self.nst))
+            else:
+                self.nac = np.zeros((self.nst, self.nst, self.nat, self.nsp))
 
     def backup_bo(self):
         """ Backup BO energies and nonadiabatic couplings
