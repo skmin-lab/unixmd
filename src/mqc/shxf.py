@@ -18,9 +18,9 @@ class Auxiliary_Molecule(object):
         self.pos = []
         self.vel = []
         self.vel_old = []
-        
+
         if (one_dim):
-            
+
             self.nat = 1
             self.nsp = 1
 
@@ -29,9 +29,9 @@ class Auxiliary_Molecule(object):
             self.vel = np.zeros((molecule.nst, self.nat, self.nsp))
             self.vel_old = np.copy(self.vel)
             self.mass[0] = 1. / np.sum(1. / molecule.mass)
-        
+
         else:
-            
+
             self.nat = molecule.nat
             self.nsp = molecule.nsp
 
@@ -77,7 +77,7 @@ class SHXF(MQC):
 
         self.l_hop = False
         self.force_hop = False
-        
+
         if (vel_rescale == "simple"):
             self.vel_rescale = vel_rescale
         elif (vel_rescale == "nac"):
@@ -305,41 +305,41 @@ class SHXF(MQC):
             :param string unixmd_dir: unixmd directory
             :param integer istep: current MD step
         """
-        if (self.l_hop):        
+        if (self.l_hop):
             pot_diff = molecule.states[self.rstate].energy - molecule.states[self.rstate_old].energy
-            if (molecule.ekin < pot_diff):
+            if (molecule.ekin_qm < pot_diff):
                 if (not self.force_hop):
                     self.l_hop = False
                     self.rstate = self.rstate_old
                     bo_list[0] = self.rstate
             else:
-                if (molecule.ekin < eps):
-                    raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin}")
-                 
+                if (molecule.ekin_qm < eps):
+                    raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin_qm}")
+
                 if (self.vel_rescale == "simple"):
-                    fac = 1. - pot_diff / molecule.ekin
-                    molecule.vel *= np.sqrt(fac)
-                 
+                    fac = 1. - pot_diff / molecule.ekin_qm
+                    # Rescale velocities for QM atoms
+                    molecule.vel[0:molecule.nat_qm] *= np.sqrt(fac)
+
                 elif (self.vel_rescale == "nac"):
-                    
                     a = np.sum(molecule.mass * np.sum(molecule.nac[self.rstate_old, self.rstate] ** 2., axis=1))
                     b = 2. * np.sum(molecule.mass * np.sum(molecule.nac[self.rstate_old, self.rstate] * molecule.vel, axis=1))
                     c = 2. * pot_diff
                     det = b ** 2. - 4. * a * c
-                    
+
                     if (det < 0.):
                         self.l_hop = False
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
                     else:
                         if(b < 0.):
-                            x = 0.5 * (- b - np.sqrt(det)) / a 
-                    
+                            x = 0.5 * (- b - np.sqrt(det)) / a
                         else:
-                            x = 0.5 * (- b + np.sqrt(det)) / a 
-                    
-                        molecule.vel += x * molecule.nac[self.rstate_old, self.rstate]
-                
+                            x = 0.5 * (- b + np.sqrt(det)) / a
+
+                        # Rescale velocities for QM atoms
+                        molecule.vel[0:molecule.nat_qm] += x * molecule.nac[self.rstate_old, self.rstate, 0:molecule.nat_qm]
+
                 # Update kinetic energy
                 molecule.update_kinetic()
 
@@ -387,7 +387,6 @@ class SHXF(MQC):
                 self.l_coh[ist] = False
                 self.l_first[ist] = False
 
-
     def check_decoherence(self, molecule):
         """ Routine to check if the electronic state is decohered
 
@@ -430,9 +429,8 @@ class SHXF(MQC):
         self.pos_0 = np.copy(self.aux.pos[self.rstate])
 
         # Get auxiliary velocity
-        
         self.aux.vel_old = np.copy(self.aux.vel)
-        
+
         if (self.one_dim):
             self.aux.vel[self.rstate] = np.sqrt(2. * molecule.ekin / self.aux.mass[0])
         else:
@@ -474,7 +472,7 @@ class SHXF(MQC):
         for ist in range(molecule.nst):
             self.l_coh[ist] = False
             self.l_first[ist] = False
-        
+
         if (self.propagation == "coefficient"):
             for ist in range(molecule.nst):
                 if (ist == one_st):

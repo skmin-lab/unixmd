@@ -105,6 +105,7 @@ class Molecule(object):
         self.rho = np.zeros((self.nst, self.nst), dtype=np.complex_)
 
         self.ekin = 0.
+        self.ekin_qm = 0.
         self.epot = 0.
         self.etot = 0.
 
@@ -215,6 +216,17 @@ class Molecule(object):
         """ Get kinetic energy
         """
         self.ekin = np.sum(0.5 * self.mass * np.sum(self.vel ** 2, axis=1))
+
+        if (self.qmmm):
+            # Copy mass and velocities for QM atoms
+            mass_qm = np.zeros(self.nat_qm)
+            vel_qm = np.zeros((3, self.nat_qm))
+            mass_qm = np.copy(self.mass[0:self.nat_qm])
+            vel_qm = np.copy(self.vel[0:self.nat_qm])
+            # Calculate the kinetic energy for QM atoms
+            self.ekin_qm = np.sum(0.5 * mass_qm * np.sum(vel_qm ** 2, axis=1))
+        else:
+            self.ekin_qm = self.ekin
 
     def reset_bo(self, calc_coupling):
         """ Reset BO energies, forces and nonadiabatic couplings

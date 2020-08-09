@@ -233,40 +233,40 @@ class SH(MQC):
             :param string unixmd_dir: unixmd directory
             :param integer istep: current MD step
         """
-        if (self.l_hop):        
+        if (self.l_hop):
             pot_diff = molecule.states[self.rstate].energy - molecule.states[self.rstate_old].energy
-            if (molecule.ekin < pot_diff):
+            if (molecule.ekin_qm < pot_diff):
                 if (not self.force_hop):
                     self.l_hop = False
                     self.rstate = self.rstate_old
                     bo_list[0] = self.rstate
             else:
-                if (molecule.ekin < eps):
-                    raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin}")
-                
+                if (molecule.ekin_qm < eps):
+                    raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin_qm}")
+
                 if (self.vel_rescale == "simple"):
-                    fac = 1. - pot_diff / molecule.ekin
-                    molecule.vel *= np.sqrt(fac)
-                
+                    fac = 1. - pot_diff / molecule.ekin_qm
+                    # Rescale velocities for QM atoms
+                    molecule.vel[0:molecule.nat_qm] *= np.sqrt(fac)
+
                 elif (self.vel_rescale == "nac"):
-                    
                     a = np.sum(molecule.mass * np.sum(molecule.nac[self.rstate_old, self.rstate] ** 2., axis=1))
                     b = 2. * np.sum(molecule.mass * np.sum(molecule.nac[self.rstate_old, self.rstate] * molecule.vel, axis=1))
                     c = 2. * pot_diff
                     det = b ** 2. - 4. * a * c
-                    
+
                     if (det < 0.):
                         self.l_hop = False
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
                     else:
                         if(b < 0.):
-                            x = 0.5 * (- b - np.sqrt(det)) / a 
-                    
+                            x = 0.5 * (- b - np.sqrt(det)) / a
                         else:
-                            x = 0.5 * (- b + np.sqrt(det)) / a 
-                    
-                        molecule.vel += x * molecule.nac[self.rstate_old, self.rstate]
+                            x = 0.5 * (- b + np.sqrt(det)) / a
+
+                        # Rescale velocities for QM atoms
+                        molecule.vel[0:molecule.nat_qm] += x * molecule.nac[self.rstate_old, self.rstate, 0:molecule.nat_qm]
 
                 # Update kinetic energy
                 molecule.update_kinetic()

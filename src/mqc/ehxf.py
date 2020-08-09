@@ -16,16 +16,15 @@ class Auxiliary_Molecule(object):
         self.pos = []
         self.vel = []
         self.vel_old = []
-        
+
         self.nat = molecule.nat
         self.nsp = molecule.nsp
 
         for ist in range(molecule.nst):
-            
             self.pos.append(molecule.pos)
             self.vel.append(molecule.vel)
             self.vel_old.append(molecule.vel)
-        
+
         self.mass = np.copy(molecule.mass)
         self.pos = np.array(self.pos)
         self.vel = np.array(self.vel)
@@ -48,7 +47,7 @@ class EhXF(MQC):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
             propagation, l_adjnac)
-        
+
         # Initialize XF related variables
         self.l_coh = []
         self.l_first = []
@@ -128,7 +127,7 @@ class EhXF(MQC):
             molecule.get_nacme()
 
         self.update_energy(molecule)
-        
+
         self.check_decoherence(molecule)
         self.check_coherence(molecule)
         self.aux_propagator(molecule)
@@ -167,7 +166,7 @@ class EhXF(MQC):
             self.check_coherence(molecule)
             self.aux_propagator(molecule)
             self.get_phase(molecule)
-        
+
             write_md_output(molecule, qm.calc_coupling, self.propagation, unixmd_dir, istep=istep)
             self.print_step(molecule, debug, istep=istep)
             if (istep == self.nsteps - 1):
@@ -198,7 +197,7 @@ class EhXF(MQC):
             for jst in range(ist + 1, molecule.nst):
                 self.rforce += 2. * molecule.nac[ist, jst] * molecule.rho.real[ist, jst] \
                     * (molecule.states[ist].energy - molecule.states[jst].energy)
-        
+
         if (self.l_qmom_force):
             # Calculate quantum momentum
             qmom = np.zeros((molecule.nat, molecule.nsp))
@@ -206,7 +205,7 @@ class EhXF(MQC):
                 for iat in range(molecule.nat):
                     qmom[iat] += molecule.rho.real[ist, ist] * (self.pos_0[iat] - self.aux.pos[ist, iat]) / molecule.mass[iat]
             qmom /= 2. * self.wsigma ** 2
-        
+
             # Calculate XF force
             for ist in range(molecule.nst):
                 for jst in range(molecule.nst):
@@ -224,7 +223,7 @@ class EhXF(MQC):
         for ist, istate in enumerate(molecule.states):
             molecule.epot += molecule.rho.real[ist, ist] * molecule.states[ist].energy
         molecule.etot = molecule.epot + molecule.ekin
-    
+
     def check_coherence(self, molecule):
         """ Routine to check coherence among BO states
 
@@ -278,9 +277,8 @@ class EhXF(MQC):
         self.pos_0 = np.copy(molecule.pos)
 
         # Get auxiliary velocity
-        
         self.aux.vel_old = np.copy(self.aux.vel)
-        
+
         for ist in range(molecule.nst):
             if (self.l_coh[ist]):
                 if (self.l_first[ist]):
@@ -309,7 +307,7 @@ class EhXF(MQC):
         for ist in range(molecule.nst):
             self.l_coh[ist] = False
             self.l_first[ist] = False
-        
+
         if (self.propagation == "coefficient"):
             for ist in range(molecule.nst):
                 if (ist == one_st):
