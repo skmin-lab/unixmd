@@ -218,13 +218,8 @@ class Molecule(object):
         self.ekin = np.sum(0.5 * self.mass * np.sum(self.vel ** 2, axis=1))
 
         if (self.qmmm):
-            # Copy mass and velocities for QM atoms
-            mass_qm = np.zeros(self.nat_qm)
-            vel_qm = np.zeros((3, self.nat_qm))
-            mass_qm = np.copy(self.mass[0:self.nat_qm])
-            vel_qm = np.copy(self.vel[0:self.nat_qm])
             # Calculate the kinetic energy for QM atoms
-            self.ekin_qm = np.sum(0.5 * mass_qm * np.sum(vel_qm ** 2, axis=1))
+            self.ekin_qm = np.sum(0.5 * self.mass[0:self.nat_qm] * np.sum(self.vel[0:self.nat_qm] ** 2, axis=1))
         else:
             self.ekin_qm = self.ekin
 
