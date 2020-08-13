@@ -9,7 +9,7 @@ class Tinker(MM_calculator):
 
         :param object molecule: molecule object
     """
-    def __init__(self, molecule, scheme=None, do_charge=False, do_vdw=False, periodic=False, \
+    def __init__(self, molecule, scheme=None, do_charge=None, do_vdw=None, periodic=False, \
         cell_par=[0., 0., 0., 0., 0., 0.], xyz_file="./tinker.xyz", key_file="./tinker.key",
         mm_path="./", nthreads=1, version=8.7):
         # Save name of MM calculator
@@ -17,8 +17,19 @@ class Tinker(MM_calculator):
 
         self.scheme = scheme
 
+        if (not (self.scheme == "additive" or self.scheme == "subtractive")):
+            raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong QM/MM scheme given! {self.scheme}")
+
         self.do_charge = do_charge
         self.do_vdw = do_vdw
+
+        if (self.do_charge != None):
+            if (not (self.do_charge == "mechanical" or self.do_charge == "electrostatic")):
+                raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong charge embedding given! {self.do_charge}")
+
+        if (self.do_vdw != None):
+            if (self.do_vdw != "lennardjones"):
+                raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong van der Waals interaction given! {self.do_vdw}")
 
         self.periodic = periodic
         self.cell_par = cell_par
@@ -33,8 +44,33 @@ class Tinker(MM_calculator):
         if (not self.version == 8.7):
             raise ValueError (f"( {self.mm_prog}.{call_name()} ) Other version not implemented! {self.version}")
 
-        if (not (self.scheme == "additive" or self.scheme == "subtractive")):
-            raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong QM/MM scheme given! {self.scheme}")
+        # Save current atom type for electrostatic embedding
+        # TODO : this part can be modified; read only non-periodic form
+        self.atom_type = np.zeros(molecule.nat_qm, dtype=np.integer)
+
+        # Information about periodicity, line_period is number of lines to be skipped in 'tinker.xyz' file
+        line_period = 1
+        if (self.periodic):
+            line_period = 2
+
+        # Read 'tinker.xyz' file to obtain atom type for QM part
+        file_name = self.xyz_file
+        with open(file_name, "r") as f_xyz:
+            lines = f_xyz.readlines()
+            iline = 1
+            for line in lines:
+                # Skip first or second lines
+                if (iline in range(line_period + 1, molecule.nat_qm + line_period + 1)):
+                    ind = iline - line_period
+                    # Count index of column in coordinate lines
+                    col = 0
+                    field = line.split()
+                    for element in field:
+                        if (col == 5):
+                            # Read atom type
+                            self.atom_type[ind - 1] = int(element)
+                        col += 1
+                iline += 1
 
     def get_data(self, molecule, base_dir, bo_list, istep, calc_force_only):
         """ Extract energy and gradient from Tinker
@@ -192,9 +228,6 @@ class Tinker(MM_calculator):
                 f_xyz.write(input_xyz1)
 
         # Set non-bonded interaction for the systems; charge term from 'tinker.key' file
-        # This is mechanical embedding for charge-charge interaction
-        # To deal with charge-charge interaction with electrostatic interaction,
-        # set do_vdw=True in the initialization of theory object, not field object
         file_be = open('tinker.key', 'r')
         file_af = open('tmp.key', 'w')
         is_charge = False
@@ -202,16 +235,50 @@ class Tinker(MM_calculator):
             if ("chargeterm" in line):
                 is_charge = True
                 line = ""
-                if (not self.do_charge):
+                if (self.do_charge == None):
                     line = "chargeterm none\n"
             file_af.write(line)
         # If chargeterm keyword does not exist, add chargeterm keyword to last line
-        if (not is_charge and not self.do_charge):
+        if (not is_charge and self.do_charge == None):
             line = "chargeterm none\n"
             file_af.write(line)
         file_be.close()
         file_af.close()
         os.rename('tmp.key', 'tinker.key')
+
+        # To avoid double counting, consider only charge-charge interactions between MM atoms
+        if (self.do_charge == "electrostatic"):
+            tmp_atom_type = []
+            file_be = open('tinker.key', 'r')
+            file_af = open('tmp.key', 'w')
+            for line in file_be:
+                if ("charge" in line):
+                    if (line[0] != "#"):
+                        field = line.split()
+                        col = 0
+                        for element in field:
+                            if (element == "charge"):
+                                ind_charge = col
+                            col += 1
+                        # Set charge to zero for QM atoms in electrostatic embedding
+                        if (int(field[ind_charge + 1]) in set(self.atom_type)):
+                            tmp_atom_type.append(int(field[ind_charge + 1]))
+                            line = f"charge {int(field[ind_charge + 1])} 0.0\n"
+                            file_af.write(line)
+                    else:
+                        # Write lines including comments
+                        file_af.write(line)
+                else:
+                    # Write lines without 'charge' word
+                    file_af.write(line)
+            # Set charge to zero for remaining QM atoms
+            for itype in set(self.atom_type):
+                if (not itype in tmp_atom_type):
+                    line = f"charge {itype} 0.0\n"
+                    file_af.write(line)
+            file_be.close()
+            file_af.close()
+            os.rename('tmp.key', 'tinker.key')
 
         # Set non-bonded interaction for the systems; vdw term from 'tinker.key' file
         file_be = open('tinker.key', 'r')
@@ -221,11 +288,11 @@ class Tinker(MM_calculator):
             if ("vdwterm" in line):
                 is_vdw = True
                 line = ""
-                if (not self.do_vdw):
+                if (self.do_vdw == None):
                     line = "vdwterm none\n"
             file_af.write(line)
         # If vdwterm keyword does not exist, add vdwterm keyword to last line
-        if (not is_vdw and not self.do_vdw):
+        if (not is_vdw and self.do_vdw == None):
             line = "vdwterm none\n"
             file_af.write(line)
         file_be.close()
