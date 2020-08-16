@@ -45,23 +45,21 @@ class Tinker(MM_calculator):
             raise ValueError (f"( {self.mm_prog}.{call_name()} ) Other version not implemented! {self.version}")
 
         # Save current atom type for electrostatic embedding
-        # TODO : this part can be modified; read only non-periodic form
         self.atom_type = np.zeros(molecule.nat_qm, dtype=np.integer)
-
-        # Information about periodicity, line_period is number of lines to be skipped in 'tinker.xyz' file
-        line_period = 1
-        if (self.periodic):
-            line_period = 2
 
         # Read 'tinker.xyz' file to obtain atom type for QM part
         file_name = self.xyz_file
         with open(file_name, "r") as f_xyz:
             lines = f_xyz.readlines()
+            # Check the number of lines; Read only non-periodic format for tinker.xyz file
+            if (len(lines) != molecule.nat + 1):
+                raise ValueError (f"( {self.mm_prog}.{call_name()} ) Only non-periodic xyz file needed! {self.xyz_file}")
+
             iline = 1
             for line in lines:
-                # Skip first or second lines
-                if (iline in range(line_period + 1, molecule.nat_qm + line_period + 1)):
-                    ind = iline - line_period
+                # Skip first line
+                if (iline in range(2, molecule.nat_qm + 2)):
+                    ind = iline - 1
                     # Count index of column in coordinate lines
                     col = 0
                     field = line.split()
@@ -112,10 +110,7 @@ class Tinker(MM_calculator):
             input_xyz2 = ""
 
             input_xyz2 += f" {molecule.nat_mm}\n"
-            # Information about periodicity, line_period is number of lines to be skipped in 'tinker.xyz' file
-            line_period = 1
             if (self.periodic):
-                line_period = 2
                 input_xyz2 += " ".join([f"{ i:12.6f}" for i in self.cell_par]) + "\n"
 
             # Read 'tinker.xyz' file to obtain atom type and topology
@@ -124,9 +119,9 @@ class Tinker(MM_calculator):
                 lines = f_xyz.readlines()
                 iline = 1
                 for line in lines:
-                    # Skip first or second lines
-                    if (iline > line_period + molecule.nat_qm):
-                        ind = iline - line_period
+                    # Skip first line
+                    if (iline > molecule.nat_qm + 1):
+                        ind = iline - 1
                         input_geom = f" {ind - molecule.nat_qm:6d}"
                         input_geom += f" {molecule.symbols[ind - 1]:4}"
                         input_geom += "".join([f"{i:15.8f}" for i in molecule.pos[ind - 1] * au_to_A])
@@ -155,10 +150,7 @@ class Tinker(MM_calculator):
             input_xyz12 = ""
 
             input_xyz12 += f" {molecule.nat}\n"
-            # Information about periodicity, line_period is number of lines to be skipped in 'tinker.xyz' file
-            line_period = 1
             if (self.periodic):
-                line_period = 2
                 input_xyz12 += " ".join([f"{ i:12.6f}" for i in self.cell_par]) + "\n"
 
             # Read 'tinker.xyz' file to obtain atom type and topology
@@ -167,9 +159,9 @@ class Tinker(MM_calculator):
                 lines = f_xyz.readlines()
                 iline = 1
                 for line in lines:
-                    # Skip first or second lines
-                    if (iline > line_period):
-                        ind = iline - line_period
+                    # Skip first line
+                    if (iline > 1):
+                        ind = iline - 1
                         input_geom = f" {ind:6d}"
                         input_geom += f" {molecule.symbols[ind - 1]:4}"
                         input_geom += "".join([f"{i:15.8f}" for i in molecule.pos[ind - 1] * au_to_A])
@@ -193,10 +185,7 @@ class Tinker(MM_calculator):
             input_xyz1 = ""
 
             input_xyz1 += f" {molecule.nat_qm}\n"
-            # Information about periodicity, line_period is number of lines to be skipped in 'tinker.xyz' file
-            line_period = 1
             if (self.periodic):
-                line_period = 2
                 input_xyz1 += " ".join([f"{ i:12.6f}" for i in self.cell_par]) + "\n"
 
             # Read 'tinker.xyz' file to obtain atom type and topology
@@ -205,9 +194,9 @@ class Tinker(MM_calculator):
                 lines = f_xyz.readlines()
                 iline = 1
                 for line in lines:
-                    # Skip first or second lines
-                    if (iline in range(line_period + 1, molecule.nat_qm + line_period + 1)):
-                        ind = iline - line_period
+                    # Skip first line
+                    if (iline in range(2, molecule.nat_qm + 2)):
+                        ind = iline - 1
                         input_geom = f" {ind:6d}"
                         input_geom += f" {molecule.symbols[ind - 1]:4}"
                         input_geom += "".join([f"{i:15.8f}" for i in molecule.pos[ind - 1] * au_to_A])
@@ -276,6 +265,7 @@ class Tinker(MM_calculator):
                 if (not itype in tmp_atom_type):
                     line = f"charge {itype} 0.0\n"
                     file_af.write(line)
+            file_af.write("\n")
             file_be.close()
             file_af.close()
             os.rename('tmp.key', 'tinker.key')
