@@ -96,6 +96,17 @@ class MQC(object):
               MM Program               = {mm.mm_prog:>16s}
               QMMM Scheme              = {mm.scheme:>16s}
             """), "  ")
+            # Print charge embedding in MM program
+            if (mm.do_charge != None):
+                dynamics_info += f"  Charge Embedding         = {mm.do_charge:>16s}\n"
+            else:
+                dynamics_info += f"  Charge Embedding         = {'No':>16s}\n"
+            # Print vdw interaction in MM program
+            if (mm.do_vdw != None):
+                dynamics_info += f"  VDW Interaction          = {mm.do_vdw:>16s}\n"
+            else:
+                dynamics_info += f"  VDW Interaction          = {'No':>16s}\n"
+                                 
         dynamics_info += textwrap.indent(textwrap.dedent(f"""\
 
           MQC Method               = {self.md_type:>16s}
