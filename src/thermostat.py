@@ -108,4 +108,53 @@ class rescale2(thermo):
         """)
         print (thermostat_info, flush=True)
 
+class Berendsen(thermo)
+    """
+    """
+    def __init__(self, temperature=300.0):
+        # Initialize 
+        super().__init__(temperature)
+        
+    def run(self, molecule, md):
+        """
+        """
+        ctemp = molecule.ekin * 2 /float(molecule.dof) * au_to_K
 
+    def print_init(self):
+        """ Print information about thermostat
+        """
+        thermostat_info = textwrap.dedent(f"""\
+        {"-" * 68}
+        {"Thermostat Information":>44s}
+        {"-" * 68}
+          Thermostat               = {"rescale ver. 2":>16s}
+          Target Temperature (K)   = {self.temp:>16.3f}
+          Temperature Range (K)    = {self.dtemp:>16.3f}
+        """)
+        print (thermostat_info, flush=True)
+
+# TODO: Nose_Hoover or NH ?
+class NH(thermo)
+    """
+    """
+    def __init__(self, temperature=300.0):
+        # Initialize 
+        super().__init__(temperature)
+        
+    def run(self, molecule, md):
+        """
+        """
+        ctemp = molecule.ekin * 2 /float(molecule.dof) * au_to_K
+
+    def print_init(self):
+        """ Print information about thermostat
+        """
+        thermostat_info = textwrap.dedent(f"""\
+        {"-" * 68}
+        {"Thermostat Information":>44s}
+        {"-" * 68}
+          Thermostat               = {"rescale ver. 2":>16s}
+          Target Temperature (K)   = {self.temp:>16.3f}
+          Temperature Range (K)    = {self.dtemp:>16.3f}
+        """)
+        print (thermostat_info, flush=True)
