@@ -145,7 +145,10 @@ class MQC(object):
         else:
             do_qmmm = False
 
-        if (not do_qmmm):
+        if (do_qmmm):
+            if (qm.do_charge != mm.do_charge):
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Inconsistent charge embedding options between QM and MM objects! {qm.do_charge} and {mm.do_charge}")
+        else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Not compatible objects in QMMM! {qm.qm_prog}.{qm.qm_method} and {mm.mm_prog}")
 
 
