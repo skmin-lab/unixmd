@@ -291,9 +291,11 @@ class SSR(DFTBplus):
                 # BOMD do not need NAC calculations
                 self.nac = "No"
 
-        # TODO : relaxed density will be determined automatically
-        # qm => do not use rd, qmmm => use rd + external pc
-        rd = "No"
+        # Relaxed density options; It is determined automatically
+        if (molecule.qmmm and self.do_charge == "electrostatic"):
+            rd = "Yes"
+        else:
+            rd = "No"
 
         # TODO : read previous step for guess
         # Options for SCF optimization
