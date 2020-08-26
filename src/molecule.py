@@ -111,6 +111,10 @@ class Molecule(object):
 
         self.l_nacme = False
 
+        # Initialize point charges for QM/MM calculations
+        if (self.qmmm):
+            self.mm_charge = np.zeros(self.nat_mm)
+
     def read_geometry(self, geometry, unit_pos, unit_vel):
         """ Routine to read the geometry in extended xyz format.\n
             Example:\n\n

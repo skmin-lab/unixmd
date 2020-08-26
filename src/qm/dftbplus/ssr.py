@@ -1,7 +1,7 @@
 from __future__ import division
 from qm.dftbplus.dftbplus import DFTBplus
 from qm.dftbplus.dftbpar import spin_w, onsite_uu, onsite_ud, max_l
-from misc import call_name
+from misc import au_to_A, call_name
 import os, shutil, re, textwrap
 import numpy as np
 
@@ -39,8 +39,8 @@ class SSR(DFTBplus):
         lcdftb=True, lc_method="MatrixBased", ocdftb=False, ssr22=True, \
         ssr44=False, use_ssr_state=1, state_l=0, guess=1, shift=0.3, tuning=1., \
         grad_level=1, grad_tol=1E-8, mem_level=2, sk_path="./", periodic=False, \
-        cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.], qm_path="./", \
-        script_path="./", nthreads=1, version=19.1):
+        do_charge=None, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.], \
+        qm_path="./", script_path="./", nthreads=1, version=19.1):
         # Initialize DFTB+ common variables
         super(SSR, self).__init__(molecule, sk_path, qm_path, script_path, nthreads, version)
 
@@ -69,6 +69,12 @@ class SSR(DFTBplus):
         self.grad_level = grad_level
         self.grad_tol = grad_tol
         self.mem_level = mem_level
+
+        # TODO : add argument explanation
+        self.do_charge = do_charge
+        if (self.do_charge != None):
+            if (not (self.do_charge == "mechanical" or self.do_charge == "electrostatic")):
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong charge embedding given! {self.do_charge}")
 
         self.periodic = periodic
         self.a_axis = np.zeros(3)
@@ -131,6 +137,19 @@ class SSR(DFTBplus):
             file_af.close()
             os.rename('tmp.gen', 'geometry.gen')
 
+        # Make 'point_charges.xyz' file used in electrostatic charge embedding of QM/MM
+        if (self.do_charge == "electrostatic"):
+            # Make 'point_charges.xyz' file
+            input_geom_pc = ""
+            for iat in range(molecule.nat_qm, molecule.nat):
+                input_geom_pc += "".join([f"{i:15.8f}" for i in molecule.pos[iat] * au_to_A])
+                input_geom_pc += f"  {molecule.mm_charge[iat - molecule.nat_qm]:8.4f}\n"
+
+            # Write 'point_charges.xyz' file
+            file_name = "point_charges.xyz"
+            with open(file_name, "w") as f:
+                f.write(input_geom_pc)
+
         # Make 'dftb_in.hsd' file
         input_dftb = ""
 
@@ -184,7 +203,17 @@ class SSR(DFTBplus):
                 """), "  ")
                 input_dftb += input_ham_oc
 
-        # TODO: for QM/MM, point_charge??
+        # Add point charges to Hamiltonian used in electrostatic charge embedding of QM/MM
+        if (self.do_charge == "electrostatic"):
+            input_ham_pc = textwrap.indent(textwrap.dedent(f"""\
+              ElectricField = PointCharges{{
+                CoordsAndCharges [Angstrom] = DirectRead{{
+                  Records = {molecule.nat_mm}
+                  File = "point_charges.xyz"
+                }}
+              }}
+            """), "  ")
+            input_dftb += input_ham_pc
 
         # TODO: for restart option using previous step?
 
@@ -342,10 +371,9 @@ class SSR(DFTBplus):
             log_out = f.read()
 
         # Read 'detailed.out' file
-        # TODO: the qmmm information is written in this file
-#        file_name = "detailed.out"
-#        with open(file_name, "r") as f:
-#            detailed_out = f.read()
+        file_name = "detailed.out"
+        with open(file_name, "r") as f:
+            detailed_out = f.read()
 
         # Energy
         if (molecule.nst == 1):
@@ -379,6 +407,13 @@ class SSR(DFTBplus):
                     grad = grad.astype(float)
                     grad = grad.reshape(molecule.nat_qm, 3, order='C')
                     molecule.states[ist].force[0:molecule.nat_qm] = - grad
+                    if (self.do_charge == "electrostatic"):
+                        tmp_f = 'Forces on external charges' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_mm
+                        force = re.findall(tmp_f, detailed_out)
+                        force = np.array(force[0])
+                        force = force.astype(float)
+                        force = force.reshape(molecule.nat_mm, 3, order='C')
+                        molecule.states[ist].force[molecule.nat_qm:molecule.nat] = force
             else:
                 for ist in range(molecule.nst):
                     tmp_g = f' {ist + 1} st state \(SSR\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
@@ -396,6 +431,13 @@ class SSR(DFTBplus):
                 grad = grad.astype(float)
                 grad = grad.reshape(molecule.nat_qm, 3, order='C')
                 molecule.states[bo_list[0]].force[0:molecule.nat_qm] = - grad
+                if (self.do_charge == "electrostatic"):
+                    tmp_f = 'Forces on external charges' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_mm
+                    force = re.findall(tmp_f, detailed_out)
+                    force = np.array(force[0])
+                    force = force.astype(float)
+                    force = force.reshape(molecule.nat_mm, 3, order='C')
+                    molecule.states[bo_list[0]].force[molecule.nat_qm:molecule.nat] = force
             else:
                 tmp_g = f' {bo_list[0] + 1} state \(\w+[-]*\w+\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
                 grad = re.findall(tmp_g, log_out)

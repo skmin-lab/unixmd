@@ -44,31 +44,64 @@ class Tinker(MM_calculator):
         if (not self.version == 8.7):
             raise ValueError (f"( {self.mm_prog}.{call_name()} ) Other version not implemented! {self.version}")
 
-        # Save current atom type for electrostatic embedding
-        self.atom_type = np.zeros(molecule.nat_qm, dtype=np.integer)
+        if (self.do_charge == "electrostatic"):
+            # Save current atom type for electrostatic embedding
+            self.atom_type = np.zeros(molecule.nat, dtype=np.integer)
 
-        # Read 'tinker.xyz' file to obtain atom type for QM part
-        file_name = self.xyz_file
-        with open(file_name, "r") as f_xyz:
-            lines = f_xyz.readlines()
-            # Check the number of lines; Read only non-periodic format for tinker.xyz file
-            if (len(lines) != molecule.nat + 1):
-                raise ValueError (f"( {self.mm_prog}.{call_name()} ) Only non-periodic xyz file needed! {self.xyz_file}")
+            # Read 'tinker.xyz' file to obtain atom type for QM part
+            file_name = self.xyz_file
+            with open(file_name, "r") as f_xyz:
+                lines = f_xyz.readlines()
+                # Check the number of lines; Read only non-periodic format for tinker.xyz file
+                if (len(lines) != molecule.nat + 1):
+                    raise ValueError (f"( {self.mm_prog}.{call_name()} ) Only non-periodic xyz file needed! {self.xyz_file}")
 
-            iline = 1
-            for line in lines:
-                # Skip first line
-                if (iline in range(2, molecule.nat_qm + 2)):
-                    ind = iline - 1
-                    # Count index of column in coordinate lines
-                    col = 0
-                    field = line.split()
-                    for element in field:
-                        if (col == 5):
-                            # Read atom type
-                            self.atom_type[ind - 1] = int(element)
-                        col += 1
-                iline += 1
+                iline = 1
+                for line in lines:
+                    # Skip first line
+                    if (iline in range(2, molecule.nat + 2)):
+                        ind = iline - 1
+                        # Count index of column in coordinate lines
+                        col = 0
+                        field = line.split()
+                        for element in field:
+                            if (col == 5):
+                                # Read atom type
+                                self.atom_type[ind - 1] = int(element)
+                            col += 1
+                    iline += 1
+
+            # TODO : add part to check necessary keyword such as parameters, etc
+
+            # Read 'tinker.key' file to obtain charge for MM part
+            file_name = self.key_file
+            is_prm = False
+            with open(file_name, "r") as f_key:
+                lines = f_key.readlines()
+                for line in lines:
+                    if ("parameters" in line):
+                        is_prm = True
+                        field = line.split()
+                        prm_file = field[1]
+                if (not is_prm):
+                    raise ValueError (f"( {self.mm_prog}.{call_name()} ) Force field file needed! {self.key_file}")
+
+            # Save point charge values of current parameter file for electrostatic embedding
+            point_charges = []
+
+            file_name = prm_file
+            with open(file_name, "r") as f_prm:
+                lines = f_prm.readlines()
+                for line in lines:
+                    if ("charge" in line):
+                        field = line.split()
+                        if (len(field) == 3):
+                            point_charges.append(field[2])
+
+            # Assign point charge values for MM atoms
+            for iat in range(molecule.nat_mm):
+                ind = molecule.nat_qm + iat
+                molecule.mm_charge[iat] = point_charges[self.atom_type[ind] - 1]
 
     def get_data(self, molecule, base_dir, bo_list, istep, calc_force_only):
         """ Extract energy and gradient from Tinker
