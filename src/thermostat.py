@@ -108,17 +108,27 @@ class rescale2(thermo):
         """)
         print (thermostat_info, flush=True)
 
-class Berendsen(thermo)
+# TODO: unit of coup_param
+class Berendsen(thermo):
+    """ Rescale the velocities by Berendsen thermostat
     """
-    """
-    def __init__(self, temperature=300.0):
+    def __init__(self, temperature=300.0, coup_param=1.0):
         # Initialize 
         super().__init__(temperature)
+        self.coup_param = coup_param
         
     def run(self, molecule, md):
         """
         """
         ctemp = molecule.ekin * 2 /float(molecule.dof) * au_to_K
+        alpha = np.sqrt(1.0 + (md.dt * self.coup_param) * (self.temp/ctemp - 1.0))
+        
+        molecule.vel *= alpha
+
+        # Rescale the auxiliary velocities for DISH-XF
+        if (md.md_type == "SHXF"):
+            md.aux.vel *= alpha
+            md.aux.vel_old *= alpha
 
     def print_init(self):
         """ Print information about thermostat
@@ -127,14 +137,14 @@ class Berendsen(thermo)
         {"-" * 68}
         {"Thermostat Information":>44s}
         {"-" * 68}
-          Thermostat               = {"rescale ver. 2":>16s}
+          Thermostat               = {"Berendsen":>16s}
           Target Temperature (K)   = {self.temp:>16.3f}
-          Temperature Range (K)    = {self.dtemp:>16.3f}
+          Coupling parameter       = {self.coup_param:>16.3f}
         """)
         print (thermostat_info, flush=True)
 
 # TODO: Nose_Hoover or NH ?
-class NH(thermo)
+class NH(thermo):
     """
     """
     def __init__(self, temperature=300.0):
@@ -153,8 +163,7 @@ class NH(thermo)
         {"-" * 68}
         {"Thermostat Information":>44s}
         {"-" * 68}
-          Thermostat               = {"rescale ver. 2":>16s}
+          Thermostat               = {"Nose-Hoover":>16s}
           Target Temperature (K)   = {self.temp:>16.3f}
-          Temperature Range (K)    = {self.dtemp:>16.3f}
         """)
         print (thermostat_info, flush=True)
