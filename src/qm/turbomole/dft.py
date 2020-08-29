@@ -223,12 +223,10 @@ class DFT(Turbomole):
         file_name = "gradient"
         with open(file_name, "r") as f:
             bo_out = f.read()
+
         bo_out = bo_out.replace('D', 'E')
 
         # Energy of running state
-        for states in molecule.states:
-            states.energy = 0.
-
         find_e = "energy =\s+([-]\d+[.]\d+)"
         energy = re.findall(find_e, bo_out)
         energy = np.array(energy)
@@ -236,9 +234,6 @@ class DFT(Turbomole):
         molecule.states[bo_list[0]].energy = energy[0]
 
         # Force of running state
-        for states in molecule.states:
-            states.force = np.zeros((molecule.nat, molecule.nsp))
-
         find_grad = "\s+([-]*\d*[.]\d+[E][-|+]\d+)"
         grad = re.findall(find_grad, bo_out)
         grad = np.array(grad)
@@ -255,6 +250,7 @@ class DFT(Turbomole):
 
             with open(file_name, "r") as f:
                 bo_out = f.read()
+
             find_e = 'Total energy:\s+([-]\d+[.]\d+)'
             energy = re.findall(find_e, bo_out)
             energy = np.array(energy)
@@ -265,3 +261,6 @@ class DFT(Turbomole):
 
         # NACME
         # Turbomole cannot provides NACVs between excited states
+        pass
+
+

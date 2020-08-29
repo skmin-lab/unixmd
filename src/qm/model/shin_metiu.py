@@ -80,9 +80,6 @@ class Shin_Metiu(Model):
             log_out = f.read()
 
         if (not calc_force_only):
-            for states in molecule.states:
-                states.energy = 0.
-
             tmp_e = '([-]*\S+)'
             energy = re.findall(tmp_e, log_out)
             energy = np.array(energy)
@@ -94,10 +91,6 @@ class Shin_Metiu(Model):
         file_name = "FORCE.DAT"
         with open(file_name, "r") as f:
             log_out = f.read()
-
-        if (not calc_force_only):
-            for states in molecule.states:
-                states.force = np.zeros((molecule.nat, molecule.nsp))
 
         for ist in bo_list:
             tmp_f = f'{ist + 1:d}\n\s*([-]*\S+E[-]*\S+)'
@@ -114,18 +107,13 @@ class Shin_Metiu(Model):
 
         if (not calc_force_only and self.calc_coupling):
             for ist in range(molecule.nst):
-                for jst in range(molecule.nst):
-                    if (ist == jst):
-                        molecule.nac[ist, jst, :, :] = 0.
-                    elif (ist < jst):
-                        tmp_c = f'{ist + 1:d} {jst + 1:d}\n\s*([-]*\S+)'
-                        nac = re.findall(tmp_c, log_out)
-                        nac = np.array(nac[0])
-                        nac = nac.astype(float)
-                        nac = nac.reshape(molecule.nat, molecule.nsp, order='C')
-                        molecule.nac[ist, jst] = np.copy(nac)
-                    else:
-                        molecule.nac[ist, jst] = - molecule.nac[jst, ist]
-
+                for jst in range(ist + 1, molecule.nst):
+                    tmp_c = f'{ist + 1:d} {jst + 1:d}\n\s*([-]*\S+)'
+                    nac = re.findall(tmp_c, log_out)
+                    nac = np.array(nac[0])
+                    nac = nac.astype(float)
+                    nac = nac.reshape(molecule.nat, molecule.nsp, order='C')
+                    molecule.nac[ist, jst] = nac
+                    molecule.nac[jst, ist] = - nac
 
 

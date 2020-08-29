@@ -181,9 +181,6 @@ class DFT(Gaussian09):
 
         # Energy
         if (not calc_force_only):
-            for states in molecule.states:
-                states.energy = 0.
-
             # Read ground energy
             energy = re.findall('SCF Done:\s+E\(\w+\)\s+=\s+([-]\S+)\s+A.U.', log)
             energy = np.array(energy[0])
@@ -199,10 +196,6 @@ class DFT(Gaussian09):
                     molecule.states[ist].energy = molecule.states[0].energy + energy[ist - 1]
 
         # Force
-        if (not calc_force_only):
-            for states in molecule.states:
-                states.force = np.zeros((molecule.nat, molecule.nsp))
-
         tmp_f = "Forces\s+\(Hartrees\/Bohr\)\n.+\n.+" \
             + "\n\s+\d*\s+\d*\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)" * molecule.nat
         force = re.findall(tmp_f, log)

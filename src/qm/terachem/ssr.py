@@ -249,9 +249,6 @@ class SSR(TeraChem):
             log_out = f.read()
 
         # Energy
-        for states in molecule.states:
-            states.energy = 0.
-
         if (molecule.nst == 1):
             # Single-state REKS
             tmp_e = 'REKS energy:\s+([-]\S+)'
@@ -281,9 +278,6 @@ class SSR(TeraChem):
                 molecule.states[1].energy = energy[0]
 
         # Force
-        for states in molecule.states:
-            states.force = np.zeros((molecule.nat, molecule.nsp))
-
         if (self.nac == "Yes"):
             # SHXF, SH, Eh : SSR state
             for ist in range(molecule.nst):
@@ -308,6 +302,7 @@ class SSR(TeraChem):
         if (self.nac == "Yes"):
 
             # 1.92 version do not show H vector
+            # TODO : for 1.92 version, Hvec is not same with molecule.nac
             if (self.version == 1.92):
                 # Zeroing for G, h and H vectors
                 Gvec = np.zeros((molecule.nat, molecule.nsp))
@@ -334,23 +329,15 @@ class SSR(TeraChem):
 
             kst = 0
             for ist in range(molecule.nst):
-                for jst in range(molecule.nst):
-                    if (ist == jst):
-                        molecule.nac[ist, jst] = np.zeros((molecule.nat, molecule.nsp))
-                    elif (ist < jst):
-                        if (self.version == 1.92):
-                            molecule.nac[ist, jst] = Hvec
-                        elif (self.version == 1.93):
-                            tmp_c = '>\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
-	                              '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
-                            nac = re.findall(tmp_c, log_out)
-                            nac = np.array(nac[kst])
-                            nac = nac.astype(float)
-                            nac = nac.reshape(molecule.nat, 3, order='C')
-                            molecule.nac[ist, jst] = np.copy(nac)
-                        kst += 1
-                    else:
-                        molecule.nac[ist, jst] = - molecule.nac[jst, ist]
-
+                for jst in range(ist + 1, molecule.nst):
+                    tmp_c = '>\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
+	                      '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
+                    nac = re.findall(tmp_c, log_out)
+                    nac = np.array(nac[kst])
+                    nac = nac.astype(float)
+                    nac = nac.reshape(molecule.nat, 3, order='C')
+                    molecule.nac[ist, jst] = nac
+                    molecule.nac[jst, ist] = - nac
+                    kst += 1
 
 

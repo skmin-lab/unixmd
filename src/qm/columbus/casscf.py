@@ -319,9 +319,6 @@ class CASSCF(Columbus):
             with open(file_name, "r") as f:
                 log_out = f.read()
 
-            for states in molecule.states:
-                states.energy = 0.
-
             tmp_e = 'total\senergy[=]\s*([-]\S+)[,]'
             energy = re.findall(tmp_e, log_out)
             energy = np.array(energy)
@@ -330,10 +327,6 @@ class CASSCF(Columbus):
                 molecule.states[ist].energy = energy[ist]
 
         # Force
-        if (not calc_force_only):
-            for states in molecule.states:
-                states.force = np.zeros((molecule.nat, molecule.nsp))
-
         for ist in bo_list:
             # Read 'cartgrd.drt1.state?.sp' file
             file_name = f"GRADIENTS/cartgrd.drt1.state{ist + 1}.sp"
@@ -351,23 +344,19 @@ class CASSCF(Columbus):
         # NAC
         if (not calc_force_only and self.calc_coupling):
             for ist in range(molecule.nst):
-                for jst in range(molecule.nst):
-                    if (ist == jst):
-                        molecule.nac[ist, jst] = np.zeros((molecule.nat, molecule.nsp))
-                    elif (ist < jst):
-                        # Read 'cartgrd.nad.drt1.state?.drt1.state?.sp' file
-                        file_name = f"GRADIENTS/cartgrd.nad.drt1.state{jst + 1}.drt1.state{ist + 1}.sp"
-                        with open(file_name, "r") as f:
-                            log_out = f.read()
-                            log_out = log_out.replace("D", "E", molecule.nat * molecule.nsp)
+                for jst in range(ist + 1, molecule.nst):
+                    # Read 'cartgrd.nad.drt1.state?.drt1.state?.sp' file
+                    file_name = f"GRADIENTS/cartgrd.nad.drt1.state{jst + 1}.drt1.state{ist + 1}.sp"
+                    with open(file_name, "r") as f:
+                        log_out = f.read()
+                        log_out = log_out.replace("D", "E", molecule.nat * molecule.nsp)
 
-                        tmp_c =  '\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat
-                        nac = re.findall(tmp_c, log_out)
-                        nac = np.array(nac[0])
-                        nac = nac.astype(float)
-                        nac = nac.reshape(molecule.nat, 3, order='C')
-                        molecule.nac[ist, jst] = np.copy(nac)
-                    else:
-                        molecule.nac[ist, jst] = - molecule.nac[jst, ist]
+                    tmp_c =  '\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat
+                    nac = re.findall(tmp_c, log_out)
+                    nac = np.array(nac[0])
+                    nac = nac.astype(float)
+                    nac = nac.reshape(molecule.nat, 3, order='C')
+                    molecule.nac[ist, jst] = nac
+                    molecule.nac[jst, ist] = - nac
 
 

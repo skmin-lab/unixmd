@@ -525,9 +525,6 @@ class DFTB(DFTBplus):
 
         # Energy
         if (not calc_force_only):
-            for states in molecule.states:
-                states.energy = 0.
-
             energy = re.findall('Total energy:\s+([-]\S+) H', detailed_out)
             energy = np.array(energy[0])
             energy = energy.astype(float)
@@ -543,10 +540,6 @@ class DFTB(DFTBplus):
                     molecule.states[ist].energy = molecule.states[0].energy + energy[ist - 1]
 
         # Force
-        if (not calc_force_only):
-            for states in molecule.states:
-                states.force = np.zeros((molecule.nat, molecule.nsp))
-
         for ist in bo_list:
             file_name = f"detailed.out.{ist}"
             with open(file_name, "r") as f:
@@ -561,7 +554,6 @@ class DFTB(DFTBplus):
 
         # NACME
         if (self.calc_coupling and not calc_force_only):
-            molecule.nacme = np.zeros((molecule.nst, molecule.nst))
             if (istep >= 0):
                 self.CI_overlap(molecule, istep, dt)
 

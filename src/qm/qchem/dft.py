@@ -210,9 +210,6 @@ class DFT(QChem):
             log = f.read()
 
         if (not calc_force_only):
-            for states in molecule.states:
-                states.energy = 0.
-
             # Ground state energy
             energy = re.findall('Total energy in the final basis set =\s*([-]*\S*)', log)
             energy = np.array(energy)
@@ -228,10 +225,6 @@ class DFT(QChem):
                 for ist, en in enumerate(energy):
                     if ist < molecule.nst - 1:
                         molecule.states[ist + 1].energy = en
-
-        if (not calc_force_only):
-            for states in molecule.states:
-                states.force = np.zeros((molecule.nat, molecule.nsp))
 
         # Adiabatic force 
         tmp_f = "Gradient of\D*\s*" 
@@ -275,10 +268,11 @@ class DFT(QChem):
             nac = np.array(nac)
             nac = nac.astype(float)
 
-            num = 0
-            molecule.nac = np.zeros((molecule.nst, molecule.nst, molecule.nat, molecule.nsp))
+            kst = 0
             for ist in range(molecule.nst):
                 for jst in range(ist + 1, molecule.nst):
-                    molecule.nac[ist, jst] = np.copy(nac[num].reshape(molecule.nat, 3, order='C'))
+                    molecule.nac[ist, jst] = nac[kst].reshape(molecule.nat, 3, order='C')
                     molecule.nac[jst, ist] = - molecule.nac[ist, jst]
-                    num += 1
+                    kst += 1
+
+

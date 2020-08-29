@@ -266,9 +266,6 @@ class CASSCF(Molpro):
 
         # Energy
         if (not calc_force_only):
-            for states in molecule.states:
-                states.energy = 0.
-
             tmp_e = 'SETTING EN\(\d+\)\s+[=]\s+([-]\S+)\s+HARTREE'
             energy = re.findall(tmp_e, log_out)
             energy = np.array(energy)
@@ -277,10 +274,6 @@ class CASSCF(Molpro):
                 molecule.states[ist].energy = energy[ist]
 
         # Force
-        if (not calc_force_only):
-            for states in molecule.states:
-                states.force = np.zeros((molecule.nat, molecule.nsp))
-
         for ist in bo_list:
             tmp_f = f'SA-MC GRADIENT FOR STATE {ist + 1:d}.1\n\n' + \
                 '\s+Atom\s+dE\/dx\s+dE\/dy\s+dE\/dz\n\n' + \
@@ -294,19 +287,15 @@ class CASSCF(Molpro):
         # NAC
         if (not calc_force_only and self.calc_coupling):
             for ist in range(molecule.nst):
-                for jst in range(molecule.nst):
-                    if (ist == jst):
-                        molecule.nac[ist, jst] = np.zeros((molecule.nat, molecule.nsp))
-                    elif (ist < jst):
-                        tmp_c = f'SA-MC NACME FOR STATES {ist + 1:d}.1 - {jst + 1:d}.1\n\n' + \
-                            '\s+Atom\s+dE\/dx\s+dE\/dy\s+dE\/dz\n\n' + \
-                            '\s+\d+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat
-                        nac = re.findall(tmp_c, log_out)
-                        nac = np.array(nac[0])
-                        nac = nac.astype(float)
-                        nac = nac.reshape(molecule.nat, 3, order='C')
-                        molecule.nac[ist, jst] = np.copy(nac)
-                    else:
-                        molecule.nac[ist, jst] = - molecule.nac[jst, ist]
+                for jst in range(ist + 1, molecule.nst):
+                    tmp_c = f'SA-MC NACME FOR STATES {ist + 1:d}.1 - {jst + 1:d}.1\n\n' + \
+                        '\s+Atom\s+dE\/dx\s+dE\/dy\s+dE\/dz\n\n' + \
+                        '\s+\d+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat
+                    nac = re.findall(tmp_c, log_out)
+                    nac = np.array(nac[0])
+                    nac = nac.astype(float)
+                    nac = nac.reshape(molecule.nat, 3, order='C')
+                    molecule.nac[ist, jst] = nac
+                    molecule.nac[jst, ist] = - nac
 
 

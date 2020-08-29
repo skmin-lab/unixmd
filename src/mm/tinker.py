@@ -8,6 +8,16 @@ class Tinker(MM_calculator):
     """ Class for Tinker program
 
         :param object molecule: molecule object
+        :param string scheme: type of QM/MM scheme; subtractive, additive
+        :param string do_charge: charge embedding options; electrostatic, mechanical
+        :param string do_vdw: van der Walls interactions; lennardjones
+        :param boolean periodic: use periodicity in the calculations
+        :param double,list cell_par: cell lattice parameters (lengths and angles)
+        :param string xyz_file: initial tinker.xyz file
+        :param string key_file: initial tinker.key file
+        :param string mm_path: path for MM binary
+        :param integer nthreads: number of threads in the calculations
+        :param double version: version of Tinker program
     """
     def __init__(self, molecule, scheme=None, do_charge=None, do_vdw=None, periodic=False, \
         cell_par=[0., 0., 0., 0., 0., 0.], xyz_file="./tinker.xyz", key_file="./tinker.key",
