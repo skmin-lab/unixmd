@@ -97,13 +97,13 @@ class MQC(object):
               QMMM Scheme              = {mm.scheme:>16s}
             """), "  ")
             # Print charge embedding in MM program
-            if (mm.do_charge != None):
-                dynamics_info += f"  Charge Embedding         = {mm.do_charge:>16s}\n"
+            if (mm.embedding != None):
+                dynamics_info += f"  Charge Embedding         = {mm.embedding:>16s}\n"
             else:
                 dynamics_info += f"  Charge Embedding         = {'No':>16s}\n"
             # Print vdw interaction in MM program
-            if (mm.do_vdw != None):
-                dynamics_info += f"  VDW Interaction          = {mm.do_vdw:>16s}\n"
+            if (mm.vdw != None):
+                dynamics_info += f"  VDW Interaction          = {mm.vdw:>16s}\n"
             else:
                 dynamics_info += f"  VDW Interaction          = {'No':>16s}\n"
                                  
@@ -146,8 +146,8 @@ class MQC(object):
             do_qmmm = False
 
         if (do_qmmm):
-            if (qm.do_charge != mm.do_charge):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Inconsistent charge embedding options between QM and MM objects! {qm.do_charge} and {mm.do_charge}")
+            if (qm.embedding != mm.embedding):
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Inconsistent charge embedding options between QM and MM objects! {qm.embedding} and {mm.embedding}")
         else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Not compatible objects in QMMM! {qm.qm_prog}.{qm.qm_method} and {mm.mm_prog}")
 

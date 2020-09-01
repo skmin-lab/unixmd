@@ -9,8 +9,8 @@ class Tinker(MM_calculator):
 
         :param object molecule: molecule object
         :param string scheme: type of QM/MM scheme; subtractive, additive
-        :param string do_charge: charge embedding options; electrostatic, mechanical
-        :param string do_vdw: van der Walls interactions; lennardjones
+        :param string embedding: charge embedding options; electrostatic, mechanical
+        :param string vdw: van der Walls interactions; lennardjones
         :param boolean periodic: use periodicity in the calculations
         :param double,list cell_par: cell lattice parameters (lengths and angles)
         :param string xyz_file: initial tinker.xyz file
@@ -19,7 +19,7 @@ class Tinker(MM_calculator):
         :param integer nthreads: number of threads in the calculations
         :param double version: version of Tinker program
     """
-    def __init__(self, molecule, scheme=None, do_charge=None, do_vdw=None, periodic=False, \
+    def __init__(self, molecule, scheme=None, embedding=None, vdw=None, periodic=False, \
         cell_par=[0., 0., 0., 0., 0., 0.], xyz_file="./tinker.xyz", key_file="./tinker.key",
         mm_path="./", nthreads=1, version=8.7):
         # Save name of MM calculator
@@ -30,16 +30,16 @@ class Tinker(MM_calculator):
         if (not (self.scheme == "additive" or self.scheme == "subtractive")):
             raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong QM/MM scheme given! {self.scheme}")
 
-        self.do_charge = do_charge
-        self.do_vdw = do_vdw
+        self.embedding = embedding
+        self.vdw = vdw
 
-        if (self.do_charge != None):
-            if (not (self.do_charge == "mechanical" or self.do_charge == "electrostatic")):
-                raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong charge embedding given! {self.do_charge}")
+        if (self.embedding != None):
+            if (not (self.embedding == "mechanical" or self.embedding == "electrostatic")):
+                raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong charge embedding given! {self.embedding}")
 
-        if (self.do_vdw != None):
-            if (self.do_vdw != "lennardjones"):
-                raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong van der Waals interaction given! {self.do_vdw}")
+        if (self.vdw != None):
+            if (self.vdw != "lennardjones"):
+                raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong van der Waals interaction given! {self.vdw}")
 
         self.periodic = periodic
         self.cell_par = cell_par
@@ -54,7 +54,7 @@ class Tinker(MM_calculator):
         if (not self.version == 8.7):
             raise ValueError (f"( {self.mm_prog}.{call_name()} ) Other version not implemented! {self.version}")
 
-        if (self.do_charge == "electrostatic"):
+        if (self.embedding == "electrostatic"):
             # Save current atom type for electrostatic embedding
             self.atom_type = np.zeros(molecule.nat, dtype=np.integer)
 
@@ -267,11 +267,11 @@ class Tinker(MM_calculator):
             if ("chargeterm" in line):
                 is_charge = True
                 line = ""
-                if (self.do_charge == None):
+                if (self.embedding == None):
                     line = "chargeterm none\n"
             file_af.write(line)
         # If chargeterm keyword does not exist, add chargeterm keyword to last line
-        if (not is_charge and self.do_charge == None):
+        if (not is_charge and self.embedding == None):
             line = "chargeterm none\n"
             file_af.write(line)
         file_be.close()
@@ -279,7 +279,7 @@ class Tinker(MM_calculator):
         os.rename('tmp.key', 'tinker.key')
 
         # To avoid double counting, consider only charge-charge interactions between MM atoms
-        if (self.do_charge == "electrostatic"):
+        if (self.embedding == "electrostatic"):
             tmp_atom_type = []
             file_be = open('tinker.key', 'r')
             file_af = open('tmp.key', 'w')
@@ -321,11 +321,11 @@ class Tinker(MM_calculator):
             if ("vdwterm" in line):
                 is_vdw = True
                 line = ""
-                if (self.do_vdw == None):
+                if (self.vdw == None):
                     line = "vdwterm none\n"
             file_af.write(line)
         # If vdwterm keyword does not exist, add vdwterm keyword to last line
-        if (not is_vdw and self.do_vdw == None):
+        if (not is_vdw and self.vdw == None):
             line = "vdwterm none\n"
             file_af.write(line)
         file_be.close()

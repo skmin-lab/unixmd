@@ -39,7 +39,7 @@ class SSR(DFTBplus):
         lcdftb=True, lc_method="MatrixBased", ocdftb=False, ssr22=True, \
         ssr44=False, use_ssr_state=1, state_l=0, guess=1, shift=0.3, tuning=1., \
         grad_level=1, grad_tol=1E-8, mem_level=2, sk_path="./", periodic=False, \
-        do_charge=None, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.], \
+        embedding=None, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.], \
         qm_path="./", script_path="./", nthreads=1, version=19.1):
         # Initialize DFTB+ common variables
         super(SSR, self).__init__(molecule, sk_path, qm_path, script_path, nthreads, version)
@@ -71,10 +71,10 @@ class SSR(DFTBplus):
         self.mem_level = mem_level
 
         # TODO : add argument explanation
-        self.do_charge = do_charge
-        if (self.do_charge != None):
-            if (not (self.do_charge == "mechanical" or self.do_charge == "electrostatic")):
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong charge embedding given! {self.do_charge}")
+        self.embedding = embedding
+        if (self.embedding != None):
+            if (not (self.embedding == "mechanical" or self.embedding == "electrostatic")):
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong charge embedding given! {self.embedding}")
 
         self.periodic = periodic
         self.a_axis = np.zeros(3)
@@ -138,7 +138,7 @@ class SSR(DFTBplus):
             os.rename('tmp.gen', 'geometry.gen')
 
         # Make 'point_charges.xyz' file used in electrostatic charge embedding of QM/MM
-        if (self.do_charge == "electrostatic"):
+        if (self.embedding == "electrostatic"):
             # Make 'point_charges.xyz' file
             input_geom_pc = ""
             for iat in range(molecule.nat_qm, molecule.nat):
@@ -204,7 +204,7 @@ class SSR(DFTBplus):
                 input_dftb += input_ham_oc
 
         # Add point charges to Hamiltonian used in electrostatic charge embedding of QM/MM
-        if (self.do_charge == "electrostatic"):
+        if (self.embedding == "electrostatic"):
             input_ham_pc = textwrap.indent(textwrap.dedent(f"""\
               ElectricField = PointCharges{{
                 CoordsAndCharges [Angstrom] = DirectRead{{
@@ -292,7 +292,7 @@ class SSR(DFTBplus):
                 self.nac = "No"
 
         # Relaxed density options; It is determined automatically
-        if (molecule.qmmm and self.do_charge == "electrostatic"):
+        if (molecule.qmmm and self.embedding == "electrostatic"):
             rd = "Yes"
         else:
             rd = "No"
@@ -409,7 +409,7 @@ class SSR(DFTBplus):
                     grad = grad.astype(float)
                     grad = grad.reshape(molecule.nat_qm, 3, order='C')
                     molecule.states[ist].force[0:molecule.nat_qm] = - grad
-                    if (self.do_charge == "electrostatic"):
+                    if (self.embedding == "electrostatic"):
                         tmp_f = 'Forces on external charges' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_mm
                         force = re.findall(tmp_f, detailed_out)
                         force = np.array(force[0])
@@ -433,7 +433,7 @@ class SSR(DFTBplus):
                 grad = grad.astype(float)
                 grad = grad.reshape(molecule.nat_qm, 3, order='C')
                 molecule.states[bo_list[0]].force[0:molecule.nat_qm] = - grad
-                if (self.do_charge == "electrostatic"):
+                if (self.embedding == "electrostatic"):
                     tmp_f = 'Forces on external charges' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_mm
                     force = re.findall(tmp_f, detailed_out)
                     force = np.array(force[0])
