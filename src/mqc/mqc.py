@@ -71,30 +71,49 @@ class MQC(object):
         """
         pass
 
-    def print_init(self, molecule, theory, thermostat, debug):
+    def print_init(self, molecule, qm, mm, thermostat, debug):
         """ Routine to print the initial information of dynamics
 
             :param object molecule: molecule object
-            :param object theory: theory object containing on-the-fly calculation infomation
+            :param object qm: qm object containing on-the-fly calculation infomation
+            :param object mm: mm object containing MM calculation infomation
             :param object thermostat: thermostat type
             :param integer debug: verbosity level for standard output
         """
         # Print molecule information: coordinate, velocity
-        molecule.print_init()
+        molecule.print_init(mm)
 
         # Print dynamics information
         dynamics_info = textwrap.dedent(f"""\
         {"-" * 68}
         {"Dynamics Information":>43s}
         {"-" * 68}
-          QM Program               = {theory.qm_prog:>16s}
-          QM Method                = {theory.qm_method:>16s}
+          QM Program               = {qm.qm_prog:>16s}
+          QM Method                = {qm.qm_method:>16s}
+        """)
+        if (molecule.qmmm and mm != None):
+            dynamics_info += textwrap.indent(textwrap.dedent(f"""\
+              MM Program               = {mm.mm_prog:>16s}
+              QMMM Scheme              = {mm.scheme:>16s}
+            """), "  ")
+            # Print charge embedding in MM program
+            if (mm.embedding != None):
+                dynamics_info += f"  Charge Embedding         = {mm.embedding:>16s}\n"
+            else:
+                dynamics_info += f"  Charge Embedding         = {'No':>16s}\n"
+            # Print vdw interaction in MM program
+            if (mm.vdw != None):
+                dynamics_info += f"  VDW Interaction          = {mm.vdw:>16s}\n"
+            else:
+                dynamics_info += f"  VDW Interaction          = {'No':>16s}\n"
+                                 
+        dynamics_info += textwrap.indent(textwrap.dedent(f"""\
 
           MQC Method               = {self.md_type:>16s}
           Time Interval (fs)       = {self.dt / fs_to_au:16.6f}
           Initial State (0:GS)     = {self.istate:>16d}
           Nuclear Step             = {self.nsteps:>16d}
-        """)
+        """), "  ")
         if (self.md_type != "BOMD"):
             dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
             dynamics_info += f"  Propagation Scheme       = {self.propagation:>16s}\n"
@@ -106,5 +125,30 @@ class MQC(object):
         else:
             thermostat_info = "  No Thermostat: Total energy is conserved!\n"
             print (thermostat_info, flush=True)
+
+    def check_qmmm(self, qm, mm):
+        """ Routine to check compatibility between QM and MM objects
+
+            :param object qm: qm object containing on-the-fly calculation infomation
+            :param object mm: mm object containing MM calculation infomation
+        """
+        # Now check MM object
+        if (mm.mm_prog == "Tinker"):
+            # Now check QM object
+            if (qm.qm_prog == "dftbplus"):
+                if (qm.qm_method == "SSR"):
+                    do_qmmm = True
+                else:
+                    do_qmmm = False
+            else:
+                do_qmmm = False
+        else:
+            do_qmmm = False
+
+        if (do_qmmm):
+            if (qm.embedding != mm.embedding):
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Inconsistent charge embedding options between QM and MM objects! {qm.embedding} and {mm.embedding}")
+        else:
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Not compatible objects in QMMM! {qm.qm_prog}.{qm.qm_method} and {mm.mm_prog}")
 
 
