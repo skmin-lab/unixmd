@@ -5,7 +5,7 @@ from Cython.Distutils import build_ext
 import numpy as np
 
 sourcefile1 = ["./src/mqc/el_prop/el_propagator.pyx", "./src/mqc/el_prop/rk4.c"]
-sourcefile2 = ["./src/bo/cioverlap/cioverlap.pyx", "./src/bo/cioverlap/tdnac.c"]
+sourcefile2 = ["./src/qm/cioverlap/cioverlap.pyx", "./src/qm/cioverlap/tdnac.c"]
 
 extensions = [
     Extension("el_propagator", sources=sourcefile1, include_dirs=[np.get_include()]),

@@ -79,14 +79,14 @@ def write_init_coupling(molecule, propagation, unixmd_dir, SH_chk):
     tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Eliments: off-diagonal'
     typewriter(tmp, unixmd_dir, "NACME")
 
-def write_md_output(molecule, calc_coupling, istep, propagation, unixmd_dir):
+def write_md_output(molecule, calc_coupling, propagation, unixmd_dir, istep):
     """ Write output files
 
         :param object molecule: molecule object
         :param boolean calc_coupling: check whether the dynamics includes coupling calculation
-        :param integer istep: current MD step
         :param string propagation: propagation scheme
         :param string unixmd_dir: unixmd directory
+        :param integer istep: current MD step
     """
     # Write MOVIE.xyz file including positions and velocities
     tmp = f'{molecule.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)'
@@ -120,12 +120,12 @@ def write_md_output(molecule, calc_coupling, istep, propagation, unixmd_dir):
             for ist in range(molecule.nst) for jst in range(ist + 1, molecule.nst)])
         typewriter(tmp, unixmd_dir, "NACME")
 
-def write_final_xyz(molecule, istep, unixmd_dir):
+def write_final_xyz(molecule, unixmd_dir, istep):
     """ Write final positions and velocities
 
         :param object molecule: molecule object
-        :param integer istep: current MD step
         :param string unixmd_dir: unixmd directory
+        :param integer istep: current MD step
     """
     # Write FINAL.xyz file including positions and velocities
     tmp = f'{molecule.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)'

@@ -24,13 +24,15 @@ class Molecule(object):
         :param string geometry: initial cartesian coordinates for position and velocities in the extended xyz format
         :param integer nsp: dimension of space where the molecule is
         :param integer nstates: number of BO states
+        :param boolean qmmm: use QMMM scheme for the calculation of large systems
+        :param integer natoms_mm: number of atoms in MM region
         :param integer dof: degrees of freedom (if model is False, molecular dof is given)
         :param string unit_pos: unit of position (A = angstrom, au = atomic unit [bohr])
         :param string unit_vel: unit of velocity (au = atomic unit, A/ps = angstrom per ps, A/fs = angstromm per fs)
         :param double charge: total charge of the system
         :param boolean model: is the system a model system?
     """
-    def __init__(self, geometry, nsp=3, nstates=3, dof=None, \
+    def __init__(self, geometry, nsp=3, nstates=3, qmmm=False, natoms_mm=None, dof=None, \
         unit_pos='A', unit_vel='au', charge=0., model=False):
         # Save name of Molecule class
         self.mol_type = self.__class__.__name__
@@ -47,8 +49,20 @@ class Molecule(object):
         self.symbols = []
         self.read_geometry(geometry, unit_pos, unit_vel)
 
+        # Initialize QM/MM method
+        self.qmmm = qmmm
+        self.nat_mm = natoms_mm
+        if (self.qmmm):
+            if (self.nat_mm == None):
+                raise ValueError (f"( {self.mol_type}.{call_name()} ) Number of atoms in MM region is essential for QMMM! {self.nat_mm}")
+            self.nat_qm = self.nat - self.nat_mm
+        else:
+            if (self.nat_mm != None):
+                raise ValueError (f"( {self.mol_type}.{call_name()} ) Number of atoms in MM region is not necessary! {self.nat_mm}")
+            self.nat_qm = self.nat
+
         # Initialize system charge and number of electrons
-        if (not model):
+        if (not self.model):
             self.charge = charge
             self.get_nr_electrons()
         else:
@@ -56,7 +70,7 @@ class Molecule(object):
             self.nelec = 0
 
         # Initialize degrees of freedom
-        if (model):
+        if (self.model):
             if (dof == None):
                 self.dof = self.nat * self.nsp
             else:
@@ -91,10 +105,15 @@ class Molecule(object):
         self.rho = np.zeros((self.nst, self.nst), dtype=np.complex_)
 
         self.ekin = 0.
+        self.ekin_qm = 0.
         self.epot = 0.
         self.etot = 0.
 
         self.l_nacme = False
+
+        # Initialize point charges for QM/MM calculations
+        if (self.qmmm):
+            self.mm_charge = np.zeros(self.nat_mm)
 
     def read_geometry(self, geometry, unit_pos, unit_vel):
         """ Routine to read the geometry in extended xyz format.\n
@@ -202,6 +221,27 @@ class Molecule(object):
         """
         self.ekin = np.sum(0.5 * self.mass * np.sum(self.vel ** 2, axis=1))
 
+        if (self.qmmm):
+            # Calculate the kinetic energy for QM atoms
+            self.ekin_qm = np.sum(0.5 * self.mass[0:self.nat_qm] * np.sum(self.vel[0:self.nat_qm] ** 2, axis=1))
+        else:
+            self.ekin_qm = self.ekin
+
+    def reset_bo(self, calc_coupling):
+        """ Reset BO energies, forces and nonadiabatic couplings
+
+            :param boolean calc_coupling: check whether the dynamics includes coupling calculation
+        """
+        for states in self.states:
+            states.energy = 0.
+            states.force = np.zeros((self.nat, self.nsp))
+
+        if (calc_coupling):
+            if (self.l_nacme):
+                self.nacme = np.zeros((self.nst, self.nst))
+            else:
+                self.nac = np.zeros((self.nst, self.nst, self.nat, self.nsp))
+
     def backup_bo(self):
         """ Backup BO energies and nonadiabatic couplings
         """
@@ -214,13 +254,15 @@ class Molecule(object):
         """
         sym_list = list(data.keys())
         self.nelec = 0.
-        for iat in range(self.nat):
+        for iat in range(self.nat_qm):
             self.nelec += float(sym_list.index(self.symbols[iat]))
 
         self.nelec -= self.charge
 
-    def print_init(self):
+    def print_init(self, mm):
         """ Print initial information about molecule.py
+
+            :param object mm: mm object containing MM calculation infomation
         """
         geom_info = textwrap.dedent(f"""\
         {"-" * 68}
@@ -255,12 +297,16 @@ class Molecule(object):
         {"-" * 68}
         {"Molecule Information":>43s}
         {"-" * 68}
-          Number of Atoms          = {self.nat:>16d}
+          Number of Atoms (QM)     = {self.nat_qm:>16d}
+        """)
+        if (self.qmmm and mm != None):
+            molecule_info += f"  Number of Atoms (MM)     = {self.nat_mm:>16d}\n"
+        molecule_info += textwrap.indent(textwrap.dedent(f"""\
           Degrees of Freedom       = {int(self.dof):>16d}
           Charge                   = {int(self.charge):>16d}
           Number of Electrons      = {int(self.nelec):>16d}
           Number of States         = {self.nst:>16d}
-        """)
+        """), "  ")
         ### TODO: Model case
         print (molecule_info, flush=True)
 

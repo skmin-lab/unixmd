@@ -16,16 +16,15 @@ class Auxiliary_Molecule(object):
         self.pos = []
         self.vel = []
         self.vel_old = []
-        
+
         self.nat = molecule.nat
         self.nsp = molecule.nsp
 
         for ist in range(molecule.nst):
-            
             self.pos.append(molecule.pos)
             self.vel.append(molecule.vel)
             self.vel_old.append(molecule.vel)
-        
+
         self.mass = np.copy(molecule.mass)
         self.pos = np.array(self.pos)
         self.vel = np.array(self.vel)
@@ -48,7 +47,7 @@ class EhXF(MQC):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
             propagation, l_adjnac)
-        
+
         # Initialize XF related variables
         self.l_coh = []
         self.l_first = []
@@ -68,15 +67,17 @@ class EhXF(MQC):
         self.pos_0 = np.zeros((self.aux.nat, self.aux.nsp))
         self.phase = np.zeros((molecule.nst, self.aux.nat, self.aux.nsp))
 
-    def run(self, molecule, theory, thermostat=None, input_dir="./", \
-        save_QMlog=False, save_scr=True, debug=0):
+    def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
+        save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
         """ Run MQC dynamics according to Ehrenfest-XF dynamics
 
             :param object molecule: molecule object
-            :param object theory: theory object containing on-the-fly calculation infomation
+            :param object qm: qm object containing on-the-fly calculation infomation
+            :param object mm: mm object containing MM calculation infomation
             :param object thermostat: thermostat type
             :param string input_dir: location of input directory
             :param boolean save_QMlog: logical for saving QM calculation log
+            :param boolean save_MMlog: logical for saving MM calculation log
             :param boolean save_scr: logical for saving scratch directory
             :param integer debug: verbosity level for standard output
         """
@@ -95,30 +96,45 @@ class EhXF(MQC):
         if (save_QMlog):
             os.makedirs(QMlog_dir)
 
+        if (molecule.qmmm and mm != None):
+            MMlog_dir = os.path.join(base_dir, "MMlog")
+            if (os.path.exists(MMlog_dir)):
+                shutil.rmtree(MMlog_dir)
+            if (save_MMlog):
+                os.makedirs(MMlog_dir)
+
+        if ((molecule.qmmm and mm == None) or (not molecule.qmmm and mm != None)):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Both molecule.qmmm and mm object is necessary! {molecule.qmmm} and {mm}")
+
+        # Check compatibility for QM and MM objects
+        if (molecule.qmmm and mm != None):
+            self.check_qmmm(qm, mm)
+
         # Initialize UNI-xMD
         os.chdir(base_dir)
         bo_list = [ist for ist in range(molecule.nst)]
-        theory.calc_coupling = True
+        qm.calc_coupling = True
 
-        touch_file(molecule, theory.calc_coupling, self.propagation, \
-            unixmd_dir, SH_chk=False)
-        self.print_init(molecule, theory, thermostat, debug)
+        touch_file(molecule, qm.calc_coupling, self.propagation, unixmd_dir, SH_chk=False)
+        self.print_init(molecule, qm, mm, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
-        theory.get_bo(molecule, base_dir, -1, bo_list, self.dt, calc_force_only=False)
+        molecule.reset_bo(qm.calc_coupling)
+        qm.get_data(molecule, base_dir, bo_list, self.dt, istep=-1, calc_force_only=False)
+        if (molecule.qmmm and mm != None):
+            mm.get_data(molecule, base_dir, bo_list, istep=-1, calc_force_only=False)
         if (not molecule.l_nacme):
             molecule.get_nacme()
 
         self.update_energy(molecule)
-        
+
         self.check_decoherence(molecule)
         self.check_coherence(molecule)
         self.aux_propagator(molecule)
         self.get_phase(molecule)
 
-        write_md_output(molecule, theory.calc_coupling, -1, \
-            self.propagation, unixmd_dir)
-        self.print_step(molecule, -1, debug)
+        write_md_output(molecule, qm.calc_coupling, self.propagation, unixmd_dir, istep=-1)
+        self.print_step(molecule, debug, istep=-1)
 
         # Main MD loop
         for istep in range(self.nsteps):
@@ -126,7 +142,10 @@ class EhXF(MQC):
             self.cl_update_position(molecule)
 
             molecule.backup_bo()
-            theory.get_bo(molecule, base_dir, istep, bo_list, self.dt, calc_force_only=False)
+            molecule.reset_bo(qm.calc_coupling)
+            qm.get_data(molecule, base_dir, bo_list, self.dt, istep=istep, calc_force_only=False)
+            if (molecule.qmmm and mm != None):
+                mm.get_data(molecule, base_dir, bo_list, istep=istep, calc_force_only=False)
 
             if (not molecule.l_nacme):
                 molecule.adjust_nac()
@@ -147,18 +166,22 @@ class EhXF(MQC):
             self.check_coherence(molecule)
             self.aux_propagator(molecule)
             self.get_phase(molecule)
-        
-            write_md_output(molecule, theory.calc_coupling, istep, \
-                self.propagation, unixmd_dir)
-            self.print_step(molecule, istep, debug)
+
+            write_md_output(molecule, qm.calc_coupling, self.propagation, unixmd_dir, istep=istep)
+            self.print_step(molecule, debug, istep=istep)
             if (istep == self.nsteps - 1):
-                write_final_xyz(molecule, istep, unixmd_dir)
+                write_final_xyz(molecule, unixmd_dir, istep=istep)
 
         # Delete scratch directory
         if (not save_scr):
             tmp_dir = os.path.join(unixmd_dir, "scr_qm")
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
+
+            if (molecule.qmmm and mm != None):
+                tmp_dir = os.path.join(unixmd_dir, "scr_mm")
+                if (os.path.exists(tmp_dir)):
+                    shutil.rmtree(tmp_dir)
 
     def calculate_force(self, molecule):
         """ Calculate the Ehrenfest-XF force
@@ -174,7 +197,7 @@ class EhXF(MQC):
             for jst in range(ist + 1, molecule.nst):
                 self.rforce += 2. * molecule.nac[ist, jst] * molecule.rho.real[ist, jst] \
                     * (molecule.states[ist].energy - molecule.states[jst].energy)
-        
+
         if (self.l_qmom_force):
             # Calculate quantum momentum
             qmom = np.zeros((molecule.nat, molecule.nsp))
@@ -182,7 +205,7 @@ class EhXF(MQC):
                 for iat in range(molecule.nat):
                     qmom[iat] += molecule.rho.real[ist, ist] * (self.pos_0[iat] - self.aux.pos[ist, iat]) / molecule.mass[iat]
             qmom /= 2. * self.wsigma ** 2
-        
+
             # Calculate XF force
             for ist in range(molecule.nst):
                 for jst in range(molecule.nst):
@@ -200,7 +223,7 @@ class EhXF(MQC):
         for ist, istate in enumerate(molecule.states):
             molecule.epot += molecule.rho.real[ist, ist] * molecule.states[ist].energy
         molecule.etot = molecule.epot + molecule.ekin
-    
+
     def check_coherence(self, molecule):
         """ Routine to check coherence among BO states
 
@@ -254,9 +277,8 @@ class EhXF(MQC):
         self.pos_0 = np.copy(molecule.pos)
 
         # Get auxiliary velocity
-        
         self.aux.vel_old = np.copy(self.aux.vel)
-        
+
         for ist in range(molecule.nst):
             if (self.l_coh[ist]):
                 if (self.l_first[ist]):
@@ -285,7 +307,7 @@ class EhXF(MQC):
         for ist in range(molecule.nst):
             self.l_coh[ist] = False
             self.l_first[ist] = False
-        
+
         if (self.propagation == "coefficient"):
             for ist in range(molecule.nst):
                 if (ist == one_st):
@@ -321,16 +343,17 @@ class EhXF(MQC):
         else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Other propagator not implemented! {self.propagation}")
 
-    def print_init(self, molecule, theory, thermostat, debug):
+    def print_init(self, molecule, qm, mm, thermostat, debug):
         """ Routine to print the initial information of dynamics
 
             :param object molecule: molecule object
-            :param object theory: theory object containing on-the-fly calculation infomation
+            :param object qm: qm object containing on-the-fly calculation infomation
+            :param object mm: mm object containing MM calculation infomation
             :param object thermostat: thermostat type
             :param integer debug: verbosity level for standard output
         """
-        # Print initial information about molecule, theory and thermostat
-        super().print_init(molecule, theory, thermostat, debug)
+        # Print initial information about molecule, qm, mm and thermostat
+        super().print_init(molecule, qm, mm, thermostat, debug)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
@@ -353,12 +376,12 @@ class EhXF(MQC):
 
         print (dynamics_step_info, flush=True)
 
-    def print_step(self, molecule, istep, debug):
+    def print_step(self, molecule, debug, istep):
         """ Routine to print each steps infomation about dynamics
 
             :param object molecule: molecule object
-            :param integer istep: current MD step
             :param integer debug: verbosity level for standard output
+            :param integer istep: current MD step
         """
         ctemp = molecule.ekin * 2. / float(molecule.dof) * au_to_K
         norm = 0.
