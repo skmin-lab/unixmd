@@ -27,18 +27,13 @@ class DFTBplus(QM_calculator):
         self.version = version
 
         # Environmental variable setting for python scripts such as xyz2gen used in DFTB+
-        # Note that self.script_path should include upto $DFTBPLUS/tools/dptools
-        if (self.version == 19.1):
-            # version 19.1
-            lib_dir = os.path.join(self.script_path, "build/lib")
-            # The version number can be changed according to the users setting
-            script_dir = os.path.join(self.script_path, "build/scripts-3.6")
-            if (not os.path.exists(script_dir)):
-                raise ValueError (f"( {self.qm_prog}.{call_name()} ) Please modify version number to correct number that you used! {script_dir}")
-        elif (self.version == 20.1):
-            # version 20.1
-            lib_dir = os.path.join(self.script_path, "src")
+        # Note that self.script_path should include upto install directory of DFTB+
+        if (self.version == 19.1 or self.version == 20.1):
             script_dir = os.path.join(self.script_path, "bin")
+            # Note that the python version can be changed according to the users setting
+            lib_dir = os.path.join(self.script_path, "lib/python3.6/site-packages")
+            if (not os.path.exists(lib_dir)):
+                raise ValueError (f"( {self.qm_prog}.{call_name()} ) Please modify python version in interfacing script! {lib_dir}")
         else:
             raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")
 
