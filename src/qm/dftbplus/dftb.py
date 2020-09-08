@@ -10,37 +10,49 @@ class DFTB(DFTBplus):
     """ Class for (TD)DFTB method of DFTB+ program
 
         :param object molecule: molecule object
-        :param boolean scc: include SCC scheme
+        :param boolean scc: include self-consistent charge (SCC) scheme
         :param double scc_tol: energy convergence for SCC iterations
         :param integer scc_max_iter: maximum number of SCC iterations
-        :param string guess: initial guess for SCC iterations
-        :param string guess_file: initial guess file
+        :param boolean ocdftb: include onsite correction to SCC term
+        :param boolean lcdftb: include long-range corrected functional
+        :param string lc_method: algorithms for LC-DFTB
         :param boolean sdftb: include spin-polarisation scheme
-        :param double unpaired_e: number of unpaired electrons
-        :param double e_temp: electronic temperature for Fermi-Dirac scheme
+        :param double unpaired_elec: number of unpaired electrons
+        :param string guess: initial guess method for SCC scheme
+        :param string guess_file: initial guess file for charges
+        :param double elec_temp: electronic temperature in Fermi-Dirac scheme
         :param string mixer: charge mixing method used in DFTB
-        :param string ex_symmetry: symmetry (singlet) in TDDFTB
-        :param string sk_path: path for slater-koster files
+        :param string ex_symmetry: symmetry of excited state in TDDFTB
         :param boolean periodic: use periodicity in the calculations
-        :param double,list cell_length: the length of cell lattice
+        :param double,list cell_length: the lattice vectors of periodic unit cell
+        :param string sk_path: path for slater-koster files
         :param string qm_path: path for QM binary
-        :param string script_path: path for DFTB+ python script (dptools)
-        :param integer nthreads: number of threads in the calculations
+        :param string install_path: path for DFTB+ install directory
         :param boolean mpi: use MPI parallelization
         :param string mpi_path: path for MPI binary
+        :param integer nthreads: number of threads in the calculations
         :param double version: version of DFTB+ program
     """
-    def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=100, \
-        guess="h0", guess_file="./charges.bin", sdftb=False, unpaired_e=0., e_temp=0., mixer="Broyden", \
-        ex_symmetry="singlet", sk_path="./", periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.,], \
-        qm_path="./", script_path="./", nthreads=1, mpi=False, mpi_path="./", version=19.1):
+    def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=100, ocdftb=False, \
+        lcdftb=False, lc_method="MatrixBased", sdftb=False, unpaired_elec=0., guess="h0", \
+        guess_file="./charges.bin", elec_temp=0., mixer="Broyden", ex_symmetry="singlet", \
+        periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.,], sk_path="./", \
+        qm_path="./", install_path="./", mpi=False, mpi_path="./", nthreads=1, version=20.1):
         # Initialize DFTB+ common variables
-        super(DFTB, self).__init__(molecule, sk_path, qm_path, script_path, nthreads, version)
+        super(DFTB, self).__init__(molecule, sk_path, qm_path, install_path, nthreads, version)
 
         # Initialize DFTB+ DFTB variables
         self.scc = scc
         self.scc_tol = scc_tol
         self.scc_max_iter = scc_max_iter
+
+        self.ocdftb = ocdftb
+
+        self.lcdftb = lcdftb
+        self.lc_method = lc_method
+
+        self.sdftb = sdftb
+        self.unpaired_elec = unpaired_elec
 
         # Set initial guess for SCC term
         self.guess = guess
@@ -48,30 +60,24 @@ class DFTB(DFTBplus):
         if (not (self.guess == "h0" or self.guess == "read")):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
 
-        self.sdftb = sdftb
-        self.unpaired_e = unpaired_e
-
-        self.e_temp = e_temp
+        self.elec_temp = elec_temp
         self.mixer = mixer
 
         self.ex_symmetry = ex_symmetry
 
-        self.mpi = mpi
-        self.mpi_path = mpi_path
-
         self.periodic = periodic
-        self.a_axis = np.zeros(3)
-        self.b_axis = np.zeros(3)
-        self.c_axis = np.zeros(3)
-        self.a_axis = cell_length[0:3]
-        self.b_axis = cell_length[3:6]
-        self.c_axis = cell_length[6:9]
+        self.a_axis = np.copy(cell_length[0:3])
+        self.b_axis = np.copy(cell_length[3:6])
+        self.c_axis = np.copy(cell_length[6:9])
 
         # Check excitation symmetry in TDDFTB
-        # TODO : Currently, disable triplet excited states with TDDFTB
+        # TODO : Currently, allows only singlet excited states with TDDFTB
 #        if (not (self.ex_symmetry == "singlet" or self.ex_symmetry == "triplet")):
         if (not (self.ex_symmetry == "singlet")):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong symmetry for excited state! {self.ex_symmetry}")
+
+        self.mpi = mpi
+        self.mpi_path = mpi_path
 
         # Set 'l_nacme' and 're_calc' with respect to the computational method
         # TDDFTB do not produce NACs, so we should get NACME from CIoverlap
@@ -254,7 +260,7 @@ class DFTB(DFTBplus):
                 if (self.sdftb and molecule.nst == 1):
                     input_ham_spin = textwrap.dedent(f"""\
                     SpinPolarisation = Colinear{{
-                      UnpairedElectrons = {self.unpaired_e}
+                      UnpairedElectrons = {self.unpaired_elec}
                     }}
                     """)
                     input_dftb += input_ham_spin
@@ -311,7 +317,7 @@ class DFTB(DFTBplus):
             input_ham_basic = textwrap.dedent(f"""\
               Charge = {molecule.charge}
               Filling = Fermi{{
-                Temperature[K] = {self.e_temp}
+                Temperature[K] = {self.elec_temp}
               }}
               MaxAngularMomentum = {{
               {angular_momentum}
