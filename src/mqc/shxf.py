@@ -409,6 +409,8 @@ class SHXF(MQC):
 
             :param object molecule: molecule object
         """
+        # TODO: update QM/MM aux trajectory propagation scheme
+        
         # Get auxiliary position
         for ist in range(molecule.nst):
             if (self.l_coh[ist]):
