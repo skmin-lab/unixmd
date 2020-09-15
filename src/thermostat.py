@@ -1,5 +1,5 @@
 from __future__ import division
-from misc import eps, au_to_K, call_name
+from misc import eps, au_to_K, call_name, fs_to_au
 import textwrap
 import numpy as np
 
@@ -118,14 +118,14 @@ class Berendsen(thermo):
     def __init__(self, temperature=300.0, coup_prm=None):
         # Initialize 
         super().__init__(temperature)
-        self.coup_prm = coup_prm
+        self.coup_prm = coup_prm * fs_to_au
         
     def run(self, molecule, md):
         """
         """
         ctemp = molecule.ekin * 2 /float(molecule.dof) * au_to_K
-        alpha = np.sqrt(1.0 + (md.dt * self.coup_prm) * (self.temp/ctemp - 1.0))
-        
+        alpha = np.sqrt(1.0 + (md.dt / self.coup_prm) * (self.temp/ctemp - 1.0))
+
         molecule.vel *= alpha
 
         # Rescale the auxiliary velocities for DISH-XF
@@ -158,95 +158,119 @@ class NHC(thermo):
     def __init__(self, temperature=300.0, coup_prm=None, chainL=3, order=3, nstep=1):
         # Initialize 
         super().__init__(temperature)
-        self.coup_prm = coup_prm * 0.0000046
+
+        # coup_prm: unit is au
+        self.coup_prm = 4.188137303885520E-003#coup_prm * 0.0000046
+ #       self.coup_prm = coup_prm * 0.0000046
         self.chainL = chainL
         self.nstep = nstep
+        self.ekin = 0.0
 
         # order can be only 3 or 5.
-        if (order != 3 and order != 5):
+        if (order == 3):
+            self.order = order
+            self.w = np.zeros(self.order)
+
+            self.w[0] = 1.0/(2.0 - 2.0**(1.0/3.0))
+            self.w[1] = 1.0 - 2.0 * self.w[0]
+            self.w[2] = self.w[0]
+        elif (order == 5):
+            self.order = order
+            self.w = np.zeros(self.order)
+
+            self.w[0] = 1.0/(4.0 - 4.0**(1.0/3.0))
+            self.w[1:4] = self.w[0]
+            self.w[2] = 1.0 - 4.0 * self.w[0]
+        else:
             pass
 #            raise ValueError (f"( {self.class_name}.{call_name()} ) Invalid order! {self.order}")
-        else:
-            self.order = order
+
+        # position: x, velocity: v, gradient: g and mass: q of extended particles
+        self.x = np.zeros(self.chainL)
+        self.v = np.zeros(self.chainL)
+        self.g = np.zeros(self.chainL)
+        self.q = np.zeros(self.chainL)
+
+        #TODO: restart
+        self.x[:] = 1.0
 
     def run(self, molecule, md):
         """
         """
-        # position: x, velocity: v, 
-        x = np.zeros(self.chainL)
-        v = np.zeros(self.chainL)
-        g = np.zeros(self.chainL)
-        q = np.zeros(self.chainL)
-
-        w = np.zeros(self.order)
-        if (len(w) == 3):
-            w[0] = 1.0/(2.0 - 2.0**(1.0/3.0))
-            w[1] = 1.0 - 2.0 * w[0]
-            w[2] = w[0]
-        else:
-            w[0] = 1.0/(4.0 - 4.0**(1.0/3.0))
-            w[1:4] = w[0]
-            w[2] = 1.0 - 4.0 * w[0]
-        
         wdti = np.zeros(self.order)
         wdti2 = np.zeros(self.order)
         wdti4 = np.zeros(self.order)
         wdti8 = np.zeros(self.order)
 
-        wdti = w*md.dt/self.nstep
+        wdti = self.w * md.dt/self.nstep
         wdti2 = wdti/2.0
         wdti4 = wdti/4.0
         wdti8 = wdti/8.0
 
-        #TODO: restart
-        x[:] = 1.0
-
         # particles in the chain
         npart = self.chainL 
+        # index for last particle in list
         npart1 = npart - 1
 
-        mass_nhc = np.zeros(npart)
-  
-        # unit is atomic unit
-        ctemp = molecule.ekin * 2 /float(molecule.dof) 
+        # target temperature: unit is atomic unit
+        ttemp = self.temp / au_to_K
 
         # mass of extended variables 1: q_1 = d.o.f*k*T/w_p**2
-        q[0] = molecule.dof * ctemp / self.coup_prm**2
+        self.q[0] = molecule.dof * ttemp / self.coup_prm**2
         for ipart in range(1,npart):
         # mass of extended variables i: q_i = k*T/w_p**2, i>1
-            q[ipart] = ctemp / self.coup_prm**2
+            self.q[ipart] = ttemp / self.coup_prm**2
 
         alpha = 1.0
-        g[0] = (2.0 * molecule.ekin - molecule.dof * ctemp) / q[0]
+        akin = 2.0 * molecule.ekin
+
+        # update the forces
+        self.g[0] = (akin - molecule.dof * ttemp) / self.q[0]
+
+        # start the multiple time step procedure
+        aa = 0.0
         for istep in range(self.nstep):
             for iorder in range(self.order):
                 # update the thermostat velocities
-                v[-1] += g[-1] * wdti4[iorder]
-                for ipart in range(npart1):
-                    aa = np.exp(-wdti8[iorder] * v[npart1-ipart])
-                    v[npart1-ipart-1] = v[npart1-ipart-1] * aa**2 \
-                                      + wdti4[iorder] * g[npart1-ipart-1] * aa
+                self.v[npart1] += self.g[npart1] * wdti4[iorder]
+                for ipart in range(npart1, 0, -1):
+                    aa = np.exp(-wdti8[iorder] * self.v[ipart])
+                    self.v[ipart-1] = self.v[ipart-1] * aa**2 \
+                                      + wdti4[iorder] * self.g[ipart-1] * aa
+
                 # update the particle velocities
-                aa = np.exp(-wdti2[iorder] * v[0])
+                aa = np.exp(-wdti2[iorder] * self.v[0])
                 alpha *= aa
 
                 # update the thermostat forces 
-                g[0] = (alpha**2 * molecule.ekin * 2.0 - ctemp * molecule.dof)/q[0]
+                self.g[0] = (alpha**2 * akin - ttemp * molecule.dof)/self.q[0]
 
                 # update thermostat positions
                 for ipart in range(npart):
-                    x[ipart] += v[ipart] * wdti2[iorder]
+                    self.x[ipart] += self.v[ipart] * wdti2[iorder]
 
                 # update thermostat velocities
                 for ipart in range(npart1):
-                    aa = np.exp(-wdti8[iorder] * v[ipart+1])
-                    v[ipart] = v[ipart] * aa*2 + wdti4[iorder] * g[ipart] * aa
-                    g[ipart+1] = (q[ipart] * v[ipart]**2 - ctemp)/q[ipart+1]
-
-                v[-1] += g[-1] * wdti4[iorder]
+                    aa = np.exp(-wdti8[iorder] * self.v[ipart+1])
+                    self.v[ipart] = self.v[ipart] * aa**2 + wdti4[iorder] * self.g[ipart] * aa
+                    self.g[ipart+1] = (self.q[ipart] * self.v[ipart]**2 - ttemp)/self.q[ipart+1]
+                self.v[npart1] += self.g[npart1] * wdti4[iorder]
 
         molecule.vel *= alpha
 
+        # To debug...
+        #self.ekin = 0.0
+        #for i in range(npart):
+        #  if (i==0): 
+        #    self.ekin += molecule.dof * ttemp * self.x[0]
+        #  elif (i!=0):
+        #    self.ekin += ttemp * self.x[i]
+        #  self.ekin += 0.5 * self.q[i] * self.v[i]**2
+        
+        #print('x_new', self.x)
+        #print('v_new', self.v)
+        #print('g_new', self.g)
+        
         # Rescale the auxiliary velocities for DISH-XF
         if (md.md_type == "SHXF"):
             md.aux.vel *= alpha
@@ -262,6 +286,7 @@ class NHC(thermo):
           Thermostat                 = {"Nose-Hoover chain":>16s}
           Target Temperature (K)     = {self.temp:>16.3f}
           Coupling Parameter (cm^-1) = {self.coup_prm:>16.3f}
+          Chain Length               = {self.chainL:>16.3f}
           Order                      = {self.order:>16.3f}
           Integrator Steps           = {self.nstep:>16.3f}
         """)
