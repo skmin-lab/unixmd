@@ -62,8 +62,10 @@ class SHXF(MQC):
         :param double wsigma: width of nuclear wave packet of auxiliary trajectory
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_adjnac=True, vel_rescale="simple", threshold=0.01, wsigma=0.1, one_dim=False):
+        propagation="density", l_adjnac=True, vel_rescale="simple", threshold=0.01, \
+        sigma_option=1, wsigma=None, one_dim=False):
         # Initialize input values
+        # TODO : manual, comments should be modified -> sigma_option, wsigma
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
             propagation, l_adjnac)
 
@@ -97,7 +99,21 @@ class SHXF(MQC):
             self.l_first.append(False)
 #        self.tot_E = np.array(np.zeros((molecule.nst)))
         self.threshold = threshold
-        self.wsigma = wsigma
+
+        self.sigma_option = sigma_option
+        if (self.sigma_option == 1):
+            # uniform value for wsigma
+            self.wsigma = wsigma
+        elif (self.sigma_option == 2):
+            # atom-resolved values for wsigma
+            self.wsigma = wsigma
+            if (len(self.wsigma) != molecule.nat_qm):
+                raise ValueError (f"( {self.md_type}.{call_name()} ) The number of elements of Wsigma should be that of QM atoms! {self.wsigma}")
+        else:
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'sigma_option'! {self.sigma_option}")
+
+        if (self.wsigma == None):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Wsigma should be provided in input arguments! {self.wsigma}")
 
         self.upper_th = 1. - self.threshold
         self.lower_th = self.threshold
@@ -517,6 +533,8 @@ class SHXF(MQC):
         """
         # Print initial information about molecule, qm, mm and thermostat
         super().print_init(molecule, qm, mm, thermostat, debug)
+
+        # TODO : print xf variables such as wsigma, sigma_option, etc
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
