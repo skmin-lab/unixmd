@@ -104,6 +104,8 @@ class SHXF(MQC):
         if (self.sigma_option == 1):
             # uniform value for wsigma
             self.wsigma = wsigma
+            if (len(self.wsigma) != 1):
+                raise ValueError (f"( {self.md_type}.{call_name()} ) The number of elements of Wsigma should be one! {self.wsigma}")
         elif (self.sigma_option == 2):
             # atom-resolved values for wsigma
             self.wsigma = wsigma
