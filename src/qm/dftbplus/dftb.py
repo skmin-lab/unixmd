@@ -1,7 +1,7 @@
 from __future__ import division
 from build.cioverlap import *
 from qm.dftbplus.dftbplus import DFTBplus
-from qm.dftbplus.dftbpar import spin_w, onsite_uu, onsite_ud, max_l
+from qm.dftbplus.dftbpar import spin_w, spin_w_lc, onsite_uu, onsite_ud, max_l
 from misc import eV_to_au, call_name
 import os, shutil, re, textwrap
 import numpy as np
@@ -289,7 +289,10 @@ class DFTB(DFTBplus):
             # TODO : Currently, allows only singlet excited states with TDDFTB
 #            if (self.sdftb or self.ex_symmetry == "triplet"):
             if (self.sdftb and molecule.nst == 1):
-                spin_constant = ("\n" + " " * 18).join([f"  {itype} = {{ {spin_w[f'{itype}']} }}" for itype in self.atom_type])
+                if (self.lcdftb):
+                    spin_constant = ("\n" + " " * 18).join([f"  {itype} = {{ {spin_w_lc[f'{itype}']} }}" for itype in self.atom_type])
+                else:
+                    spin_constant = ("\n" + " " * 18).join([f"  {itype} = {{ {spin_w[f'{itype}']} }}" for itype in self.atom_type])
                 input_ham_spin_w = textwrap.indent(textwrap.dedent(f"""\
                   SpinConstants = {{
                     ShellResolvedSpin = Yes
