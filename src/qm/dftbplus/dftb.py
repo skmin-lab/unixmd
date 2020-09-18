@@ -1,7 +1,7 @@
 from __future__ import division
 from build.cioverlap import *
 from qm.dftbplus.dftbplus import DFTBplus
-from qm.dftbplus.dftbpar import spin_w, max_l
+from qm.dftbplus.dftbpar import spin_w, onsite_uu, onsite_ud, max_l
 from misc import eV_to_au, call_name
 import os, shutil, re, textwrap
 import numpy as np
@@ -254,6 +254,27 @@ class DFTB(DFTBplus):
               Mixer = {self.mixer}{{}}
             """), "  ")
             input_dftb += input_ham_scc
+
+            # Onsite-corrected DFTB (OC-DFTB) option
+            if (self.ocdftb):
+                onsite_const_uu = ("\n" + " " * 18).join([f"  {itype}uu = {{ {onsite_uu[f'{itype}']} }}" for itype in self.atom_type])
+                onsite_const_ud = ("\n" + " " * 18).join([f"  {itype}ud = {{ {onsite_ud[f'{itype}']} }}" for itype in self.atom_type])
+                input_ham_oc = textwrap.indent(textwrap.dedent(f"""\
+                  OnsiteCorrection = {{
+                  {onsite_const_uu}
+                  {onsite_const_ud}
+                  }}
+                """), "  ")
+                input_dftb += input_ham_oc
+
+            # Long-range corrected DFTB (LC-DFTB) option
+            if (self.lcdftb):
+                input_ham_lc = textwrap.indent(textwrap.dedent(f"""\
+                  RangeSeparated = LC{{
+                    Screening = {self.lc_method}{{}}
+                  }}
+                """), "  ")
+                input_dftb += input_ham_lc
 
             # Spin-polarized DFTB option
             if (self.sdftb and molecule.nst == 1):
