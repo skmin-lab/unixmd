@@ -11,48 +11,49 @@ class SSR(DFTBplus):
     """ Class for SSR method of DFTB+ program
 
         :param object molecule: molecule object
-        :param boolean scc: include SCC scheme
-        :param double scc_tol: energy convergence for REKS SCC iterations
-        :param integer scc_max_iter: maximum number of REKS SCC iterations
+        :param boolean scc: include self-consistent charge (SCC) scheme
+        :param double scc_tol: energy convergence for SCC iterations
+        :param integer scc_max_iter: maximum number of SCC iterations
+        :param boolean ocdftb: include onsite correction to SCC term
         :param boolean lcdftb: include long-range corrected functional
         :param string lc_method: algorithms for LC-DFTB
-        :param boolean ocdftb: include onsite correction (test option)
         :param boolean ssr22: use REKS(2,2) calculation?
         :param boolean ssr44: use REKS(4,4) calculation?
-        :param integer use_ssr_state: calculate SSR state, if not, treat SA-REKS
-        :param integer state_l: set L-th microstate as taget state
-        :param integer guess: initial guess setting for eigenvectors
-        :param double shift: level shifting value in REKS SCF iterations
-        :param double tuning: scaling factor for atomic spin constants
-        :param integer grad_level: algorithms to calculate gradients
-        :param double grad_tol: gradient tolerance for CP-REKS equations
-        :param integer mem_level: memory allocation setting, 2 is recommended
-        :param string sk_path: path for slater-koster files
+        :param string guess: initial guess method for SCC scheme
+        :param string guess_file: initial guess file for eigenvetors
+        :param boolean state_interactions: include state-interaction terms to SA-REKS
+        :param double shift: level shifting value in SCC iterations
+        :param double,list tuning: scaling factor for atomic spin constants
+        :param string cpreks_grad_alg: algorithms used in CP-REKS equations
+        :param double cpreks_grad_tol: gradient tolerance for CP-REKS equations
+        :param boolean save_memory: save memory in cache used in CP-REKS equations
         :param boolean periodic: use periodicity in the calculations
-        :param double,list cell_length: the length of cell lattice
+        :param double,list cell_length: the lattice vectors of periodic unit cell
+        :param string sk_path: path for slater-koster files
         :param string qm_path: path for QM binary
-        :param string script_path: path for DFTB+ python script (dptools)
+        :param string install_path: path for DFTB+ install directory
         :param integer nthreads: number of threads in the calculations
         :param double version: version of DFTB+ program
     """
-    def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=1000, \
-        lcdftb=True, lc_method="MatrixBased", ocdftb=False, ssr22=True, \
-        ssr44=False, use_ssr_state=1, state_l=0, guess=1, shift=0.3, tuning=1., \
-        grad_level=1, grad_tol=1E-8, mem_level=2, sk_path="./", periodic=False, \
-        embedding=None, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.], \
-        qm_path="./", script_path="./", nthreads=1, version=19.1):
+    def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=1000, ocdftb=False, \
+        lcdftb=False, lc_method="MatrixBased", ssr22=False, ssr44=False, guess="h0", \
+        guess_file="./eigenvec.bin", state_interactions=False, shift=0.3, tuning=None, \
+        cpreks_grad_alg="PCG", cpreks_grad_tol=1E-8, save_memory=False, embedding=None, \
+        periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.], sk_path="./", \
+        qm_path="./", install_path="./", nthreads=1, version=20.1):
         # Initialize DFTB+ common variables
-        super(SSR, self).__init__(molecule, sk_path, qm_path, script_path, nthreads, version)
+        super(SSR, self).__init__(molecule, sk_path, qm_path, install_path, nthreads, version)
 
         # Initialize DFTB+ SSR variables
         self.scc = scc
         self.scc_tol = scc_tol
         self.scc_max_iter = scc_max_iter
 
+        if (self.ocdftb):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Onsite-correction not implemented! {self.ocdftb}")
+
         self.lcdftb = lcdftb
         self.lc_method = lc_method
-
-        self.ocdftb = ocdftb
 
         self.ssr22 = ssr22
         self.ssr44 = ssr44
@@ -61,14 +62,24 @@ class SSR(DFTBplus):
         if (self.ssr44):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) REKS(4,4) not implemented! {self.ssr44}")
 
-        self.use_ssr_state = use_ssr_state
-        self.state_l = state_l
+        # Set initial guess for eigenvectors
         self.guess = guess
+        self.guess_file = guess_file
+        if (not (self.guess == "h0" or self.guess == "read")):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
+
+        self.state_interactions = state_interactions
         self.shift = shift
+
+        # Set scaling factor for atomic spin constants
+        # TODO : test for len() arguments
         self.tuning = tuning
-        self.grad_level = grad_level
-        self.grad_tol = grad_tol
-        self.mem_level = mem_level
+        if (self.tuning != None and len(self.tuning) != len(self.atom_type)):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong number of elements for scaling factors! {self.tuning}")
+
+        self.cpreks_grad_alg = cpreks_grad_alg
+        self.cpreks_grad_tol = cpreks_grad_tol
+        self.save_memory = save_memory
 
         # TODO : add argument explanation
         self.embedding = embedding
@@ -77,12 +88,9 @@ class SSR(DFTBplus):
                 raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong charge embedding given! {self.embedding}")
 
         self.periodic = periodic
-        self.a_axis = np.zeros(3)
-        self.b_axis = np.zeros(3)
-        self.c_axis = np.zeros(3)
-        self.a_axis = cell_length[0:3]
-        self.b_axis = cell_length[3:6]
-        self.c_axis = cell_length[6:9]
+        self.a_axis = np.copy(cell_length[0:3])
+        self.b_axis = np.copy(cell_length[3:6])
+        self.c_axis = np.copy(cell_length[6:9])
 
         # Set 'l_nacme' and 're_calc' with respect to the computational method
         # DFTB/SSR can produce NACs, so we do not need to get NACME from CIoverlap
