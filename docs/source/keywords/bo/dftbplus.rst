@@ -77,7 +77,7 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 +-------------------+------------------------------------------------+---------------------+
 | ``periodic``      | use periodicity in the calculations            | ``False``           |
 +-------------------+------------------------------------------------+---------------------+
-| ``cell_length``   | the lattice vectors of periodic unit cell      | ``[ 9 * 0.0 ]``     |
+| ``cell_length``   | the lattice vectors of periodic unit cell      | ``9 * [ 0.0 ]``     |
 +-------------------+------------------------------------------------+---------------------+
 | ``sk_path``       | path for slater-koster files                   | ``./``              |
 +-------------------+------------------------------------------------+---------------------+
@@ -151,7 +151,7 @@ determined from the ``state_interactions`` argument.
 +------------------------+------------------------------------------------+---------------------+
 | ``periodic``           | use periodicity in the calculations            | ``False``           |
 +------------------------+------------------------------------------------+---------------------+
-| ``cell_length``        | the lattice vectors of periodic unit cell      | ``[ 9 * 0.0 ]``     |
+| ``cell_length``        | the lattice vectors of periodic unit cell      | ``9 * [ 0.0 ]``     |
 +------------------------+------------------------------------------------+---------------------+
 | ``sk_path``            | path for slater-koster files                   | ``./``              |
 +------------------------+------------------------------------------------+---------------------+
