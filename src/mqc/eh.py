@@ -66,6 +66,9 @@ class Eh(MQC):
         if (molecule.qmmm and mm != None):
             self.check_qmmm(qm, mm)
 
+        if (molecule.l_nacme):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Ehrenfest dynamics needs NAC! {molecule.l_nacme}")
+
         # Initialize UNI-xMD
         os.chdir(base_dir)
         bo_list = [ist for ist in range(molecule.nst)]
