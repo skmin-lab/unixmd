@@ -121,7 +121,10 @@ class Berendsen(thermo):
         self.coup_prm = coup_prm * fs_to_au
         
     def run(self, molecule, md):
-        """
+        """ Control the temperature
+
+            :param object molecule: molecule object
+            :param object md: MQC object, the MD theory
         """
         ctemp = molecule.ekin * 2 /float(molecule.dof) * au_to_K
         alpha = np.sqrt(1.0 + (md.dt / self.coup_prm) * (self.temp/ctemp - 1.0))
@@ -142,7 +145,7 @@ class Berendsen(thermo):
         {"-" * 68}
           Thermostat               = {"Berendsen":>16s}
           Target Temperature (K)   = {self.temp:>16.3f}
-          Coupling parameter       = {self.coup_prm:>16.3f}
+          Coupling parameter (fs)  = {self.coup_prm/fs_to_au:>16.3f}
         """)
         print (thermostat_info, flush=True)
 
@@ -160,11 +163,13 @@ class NHC(thermo):
         super().__init__(temperature)
 
         # coup_prm: unit is au
-        self.coup_prm = 4.188137303885520E-003#coup_prm * 0.0000046
- #       self.coup_prm = coup_prm * 0.0000046
+        # TODO
+        self.coup_prm = coup_prm * 0.0000046
         self.chainL = chainL
         self.nstep = nstep
-        self.ekin = 0.0
+
+        # TODO: extended particles kinetic energy
+        #self.ekin = 0.0
 
         # order can be only 3 or 5.
         if (order == 3):
@@ -208,7 +213,8 @@ class NHC(thermo):
         wdti8 = wdti/8.0
 
         # particles in the chain
-        npart = self.chainL 
+        npart = self.chainL
+
         # index for last particle in list
         npart1 = npart - 1
 
@@ -270,7 +276,7 @@ class NHC(thermo):
         #print('x_new', self.x)
         #print('v_new', self.v)
         #print('g_new', self.g)
-        
+
         # Rescale the auxiliary velocities for DISH-XF
         if (md.md_type == "SHXF"):
             md.aux.vel *= alpha
