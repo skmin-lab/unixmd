@@ -26,7 +26,6 @@ class DFTB(DFTBplus):
         :param boolean periodic: use periodicity in the calculations
         :param double,list cell_length: the lattice vectors of periodic unit cell
         :param string sk_path: path for slater-koster files
-        :param string qm_path: path for QM binary
         :param string install_path: path for DFTB+ install directory
         :param boolean mpi: use MPI parallelization
         :param string mpi_path: path for MPI binary
@@ -37,9 +36,9 @@ class DFTB(DFTBplus):
         lcdftb=False, lc_method="MatrixBased", sdftb=False, unpaired_elec=0., guess="h0", \
         guess_file="./charges.bin", elec_temp=0., mixer="Broyden", ex_symmetry="singlet", \
         periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.,], sk_path="./", \
-        qm_path="./", install_path="./", mpi=False, mpi_path="./", nthreads=1, version=20.1):
+        install_path="./", mpi=False, mpi_path="./", nthreads=1, version=20.1):
         # Initialize DFTB+ common variables
-        super(DFTB, self).__init__(molecule, sk_path, qm_path, install_path, nthreads, version)
+        super(DFTB, self).__init__(molecule, sk_path, install_path, nthreads, version)
 
         # Initialize DFTB+ DFTB variables
         self.scc = scc
