@@ -510,7 +510,7 @@ class SHXF(MQC):
                 else:
                     for iat in range(self.aux.nat):
                         self.phase[ist, iat] += molecule.mass[iat] * \
-                           (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
+                            (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
 
     def el_propagator(self, molecule):
         """ Routine to propagate BO coefficients or density matrix
@@ -536,7 +536,11 @@ class SHXF(MQC):
         # Print initial information about molecule, qm, mm and thermostat
         super().print_init(molecule, qm, mm, thermostat, debug)
 
-        # TODO : print xf variables such as wsigma, sigma_option, etc
+        # Print wsigma used in SHXF
+        wsigma_info = " wsigma in SHXF\n"
+        wsigma_info += " ".join([f'{sigma:6.3f}' for sigma in self.wsigma])
+        wsigma_info += "\n"
+        print (wsigma_info, flush=True)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
