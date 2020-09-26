@@ -59,13 +59,13 @@ class SHXF(MQC):
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param string vel_rescale: velocity rescaling method after hop
         :param double threshold: electronic density threshold for decoherence term calculation
-        :param double wsigma: width of nuclear wave packet of auxiliary trajectory
+        :param double, list wsigma: width of nuclear wave packet of auxiliary trajectory
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", l_adjnac=True, vel_rescale="simple", threshold=0.01, \
-        sigma_option=1, wsigma=None, one_dim=False):
+        wsigma=None, one_dim=False):
         # Initialize input values
-        # TODO : manual, comments should be modified -> sigma_option, wsigma
+        # TODO : manual should be modified -> wsigma
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
             propagation, l_adjnac)
 
@@ -100,22 +100,18 @@ class SHXF(MQC):
 #        self.tot_E = np.array(np.zeros((molecule.nst)))
         self.threshold = threshold
 
-        self.sigma_option = sigma_option
-        if (self.sigma_option == 1):
-            # uniform value for wsigma
-            self.wsigma = wsigma
-            if (len(self.wsigma) != 1):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) The number of elements of Wsigma should be one! {self.wsigma}")
-        elif (self.sigma_option == 2):
-            # atom-resolved values for wsigma
-            self.wsigma = wsigma
-            if (len(self.wsigma) != molecule.nat_qm):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) The number of elements of Wsigma should be that of QM atoms! {self.wsigma}")
-        else:
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'sigma_option'! {self.sigma_option}")
-
+        self.wsigma = wsigma
         if (self.wsigma == None):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Wsigma should be provided in input arguments! {self.wsigma}")
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Sigma values should be provided in input arguments! {self.wsigma}")
+
+        if (len(self.wsigma) == 1):
+            # uniform value for wsigma
+            self.sigma_option = 1
+        elif (len(self.wsigma) == molecule.nat_qm):
+            # atom-resolved values for wsigma
+            self.sigma_option = 2
+        else:
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Wrong number of elements of sigma given! {self.wsigma}")
 
         self.upper_th = 1. - self.threshold
         self.lower_th = self.threshold
