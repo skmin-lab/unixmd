@@ -536,12 +536,6 @@ class SHXF(MQC):
         # Print initial information about molecule, qm, mm and thermostat
         super().print_init(molecule, qm, mm, thermostat, debug)
 
-        # Print wsigma used in SHXF
-        wsigma_info = " wsigma in SHXF\n"
-        wsigma_info += " ".join([f'{sigma:6.3f}' for sigma in self.wsigma])
-        wsigma_info += "\n"
-        print (wsigma_info, flush=True)
-
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
 
