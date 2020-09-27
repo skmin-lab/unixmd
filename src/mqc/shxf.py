@@ -110,6 +110,8 @@ class SHXF(MQC):
         elif (len(self.wsigma) == molecule.nat_qm):
             # atom-resolved values for wsigma
             self.sigma_option = 2
+            if (self.one_dim):
+                raise ValueError (f"( {self.md_type}.{call_name()} ) SHXF1D requires only 1 element for sigma! {self.wsigma}")
         else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Wrong number of elements of sigma given! {self.wsigma}")
 
