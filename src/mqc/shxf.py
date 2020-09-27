@@ -59,13 +59,12 @@ class SHXF(MQC):
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param string vel_rescale: velocity rescaling method after hop
         :param double threshold: electronic density threshold for decoherence term calculation
-        :param double, list wsigma: width of nuclear wave packet of auxiliary trajectory
+        :param double,list wsigma: width of nuclear wave packet of auxiliary trajectory
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", l_adjnac=True, vel_rescale="simple", threshold=0.01, \
         wsigma=None, one_dim=False):
         # Initialize input values
-        # TODO : manual should be modified -> wsigma
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
             propagation, l_adjnac)
 
