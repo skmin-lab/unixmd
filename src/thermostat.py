@@ -268,7 +268,7 @@ class NHC(thermo):
                 for ipart in range(npart1, 0, -1):
                     aa = np.exp(-wdti8[iorder] * self.v[ipart])
                     self.v[ipart - 1] = self.v[ipart - 1] * aa ** 2 \
-                                      + wdti4[iorder] * self.g[ipart - 1] * aa
+                        + wdti4[iorder] * self.g[ipart - 1] * aa
 
                 # update the particle velocities
                 aa = np.exp(-wdti2[iorder] * self.v[0])
