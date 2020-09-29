@@ -108,6 +108,7 @@ class rescale2(thermo):
         """)
         print (thermostat_info, flush=True)
 
+
 class Berendsen(thermo):
     """ Rescale the velocities by Berendsen thermostat
         
@@ -116,7 +117,7 @@ class Berendsen(thermo):
         :param double coupling_strength: the coupling strength
     """
     def __init__(self, temperature=300., coupling_parameter=None, coupling_strength=None):
-        # Initialize
+        # Initialize input values
         super().__init__(temperature)
 
         self.coup_str = coupling_strength
@@ -169,6 +170,7 @@ class Berendsen(thermo):
 
         print (thermostat_info, flush=True)
 
+
 class NHC(thermo):
     """ Rescale the velocities by Nose-Hoover chain thermostat
         
@@ -180,7 +182,7 @@ class NHC(thermo):
         :param integer nsteps: the total propagation step
     """
     def __init__(self, temperature=300., coupling_strength=None, time_scale=None, chain_length=3, order=3, nsteps=1):
-        # Initialize
+        # Initialize input values
         super().__init__(temperature)
 
         self.coup_str = coupling_strength
@@ -302,24 +304,26 @@ class NHC(thermo):
         {"-" * 68}
         {"Thermostat Information":>44s}
         {"-" * 68}
-          Thermostat                 = {"Nose-Hoover chain":>16s}
-          Target Temperature (K)     = {self.temp:>16.3f}
+          Thermostat                 = {"Nose-Hoover chain":>18s}
+          Target Temperature (K)     = {self.temp:>18.3f}
         """)
 
         if (self.coup_str != None):
             thermostat_info += textwrap.indent(textwrap.dedent(f"""\
-              Coupling Strength  (cm^-1) = {self.coup_str:>16.3f}
+              Coupling Strength  (cm^-1) = {self.coup_str:>18.3f}
             """), "  ")
 
         if (self.time_scale != None):
             thermostat_info += textwrap.indent(textwrap.dedent(f"""\
-              Time Scale (fs)            = {self.time_scale:>16.3f}
+              Time Scale (fs)            = {self.time_scale:>18.3f}
             """), "  ")
 
         thermostat_info += textwrap.indent(textwrap.dedent(f"""\
-          Chain Length               = {self.chain_length:>16.3f}
-          Order                      = {self.order:>16.3f}
-          Integrator Steps           = {self.nsteps:>16.3f}
+          Chain Length               = {self.chain_length:>18d}
+          Order                      = {self.order:>18d}
+          Integrator Steps           = {self.nsteps:>18d}
         """), "  ")
 
         print (thermostat_info, flush=True)
+
+
