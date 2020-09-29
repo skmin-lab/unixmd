@@ -59,10 +59,12 @@ class SHXF(MQC):
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param string vel_rescale: velocity rescaling method after hop
         :param double threshold: electronic density threshold for decoherence term calculation
-        :param double wsigma: width of nuclear wave packet of auxiliary trajectory
+        :param wsigma: width of nuclear wave packet of auxiliary trajectory
+        :type wsigma: double or double,list
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_adjnac=True, vel_rescale="simple", threshold=0.01, wsigma=0.1, one_dim=False):
+        propagation="density", l_adjnac=True, vel_rescale="simple", threshold=0.01, \
+        wsigma=None, one_dim=False):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
             propagation, l_adjnac)
@@ -97,7 +99,22 @@ class SHXF(MQC):
             self.l_first.append(False)
 #        self.tot_E = np.array(np.zeros((molecule.nst)))
         self.threshold = threshold
+
         self.wsigma = wsigma
+        if (self.wsigma == None):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Sigma values should be provided in input arguments! {self.wsigma}")
+
+        if (isinstance(self.wsigma, float)):
+            # uniform value for wsigma
+            pass
+        elif (isinstance(self.wsigma, list)):
+            # atom-resolved values for wsigma
+            if (len(self.wsigma) != molecule.nat_qm):
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Wrong number of elements of sigma given! {self.wsigma}")
+            if (self.one_dim):
+                raise ValueError (f"( {self.md_type}.{call_name()} ) SHXF1D requires only 1 float number for sigma! {self.wsigma}")
+        else:
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Wrong type for sigma given! {self.wsigma}")
 
         self.upper_th = 1. - self.threshold
         self.lower_th = self.threshold
@@ -157,6 +174,9 @@ class SHXF(MQC):
 
         touch_file(molecule, qm.calc_coupling, self.propagation, unixmd_dir, SH_chk=True)
         self.print_init(molecule, qm, mm, thermostat, debug)
+
+        # Initialize decoherence variables
+        self.append_wsigma()
 
         # Calculate initial input geometry at t = 0.0 s
         molecule.reset_bo(qm.calc_coupling)
@@ -492,7 +512,7 @@ class SHXF(MQC):
                 else:
                     for iat in range(self.aux.nat):
                         self.phase[ist, iat] += molecule.mass[iat] * \
-                           (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
+                            (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
 
     def el_propagator(self, molecule):
         """ Routine to propagate BO coefficients or density matrix
@@ -505,6 +525,14 @@ class SHXF(MQC):
             el_rho_xf(self, molecule)
         else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Other propagator not implemented! {self.propagation}")
+
+    def append_wsigma(self):
+        """ Routine to append sigma values when single float number is provided
+        """
+        # Create a list from single float number
+        if (isinstance(self.wsigma, float)):
+            sigma = self.wsigma
+            self.wsigma = self.aux.nat * [sigma]
 
     def print_init(self, molecule, qm, mm, thermostat, debug):
         """ Routine to print the initial information of dynamics

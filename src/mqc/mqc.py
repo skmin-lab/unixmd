@@ -117,6 +117,27 @@ class MQC(object):
         if (self.md_type != "BOMD"):
             dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
             dynamics_info += f"  Propagation Scheme       = {self.propagation:>16s}\n"
+
+        # Print wsigma values
+        if (self.md_type == "SHXF"):
+            if (isinstance(self.wsigma, float)):
+                dynamics_info += f"\n  Sigma                    = {self.wsigma:16.3f}\n"
+            elif (isinstance(self.wsigma, list)):
+                dynamics_info += f"\n  Sigma (1:N)              =\n"
+                nlines = int(molecule.nat_qm / 6)
+                if (molecule.nat_qm % 6 != 0):
+                    nlines += 1
+                wsigma_info = ""
+                for iline in range(nlines):
+                    iline1 = iline * 6
+                    iline2 = (iline + 1) * 6
+                    if (iline2 > molecule.nat_qm):
+                        iline2 = molecule.nat_qm
+                    wsigma_info += f"  {iline1 + 1:>3d}:{iline2:<3d};"
+                    wsigma_info += "".join([f'{sigma:7.3f}' for sigma in self.wsigma[iline1:iline2]])
+                    wsigma_info += "\n"
+                dynamics_info += wsigma_info
+
         print (dynamics_info, flush=True)
 
         # Print thermostat information
