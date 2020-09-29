@@ -201,7 +201,7 @@ class NHC(thermo):
         self.q = np.zeros(self.chainL)
 
         #TODO: restart
-        self.x[:] = 1.0
+        self.x = np.ones(self.chainL)
 
         # order can be only 3 or 5.
         self.order = order
@@ -247,19 +247,19 @@ class NHC(thermo):
         if (self.time_scale != None):
             coup_prm = 1 / (self.time_scale * fs_to_au)
 
-        self.q[0] = molecule.dof * ttemp / coup_prm**2
+        self.q[0] = molecule.dof * ttemp / coup_prm ** 2
         for ipart in range(1, self.chainL):
         # mass of extended variables i: q_i = k*T/w_p**2, i>1
             self.q[ipart] = ttemp / coup_prm ** 2
 
-        alpha = 1.0
-        akin = 2.0 * molecule.ekin
+        alpha = 1.
+        akin = 2 * molecule.ekin
 
         # update the forces
         self.g[0] = (akin - molecule.dof * ttemp) / self.q[0]
 
         # start the multiple time step procedure
-        aa = 0.0
+        aa = 0.
         for istep in range(self.nsteps):
             for iorder in range(self.order):
                 # update the thermostat velocities
@@ -312,7 +312,7 @@ class NHC(thermo):
 
         if (self.time_scale != None):
             thermostat_info += textwrap.indent(textwrap.dedent(f"""\
-              Time Scale (fs) = {self.time_scale:>16.3f}
+              Time Scale (fs)            = {self.time_scale:>16.3f}
             """), "  ")
 
         thermostat_info += textwrap.indent(textwrap.dedent(f"""\
