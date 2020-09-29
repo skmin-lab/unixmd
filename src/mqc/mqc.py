@@ -120,13 +120,12 @@ class MQC(object):
 
         # Print wsigma values
         if (self.md_type == "SHXF"):
-            nsigma = len(self.wsigma)
-            if (nsigma == 1):
-                dynamics_info += f"\n  Sigma (1)                = {self.wsigma[0]:16.3f}\n"
-            else:
+            if (isinstance(self.wsigma, float)):
+                dynamics_info += f"\n  Sigma                    = {self.wsigma:16.3f}\n"
+            elif (isinstance(self.wsigma, list)):
                 dynamics_info += f"\n  Sigma (1:N)              =\n"
-                nlines = int(nsigma / 6)
-                if (nsigma % 6 != 0):
+                nlines = int(molecule.nat_qm / 6)
+                if (molecule.nat_qm % 6 != 0):
                     nlines += 1
                 wsigma_info = ""
                 for iline in range(nlines):

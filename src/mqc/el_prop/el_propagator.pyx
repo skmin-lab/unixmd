@@ -9,12 +9,12 @@ cdef extern from "rk4.c":
     void RK4_rho(int nst, int nesteps, double dt, double complex **rho, double *energy, double *energy_old, double **nacme, double **nacme_old)
     void RK4_coef_xf(int nst, int nesteps, double dt, double complex *coef, \
                   double *energy, double *energy_old, double **nacme, double **nacme_old, \
-                  int nat, int nsp, bint *l_coh, int sigma_option, double *wsigma, double *mass, double **pos,\
+                  int nat, int nsp, bint *l_coh, double *wsigma, double *mass, double **pos,\
                   double ***aux_pos, double ***phase)
     void RK4_rho_xf(int nst, int nesteps, double dt, double complex **rho, 
                   double *energy, double *energy_old, double **nacme, double **nacme_old,
                   int nat, int nsp, double *mass, double **pos,
-                  bint *l_coh, int sigma_option, double *wsigma, double ***aux_pos, double ***phase)
+                  bint *l_coh, double *wsigma, double ***aux_pos, double ***phase)
 
 def el_coef_xf(xfvars, molecule):
     cdef:
@@ -31,26 +31,20 @@ def el_coef_xf(xfvars, molecule):
         double **pos
         double ***aux_pos
         double ***phase
-        int aux_nat, aux_nsp, sigma_option
-        int iat, nat_qm
+        int iat, aux_nat, aux_nsp
         bint *l_coh
 
     #
     nst = molecule.nst
-    nat_qm = molecule.nat_qm
-    sigma_option = xfvars.sigma_option
     nesteps, dt = xfvars.nesteps, xfvars.dt
     energy = <double*> PyMem_Malloc(nst * sizeof(double))
     energy_old = <double*> PyMem_Malloc(nst * sizeof(double))
     nacme = <double**> PyMem_Malloc(nst * sizeof(double*))
     nacme_old = <double**> PyMem_Malloc(nst * sizeof(double*))
     coef = <double complex*> PyMem_Malloc(nst * sizeof(double complex))
-    if (sigma_option == 1):
-        wsigma = <double*> PyMem_Malloc(1 * sizeof(double))
-    elif (sigma_option == 2):
-        wsigma = <double*> PyMem_Malloc(nat_qm * sizeof(double))
 
     aux_nat, aux_nsp = xfvars.aux.nat, xfvars.aux.nsp
+    wsigma = <double*> PyMem_Malloc(aux_nat * sizeof(double))
     mass = <double*> PyMem_Malloc(aux_nat * sizeof(double))
     pos = <double**> PyMem_Malloc(aux_nat * sizeof(double*))
     aux_pos = <double***> PyMem_Malloc(nst * sizeof(double**))
@@ -68,11 +62,8 @@ def el_coef_xf(xfvars, molecule):
             nacme[ist][jst] = molecule.nacme[ist, jst]
             nacme_old[ist][jst] = molecule.nacme_old[ist, jst]
 
-    if (sigma_option == 1):
-        wsigma[0] = xfvars.wsigma[0]
-    elif (sigma_option == 2):
-        for iat in range(nat_qm):
-            wsigma[iat] = xfvars.wsigma[iat]
+    for iat in range(aux_nat):
+        wsigma[iat] = xfvars.wsigma[iat]
     
     for iat in range(aux_nat):
         pos[iat] = <double*> PyMem_Malloc(aux_nsp * sizeof(double))
@@ -94,7 +85,7 @@ def el_coef_xf(xfvars, molecule):
     #
     #RK4_coef(nst, nesteps, dt, coef, energy, energy_old, nacme, nacme_old)
     RK4_coef_xf(nst, nesteps, dt, coef, energy, energy_old, nacme, nacme_old, \
-        aux_nat, aux_nsp, l_coh, sigma_option, wsigma, mass, pos, aux_pos, phase)
+        aux_nat, aux_nsp, l_coh, wsigma, mass, pos, aux_pos, phase)
 
     for ist in range(nst):
         molecule.states[ist].coef = coef[ist]
@@ -193,25 +184,19 @@ def el_rho_xf(xfvars, molecule):
         double **pos
         double ***aux_pos
         double ***phase
-        int aux_nat, aux_nsp, sigma_option
-        int iat, nat_qm
+        int iat, aux_nat, aux_nsp
         bint *l_coh
 
     nst = molecule.nst
-    nat_qm = molecule.nat_qm
-    sigma_option = xfvars.sigma_option
     nesteps, dt = xfvars.nesteps, xfvars.dt
     energy = <double*> PyMem_Malloc(nst * sizeof(double))
     energy_old = <double*> PyMem_Malloc(nst * sizeof(double))
     nacme = <double**> PyMem_Malloc(nst * sizeof(double*))
     nacme_old = <double**> PyMem_Malloc(nst * sizeof(double*))
     rho = <double complex**> PyMem_Malloc(nst * sizeof(double complex*))
-    if (sigma_option == 1):
-        wsigma = <double*> PyMem_Malloc(1 * sizeof(double))
-    elif (sigma_option == 2):
-        wsigma = <double*> PyMem_Malloc(nat_qm * sizeof(double))
 
     aux_nat, aux_nsp = xfvars.aux.nat, xfvars.aux.nsp
+    wsigma = <double*> PyMem_Malloc(aux_nat * sizeof(double))
     mass = <double*> PyMem_Malloc(aux_nat * sizeof(double))
     pos = <double**> PyMem_Malloc(aux_nat * sizeof(double*))
     aux_pos = <double***> PyMem_Malloc(nst * sizeof(double**))
@@ -231,11 +216,8 @@ def el_rho_xf(xfvars, molecule):
             rho[ist][jst] = molecule.rho[ist, jst]
 
 
-    if (sigma_option == 1):
-        wsigma[0] = xfvars.wsigma[0]
-    elif (sigma_option == 2):
-        for iat in range(nat_qm):
-            wsigma[iat] = xfvars.wsigma[iat]
+    for iat in range(aux_nat):
+        wsigma[iat] = xfvars.wsigma[iat]
 
     
     # xf related variables allocataion
@@ -257,7 +239,7 @@ def el_rho_xf(xfvars, molecule):
 
 
     RK4_rho_xf(nst, nesteps, dt, rho, energy, energy_old, nacme, nacme_old, \
-        aux_nat, aux_nsp, mass, pos, l_coh, sigma_option, wsigma, aux_pos, phase)
+        aux_nat, aux_nsp, mass, pos, l_coh, wsigma, aux_pos, phase)
 
     for ist in range(nst):
         for jst in range(nst):
