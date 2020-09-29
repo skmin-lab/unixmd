@@ -532,9 +532,7 @@ class SHXF(MQC):
         # Create a list from single float number
         if (isinstance(self.wsigma, float)):
             sigma = self.wsigma
-            self.wsigma = []
-            for iat in range(self.aux.nat):
-                self.wsigma.append(sigma)
+            self.wsigma = self.aux.nat * [sigma]
 
     def print_init(self, molecule, qm, mm, thermostat, debug):
         """ Routine to print the initial information of dynamics
