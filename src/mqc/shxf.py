@@ -58,7 +58,7 @@ class SHXF(MQC):
         :param string propagation: propagation scheme
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param string vel_rescale: velocity rescaling method after hop
-        :param double threshold: electronic density threshold for decoherence term calculation
+        :param double threshold: electronic density threshold for unphysical density or decoherence term
         :param wsigma: width of nuclear wave packet of auxiliary trajectory
         :type wsigma: double or double,list
     """
@@ -72,6 +72,8 @@ class SHXF(MQC):
         # Initialize SH variables
         self.rstate = istate
         self.rstate_old = self.rstate
+
+        self.threshold = threshold
 
         self.rand = 0.
         self.prob = np.zeros(molecule.nst)
@@ -98,7 +100,6 @@ class SHXF(MQC):
             self.l_coh.append(False)
             self.l_first.append(False)
 #        self.tot_E = np.array(np.zeros((molecule.nst)))
-        self.threshold = threshold
 
         self.wsigma = wsigma
         if (self.wsigma == None):
@@ -277,13 +278,13 @@ class SHXF(MQC):
 
         accum = 0.
 
-        if (molecule.rho.real[self.rstate, self.rstate] < eps):
+        if (molecule.rho.real[self.rstate, self.rstate] < self.threshold):
             self.force_hop = True
 
         for ist in range(molecule.nst):
             if (ist != self.rstate):
                 if (self.force_hop):
-                    self.prob[ist] = molecule.rho.real[ist, ist] / (1. - eps)
+                    self.prob[ist] = molecule.rho.real[ist, ist] / (1. - self.threshold)
                 else:
                     self.prob[ist] = - 2. * molecule.rho.real[ist, self.rstate] * \
                         molecule.nacme[ist, self.rstate] * self.dt / molecule.rho.real[self.rstate, self.rstate]

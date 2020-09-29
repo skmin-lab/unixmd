@@ -17,9 +17,10 @@ class SH(MQC):
         :param string propagation: propagation scheme
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param string vel_rescale: velocity rescaling method after hop
+        :param double threshold: electronic density threshold for unphysical density
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_adjnac=True, vel_rescale="simple"):
+        propagation="density", l_adjnac=True, vel_rescale="simple", threshold=0.01):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
             propagation, l_adjnac)
@@ -27,6 +28,8 @@ class SH(MQC):
         # Initialize SH variables
         self.rstate = istate
         self.rstate_old = self.rstate
+
+        self.threshold = threshold
 
         self.rand = 0.
         self.prob = np.zeros(molecule.nst)
@@ -185,13 +188,13 @@ class SH(MQC):
 
         accum = 0.
 
-        if (molecule.rho.real[self.rstate, self.rstate] < eps):
+        if (molecule.rho.real[self.rstate, self.rstate] < self.threshold):
             self.force_hop = True
 
         for ist in range(molecule.nst):
             if (ist != self.rstate):
                 if (self.force_hop):
-                    self.prob[ist] = molecule.rho.real[ist, ist] / (1. - eps)
+                    self.prob[ist] = molecule.rho.real[ist, ist] / (1. - self.threshold)
                 else:
                     self.prob[ist] = - 2. * molecule.rho.real[ist, self.rstate] * \
                         molecule.nacme[ist, self.rstate] * self.dt / molecule.rho.real[self.rstate, self.rstate]
