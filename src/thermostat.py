@@ -244,7 +244,8 @@ class NHC(thermo):
         # target temperature: unit is atomic unit
         ttemp = self.temp / au_to_K
 
-        coup_prm = self.coup_str * cm_to_au
+        if (self.coup_str != None):
+            coup_prm = self.coup_str * cm_to_au
         if (self.time_scale != None):
             coup_prm = 1 / (self.time_scale * fs_to_au)
 
