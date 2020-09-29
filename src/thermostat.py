@@ -242,14 +242,15 @@ class NHC(thermo):
         # target temperature: unit is atomic unit
         ttemp = self.temp / au_to_K
 
-        # mass of extended variables 1: q_1 = d.o.f*k*T/w_p**2
         coup_prm = self.coup_str * cm_to_au
         if (self.time_scale != None):
             coup_prm = 1 / (self.time_scale * fs_to_au)
 
+        # mass of extended variables 1: q_1 = d.o.f*k*T/w_p**2
         self.q[0] = molecule.dof * ttemp / coup_prm ** 2
-        for ipart in range(1, self.chainL):
+        
         # mass of extended variables i: q_i = k*T/w_p**2, i>1
+        for ipart in range(1, self.chainL):
             self.q[ipart] = ttemp / coup_prm ** 2
 
         alpha = 1.
