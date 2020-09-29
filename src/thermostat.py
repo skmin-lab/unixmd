@@ -126,7 +126,7 @@ class Berendsen(thermo):
             raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Either coupling parameter or coupling strength should be set! {self.coup_prm} and {self.coup_str}")
         elif (self.coup_prm != None and self.coup_str != None):
             raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Only coupling parameter or coupling strength can be set! {self.coup_prm} and {self.coup_str}")
-        
+
     def run(self, molecule, md):
         """ Control the temperature
 
@@ -136,7 +136,7 @@ class Berendsen(thermo):
         coup_str = self.coup_str
         if (self.coup_prm != None):
             coup_str = md.dt / (self.coup_prm * fs_to_au)
-        
+
         ctemp = molecule.ekin * 2 /float(molecule.dof) * au_to_K
         alpha = np.sqrt(1.0 + coup_str * (self.temp/ctemp - 1.0))
 
@@ -157,17 +157,17 @@ class Berendsen(thermo):
           Thermostat               = {"Berendsen":>16s}
           Target Temperature (K)   = {self.temp:>16.3f}
         """)
-        
+
         if (self.coup_prm != None):
             thermostat_info += textwrap.indent(textwrap.dedent(f"""\
               Coupling parameter (fs)  = {self.coup_prm:>16.3f}
             """), "  ")
-        
+
         if (self.coup_str != None):
             thermostat_info += textwrap.indent(textwrap.dedent(f"""\
               Coupling strength        = {self.coup_str:>16.3f}
             """), "  ")
-            
+
         print (thermostat_info, flush=True)
 
 class NHC(thermo):
@@ -191,7 +191,7 @@ class NHC(thermo):
             raise ValueError(f"( {self.thermostat_type}.{call_name()} Either coupling strength or time scale should be set! {self.coup_str} and {self.time_scale}")
         elif (self.coup_str != None and self.time_scale != None):
             raise ValueError(f"( {self.thermostat_type}.{call_name()} Only coupling strength or time scale can be set! {self.coup_str} and {self.time_scale}")
-        
+
         self.chainL = chainL
         self.nstep = nstep
 
@@ -222,7 +222,10 @@ class NHC(thermo):
             raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Invalid order! {self.order}")
 
     def run(self, molecule, md):
-        """
+        """ Control the temperature
+
+            :param object molecule: molecule object
+            :param object md: MQC object, the MD theory
         """
         wdti = np.zeros(self.order)
         wdti2 = np.zeros(self.order)
@@ -240,7 +243,6 @@ class NHC(thermo):
         # target temperature: unit is atomic unit
         ttemp = self.temp / au_to_K
 
-        
         # mass of extended variables 1: q_1 = d.o.f*k*T/w_p**2
         coup_prm = self.coup_str * cm_to_au
         if (self.time_scale != None):
@@ -250,7 +252,7 @@ class NHC(thermo):
         for ipart in range(1, self.chainL):
         # mass of extended variables i: q_i = k*T/w_p**2, i>1
             self.q[ipart] = ttemp / coup_prm**2
-       
+
         alpha = 1.0
         akin = 2.0 * molecule.ekin
 
@@ -273,7 +275,7 @@ class NHC(thermo):
                 alpha *= aa
 
                 # update the thermostat forces 
-                self.g[0] = (alpha**2 * akin - ttemp * molecule.dof)/self.q[0]
+                self.g[0] = (alpha**2 * akin - ttemp * molecule.dof) / self.q[0]
 
                 # update thermostat positions
                 for ipart in range(self.chainL):
@@ -303,12 +305,12 @@ class NHC(thermo):
           Thermostat                 = {"Nose-Hoover chain":>16s}
           Target Temperature (K)     = {self.temp:>16.3f}
         """)
-        
+
         if (self.coup_str != None):
             thermostat_info += textwrap.indent(textwrap.dedent(f"""\
               Coupling Strength  (cm^-1) = {self.coup_str:>16.3f}
             """), "  ")
-        
+
         if (self.time_scale != None):
             thermostat_info += textwrap.indent(textwrap.dedent(f"""\
               Time Scale (fs) = {self.time_scale:>16.3f}
