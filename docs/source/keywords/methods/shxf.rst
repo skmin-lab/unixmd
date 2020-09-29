@@ -12,7 +12,7 @@ in addition to Eherenfest term, i.e.
 
 Detailed description of DISH-XF method is in :cite:`Ha2018`
 
-.. note:: For ``wsigma`` variable, it reads a list variable consisted of 1 element or elements
+.. note:: For ``wsigma`` variable, it reads a float number or a list consisted of elements
    equal to the number of atoms. The former use a uniform value for the width, while the latter
    uses atom-resolved sigma values for the width.
 
