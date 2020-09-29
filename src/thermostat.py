@@ -174,42 +174,26 @@ class NHC(thermo):
     """ Rescale the velocities by Nose-Hoover chain thermostat
         
         :param double temperature: the temperature (K) set in the NVT ensemble
-        :param double coup_prm: the coupling parameter
+        :param double coupling_strength: the coupling strength
+        :param double time_scale: the coupling time scale
         :param integer chainL: the number of particles in the thermostat chain
         :param integer order: the order in the thermostat chain
         :param integer nstep: the total propagation step
     """
-    def __init__(self, temperature=300.0, coup_prm=None, chainL=3, order=3, nstep=1):
+    def __init__(self, temperature=300.0, coupling_strength=None, time_scale=None, chainL=3, order=3, nstep=1):
         # Initialize 
         super().__init__(temperature)
 
-        # coup_prm: unit is au
-        # TODO
-        self.coup_prm = coup_prm * 0.0000046
+        self.coup_str = coupling_strength
+        self.time_scale = time_scale
+
+        if (self.coup_str == None and self.time_scale == None):
+            raise ValueError(f"( {self.thermostat_type}.{call_name()} Either coupling strength or time scale should be set! {self.coup_str} and {self.time_scale}")
+        elif (self.coup_str != None and self.time_scale != None):
+            raise ValueError(f"( {self.thermostat_type}.{call_name()} Only coupling strength or time scale can be set! {self.coup_str} and {self.time_scale}")
+        
         self.chainL = chainL
         self.nstep = nstep
-
-        # TODO: extended particles kinetic energy
-        #self.ekin = 0.0
-
-        # order can be only 3 or 5.
-        if (order == 3):
-            self.order = order
-            self.w = np.zeros(self.order)
-
-            self.w[0] = 1.0/(2.0 - 2.0**(1.0/3.0))
-            self.w[1] = 1.0 - 2.0 * self.w[0]
-            self.w[2] = self.w[0]
-        elif (order == 5):
-            self.order = order
-            self.w = np.zeros(self.order)
-
-            self.w[0] = 1.0/(4.0 - 4.0**(1.0/3.0))
-            self.w[1:4] = self.w[0]
-            self.w[2] = 1.0 - 4.0 * self.w[0]
-        else:
-            pass
-#            raise ValueError (f"( {self.class_name}.{call_name()} ) Invalid order! {self.order}")
 
         # position: x, velocity: v, gradient: g and mass: q of extended particles
         self.x = np.zeros(self.chainL)
@@ -219,6 +203,23 @@ class NHC(thermo):
 
         #TODO: restart
         self.x[:] = 1.0
+
+        # order can be only 3 or 5.
+        self.order = order
+        if (self.order == 3):
+            self.w = np.zeros(self.order)
+
+            self.w[0] = 1.0/(2.0 - 2.0**(1.0/3.0))
+            self.w[1] = 1.0 - 2.0 * self.w[0]
+            self.w[2] = self.w[0]
+        elif (self.order == 5):
+            self.w = np.zeros(self.order)
+
+            self.w[0] = 1.0/(4.0 - 4.0**(1.0/3.0))
+            self.w[1:4] = self.w[0]
+            self.w[2] = 1.0 - 4.0 * self.w[0]
+        else:
+            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Invalid order! {self.order}")
 
     def run(self, molecule, md):
         """
@@ -233,21 +234,23 @@ class NHC(thermo):
         wdti4 = wdti/4.0
         wdti8 = wdti/8.0
 
-        # particles in the chain
-        npart = self.chainL
-
         # index for last particle in list
-        npart1 = npart - 1
+        npart1 = self.chainL - 1
 
         # target temperature: unit is atomic unit
         ttemp = self.temp / au_to_K
 
+        
         # mass of extended variables 1: q_1 = d.o.f*k*T/w_p**2
-        self.q[0] = molecule.dof * ttemp / self.coup_prm**2
-        for ipart in range(1,npart):
-        # mass of extended variables i: q_i = k*T/w_p**2, i>1
-            self.q[ipart] = ttemp / self.coup_prm**2
+        coup_prm = self.coup_str * cm_to_au
+        if (self.time_scale != None):
+            coup_prm = 1 / (self.time_scale * fs_to_au)
 
+        self.q[0] = molecule.dof * ttemp / coup_prm**2
+        for ipart in range(1, self.chainL):
+        # mass of extended variables i: q_i = k*T/w_p**2, i>1
+            self.q[ipart] = ttemp / coup_prm**2
+       
         alpha = 1.0
         akin = 2.0 * molecule.ekin
 
@@ -273,7 +276,7 @@ class NHC(thermo):
                 self.g[0] = (alpha**2 * akin - ttemp * molecule.dof)/self.q[0]
 
                 # update thermostat positions
-                for ipart in range(npart):
+                for ipart in range(self.chainL):
                     self.x[ipart] += self.v[ipart] * wdti2[iorder]
 
                 # update thermostat velocities
@@ -284,19 +287,6 @@ class NHC(thermo):
                 self.v[npart1] += self.g[npart1] * wdti4[iorder]
 
         molecule.vel *= alpha
-
-        # To debug...
-        #self.ekin = 0.0
-        #for i in range(npart):
-        #  if (i==0): 
-        #    self.ekin += molecule.dof * ttemp * self.x[0]
-        #  elif (i!=0):
-        #    self.ekin += ttemp * self.x[i]
-        #  self.ekin += 0.5 * self.q[i] * self.v[i]**2
-        
-        #print('x_new', self.x)
-        #print('v_new', self.v)
-        #print('g_new', self.g)
 
         # Rescale the auxiliary velocities for DISH-XF
         if (md.md_type == "SHXF"):
@@ -312,9 +302,22 @@ class NHC(thermo):
         {"-" * 68}
           Thermostat                 = {"Nose-Hoover chain":>16s}
           Target Temperature (K)     = {self.temp:>16.3f}
-          Coupling Parameter (cm^-1) = {self.coup_prm:>16.3f}
+        """)
+        
+        if (self.coup_str != None):
+            thermostat_info += textwrap.indent(textwrap.dedent(f"""\
+              Coupling Strength  (cm^-1) = {self.coup_str:>16.3f}
+            """), "  ")
+        
+        if (self.time_scale != None):
+            thermostat_info += textwrap.indent(textwrap.dedent(f"""\
+              Time Scale (fs) = {self.time_scale:>16.3f}
+            """), "  ")
+
+        thermostat_info += textwrap.indent(textwrap.dedent(f"""\
           Chain Length               = {self.chainL:>16.3f}
           Order                      = {self.order:>16.3f}
           Integrator Steps           = {self.nstep:>16.3f}
-        """)
+        """), "  ")
+
         print (thermostat_info, flush=True)

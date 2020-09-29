@@ -41,7 +41,7 @@ eV_to_au = 1 / au_to_eV # = 0.03674931
 c = 137.035999108108 
 
 # Frequency unit
-cm^-1_to_au = 1.0E-8 * au_to_A * c
+cm_to_au = 1.0E-8 * au_to_A * c
 
 eps = 1.0E-12
 
