@@ -123,9 +123,9 @@ class Berendsen(thermo):
         self.coup_prm = coupling_parameter
 
         if (self.coup_prm == None and self.coup_str == None):
-            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Either coupling parameter or coupling strength should be set! {coupling_parameter} and {coupling_strength}")
+            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Either coupling parameter or coupling strength should be set! {self.coup_prm} and {self.coup_str}")
         elif (self.coup_prm != None and self.coup_str != None):
-            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Only coupling parameter or coupling strength can be set! {coupling_parameter} and {coupling_strength}")
+            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Only coupling parameter or coupling strength can be set! {self.coup_prm} and {self.coup_str}")
         
     def run(self, molecule, md):
         """ Control the temperature
