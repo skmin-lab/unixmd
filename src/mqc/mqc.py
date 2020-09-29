@@ -118,6 +118,11 @@ class MQC(object):
             dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
             dynamics_info += f"  Propagation Scheme       = {self.propagation:>16s}\n"
 
+        # Print surface hopping variables
+        if (self.md_type == "SH" or self.md_type == "SHXF"):
+            dynamics_info += f"\n  Velocity Rescale in Hop  = {self.vel_rescale:>16s}\n"
+            dynamics_info += f"  Density Threshold        = {self.threshold:>16.6f}\n"
+
         # Print wsigma values
         if (self.md_type == "SHXF"):
             if (isinstance(self.wsigma, float)):
