@@ -116,11 +116,14 @@ class Berendsen(thermo):
         :param double coupling_strength: the coupling strength
     """
     def __init__(self, temperature=300.0, coupling_parameter=None, coupling_strength=None):
-        # Initialize 
+        # Initialize
         super().__init__(temperature)
 
         self.coup_str = coupling_strength
         self.coup_prm = coupling_parameter
+
+        if (self.coup_prm != None):
+            self.coup_str = md.dt / (self.coup_prm * fs_to_au)
 
         if (self.coup_prm == None and self.coup_str == None):
             raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Either coupling parameter or coupling strength should be set! {self.coup_prm} and {self.coup_str}")
@@ -133,12 +136,8 @@ class Berendsen(thermo):
             :param object molecule: molecule object
             :param object md: MQC object, the MD theory
         """
-        coup_str = self.coup_str
-        if (self.coup_prm != None):
-            coup_str = md.dt / (self.coup_prm * fs_to_au)
-
-        ctemp = molecule.ekin * 2 /float(molecule.dof) * au_to_K
-        alpha = np.sqrt(1.0 + coup_str * (self.temp/ctemp - 1.0))
+        ctemp = molecule.ekin * 2 / float(molecule.dof) * au_to_K
+        alpha = np.sqrt(1.0 + self.coup_str * (self.temp / ctemp - 1.0))
 
         molecule.vel *= alpha
 
@@ -176,12 +175,12 @@ class NHC(thermo):
         :param double temperature: the temperature (K) set in the NVT ensemble
         :param double coupling_strength: the coupling strength
         :param double time_scale: the coupling time scale
-        :param integer chainL: the number of particles in the thermostat chain
+        :param integer chain_length: the number of particles in the thermostat chain
         :param integer order: the order in the thermostat chain
-        :param integer nstep: the total propagation step
+        :param integer nsteps: the total propagation step
     """
-    def __init__(self, temperature=300.0, coupling_strength=None, time_scale=None, chainL=3, order=3, nstep=1):
-        # Initialize 
+    def __init__(self, temperature=300.0, coupling_strength=None, time_scale=None, chain_length=3, order=3, nsteps=1):
+        # Initialize
         super().__init__(temperature)
 
         self.coup_str = coupling_strength
@@ -192,8 +191,8 @@ class NHC(thermo):
         elif (self.coup_str != None and self.time_scale != None):
             raise ValueError(f"( {self.thermostat_type}.{call_name()} Only coupling strength or time scale can be set! {self.coup_str} and {self.time_scale}")
 
-        self.chainL = chainL
-        self.nstep = nstep
+        self.chainL = chain_length
+        self.nsteps = nsteps
 
         # position: x, velocity: v, gradient: g and mass: q of extended particles
         self.x = np.zeros(self.chainL)
@@ -209,13 +208,13 @@ class NHC(thermo):
         if (self.order == 3):
             self.w = np.zeros(self.order)
 
-            self.w[0] = 1.0/(2.0 - 2.0**(1.0/3.0))
+            self.w[0] = 1.0 / (2.0 - 2.0 ** (1.0 / 3.0))
             self.w[1] = 1.0 - 2.0 * self.w[0]
             self.w[2] = self.w[0]
         elif (self.order == 5):
             self.w = np.zeros(self.order)
 
-            self.w[0] = 1.0/(4.0 - 4.0**(1.0/3.0))
+            self.w[0] = 1.0 / (4.0 - 4.0 ** (1.0 / 3.0))
             self.w[1:4] = self.w[0]
             self.w[2] = 1.0 - 4.0 * self.w[0]
         else:
@@ -232,10 +231,10 @@ class NHC(thermo):
         wdti4 = np.zeros(self.order)
         wdti8 = np.zeros(self.order)
 
-        wdti = self.w * md.dt/self.nstep
-        wdti2 = wdti/2.0
-        wdti4 = wdti/4.0
-        wdti8 = wdti/8.0
+        wdti = self.w * md.dt / self.nsteps
+        wdti2 = wdti / 2.0
+        wdti4 = wdti / 4.0
+        wdti8 = wdti / 8.0
 
         # index for last particle in list
         npart1 = self.chainL - 1
@@ -251,7 +250,7 @@ class NHC(thermo):
         self.q[0] = molecule.dof * ttemp / coup_prm**2
         for ipart in range(1, self.chainL):
         # mass of extended variables i: q_i = k*T/w_p**2, i>1
-            self.q[ipart] = ttemp / coup_prm**2
+            self.q[ipart] = ttemp / coup_prm ** 2
 
         alpha = 1.0
         akin = 2.0 * molecule.ekin
@@ -261,21 +260,21 @@ class NHC(thermo):
 
         # start the multiple time step procedure
         aa = 0.0
-        for istep in range(self.nstep):
+        for istep in range(self.nsteps):
             for iorder in range(self.order):
                 # update the thermostat velocities
                 self.v[npart1] += self.g[npart1] * wdti4[iorder]
                 for ipart in range(npart1, 0, -1):
                     aa = np.exp(-wdti8[iorder] * self.v[ipart])
-                    self.v[ipart-1] = self.v[ipart-1] * aa**2 \
-                                      + wdti4[iorder] * self.g[ipart-1] * aa
+                    self.v[ipart - 1] = self.v[ipart - 1] * aa ** 2 \
+                                      + wdti4[iorder] * self.g[ipart - 1] * aa
 
                 # update the particle velocities
                 aa = np.exp(-wdti2[iorder] * self.v[0])
                 alpha *= aa
 
                 # update the thermostat forces 
-                self.g[0] = (alpha**2 * akin - ttemp * molecule.dof) / self.q[0]
+                self.g[0] = (alpha ** 2 * akin - ttemp * molecule.dof) / self.q[0]
 
                 # update thermostat positions
                 for ipart in range(self.chainL):
@@ -283,9 +282,9 @@ class NHC(thermo):
 
                 # update thermostat velocities
                 for ipart in range(npart1):
-                    aa = np.exp(-wdti8[iorder] * self.v[ipart+1])
-                    self.v[ipart] = self.v[ipart] * aa**2 + wdti4[iorder] * self.g[ipart] * aa
-                    self.g[ipart+1] = (self.q[ipart] * self.v[ipart]**2 - ttemp)/self.q[ipart+1]
+                    aa = np.exp(-wdti8[iorder] * self.v[ipart + 1])
+                    self.v[ipart] = self.v[ipart] * aa ** 2 + wdti4[iorder] * self.g[ipart] * aa
+                    self.g[ipart + 1] = (self.q[ipart] * self.v[ipart] ** 2 - ttemp) / self.q[ipart + 1]
                 self.v[npart1] += self.g[npart1] * wdti4[iorder]
 
         molecule.vel *= alpha
@@ -319,7 +318,7 @@ class NHC(thermo):
         thermostat_info += textwrap.indent(textwrap.dedent(f"""\
           Chain Length               = {self.chainL:>16.3f}
           Order                      = {self.order:>16.3f}
-          Integrator Steps           = {self.nstep:>16.3f}
+          Integrator Steps           = {self.nsteps:>16.3f}
         """), "  ")
 
         print (thermostat_info, flush=True)
