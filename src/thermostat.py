@@ -1,5 +1,5 @@
 from __future__ import division
-from misc import eps, au_to_K, call_name, fs_to_au
+from misc import eps, au_to_K, call_name, fs_to_au, cm_to_au
 import textwrap
 import numpy as np
 
@@ -108,17 +108,24 @@ class rescale2(thermo):
         """)
         print (thermostat_info, flush=True)
 
-# TODO: unit of coup_param
 class Berendsen(thermo):
     """ Rescale the velocities by Berendsen thermostat
         
         :param double temperature: the temperature (K) set in the NVT ensemble
-        :param double coup_prm: the coupling parameter
+        :param double coupling_parameter: the coupling parameter
+        :param double coupling_strength: the coupling strength
     """
-    def __init__(self, temperature=300.0, coup_prm=None):
+    def __init__(self, temperature=300.0, coupling_parameter=None, coupling_strength=None):
         # Initialize 
         super().__init__(temperature)
-        self.coup_prm = coup_prm * fs_to_au
+
+        self.coup_str = coupling_strength
+        self.coup_prm = coupling_parameter
+
+        if (self.coup_prm == None and self.coup_str == None):
+            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Either coupling parameter or coupling strength should be set! {coupling_parameter} and {coupling_strength}")
+        elif (self.coup_prm != None and self.coup_str != None):
+            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Only coupling parameter or coupling strength can be set! {coupling_parameter} and {coupling_strength}")
         
     def run(self, molecule, md):
         """ Control the temperature
@@ -126,8 +133,12 @@ class Berendsen(thermo):
             :param object molecule: molecule object
             :param object md: MQC object, the MD theory
         """
+        coup_str = self.coup_str
+        if (self.coup_prm != None):
+            coup_str = md.dt / (self.coup_prm * fs_to_au)
+        
         ctemp = molecule.ekin * 2 /float(molecule.dof) * au_to_K
-        alpha = np.sqrt(1.0 + (md.dt / self.coup_prm) * (self.temp/ctemp - 1.0))
+        alpha = np.sqrt(1.0 + coup_str * (self.temp/ctemp - 1.0))
 
         molecule.vel *= alpha
 
@@ -145,8 +156,18 @@ class Berendsen(thermo):
         {"-" * 68}
           Thermostat               = {"Berendsen":>16s}
           Target Temperature (K)   = {self.temp:>16.3f}
-          Coupling parameter (fs)  = {self.coup_prm/fs_to_au:>16.3f}
         """)
+        
+        if (self.coup_prm != None):
+            thermostat_info += textwrap.indent(textwrap.dedent(f"""\
+              Coupling parameter (fs)  = {self.coup_prm:>16.3f}
+            """), "  ")
+        
+        if (self.coup_str != None):
+            thermostat_info += textwrap.indent(textwrap.dedent(f"""\
+              Coupling strength        = {self.coup_str:>16.3f}
+            """), "  ")
+            
         print (thermostat_info, flush=True)
 
 class NHC(thermo):
