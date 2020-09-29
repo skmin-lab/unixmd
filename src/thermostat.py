@@ -123,9 +123,6 @@ class Berendsen(thermo):
         self.coup_str = coupling_strength
         self.coup_prm = coupling_parameter
 
-        if (self.coup_prm != None):
-            self.coup_str = md.dt / (self.coup_prm * fs_to_au)
-
         if (self.coup_prm == None and self.coup_str == None):
             raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Either coupling parameter or coupling strength should be set! {self.coup_prm} and {self.coup_str}")
         elif (self.coup_prm != None and self.coup_str != None):
@@ -137,6 +134,9 @@ class Berendsen(thermo):
             :param object molecule: molecule object
             :param object md: MQC object, the MD theory
         """
+        if (self.coup_prm != None):
+            self.coup_str = md.dt / (self.coup_prm * fs_to_au)
+
         ctemp = molecule.ekin * 2 / float(molecule.dof) * au_to_K
         alpha = np.sqrt(1. + self.coup_str * (self.temp / ctemp - 1.))
 
