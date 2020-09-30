@@ -349,9 +349,13 @@ class SHXF(MQC):
                     det = b ** 2. - 4. * a * c
 
                     if (det < 0.):
-                        self.l_hop = False
-                        self.rstate = self.rstate_old
-                        bo_list[0] = self.rstate
+                        if (self.force_hop):
+                            # TODO : print about hopping status needed!
+                            pass
+                        else:
+                            self.l_hop = False
+                            self.rstate = self.rstate_old
+                            bo_list[0] = self.rstate
                     else:
                         if(b < 0.):
                             x = 0.5 * (- b - np.sqrt(det)) / a
