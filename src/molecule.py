@@ -259,6 +259,23 @@ class Molecule(object):
 
         self.nelec -= self.charge
 
+    def get_coef(self, coef, istate):
+        """ Get initial coefficient
+        """
+        if (coef == None):
+            self.states[istate].coef = 1. + 0.j
+            self.rho[istate, istate] = 1. + 0.j
+        else:
+            if (len(coef) != self.nst):
+                raise ValueError (f"( {self.mol_type}.{call_name()} ) The number of coeffiecnt shold be same to nstates!: {len(coef)} != molecule.nst")
+            else:
+                for ist in range(self.nst):
+                    self.states[ist].coef = coef[ist] + 0.j
+                
+                for ist in range(self.nst):
+                    for jst in range(self.nst):
+                        self.rho[ist, jst] = coef[ist] * coef[jst] + 0.j
+
     def print_init(self, mm):
         """ Print initial information about molecule.py
 
