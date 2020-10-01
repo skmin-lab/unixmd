@@ -12,6 +12,10 @@ in addition to Eherenfest term, i.e.
 
 Detailed description of DISH-XF method is in :cite:`Ha2018`
 
+.. note:: For ``wsigma`` variable, it reads a float number or a list consisted of elements
+   equal to the number of atoms. The former use a uniform value for the width, while the latter
+   uses atom-resolved sigma values for the width.
+
 +----------------+------------------------------------------------------+---------+
 | Keywords       | Work                                                 | Default |
 +================+======================================================+=========+
@@ -31,6 +35,6 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 +----------------+------------------------------------------------------+---------+
 | threshold      | electronic density threshold for decoherence term    | 0.01    |
 +----------------+------------------------------------------------------+---------+
-| wsigma         | width of nuclear wave packet of auxiliary trajectory | 0.1     |
+| wsigma         | width of nuclear wave packet of auxiliary trajectory | None    |
 +----------------+------------------------------------------------------+---------+
 

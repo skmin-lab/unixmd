@@ -67,7 +67,7 @@ static void rhodot(int nst, double complex **rho, double *e, double **dv, double
         }
     }
 }
-static void xf_cdot(int nst, int nat, int nsp, int *l_coh, double wsigma, 
+static void xf_cdot(int nst, int nat, int nsp, int *l_coh, double *wsigma, 
                         double *mass, double complex *c, double **pos, double ***aux_pos, double ***phase, 
                         double complex *xfcdot){
     
@@ -92,7 +92,7 @@ static void xf_cdot(int nst, int nat, int nsp, int *l_coh, double wsigma,
         if(l_coh[ist] == 1){
             for(iat = 0; iat < nat; iat++){
                 for(isp = 0; isp < nsp; isp++){
-                    qmom[iat][isp] += 0.5 * rho[ist] * (pos[iat][isp] - aux_pos[ist][iat][isp]) / pow(wsigma,2.0) / mass[iat];
+                    qmom[iat][isp] += 0.5 * rho[ist] * (pos[iat][isp] - aux_pos[ist][iat][isp]) / pow(wsigma[iat],2.0) / mass[iat];
                 }
             }
         }
@@ -128,7 +128,7 @@ static void xf_cdot(int nst, int nat, int nsp, int *l_coh, double wsigma,
     free(qmom);
 }
 
-static void xf_rhodot(int nst, int nat, int nsp, int *l_coh, double wsigma, 
+static void xf_rhodot(int nst, int nat, int nsp, int *l_coh, double *wsigma, 
                       double *mass, double complex **rho, double **pos, double ***aux_pos, double ***phase, 
                       double complex **xfrhodot){
     int ist, jst, kst, iat, isp;
@@ -150,7 +150,7 @@ static void xf_rhodot(int nst, int nat, int nsp, int *l_coh, double wsigma,
         if(l_coh[ist] == 1){
             for(iat = 0; iat < nat; iat++){
                 for(isp = 0; isp < nsp; isp++){
-                    qmom[iat][isp] += 0.5 * creal(rho[ist][ist]) * (pos[iat][isp] - aux_pos[ist][iat][isp]) / pow(wsigma,2.0) / mass[iat];
+                    qmom[iat][isp] += 0.5 * creal(rho[ist][ist]) * (pos[iat][isp] - aux_pos[ist][iat][isp]) / pow(wsigma[iat],2.0) / mass[iat];
                 }
             }
         }
@@ -407,7 +407,7 @@ static void RK4_rho(int nst, int nesteps, double dt, double complex **rho, doubl
 }
 static void RK4_coef_xf(int nst, int nesteps, double dt, double complex *coef, 
                      double *energy, double *energy_old, double **nacme, double **nacme_old,  // normal rk4_coef up to this arg
-                     int nat, int nsp, int *l_coh, double wsigma, double *mass, double **pos, double ***aux_pos, double ***phase){
+                     int nat, int nsp, int *l_coh, double *wsigma, double *mass, double **pos, double ***aux_pos, double ***phase){
     double complex *c_dot = malloc(nst * sizeof(double complex));
     double complex *coef_new = malloc(nst * sizeof(double complex));
     double complex *k1 = malloc(nst * sizeof(double complex));
@@ -523,7 +523,7 @@ static void RK4_coef_xf(int nst, int nesteps, double dt, double complex *coef,
 static void RK4_rho_xf(int nst, int nesteps, double dt, double complex **rho, 
                        double *energy, double *energy_old, double **nacme, double **nacme_old,
                        int nat, int nsp, double *mass, double **pos,
-                       int *l_coh, double wsigma, double ***aux_pos, double ***phase){
+                       int *l_coh, double *wsigma, double ***aux_pos, double ***phase){
     double complex **rho_dot = malloc(nst * sizeof(double complex *));
     double complex **rho_new = malloc(nst * sizeof(double complex *));
     double complex **k1 = malloc(nst * sizeof(double complex *));
