@@ -19,10 +19,10 @@ class SH(MQC):
         :param string vel_rescale: velocity rescaling method after hop
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_adjnac=True, vel_rescale="simple"):
+        propagation="density", l_adjnac=True, vel_rescale="simple", coef=None):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, l_adjnac)
+            propagation, l_adjnac, coef)
 
         # Initialize SH variables
         self.rstate = istate
