@@ -11,25 +11,17 @@ class Auxiliary_Molecule(object):
 
         :param object molecule: molecule object
     """
-    def __init__(self, molecule):
+    def __init__(self, molecule, one_dim):
         # Initialize auxiliary molecule
-        self.pos = []
-        self.vel = []
-        self.vel_old = []
 
-        self.nat = molecule.nat
+        self.nat = molecule.nat_qm
         self.nsp = molecule.nsp
 
-        for ist in range(molecule.nst):
-            self.pos.append(molecule.pos)
-            self.vel.append(molecule.vel)
-            self.vel_old.append(molecule.vel)
-
         self.mass = np.copy(molecule.mass)
-        self.pos = np.array(self.pos)
-        self.vel = np.array(self.vel)
-        self.vel_old = np.array(self.vel_old)
-
+        
+        self.pos = np.zeros((molecule.nst, self.nat, self.nsp))
+        self.vel = np.zeros((molecule.nst, self.nat, self.nsp))
+        self.vel_old = np.copy(self.vel)
 
 class EhXF(MQC):
     """ Class for Ehrenfest-XF dynamics
@@ -224,6 +216,18 @@ class EhXF(MQC):
             molecule.epot += molecule.rho.real[ist, ist] * molecule.states[ist].energy
         molecule.etot = molecule.epot + molecule.ekin
 
+    def check_decoherence(self, molecule):
+        """ Routine to check if the electronic state is decohered
+
+            :param object molecule: molecule object
+        """
+        for ist in range(molecule.nst):
+            if (self.l_coh[ist]):
+                rho = molecule.rho.real[ist, ist]
+                if (rho > self.upper_th):
+                    self.set_decoherence(molecule, ist)
+                    return
+
     def check_coherence(self, molecule):
         """ Routine to check coherence among BO states
 
@@ -243,56 +247,8 @@ class EhXF(MQC):
                 count += 1
 
         if (count < 2):
-            for ist in range(molecule.nst):
-                self.l_coh[ist] = False
-                self.l_first[ist] = False
-
-    def check_decoherence(self, molecule):
-        """ Routine to check if the electronic state is decohered
-
-            :param object molecule: molecule object
-        """
-        for ist in range(molecule.nst):
-            if (self.l_coh[ist]):
-                rho = molecule.rho.real[ist, ist]
-                if (rho > self.upper_th):
-                    self.set_decoherence(molecule, ist)
-                    return
-
-    def aux_propagator(self, molecule):
-        """ Routine to propagate auxiliary molecule
-
-            :param object molecule: molecule object
-        """
-        # Get auxiliary position
-        for ist in range(molecule.nst):
-            if (self.l_coh[ist]):
-                if (self.l_first[ist]):
-                    self.aux.pos[ist] = molecule.pos
-                else:
-                    self.aux.pos[ist] += self.aux.vel[ist] * self.dt
-            else:
-                self.aux.pos[ist] = molecule.pos
-
-        self.pos_0 = np.copy(molecule.pos)
-
-        # Get auxiliary velocity
-        self.aux.vel_old = np.copy(self.aux.vel)
-
-        for ist in range(molecule.nst):
-            if (self.l_coh[ist]):
-                if (self.l_first[ist]):
-                    self.aux.vel[ist] = molecule.vel
-                else:
-                    ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
-                    alpha = ekin_old + molecule.states[ist].energy_old - molecule.states[ist].energy
-                    if (alpha < eps):
-                        self.aux.vel[ist] = 0.
-                    else:
-                        alpha /= molecule.ekin
-                        self.aux.vel[ist] = molecule.vel * np.sqrt(alpha)
-            else:
-                self.aux.vel[ist] = molecule.vel
+            self.l_coh = [False] * molecule.nst
+            self.l_first = [False] * molecule.nst
 
     def set_decoherence(self, molecule, one_st):
         """ Routine to reset coefficient/density if the state is decohered
@@ -304,9 +260,8 @@ class EhXF(MQC):
         molecule.rho = np.zeros((molecule.nst, molecule.nst), dtype=np.complex_)
         molecule.rho[one_st, one_st] = 1. + 0.j
 
-        for ist in range(molecule.nst):
-            self.l_coh[ist] = False
-            self.l_first[ist] = False
+        self.l_coh = [False] * molecule.nst
+        self.l_first = [False] * molecule.nst
 
         if (self.propagation == "coefficient"):
             for ist in range(molecule.nst):
@@ -315,6 +270,41 @@ class EhXF(MQC):
                 else:
                     molecule.states[ist].coef = 0. + 0.j
  
+    def aux_propagator(self, molecule):
+        """ Routine to propagate auxiliary molecule
+
+            :param object molecule: molecule object
+        """
+        # Get auxiliary position
+        for ist in range(molecule.nst):
+            if (self.l_coh[ist]):
+                if (self.l_first[ist]):
+                    self.aux.pos[ist] = molecule.pos[0:self.aux.nat]
+                else:
+                    self.aux.pos[ist] += self.aux.vel[ist] * self.dt
+            else:
+                self.aux.pos[ist] = molecule.pos[0:self.aux.nat]
+
+        self.pos_0 = molecule.pos[0:self.aux.nat]
+
+        # Get auxiliary velocity
+        self.aux.vel_old = np.copy(self.aux.vel)
+
+        for ist in range(molecule.nst):
+            if (self.l_coh[ist]):
+                if (self.l_first[ist]):
+                    self.aux.vel[ist] = molecule.vel[0:self.aux.nat]
+                else:
+                    ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
+                    alpha = ekin_old + molecule.states[ist].energy_old - molecule.states[ist].energy
+                    if (alpha < eps):
+                        self.aux.vel[ist] = 0.
+                    else:
+                        alpha /= molecule.ekin
+                        self.aux.vel[ist] = molecule.vel[0:self.aux.nat] * np.sqrt(alpha)
+            else:
+                self.aux.vel[ist] = molecule.vel[0:self.aux.nat]
+
     def get_phase(self, molecule):
         """ Routine to calculate phase term
 
@@ -323,13 +313,11 @@ class EhXF(MQC):
         for ist in range(molecule.nst):
             if (self.l_coh[ist]):
                 if (self.l_first[ist]):
-                    self.phase[ist] = np.zeros((self.aux.nat, self.aux.nsp))
+                    self.phase[ist] = 0. 
                 else:
                     for iat in range(self.aux.nat):
                         self.phase[ist, iat] += molecule.mass[iat] * \
                             (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
-            else:
-                self.phase[ist] = np.zeros((self.aux.nat, self.aux.nsp))
 
     def el_propagator(self, molecule):
         """ Routine to propagate BO coefficients or density matrix
