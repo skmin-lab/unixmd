@@ -15,7 +15,7 @@ class Auxiliary_Molecule(object):
         # Initialize auxiliary molecule
         self.nat = molecule.nat_qm
         self.nsp = molecule.nsp
-        
+
         self.mass = np.copy(molecule.mass)
         
         self.pos = np.zeros((molecule.nst, self.nat, self.nsp))
