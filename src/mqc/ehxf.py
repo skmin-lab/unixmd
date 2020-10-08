@@ -13,15 +13,15 @@ class Auxiliary_Molecule(object):
     """
     def __init__(self, molecule, one_dim):
         # Initialize auxiliary molecule
-
         self.nat = molecule.nat_qm
         self.nsp = molecule.nsp
-
+        
         self.mass = np.copy(molecule.mass)
         
         self.pos = np.zeros((molecule.nst, self.nat, self.nsp))
         self.vel = np.zeros((molecule.nst, self.nat, self.nsp))
         self.vel_old = np.copy(self.vel)
+
 
 class EhXF(MQC):
     """ Class for Ehrenfest-XF dynamics
@@ -285,7 +285,7 @@ class EhXF(MQC):
             else:
                 self.aux.pos[ist] = molecule.pos[0:self.aux.nat]
 
-        self.pos_0 = molecule.pos[0:self.aux.nat]
+        self.pos_0 = np.copy(molecule.pos[0:self.aux.nat])
 
         # Get auxiliary velocity
         self.aux.vel_old = np.copy(self.aux.vel)
@@ -313,7 +313,7 @@ class EhXF(MQC):
         for ist in range(molecule.nst):
             if (self.l_coh[ist]):
                 if (self.l_first[ist]):
-                    self.phase[ist] = 0. 
+                    self.phase[ist] = 0.
                 else:
                     for iat in range(self.aux.nat):
                         self.phase[ist, iat] += molecule.mass[iat] * \

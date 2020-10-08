@@ -13,7 +13,6 @@ class Auxiliary_Molecule(object):
     """
     def __init__(self, molecule, one_dim):
         # Initialize auxiliary molecule
-
         if (one_dim):
 
             self.nat = 1
@@ -32,6 +31,7 @@ class Auxiliary_Molecule(object):
         self.pos = np.zeros((molecule.nst, self.nat, self.nsp))
         self.vel = np.zeros((molecule.nst, self.nat, self.nsp))
         self.vel_old = np.copy(self.vel)
+
 
 class SHXF(MQC):
     """ Class for DISH-XF dynamics
@@ -315,7 +315,7 @@ class SHXF(MQC):
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
                     else:
-                        if(b < 0.):
+                        if (b < 0.):
                             x = 0.5 * (- b - np.sqrt(det)) / a
                         else:
                             x = 0.5 * (- b + np.sqrt(det)) / a
@@ -410,7 +410,6 @@ class SHXF(MQC):
 
             :param object molecule: molecule object
         """
-        
         # Get auxiliary position
         for ist in range(molecule.nst):
             if (self.l_coh[ist]):
@@ -428,7 +427,7 @@ class SHXF(MQC):
                         else:
                             self.aux.pos[ist] += self.aux.vel[ist] * self.dt
 
-        self.pos_0 = np.copy(self.aux.pos[self.rstate])
+        self.pos_0 = np.copy(molecule.pos[0:self.aux.nat])
 
         # Get auxiliary velocity
         self.aux.vel_old = np.copy(self.aux.vel)
@@ -453,7 +452,7 @@ class SHXF(MQC):
                             alpha /= 0.5 * self.aux.mass[0]
                             self.aux.vel[ist] = np.sqrt(alpha)
                         else:
-                            if(ist == self.rstate):
+                            if (ist == self.rstate):
                                 alpha = 1.
                             else:
                                 alpha /= molecule.ekin
