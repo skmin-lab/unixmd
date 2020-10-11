@@ -29,7 +29,7 @@ class TeraChem(QM_calculator):
         self.precision = precision
         self.version = version
 
-        if (not (self.version == 1.92 or self.version == 1.93)):
+        if (not (self.version == 1.99 or self.version == 1.93)):
             raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")
 
 
