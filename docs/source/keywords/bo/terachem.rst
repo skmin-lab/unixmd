@@ -30,7 +30,7 @@ UNI-xMD automatically determines single-state REKS as BO interfaces for ground s
 When we include the excited states, SA-REKS or SSR methods can be exploited and these are
 determined from the ``use_ssr_state`` argument.
 
-.. note:: Our interface script is generated with 1.92, 1.93 version of TeraChem program.
+.. note:: Our interface script is generated with 1.93, 1.99 version of TeraChem program.
    Here, you should refer to manual of TeraChem program if you want to see detailed
    lists for ``basis_set``, ``functional``, ``precision`` variables.
 
@@ -76,6 +76,6 @@ determined from the ``use_ssr_state`` argument.
 +---------------------+---------------------------------------------+-------------+
 | ``gpu_id``          | ID of used GPUs                             | ``1``       |
 +---------------------+---------------------------------------------+-------------+
-| ``version``         | version of TeraChem program                 | ``1.92``    |
+| ``version``         | version of TeraChem program                 | ``1.93``    |
 +---------------------+---------------------------------------------+-------------+
 
