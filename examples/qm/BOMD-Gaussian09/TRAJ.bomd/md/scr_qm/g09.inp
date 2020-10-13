@@ -1,0 +1,11 @@
+%nproc=4
+%mem=4gb
+%chk=g09.chk
+# B3LYP/aug-cc-pVTZ force td(Root=1, Nstates=1)
+
+g09 input
+
+0 1
+He    -0.54667461     0.00000000     0.00000000
+He     0.54667461     0.00000000     0.00000000
+
