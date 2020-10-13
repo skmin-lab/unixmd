@@ -15,7 +15,7 @@ class MQC(object):
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
     """
     def __init__(self, molecule, istate, dt, nsteps, nesteps, \
-        propagation, l_adjnac):
+        propagation, l_adjnac, coef):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -32,8 +32,7 @@ class MQC(object):
         self.rforce = np.zeros((molecule.nat, molecule.nsp))
 
         # Initialize coefficients and densities
-        molecule.states[self.istate].coef = 1. + 0.j
-        molecule.rho[self.istate, self.istate] = 1. + 0.j
+        molecule.get_coef(coef, self.istate)
 
     def cl_update_position(self, molecule):
         """ Routine to update nuclear positions

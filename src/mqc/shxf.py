@@ -50,10 +50,10 @@ class SHXF(MQC):
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", l_adjnac=True, vel_rescale="simple", threshold=0.01, \
-        wsigma=None, one_dim=False):
+        wsigma=None, one_dim=False, coef=None):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, l_adjnac)
+            propagation, l_adjnac, coef)
 
         # Initialize SH variables
         self.rstate = istate
