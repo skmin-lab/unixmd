@@ -19,5 +19,5 @@ md = mqc.BOMD(molecule=mol, nsteps=500, dt=0.125, istate=1)
 
 bathT = rescale1(temperature=300.0, nrescale=10)
 
-md.run(molecule=mol, qm=qm, thermostat=bathT, input_dir="./TRAJ.bomd", save_scr=True, save_QMlog=False)
+md.run(molecule=mol, qm=qm, thermostat=bathT, input_dir="./TRAJ.He2", save_scr=True, save_QMlog=False)
 
