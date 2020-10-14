@@ -18,10 +18,10 @@ class Eh(MQC):
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_adjnac=True, coefficient=None):
+        propagation="density", l_pop_print=False, l_adjnac=True, coefficient=None):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, l_adjnac, coefficient)
+            propagation, l_pop_print, l_adjnac, coefficient)
 
     def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
@@ -74,7 +74,7 @@ class Eh(MQC):
         bo_list = [ist for ist in range(molecule.nst)]
         qm.calc_coupling = True
 
-        touch_file(molecule, qm.calc_coupling, self.propagation, unixmd_dir, SH_chk=False)
+        touch_file(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=False)
         self.print_init(molecule, qm, mm, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
@@ -87,7 +87,7 @@ class Eh(MQC):
 
         self.update_energy(molecule)
 
-        write_md_output(molecule, qm.calc_coupling, self.propagation, unixmd_dir, istep=-1)
+        write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
         self.print_step(molecule, debug, istep=-1)
 
         # Main MD loop
@@ -116,7 +116,7 @@ class Eh(MQC):
 
             self.update_energy(molecule)
 
-            write_md_output(molecule, qm.calc_coupling, self.propagation, unixmd_dir, istep=istep)
+            write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
             self.print_step(molecule, debug, istep=istep)
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, unixmd_dir, istep=istep)

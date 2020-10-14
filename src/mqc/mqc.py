@@ -15,7 +15,7 @@ class MQC(object):
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
     """
     def __init__(self, molecule, istate, dt, nsteps, nesteps, \
-        propagation, l_adjnac, coefficient):
+        propagation, l_pop_print, l_adjnac, coefficient):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -26,6 +26,7 @@ class MQC(object):
         self.nesteps = nesteps
 
         self.propagation = propagation
+        self.l_pop_print = l_pop_print
 
         self.l_adjnac = l_adjnac
 

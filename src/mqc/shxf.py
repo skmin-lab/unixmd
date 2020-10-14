@@ -49,11 +49,11 @@ class SHXF(MQC):
         :type wsigma: double or double,list
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_adjnac=True, vel_rescale="nac2", threshold=0.01, \
-        wsigma=None, one_dim=False, coefficient=None):
+        propagation="density", l_pop_print=False, l_adjnac=True, vel_rescale="nac2", \
+        threshold=0.01, wsigma=None, one_dim=False, coefficient=None):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, l_adjnac, coefficient)
+            propagation, l_pop_print, l_adjnac, coefficient)
 
         # Initialize SH variables
         self.rstate = istate
@@ -160,7 +160,7 @@ class SHXF(MQC):
         bo_list = [self.rstate]
         qm.calc_coupling = True
 
-        touch_file(molecule, qm.calc_coupling, self.propagation, unixmd_dir, SH_chk=True)
+        touch_file(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=True)
         self.print_init(molecule, qm, mm, thermostat, debug)
 
         # Initialize decoherence variables
@@ -189,7 +189,7 @@ class SHXF(MQC):
         self.aux_propagator(molecule)
         self.get_phase(molecule)
 
-        write_md_output(molecule, qm.calc_coupling, self.propagation, unixmd_dir, istep=-1)
+        write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
         self.print_step(molecule, debug, istep=-1)
 
         # Main MD loop
@@ -231,7 +231,7 @@ class SHXF(MQC):
             self.aux_propagator(molecule)
             self.get_phase(molecule)
 
-            write_md_output(molecule, qm.calc_coupling, self.propagation, unixmd_dir, istep=istep)
+            write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
             self.print_step(molecule, debug, istep=istep)
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, unixmd_dir, istep=istep)

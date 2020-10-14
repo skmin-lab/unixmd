@@ -19,10 +19,10 @@ class SH(MQC):
         :param string vel_rescale: velocity rescaling method after hop
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_adjnac=True, vel_rescale="nac2", coefficient=None):
+        propagation="density", l_pop_print=False, l_adjnac=True, vel_rescale="nac2", coefficient=None):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, l_adjnac, coefficient)
+            propagation, l_pop_print, l_adjnac, coefficient)
 
         # Initialize SH variables
         self.rstate = istate
@@ -98,7 +98,7 @@ class SH(MQC):
         bo_list = [self.rstate]
         qm.calc_coupling = True
 
-        touch_file(molecule, qm.calc_coupling, self.propagation, unixmd_dir, SH_chk=True)
+        touch_file(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=True)
         self.print_init(molecule, qm, mm, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
@@ -119,7 +119,7 @@ class SH(MQC):
 
         self.update_energy(molecule)
 
-        write_md_output(molecule, qm.calc_coupling, self.propagation, unixmd_dir, istep=-1)
+        write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
         self.print_step(molecule, debug, istep=-1)
 
         # Main MD loop
@@ -156,7 +156,7 @@ class SH(MQC):
 
             self.update_energy(molecule)
 
-            write_md_output(molecule, qm.calc_coupling, self.propagation, unixmd_dir, istep=istep)
+            write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
             self.print_step(molecule, debug, istep=istep)
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, unixmd_dir, istep=istep)

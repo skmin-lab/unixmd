@@ -2,7 +2,7 @@ from __future__ import division
 from misc import au_to_A, call_name
 import os, textwrap, datetime
 
-def touch_file(molecule, calc_coupling, propagation, unixmd_dir, SH_chk):
+def touch_file(molecule, calc_coupling, propagation, l_pop_print, unixmd_dir, SH_chk):
     """ Open the UNI-xMD output files
 
         :param object molecule: molecule object
@@ -13,7 +13,7 @@ def touch_file(molecule, calc_coupling, propagation, unixmd_dir, SH_chk):
     """
     write_init_base(molecule, unixmd_dir)
     if (calc_coupling):
-        write_init_coupling(molecule, propagation, unixmd_dir, SH_chk)
+        write_init_coupling(molecule, propagation, l_pop_print, unixmd_dir, SH_chk)
 
     # Print UNI-xMD version
     cur_time = datetime.datetime.now()
@@ -47,7 +47,7 @@ def write_init_base(molecule, unixmd_dir):
         "".join([f'E({ist})(H){"":8s}' for ist in range(molecule.nst)])
     typewriter(tmp, unixmd_dir, "MDENERGY")
 
-def write_init_coupling(molecule, propagation, unixmd_dir, SH_chk):
+def write_init_coupling(molecule, propagation, l_pop_print, unixmd_dir, SH_chk):
     """ Header for coupling output files
 
         :param object molecule: molecule object
@@ -72,6 +72,11 @@ def write_init_coupling(molecule, propagation, unixmd_dir, SH_chk):
     elif (propagation == "coefficient"):
         tmp = f'{"#":5s} BO State Coefficients: state Re-Im; see the manual for detail orders'
         typewriter(tmp, unixmd_dir, "BOCOEF")
+        if (l_pop_print):
+            tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
+            typewriter(tmp, unixmd_dir, "BOPOP")
+            tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
+            typewriter(tmp, unixmd_dir, "BOCOH")
     else:
         raise ValueError (f"( {call_name()} ) Other propagator not implemented! {propagation}")
 
@@ -79,7 +84,7 @@ def write_init_coupling(molecule, propagation, unixmd_dir, SH_chk):
     tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Eliments: off-diagonal'
     typewriter(tmp, unixmd_dir, "NACME")
 
-def write_md_output(molecule, calc_coupling, propagation, unixmd_dir, istep):
+def write_md_output(molecule, calc_coupling, propagation, l_pop_print, unixmd_dir, istep):
     """ Write output files
 
         :param object molecule: molecule object
@@ -114,6 +119,12 @@ def write_md_output(molecule, calc_coupling, propagation, unixmd_dir, istep):
             tmp = f'{istep + 1:9d}' + "".join([f'{states.coef.real:15.8f}{states.coef.imag:15.8f}' \
                 for states in molecule.states])
             typewriter(tmp, unixmd_dir, "BOCOEF")
+            if (l_pop_print):
+                tmp = f'{istep + 1:9d}' + "".join([f'{molecule.rho.real[ist, ist]:15.8f}' for ist in range(molecule.nst)])
+                typewriter(tmp, unixmd_dir, "BOPOP")
+                tmp = f'{istep + 1:9d}' + "".join([f"{molecule.rho.real[ist, jst]:15.8f}{molecule.rho.imag[ist, jst]:15.8f}" \
+                    for ist in range(molecule.nst) for jst in range(ist + 1, molecule.nst)])
+                typewriter(tmp, unixmd_dir, "BOCOH")
 
         # Write NACME file
         tmp = f'{istep + 1:10d}' + "".join([f'{molecule.nacme[ist, jst]:15.8f}' \
