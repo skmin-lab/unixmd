@@ -18,10 +18,10 @@ class Eh(MQC):
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_adjnac=True, coef=None):
+        propagation="density", l_adjnac=True, coefficient=None):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, l_adjnac, coef)
+            propagation, l_adjnac, coefficient)
 
     def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):

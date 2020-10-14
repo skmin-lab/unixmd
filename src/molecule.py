@@ -259,7 +259,7 @@ class Molecule(object):
 
         self.nelec -= self.charge
 
-    def get_coef(self, coef, istate):
+    def get_coefficient(self, coef, istate):
         """ Get initial coefficient
         """
         if (coef == None):
