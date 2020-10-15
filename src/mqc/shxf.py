@@ -49,7 +49,7 @@ class SHXF(MQC):
         :type wsigma: double or double,list
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_pop_print=False, l_adjnac=True, vel_rescale="nac2", \
+        propagation="density", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", \
         threshold=0.01, wsigma=None, one_dim=False, coefficient=None):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
@@ -66,18 +66,15 @@ class SHXF(MQC):
         self.l_hop = False
         self.force_hop = False
 
-        if (vel_rescale == "simple"):
-            self.vel_rescale = vel_rescale
-        elif (vel_rescale == "nac"):
+        self.vel_rescale = vel_rescale
+        if (self.vel_rescale == "energy"):
+            pass
+        elif (self.vel_rescale == "velocity"):
             if (molecule.l_nacme): 
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Nonadiabatic coupling vectors are not available! l_nacme: {molecule.l_nacme}")
-            else:
-                self.vel_rescale = vel_rescale
-        elif (vel_rescale == "nac2"):
+        elif (self.vel_rescale == "momentum"):
             if (molecule.l_nacme): 
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Nonadiabatic coupling vectors are not available! l_nacme: {molecule.l_nacme}")
-            else:
-                self.vel_rescale = vel_rescale
         else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
 
@@ -324,12 +321,12 @@ class SHXF(MQC):
                 if (molecule.ekin_qm < eps):
                     raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin_qm}")
 
-                if (self.vel_rescale == "simple"):
+                if (self.vel_rescale == "energy"):
                     fac = 1. - pot_diff / molecule.ekin_qm
                     # Rescale velocities for QM atoms
                     molecule.vel[0:molecule.nat_qm] *= np.sqrt(fac)
 
-                elif (self.vel_rescale == "nac"):
+                elif (self.vel_rescale == "velocity"):
                     a = np.sum(molecule.mass * np.sum(molecule.nac[self.rstate_old, self.rstate] ** 2., axis=1))
                     b = 2. * np.sum(molecule.mass * np.sum(molecule.nac[self.rstate_old, self.rstate] * molecule.vel, axis=1))
                     c = 2. * pot_diff
@@ -337,6 +334,7 @@ class SHXF(MQC):
 
                     if (det < 0.):
                         self.l_hop = False
+                        self.force_hop = False
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
                     else:
@@ -348,25 +346,26 @@ class SHXF(MQC):
                         # Rescale velocities for QM atoms
                         molecule.vel[0:molecule.nat_qm] += x * molecule.nac[self.rstate_old, self.rstate, 0:molecule.nat_qm]
 
-                elif (self.vel_rescale == "nac2"):
-                    a = np.sum(1./molecule.mass * np.sum(molecule.nac[self.rstate_old, self.rstate] ** 2., axis=1))
+                elif (self.vel_rescale == "momentum"):
+                    a = np.sum(1. / molecule.mass * np.sum(molecule.nac[self.rstate_old, self.rstate] ** 2., axis=1))
                     b = 2. * np.sum(np.sum(molecule.nac[self.rstate_old, self.rstate] * molecule.vel, axis=1))
                     c = 2. * pot_diff
                     det = b ** 2. - 4. * a * c
 
                     if (det < 0.):
                         self.l_hop = False
+                        self.force_hop = False
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
-                        print('no solution to find rescaling factor', flush=True)
                     else:
-                        if(b < 0.):
+                        if (b < 0.):
                             x = 0.5 * (- b - np.sqrt(det)) / a
                         else:
                             x = 0.5 * (- b + np.sqrt(det)) / a
 
                         # Rescale velocities for QM atoms
-                        molecule.vel[0:molecule.nat_qm] += x * molecule.nac[self.rstate_old, self.rstate, 0:molecule.nat_qm]/molecule.mass[0:molecule.nat_qm].reshape((-1,1))
+                        molecule.vel[0:molecule.nat_qm] += x * molecule.nac[self.rstate_old, self.rstate, 0:molecule.nat_qm] /\
+                            molecule.mass[0:molecule.nat_qm].reshape((-1,1))
 
                 # Update kinetic energy
                 molecule.update_kinetic()
