@@ -1,0 +1,64 @@
+Geometry = GenFormat{
+  <<< 'geometry.gen'
+}
+Hamiltonian = DFTB{
+  SCC = Yes
+  SCCTolerance = 1e-06
+  MaxSCCIterations = 10000
+  SpinConstants = {
+    ShellResolvedSpin = Yes
+    H = { -0.07925 }
+    N = { -0.04687 -0.03170 -0.03170 -0.03072 }
+    C = { -0.04559 -0.02930 -0.02930 -0.02755 }
+  }
+  RangeSeparated = LC{
+    Screening = MatrixBased{}
+  }
+  Charge = 1.0
+  MaxAngularMomentum = {
+    H = 's'
+    N = 'p'
+    C = 'p'
+  }
+  SlaterKosterFiles = Type2FileNames{
+    Prefix = '/home/islee/program/dftb/slko/ob2-1-1/base/'
+    Separator = '-'
+    Suffix = '.skf'
+    LowerCaseTypeName = No
+  }
+}
+Analysis = {
+  CalculateForces = Yes
+  WriteBandOut = Yes
+  WriteEigenvectors = Yes
+  MullikenAnalysis = Yes
+}
+Options = {
+  WriteDetailedXml = Yes
+  WriteDetailedOut = Yes
+  TimingVerbosity = -1
+}
+REKS = SSR22{
+  Energy = {
+    Functional = { 'PPS' 'OSS' }
+    StateInteractions = Yes
+    IncludeAllStates = No
+  }
+  TargetState = 1
+  ReadEigenvectors = No
+  FONmaxIter = 50
+  shift = 0.3
+  SpinTuning = { 3.2  3.2  3.2 }
+  Gradient = ConjugateGradient{
+    CGmaxIter = 100
+    Tolerance = 1e-08
+    Preconditioner = Yes
+    SaveMemory = Yes
+  }
+  RelaxedDensity = No
+  NonAdiabaticCoupling = Yes
+  VerbosityLevel = 1
+}
+ParserOptions = {
+  ParserVersion = 8
+}

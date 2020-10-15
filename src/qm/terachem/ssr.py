@@ -28,7 +28,7 @@ class SSR(TeraChem):
         :param double version: version of TeraChem program
     """
     def __init__(self, molecule, ngpus=1, gpu_id="1", precision="dynamic", \
-        version=1.92, functional="hf", basis_set="sto-3g", scf_rho_tol=1E-2, \
+        version=1.93, functional="hf", basis_set="sto-3g", scf_rho_tol=1E-2, \
         scf_max_iter=300, ssr22=True, guess="dft", guess_file="./c0", \
         reks_rho_tol=1E-6, reks_max_iter=1000, shift=0.3, use_ssr_state=True, \
         cpreks_grad_tol=1E-6, cpreks_max_iter=1000, qm_path="./"):
@@ -80,7 +80,7 @@ class SSR(TeraChem):
         self.copy_files(istep)
         super().get_data(base_dir, calc_force_only)
         self.write_xyz(molecule)
-        self.get_input(molecule, bo_list)
+        self.get_input(molecule, istep, bo_list)
         self.run_QM(base_dir, istep, bo_list)
         self.extract_QM(molecule, bo_list)
         self.move_dir(base_dir)
@@ -96,10 +96,11 @@ class SSR(TeraChem):
             shutil.copy(os.path.join(self.scr_qm_dir, "./scr/c0"), \
                 os.path.join(self.scr_qm_dir, "../c0"))
 
-    def get_input(self, molecule, bo_list):
+    def get_input(self, molecule, istep, bo_list):
         """ Generate TeraChem input files: input.tcin
 
             :param object molecule: molecule object
+            :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
         """
         # Make 'input.tcin' file
@@ -301,9 +302,8 @@ class SSR(TeraChem):
         # NAC
         if (self.nac == "Yes"):
 
-            # 1.92 version do not show H vector
-            # TODO : for 1.92 version, Hvec is not same with molecule.nac
-            if (self.version == 1.92):
+            # 1.99 version do not show H vector
+            if (self.version == 1.99):
                 # Zeroing for G, h and H vectors
                 Gvec = np.zeros((molecule.nat, molecule.nsp))
                 hvec = np.zeros((molecule.nat, molecule.nsp))
@@ -327,17 +327,21 @@ class SSR(TeraChem):
                     ((2. * ssr_coef[0, 0] * ssr_coef[1, 0] * Gvec + hvec) / \
                     (ssr_coef[0, 0] * ssr_coef[1, 1] + ssr_coef[1, 0] * ssr_coef[0, 1]))
 
-            kst = 0
-            for ist in range(molecule.nst):
-                for jst in range(ist + 1, molecule.nst):
-                    tmp_c = '>\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
-	                      '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
-                    nac = re.findall(tmp_c, log_out)
-                    nac = np.array(nac[kst])
-                    nac = nac.astype(float)
-                    nac = nac.reshape(molecule.nat, 3, order='C')
-                    molecule.nac[ist, jst] = nac
-                    molecule.nac[jst, ist] = - nac
-                    kst += 1
+                molecule.nac[0, 1] = Hvec
+                molecule.nac[1, 0] = - Hvec
+
+            elif (self.version == 1.93):
+                kst = 0
+                for ist in range(molecule.nst):
+                    for jst in range(ist + 1, molecule.nst):
+                        tmp_c = '>\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
+	                          '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
+                        nac = re.findall(tmp_c, log_out)
+                        nac = np.array(nac[kst])
+                        nac = nac.astype(float)
+                        nac = nac.reshape(molecule.nat, 3, order='C')
+                        molecule.nac[ist, jst] = nac
+                        molecule.nac[jst, ist] = - nac
+                        kst += 1
 
 

@@ -15,15 +15,19 @@ class SH(MQC):
         :param integer nsteps: nuclear step
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
+        :param boolean l_pop_print: logical to print BO population and coherence
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param string vel_rescale: velocity rescaling method after hop
         :param double threshold: electronic density threshold for unphysical density
+        :param coefficient: initial BO coefficient
+        :type coefficient: double, list or complex, list
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_adjnac=True, vel_rescale="simple", threshold=0.01):
+        propagation="density", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", \
+        threshold=0.01, coefficient=None):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, l_adjnac)
+            propagation, l_pop_print, l_adjnac, coefficient)
 
         # Initialize SH variables
         self.rstate = istate
@@ -38,13 +42,15 @@ class SH(MQC):
         self.l_hop = False
         self.force_hop = False
 
-        if (vel_rescale == "simple"):
-            self.vel_rescale = vel_rescale
-        elif (vel_rescale == "nac"):
+        self.vel_rescale = vel_rescale
+        if (self.vel_rescale == "energy"):
+            pass
+        elif (self.vel_rescale == "velocity"):
             if (molecule.l_nacme): 
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Nonadiabatic coupling vectors are not available! l_nacme: {molecule.l_nacme}")
-            else:
-                self.vel_rescale = vel_rescale
+        elif (self.vel_rescale == "momentum"):
+            if (molecule.l_nacme): 
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Nonadiabatic coupling vectors are not available! l_nacme: {molecule.l_nacme}")
         else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
 
@@ -96,7 +102,7 @@ class SH(MQC):
         bo_list = [self.rstate]
         qm.calc_coupling = True
 
-        touch_file(molecule, qm.calc_coupling, self.propagation, unixmd_dir, SH_chk=True)
+        touch_file(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=True)
         self.print_init(molecule, qm, mm, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
@@ -117,7 +123,7 @@ class SH(MQC):
 
         self.update_energy(molecule)
 
-        write_md_output(molecule, qm.calc_coupling, self.propagation, unixmd_dir, istep=-1)
+        write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
         self.print_step(molecule, debug, istep=-1)
 
         # Main MD loop
@@ -154,7 +160,7 @@ class SH(MQC):
 
             self.update_energy(molecule)
 
-            write_md_output(molecule, qm.calc_coupling, self.propagation, unixmd_dir, istep=istep)
+            write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
             self.print_step(molecule, debug, istep=istep)
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, unixmd_dir, istep=istep)
@@ -247,12 +253,12 @@ class SH(MQC):
                 if (molecule.ekin_qm < eps):
                     raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin_qm}")
 
-                if (self.vel_rescale == "simple"):
+                if (self.vel_rescale == "energy"):
                     fac = 1. - pot_diff / molecule.ekin_qm
                     # Rescale velocities for QM atoms
                     molecule.vel[0:molecule.nat_qm] *= np.sqrt(fac)
 
-                elif (self.vel_rescale == "nac"):
+                elif (self.vel_rescale == "velocity"):
                     a = np.sum(molecule.mass * np.sum(molecule.nac[self.rstate_old, self.rstate] ** 2., axis=1))
                     b = 2. * np.sum(molecule.mass * np.sum(molecule.nac[self.rstate_old, self.rstate] * molecule.vel, axis=1))
                     c = 2. * pot_diff
@@ -261,19 +267,47 @@ class SH(MQC):
                     if (det < 0.):
                         if (self.force_hop):
                             # TODO : print about hopping status needed!
+                            print (f" Force hop rejected, but allowed {self.rstate_old} -> {self.rstate}", flush=True)
                             pass
                         else:
                             self.l_hop = False
+                            #self.force_hop = False
                             self.rstate = self.rstate_old
                             bo_list[0] = self.rstate
                     else:
-                        if(b < 0.):
+                        if (b < 0.):
                             x = 0.5 * (- b - np.sqrt(det)) / a
                         else:
                             x = 0.5 * (- b + np.sqrt(det)) / a
 
                         # Rescale velocities for QM atoms
                         molecule.vel[0:molecule.nat_qm] += x * molecule.nac[self.rstate_old, self.rstate, 0:molecule.nat_qm]
+
+                elif (self.vel_rescale == "momentum"):
+                    a = np.sum(1. / molecule.mass * np.sum(molecule.nac[self.rstate_old, self.rstate] ** 2., axis=1))
+                    b = 2. * np.sum(np.sum(molecule.nac[self.rstate_old, self.rstate] * molecule.vel, axis=1))
+                    c = 2. * pot_diff
+                    det = b ** 2. - 4. * a * c
+
+                    if (det < 0.):
+                        if (self.force_hop):
+                            # TODO : print about hopping status needed!
+                            print (f" Force hop rejected, but allowed {self.rstate_old} -> {self.rstate}", flush=True)
+                            pass
+                        else:
+                            self.l_hop = False
+                            #self.force_hop = False
+                            self.rstate = self.rstate_old
+                            bo_list[0] = self.rstate
+                    else:
+                        if (b < 0.):
+                            x = 0.5 * (- b - np.sqrt(det)) / a
+                        else:
+                            x = 0.5 * (- b + np.sqrt(det)) / a
+
+                        # Rescale velocities for QM atoms
+                        molecule.vel[0:molecule.nat_qm] += x * molecule.nac[self.rstate_old, self.rstate, 0:molecule.nat_qm] /\
+                            molecule.mass[0:molecule.nat_qm].reshape((-1,1))
 
                 # Update kinetic energy
                 molecule.update_kinetic()

@@ -12,10 +12,13 @@ class MQC(object):
         :param integer nsteps: nuclear step
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
+        :param boolean l_pop_print: logical to print BO population and coherence
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
+        :param coefficient: initial BO coefficient
+        :type coefficient: double, list or complex, list
     """
     def __init__(self, molecule, istate, dt, nsteps, nesteps, \
-        propagation, l_adjnac):
+        propagation, l_pop_print, l_adjnac, coefficient):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -26,14 +29,14 @@ class MQC(object):
         self.nesteps = nesteps
 
         self.propagation = propagation
+        self.l_pop_print = l_pop_print
 
         self.l_adjnac = l_adjnac
 
         self.rforce = np.zeros((molecule.nat, molecule.nsp))
 
         # Initialize coefficients and densities
-        molecule.states[self.istate].coef = 1. + 0.j
-        molecule.rho[self.istate, self.istate] = 1. + 0.j
+        molecule.get_coefficient(coefficient, self.istate)
 
     def cl_update_position(self, molecule):
         """ Routine to update nuclear positions
