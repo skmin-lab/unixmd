@@ -32,13 +32,17 @@ class EhXF(MQC):
         :param integer nsteps: nuclear step
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
+        :param boolean l_pop_print: logical to print BO population and coherence
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
+        :param coefficient: initial BO coefficient
+        :type coefficient: double, list or complex, list
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_adjnac=True, threshold=0.01, wsigma=0.1, l_qmom_force=False):
+        propagation="density", l_pop_print=False ,l_adjnac=True, threshold=0.01, wsigma=0.1,\
+        l_qmom_force=False, coefficient=None):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, l_adjnac)
+            propagation, l_pop_print, l_adjnac, coefficient)
 
         # Initialize XF related variables
         self.l_coh = []
@@ -107,7 +111,7 @@ class EhXF(MQC):
         bo_list = [ist for ist in range(molecule.nst)]
         qm.calc_coupling = True
 
-        touch_file(molecule, qm.calc_coupling, self.propagation, unixmd_dir, SH_chk=False)
+        touch_file(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=False)
         self.print_init(molecule, qm, mm, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
@@ -125,7 +129,7 @@ class EhXF(MQC):
         self.aux_propagator(molecule)
         self.get_phase(molecule)
 
-        write_md_output(molecule, qm.calc_coupling, self.propagation, unixmd_dir, istep=-1)
+        write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
         self.print_step(molecule, debug, istep=-1)
 
         # Main MD loop
@@ -159,7 +163,7 @@ class EhXF(MQC):
             self.aux_propagator(molecule)
             self.get_phase(molecule)
 
-            write_md_output(molecule, qm.calc_coupling, self.propagation, unixmd_dir, istep=istep)
+            write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
             self.print_step(molecule, debug, istep=istep)
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, unixmd_dir, istep=istep)
