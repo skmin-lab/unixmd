@@ -23,5 +23,5 @@ md = mqc.SH(molecule=mol, nsteps=1000, nesteps=10000, dt=0.125, istate=2, propag
 
 bathT = rescale1(temperature=300.0, nrescale=20)
 
-md.run(molecule=mol, qm=qm, thermostat=bathT, input_dir="./TRAJ_sh", save_scr=True, save_QMlog=False, save_MMlog=False, debug=0)
+md.run(molecule=mol, qm=qm, thermostat=bathT, input_dir="./TRAJ.cnh4", save_scr=True, save_QMlog=False, save_MMlog=False, debug=0)
 
