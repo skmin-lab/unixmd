@@ -283,13 +283,14 @@ class SH(MQC):
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
                     else:
-                        if(b < 0.):
+                        if (b < 0.):
                             x = 0.5 * (- b - np.sqrt(det)) / a
                         else:
                             x = 0.5 * (- b + np.sqrt(det)) / a
 
                         # Rescale velocities for QM atoms
-                        molecule.vel[0:molecule.nat_qm] += x * molecule.nac[self.rstate_old, self.rstate, 0:molecule.nat_qm]/molecule.mass[0:molecule.nat_qm].reshape((-1,1))
+                        molecule.vel[0:molecule.nat_qm] += x * molecule.nac[self.rstate_old, self.rstate, 0:molecule.nat_qm] /\
+                            molecule.mass[0:molecule.nat_qm].reshape((-1,1))
 
                 # Update kinetic energy
                 molecule.update_kinetic()

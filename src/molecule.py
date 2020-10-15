@@ -267,7 +267,7 @@ class Molecule(object):
             self.rho[istate, istate] = 1. + 0.j
         else:
             if (len(coef) != self.nst):
-                raise ValueError (f"( {self.mol_type}.{call_name()} ) The number of coeffiecnt should be same to nstates!: {len(coef)} != molecule.nst")
+                raise ValueError (f"( {self.mol_type}.{call_name()} ) The number of coefficiecnt should be same to nstates!: {len(coef)} != molecule.nst")
             else:
                 for ist in range(self.nst):
                     if (isinstance(coef[ist], float)):
@@ -275,11 +275,11 @@ class Molecule(object):
                     elif (isinstance(coef[ist], complex)):
                         self.states[ist].coef = coef[ist]
                     else:
-                        raise ValueError (f"( {self.mol_type}.{call_name()} ) The coeffiecnt should be float or complex: {coef[ist]}")
+                        raise ValueError (f"( {self.mol_type}.{call_name()} ) The coefficiecnt should be float or complex: {coef[ist]}")
                         
                 for ist in range(self.nst):
                     for jst in range(self.nst):
-                            self.rho[ist, jst] = self.states[ist].coef.conjugate() * self.states[jst].coef
+                        self.rho[ist, jst] = self.states[ist].coef.conjugate() * self.states[jst].coef
 
     def print_init(self, mm):
         """ Print initial information about molecule.py
