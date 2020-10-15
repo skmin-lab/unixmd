@@ -1,0 +1,50 @@
+end of hernew
+ IGNORING BNDCHK
+*** End of DALTON calculation ***
+end of scfpq
+end of mcdrt
+end of mcuft
+end of mcscf
+end of mcpc
+end of mcpc
+end of mcpc
+ allocate: status=                     0
+end of cigrd
+ prnopt=                     0
+end of tran
+  SKIPPING TWOEXP ....
+ IGNORING BNDCHK
+*** End of DALTON calculation ***
+ allocate: status=                     0
+end of cigrd
+ prnopt=                     0
+end of tran
+  SKIPPING TWOEXP ....
+ IGNORING BNDCHK
+*** End of DALTON calculation ***
+ prnopt=                     0
+end of tran
+ IGNORING BNDCHK
+*** End of DALTON calculation ***
+ allocate: status=                     0
+end of cigrd
+ prnopt=                     0
+end of tran
+  SKIPPING TWOEXP ....
+ IGNORING BNDCHK
+*** End of DALTON calculation ***
+ prnopt=                     0
+end of tran
+ IGNORING BNDCHK
+*** End of DALTON calculation ***
+ allocate: status=                     0
+end of cigrd
+ prnopt=                     0
+end of tran
+  SKIPPING TWOEXP ....
+ IGNORING BNDCHK
+*** End of DALTON calculation ***
+ prnopt=                     0
+end of tran
+ IGNORING BNDCHK
+*** End of DALTON calculation ***
