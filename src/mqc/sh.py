@@ -15,8 +15,11 @@ class SH(MQC):
         :param integer nsteps: nuclear step
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
+        :param boolean l_pop_print: logical to print BO population and coherence
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param string vel_rescale: velocity rescaling method after hop
+        :param coefficient: initial BO coefficient
+        :type coefficient: double, list or complex, list
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", coefficient=None):

@@ -8,6 +8,7 @@ def touch_file(molecule, calc_coupling, propagation, l_pop_print, unixmd_dir, SH
         :param object molecule: molecule object
         :param boolean calc_coupling: check whether the dynamics includes coupling calculation
         :param string propagation: propagation scheme
+        :param boolean l_pop_print: logical to print BO population and coherence
         :param string unixmd_dir: unixmd directory
         :param boolean SH_chk: check whether the dynamics is surface hopping for initial file header
     """
@@ -52,6 +53,7 @@ def write_init_coupling(molecule, propagation, l_pop_print, unixmd_dir, SH_chk):
 
         :param object molecule: molecule object
         :param string propagation: propagation scheme
+        :param boolean l_pop_print: logical to print BO population and coherence
         :param string unixmd_dir: unixmd directory
         :param boolean SH_chk: check whether the dynamics is surface hopping for initial file header
     """
@@ -90,6 +92,7 @@ def write_md_output(molecule, calc_coupling, propagation, l_pop_print, unixmd_di
         :param object molecule: molecule object
         :param boolean calc_coupling: check whether the dynamics includes coupling calculation
         :param string propagation: propagation scheme
+        :param boolean l_pop_print: logical to print BO population and coherence
         :param string unixmd_dir: unixmd directory
         :param integer istep: current MD step
     """
