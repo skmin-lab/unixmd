@@ -53,7 +53,7 @@ class SHXF(MQC):
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", \
-        threshold=0.01, wsigma=None, one_dim=False, coefficient=None):
+        threshold=0.01, wsigma=None, one_dim=False, coefficient=None, aux_tot_en="running_state"):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
             propagation, l_pop_print, l_adjnac, coefficient)
@@ -70,6 +70,8 @@ class SHXF(MQC):
         self.force_hop = False
 
         self.vel_rescale = vel_rescale
+        self.aux_tot_en = aux_tot_en
+        
         if (self.vel_rescale == "energy"):
             pass
         elif (self.vel_rescale == "velocity"):
@@ -478,37 +480,29 @@ class SHXF(MQC):
 
         # Get auxiliary velocity
         self.aux.vel_old = np.copy(self.aux.vel)
-
-        if (self.one_dim):
-            self.aux.vel[self.rstate] = np.sqrt(2. * molecule.ekin / self.aux.mass[0])
-        else:
-            self.aux.vel[self.rstate] = molecule.vel[0:self.aux.nat]
-
         for ist in range(molecule.nst):
+            # Calculate propagation factor alpha
             if (self.l_coh[ist]):
-                if (self.l_first[ist]):
-#                    self.tot_E[ist] = molecule.ekin + molecule.states[ist].energy
-                    self.aux.vel[ist] = self.aux.vel[self.rstate]
+                if (ist == self.rstate):
+                    alpha = molecule.ekin_qm
                 else:
-                    ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
-                    alpha = ekin_old + molecule.states[ist].energy_old - molecule.states[ist].energy
-                    if (alpha < eps):
-                        self.aux.vel[ist] = 0.
+                    if (self.l_first[ist]):
+                        alpha = molecule.ekin_qm
+                        if (self.aux_tot_en == "state-wise"):
+                            alpha += molecule.states[self.rstate].energy - molecule.states[ist].energy
                     else:
-                        if (self.one_dim):
-                            alpha /= 0.5 * self.aux.mass[0]
-                            self.aux.vel[ist] = np.sqrt(alpha)
-                        else:
-                            if (ist == self.rstate):
-                                alpha = 1.
-                            else:
-                                alpha /= molecule.ekin
-                            self.aux.vel[ist] = molecule.vel[0:self.aux.nat] * np.sqrt(alpha)
-            else:
+                        ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
+                        alpha = ekin_old + molecule.states[ist].energy_old - molecule.states[ist].energy
+                if (alpha < 0.):
+                    alpha = 0.
+                
+                # Calculate auxiliary velocity from alpha
                 if (self.one_dim):
-                    self.aux.vel[ist] = self.aux.vel[self.rstate]
+                    alpha /= 0.5 * self.aux.mass[0]
+                    self.aux.vel[ist] = np.sqrt(alpha)
                 else:
-                    self.aux.vel[ist] = molecule.vel[0:self.aux.nat]
+                    alpha /= molecule.ekin_qm
+                    self.aux.vel[ist] = molecule.vel[0:self.aux.nat] * np.sqrt(alpha) 
 
     def get_phase(self, molecule):
         """ Routine to calculate phase term
