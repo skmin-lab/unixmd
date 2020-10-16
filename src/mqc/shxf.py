@@ -1,5 +1,5 @@
 from __future__ import division
-from build.el_propagator import *
+from build.el_propagator_xf import el_run_xf
 from mqc.mqc import MQC
 from fileio import touch_file, write_md_output, write_final_xyz, typewriter
 from misc import eps, au_to_K, call_name
@@ -52,11 +52,11 @@ class SHXF(MQC):
         :type coefficient: double, list or complex, list
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", \
+        propagation="density", solver="RK4", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", \
         threshold=0.01, wsigma=None, one_dim=False, coefficient=None):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, l_pop_print, l_adjnac, coefficient)
+            propagation, solver, l_pop_print, l_adjnac, coefficient)
 
         # Initialize SH variables
         self.rstate = istate
@@ -529,12 +529,7 @@ class SHXF(MQC):
 
             :param object molecule: molecule object
         """
-        if (self.propagation == "coefficient"):
-            el_coef_xf(self, molecule)
-        elif (self.propagation == "density"):
-            el_rho_xf(self, molecule)
-        else:
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Other propagator not implemented! {self.propagation}")
+        el_run_xf(self, molecule)
 
     def append_wsigma(self):
         """ Routine to append sigma values when single float number is provided

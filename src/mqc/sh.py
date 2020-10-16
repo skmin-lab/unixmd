@@ -1,5 +1,5 @@
 from __future__ import division
-from build.el_propagator import *
+from build.el_propagator import el_run
 from mqc.mqc import MQC
 from fileio import touch_file, write_md_output, write_final_xyz, typewriter
 from misc import eps, au_to_K, call_name
@@ -15,6 +15,7 @@ class SH(MQC):
         :param integer nsteps: nuclear step
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
+        :param string solver: propagation solver
         :param boolean l_pop_print: logical to print BO population and coherence
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param string vel_rescale: velocity rescaling method after hop
@@ -22,10 +23,10 @@ class SH(MQC):
         :type coefficient: double, list or complex, list
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", coefficient=None):
+        propagation="density", solver="RK4", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", coefficient=None):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, l_pop_print, l_adjnac, coefficient)
+            propagation, solver, l_pop_print, l_adjnac, coefficient)
 
         # Initialize SH variables
         self.rstate = istate
@@ -324,12 +325,7 @@ class SH(MQC):
 
             :param object molecule: molecule object
         """
-        if (self.propagation == "coefficient"):
-            el_coef(self.nesteps, self.dt, molecule)
-        elif (self.propagation == "density"):
-            el_rho(self.nesteps, self.dt, molecule)
-        else:
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Other propagator not implemented! {self.propagation}")
+        el_run(self, molecule)
 
     def print_init(self, molecule, qm, mm, thermostat, debug):
         """ Routine to print the initial information of dynamics
