@@ -122,7 +122,7 @@ def NACME_avg(ntraj, index, nstep):
             tmp = lines_2[j+1].split()
 
             for k in range(flength):
-                avg_state[j][k] += float(tmp[k+1])
+                avg_state[j][k] += float(math.sqrt(float(tmp[k+1])**2))
 
     for i in range(nstep + 1):
         w_str = f"{i:8d}"
