@@ -101,6 +101,7 @@ def Coherence_avg(ntraj, index, nstep):
         w.write(w_str + "\n")
 
     w.close()
+            
                                       
 def NACME_avg(ntraj, index, nstep):
     w = open("NACME_avg", 'w')
