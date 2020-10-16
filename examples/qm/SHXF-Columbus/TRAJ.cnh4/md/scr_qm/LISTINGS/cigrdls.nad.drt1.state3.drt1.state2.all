@@ -1,0 +1,642 @@
+
+&& iteration number 1 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  program cigrd
+
+ effective density and fock matrix construction for analytic energy
+ gradient evaluation for general mrci wave functions
+
+ programmed by: ron shepard and hans lischka
+
+ references:  r. shepard, int. j. quantum chem. 31, 33 (1987).
+
+              r. shepard, i. shavitt, r. m. pitzer, d. c. comeau, m. pepper,
+                   h. lischka, p. g. szalay, r. ahlrichs, f. b. brown,
+                   and j.-g. zhao, int. j. quantum chem. s22, 149 (1988).
+
+              h. lischka, r. shepard, r. m. pitzer, i. shavitt, m. dallos, t.
+                   muller, p. g. szalay, m. seth, g. s. kedziora, s. yabushita,
+                   and z. zhang, phys. chem. chem. phys. 3, 664-673 (2001).
+
+ version date: 13-aug-01
+
+ state-averag modifications:
+    X.1999, by: Michal Dallos
+    University Vienna, Austria
+
+
+     ******************************************
+     **    PROGRAM:              CIGRD       **
+     **    PROGRAM VERSION:      5.4.2b      **
+     **    DISTRIBUTION VERSION: 5.9.a       **
+     ******************************************
+
+
+ This Version of Program cigrd is Maintained by:
+     Thomas Mueller
+     Juelich Supercomputing Centre (JSC)
+     Institute of Advanced Simulation (IAS)
+     D-52425 Juelich, Germany 
+     Email: th.mueller@fz-juelich.de
+
+
+ workspace allocation information: lencor=   131072000 mem1=               0 ifirst=               1
+
+ ===echo of the user input===============================================
+  &input                                                                         
+  nmiter= 100, print=0, fresdd=1,                                                
+  fresaa=1, fresvv=1,                                                            
+  mdir=1,                                                                        
+  cdir=1,                                                                        
+  rtol=1e-6, dtol=1e-6,                                                          
+  wndtol=1e-7,wnatol=1e-7,wnvtol=1e-7                                            
+   nadcalc=3                                                                     
+  samcflag=1                                                                     
+  assume_fc=0                                                                    
+   drt1=1                                                                        
+   root1=3                                                                       
+   drt2=1                                                                        
+   root2=2                                                                       
+  &end                                                                           
+ ========================================================================
+
+ input parameters:
+ cigopt(*)=   0  1  1  1  1  0  0  0  0  0
+ ldamin=     511 ldamax=    4095 ldainc=      64
+ lenm1e=    2047 n1embf=    1636 lenm2e=    2047 n2embf=    1364
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+      1       6    cigrdls                                                     
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+      2       5    cigrdin                                                     
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+      3      10    cidrtfl                                                     
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+      4      11    moints                                                      
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+      5      12    cid1fl                                                      
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+      6      13    cid2fl                                                      
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+      7      14    mcdrtfl                                                     
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+      8      15    mcd1fl                                                      
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+      9      16    mcd2fl                                                      
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     10      17    mcdrtfl.*                                                   
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     11      36    civout.xx                                                   
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     12      19    restart                                                     
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     13      20    mchess                                                      
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     14      21    effd1fl                                                     
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     15      22    effd2fl                                                     
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     16      23    nocoef_cigrd                                                
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     17      50    mcscr2                                                      
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     18      51    hdiagf                                                      
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     19      24    mcscfin                                                     
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     20      25    moints2                                                     
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     21      63    mciscr                                                      
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     22      33    cid1trfl                                                    
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     23      35    mcdftfl.*                                                   
+
+ internal fortran  initial
+   unit    unit    filename
+  ------  ------   --------
+     24      34    mcoftfl.*                                                   
+
+  Calculation mode:
+ DCI(J,I,alpha)+DCSF(J,I,alpha) non-adiab. coupl. term.
+
+
+ MCSCF user input information:
+
+ ======== echo of the mcscf input ========
+ ------------------------------------------------------------------------
+  &input
+   niter=100,
+   nmiter=50,
+   nciitr=300,
+   tol(3)=1.e-4,
+   tol(2)=1.e-4,
+   tol(1)=1.e-8,
+   NSTATE=0,
+   npath=1,3,9,10,13,17,19,21,-11,12, 2,30
+   ncoupl=5,
+   tol(9)=1.e-3,
+   FCIORB=  1,6,20,1,7,20,1,8,20,1,9,20
+   NAVST(1) = 3,
+   WAVST(1,1)=1 ,
+   WAVST(1,2)=1 ,
+   WAVST(1,3)=1 ,
+  &end
+ ------------------------------------------------------------------------
+
+ ***  State averaging information: ***
+
+ MCSCF calculation performed for  1 DRT.
+
+ DRT  first state   no.of aver. states   weights
+  1   ground state          3             0.333 0.333 0.333
+
+ listing file: fortran unit= 6, name( 1)=/work/swmoon/Col.25235/TRAJ_shxf/md/scr_qm/WORK/cigrdls     
+
+ input file: fortran unit= 5, name( 2)=/work/swmoon/Col.25235/TRAJ_shxf/md/scr_qm/WORK/cigrdin     
+
+ input file: fortran unit=24, name(19)=/work/swmoon/Col.25235/TRAJ_shxf/md/scr_qm/WORK/mcscfin     
+
+ mo integrals file: fortran unit=11, name( 4)=/work/swmoon/Col.25235/TRAJ_shxf/md/scr_qm/WORK/moints      
+ moint file header information
+   ntitle =   1     nsym =   1     nmot =  36
+    ninfo =   6   nenrgy =   1
+  A     36
+ info(*)=    1 8192 6552 8192 5460    0
+ labels(:)=
+   1: tout:001   2: tout:002   3: tout:003   4: tout:004   5: tout:005   6: tout:006   7: tout:007   8: tout:008
+   9: tout:009  10: tout:010  11: tout:011  12: tout:012  13: tout:013  14: tout:014  15: tout:015  16: tout:016
+  17: tout:017  18: tout:018  19: tout:019  20: tout:020  21: tout:021  22: tout:022  23: tout:023  24: tout:024
+  25: tout:025  26: tout:026  27: tout:027  28: tout:028  29: tout:029  30: tout:030  31: tout:031  32: tout:032
+  33: tout:033  34: tout:034  35: tout:035  36: tout:036
+ moint file header information
+ SIFS file created by program tran.      odin1             11:42:41.311 15-Oct-20
+ moint core energy(*) values:
+ energy( 1)=  3.880154784307E+01, ietype=   -1,    core energy of type: Nuc.Rep.
+
+    total mo core energy =   3.880154784307E+01
+ 
+  1-e CI density read from file:
+ cid1fl.tr                                                   
+  2-e CI density read from file:
+ cid2fl.tr                                                   
+
+ ci 1-particle density file: fortran unit=12, name( 5)=/work/swmoon/Col.25235/TRAJ_shxf/md/scr_qm/WORK/cid1fl.tr   
+
+ ci density file header information:
+ symm. mcscf trans. dens. mat. (mcscf.x), DRT 1,state 03 - DRT 1, state 02       
+ (isym:nbpsy)  1: 36
+ energy( 1)= -9.400738161410E+01, ietype=-1025,   total energy of type: MCSCF   
+ energy( 2)= -9.407299277002E+01, ietype=-1025,   total energy of type: MCSCF   
+ energy( 3)=  3.880154784307E+01, ietype=   -1,    core energy of type: Nuc.Rep.
+ SA-MCSCF: skipping consistency check with cidrtfl
+
+   ******  MCSCF DRT info section  ******
+
+ Information for MCSCF DRT number  1
+
+ mcscf drt header information:
+  title                                                                          
+ Molecular symmetry group:    a  
+ Total number of electrons:   16
+ Spin multiplicity:            1
+ Number of doubly occ.orbital  5
+ Number of active orbitals:    4
+ Number of active electrons:   6
+ Total number of CSFs:        10
+
+ mapml(*)   6   7   8   9
+
+ doub(*)    1   2   3   4   5
+
+ mcscf restart file: fortran unit=19, name(12)=/work/swmoon/Col.25235/TRAJ_shxf/md/scr_qm/WORK/restart     
+docc:                 5
+active:               4
+internal:             9
+virtual:             27
+
+ mcscf 1-particle density file: fortran unit=15, name( 8)=/work/swmoon/Col.25235/TRAJ_shxf/md/scr_qm/WORK/mcd1fl      
+ energy( 1)=  3.880154784307E+01, ietype=   -1,    core energy of type: Nuc.Rep.
+ energy( 2)= -9.415770901355E+01, ietype=-1025,   total energy of type: MCSCF   
+ energy( 3)=  3.446132268436E-10, ietype=-2050, cnvginf energy of type: MC-D.E. 
+ energy( 4)=  7.656736739373E-07, ietype=-2051, cnvginf energy of type: MC-Wnorm
+ energy( 5)=  3.697239216840E-08, ietype=-2052, cnvginf energy of type: MC-Knorm
+ energy( 6)=  1.342493400395E-14, ietype=-2053, cnvginf energy of type: MC-ApxDE
+
+ mcscf density file header information:
+ NO-coefficients from mcscf.x                                                    
+ elast:     -9.415770901355467E+01 hartree.
+ total number of irreps: 1
+ (isym:nipsy)  1:  9
+ (isym:nmpsy)  1: 36
+ nonzero mcres(*) orbital masks:
+ orbital=   6 mask=  00000020
+ orbital=   7 mask=  00000020
+ orbital=   8 mask=  00000020
+ orbital=   9 mask=  00000020
+ mo-to-internal mapping vector [i:mo(i)]:
+    1:  1    2:  2    3:  3    4:  4    5:  5    6:  6    7:  7    8:  8    9:  9   10:  0
+   11:  0   12:  0   13:  0   14:  0   15:  0   16:  0   17:  0   18:  0   19:  0   20:  0
+   21:  0   22:  0   23:  0   24:  0   25:  0   26:  0   27:  0   28:  0   29:  0   30:  0
+   31:  0   32:  0   33:  0   34:  0   35:  0   36:  0
+ mcd1fl header information read
+
+ faar:   0 active-active rotations allowed out of:   6 possible.
+
+ lenbfsdef=                 32767  lenbfs=                   729
+  number of integrals per class 1:11 (cf adda 
+ class  1 (pq|rs):         #          55
+ class  2 (pq|ri):         #         200
+ class  3 (pq|ia):         #        1350
+ class  4 (pi|qa):         #        2160
+ class  5 (pq|ra):         #        1080
+ class  6 (pq|ij)/(pi|qj): #         400
+ class  7 (pq|ab):         #        3780
+ class  8 (pa|qb):         #        7290
+ class  9 p(bp,ai)         #       14580
+ class 10p(ai,jp):        #        2700
+ class 11p(ai,bj):        #       10935
+
+ Size of orbital-Hessian matrix B:                    37915
+  1. B[ad,ad]            250
+  2. B[aa,ad]              0
+  3. B[aa,aa]              0
+  4. B[vd,ad]           2700
+  5. B[vd,aa]              0
+  6. B[vd,vd]          10935
+  7. B[va,ad]           2160
+  8. B[va,aa]              0
+  9. B[va,vd]          14580
+  10.B[va,va]           7290
+
+ Size of the orbital-state Hessian matrix C:              0
+  11.C[csf,ad]              0
+  12.C[csf,aa]              0
+  13.C[csf,vd]              0
+  14.C[csf,va]              0
+
+ Total size of the state Hessian matrix M:                0
+ Size of HESSIAN-matrix for quadratic conv.:          37915
+
+ one electron hamiltonian and overlap integrals read
+   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20
+  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36
+
+          d1 array block   1
+
+                MO   1         MO   2         MO   3         MO   4         MO   5         MO   6         MO   7         MO   8
+   MO   6    0.00000        0.00000        0.00000        0.00000        0.00000      -9.732657E-03
+   MO   7    0.00000        0.00000        0.00000        0.00000        0.00000       6.638125E-05  -0.476295    
+   MO   8    0.00000        0.00000        0.00000        0.00000        0.00000       3.077913E-02  -3.361866E-02   0.394967    
+   MO   9    0.00000        0.00000        0.00000        0.00000        0.00000      -2.719229E-02   5.839190E-02  -0.390857    
+
+                MO   9         MO  10         MO  11         MO  12         MO  13         MO  14         MO  15         MO  16
+   MO   9   9.106102E-02
+
+                MO  17         MO  18         MO  19         MO  20         MO  21         MO  22         MO  23         MO  24
+
+                MO  25         MO  26         MO  27         MO  28         MO  29         MO  30         MO  31         MO  32
+
+                MO  33         MO  34         MO  35         MO  36
+
+ dalen: da sorting parameters, nbuk=   1 lendar=    4095 nvpbk=        2729 nvpsg=      191808
+getmosize:+labels=     1330668
+ beginning two-electron integral sort...
+ sort1: nvals=     58626 nvlout=     99954
+
+ ci 2-particle density file: fortran unit=13, name( 6)=/work/swmoon/Col.25235/TRAJ_shxf/md/scr_qm/WORK/cid2fl.tr   
+ beginning two-particle density matrix sort...
+ sort1: nvals=       180 nvlout=       315
+ SA-MCSCF: fockmatrix construction only over non-zero matrices
+
+  reading antisymmetric 1-e CI density matrix
+
+ antisymmetric 1-e ci density file: fortran unit=33, name( 5)=/work/swmoon/Col.25235/TRAJ_shxf/md/scr_qm/WORK/cid1trfl    
+ rdhcidtr: energy1, energy2  -94.0073816140998       -94.0729927700243     
+ (isym:nbpsy)  1: 36
+  Antisymmetric 1-e density matrix
+ ijsym,symoff(ijsym)                     1                     0
+  Antisymmetr. diagonal d1 for symmetry                     1
+                     0
+
+          d1_diagonal 
+
+              md1mo  1       md1mo  2       md1mo  3       md1mo  4       md1mo  5       md1mo  6       md1mo  7       md1mo  8
+ md1mo  7     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000    -0.02413274     0.00000000
+ md1mo  8     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.02773888     0.41195698     0.00000000
+ md1mo  9     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000    -0.06465617    -0.12619421     0.02782583
+
+              md1mo  9       md1mo 10       md1mo 11       md1mo 12       md1mo 13       md1mo 14       md1mo 15       md1mo 16
+
+              md1mo 17       md1mo 18       md1mo 19       md1mo 20       md1mo 21       md1mo 22       md1mo 23       md1mo 24
+
+              md1mo 25       md1mo 26       md1mo 27       md1mo 28       md1mo 29       md1mo 30       md1mo 31       md1mo 32
+
+              md1mo 33       md1mo 34       md1mo 35       md1mo 36
+
+          d1atr (remapped) block   1
+
+                mo   1         mo   2         mo   3         mo   4         mo   5         mo   6         mo   7         mo   8
+   mo   6     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.02413274    -0.02773888
+   mo   7     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000    -0.02413274     0.00000000    -0.41195698
+   mo   8     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.02773888     0.41195698     0.00000000
+   mo   9     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000    -0.06465617    -0.12619421     0.02782583
+
+                mo   9         mo  10         mo  11         mo  12         mo  13         mo  14         mo  15         mo  16
+   mo   6     0.06465617     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
+   mo   7     0.12619421     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
+   mo   8    -0.02782583     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
+
+                mo  17         mo  18         mo  19         mo  20         mo  21         mo  22         mo  23         mo  24
+
+                mo  25         mo  26         mo  27         mo  28         mo  29         mo  30         mo  31         mo  32
+
+                mo  33         mo  34         mo  35         mo  36         mo  37         mo  38         mo  39         mo  40
+
+                mo  41         mo  42         mo  43         mo  44         mo  45         mo  46         mo  47         mo  48
+
+                mo  49         mo  50         mo  51         mo  52         mo  53         mo  54         mo  55         mo  56
+
+                mo  57         mo  58         mo  59         mo  60         mo  61         mo  62         mo  63         mo  64
+
+                mo  65         mo  66         mo  67         mo  68         mo  69         mo  70         mo  71         mo  72
+
+                mo  73         mo  74         mo  75         mo  76         mo  77         mo  78         mo  79         mo  80
+
+                mo  81         mo  82         mo  83         mo  84         mo  85         mo  86         mo  87         mo  88
+
+                mo  89         mo  90         mo  91         mo  92         mo  93         mo  94         mo  95         mo  96
+
+                mo  97         mo  98         mo  99         mo 100         mo 101         mo 102         mo 103         mo 104
+
+                mo 105         mo 106         mo 107         mo 108         mo 109         mo 110         mo 111         mo 112
+
+                mo 113         mo 114         mo 115         mo 116         mo 117         mo 118         mo 119         mo 120
+
+                mo 121         mo 122         mo 123         mo 124         mo 125         mo 126         mo 127         mo 128
+
+                mo 129         mo 130         mo 131         mo 132         mo 133         mo 134         mo 135         mo 136
+
+                mo 137         mo 138         mo 139         mo 140         mo 141         mo 142         mo 143         mo 144
+
+                mo 145         mo 146         mo 147         mo 148         mo 149         mo 150         mo 151         mo 152
+
+                mo 153         mo 154         mo 155         mo 156         mo 157         mo 158         mo 159         mo 160
+
+                mo 161         mo 162         mo 163         mo 164         mo 165         mo 166         mo 167         mo 168
+
+                mo 169         mo 170         mo 171         mo 172         mo 173         mo 174         mo 175         mo 176
+
+                mo 177         mo 178         mo 179         mo 180         mo 181         mo 182         mo 183         mo 184
+
+                mo 185         mo 186         mo 187         mo 188         mo 189         mo 190         mo 191         mo 192
+
+                mo 193         mo 194         mo 195         mo 196         mo 197         mo 198         mo 199         mo 200
+
+                mo 201         mo 202         mo 203         mo 204         mo 205         mo 206         mo 207         mo 208
+
+                mo 209         mo 210         mo 211         mo 212         mo 213         mo 214         mo 215         mo 216
+
+                mo 217         mo 218         mo 219         mo 220         mo 221         mo 222         mo 223         mo 224
+
+                mo 225         mo 226         mo 227         mo 228         mo 229         mo 230         mo 231         mo 232
+
+                mo 233         mo 234         mo 235         mo 236         mo 237         mo 238         mo 239         mo 240
+
+                mo 241         mo 242         mo 243         mo 244         mo 245         mo 246         mo 247         mo 248
+
+                mo 249         mo 250         mo 251         mo 252         mo 253         mo 254         mo 255         mo 256
+
+                mo 257         mo 258         mo 259         mo 260         mo 261         mo 262         mo 263         mo 264
+
+                mo 265         mo 266         mo 267         mo 268         mo 269         mo 270         mo 271         mo 272
+
+                mo 273         mo 274         mo 275         mo 276         mo 277         mo 278         mo 279         mo 280
+
+                mo 281         mo 282         mo 283         mo 284         mo 285         mo 286         mo 287         mo 288
+
+                mo 289         mo 290         mo 291         mo 292         mo 293         mo 294         mo 295         mo 296
+
+                mo 297         mo 298         mo 299         mo 300         mo 301         mo 302         mo 303         mo 304
+
+                mo 305         mo 306         mo 307         mo 308         mo 309         mo 310         mo 311         mo 312
+
+                mo 313         mo 314         mo 315         mo 316         mo 317         mo 318         mo 319         mo 320
+
+                mo 321         mo 322         mo 323         mo 324         mo 325         mo 326         mo 327         mo 328
+
+                mo 329         mo 330         mo 331         mo 332         mo 333         mo 334         mo 335         mo 336
+
+                mo 337         mo 338         mo 339         mo 340         mo 341         mo 342         mo 343         mo 344
+
+                mo 345         mo 346         mo 347         mo 348         mo 349         mo 350         mo 351         mo 352
+
+                mo 353         mo 354         mo 355         mo 356         mo 357         mo 358         mo 359         mo 360
+
+                mo 361         mo 362         mo 363         mo 364         mo 365         mo 366         mo 367         mo 368
+
+                mo 369         mo 370         mo 371         mo 372         mo 373         mo 374         mo 375         mo 376
+
+                mo 377         mo 378         mo 379         mo 380         mo 381         mo 382         mo 383         mo 384
+
+                mo 385         mo 386         mo 387         mo 388         mo 389         mo 390         mo 391         mo 392
+
+                mo 393         mo 394         mo 395         mo 396         mo 397         mo 398         mo 399         mo 400
+
+                mo 401         mo 402         mo 403         mo 404         mo 405         mo 406         mo 407         mo 408
+
+                mo 409         mo 410         mo 411         mo 412         mo 413         mo 414         mo 415         mo 416
+
+                mo 417         mo 418         mo 419         mo 420         mo 421         mo 422         mo 423         mo 424
+
+                mo 425         mo 426         mo 427         mo 428         mo 429         mo 430         mo 431         mo 432
+
+                mo 433         mo 434         mo 435         mo 436         mo 437         mo 438         mo 439         mo 440
+
+                mo 441         mo 442         mo 443         mo 444         mo 445         mo 446         mo 447         mo 448
+
+                mo 449         mo 450         mo 451         mo 452         mo 453         mo 454         mo 455         mo 456
+
+                mo 457         mo 458         mo 459         mo 460         mo 461         mo 462         mo 463         mo 464
+
+                mo 465         mo 466         mo 467         mo 468         mo 469         mo 470         mo 471         mo 472
+
+                mo 473         mo 474         mo 475         mo 476         mo 477         mo 478         mo 479         mo 480
+
+                mo 481         mo 482         mo 483         mo 484         mo 485         mo 486         mo 487         mo 488
+
+                mo 489         mo 490         mo 491         mo 492         mo 493         mo 494         mo 495         mo 496
+
+                mo 497         mo 498         mo 499         mo 500         mo 501         mo 502         mo 503         mo 504
+
+                mo 505         mo 506         mo 507         mo 508         mo 509         mo 510
+ IOSRES:wnatol  1.000000000000000E-007
+
+   Block resolution info:
+ numaa  =     0
+ numado =     0
+ numaf  =     0
+ qfresd = F
+ qfresa = F
+ qfresv = F
+ qresaf = F
+ mcd1fl and fock matrices read
+ IOSRES:wnatol  1.000000000000000E-007
+ essential virtual-active rotations
+
+ mcscf restart file: fortran unit=19, name(12)=/work/swmoon/Col.25235/TRAJ_shxf/md/scr_qm/WORK/restart     
+ lenm2e_mc =  4096
+ n2embf_mc =  2730
+ ifmt,ifmtin:                     0                     0
+
+ mosort: allocated sort2 space, avc2is=   131023051 available sort2 space, avcisx=   131023051
+
+ mcscf hessian file: fortran unit=20, name(13)=/work/swmoon/Col.25235/TRAJ_shxf/md/scr_qm/WORK/mchess      
+
+ ************************************************************
+
+   Solution of the Linear System of Equations:
+
+     Desired residual norm convergence = 1.0000E-06
+     Minimum denominater value: dtol = 1.0000E-06
+     Maximum subspace dimension for r vector =  50
+     Maximum subspace dimension for s vector =  29
+     Maximum number of iterations: nmiter = 100
+     Dimension of Lambda[orb]: 263
+     Dimension of Lambda[csf]:    30
+
+ miter=  1 |orbl|= 2.4753E-02 |csfl|= 0.0000E+00 rznorm= 2.0299E-01 rpnorm= 4.7950E-03 noldr=  1 nnewr=  2 nolds=  0 nnews=  1
+ miter=  2 |orbl|= 7.3548E-02 |csfl|= 9.2697E-01 rznorm= 2.3505E-02 rpnorm= 2.9202E-02 noldr=  2 nnewr=  3 nolds=  1 nnews=  2
+ miter=  3 |orbl|= 7.9879E-02 |csfl|= 6.5883E-01 rznorm= 1.7185E-02 rpnorm= 1.2024E-02 noldr=  3 nnewr=  4 nolds=  2 nnews=  3
+ miter=  4 |orbl|= 8.0463E-02 |csfl|= 7.2776E-01 rznorm= 4.0919E-03 rpnorm= 1.4101E-02 noldr=  4 nnewr=  5 nolds=  3 nnews=  4
+ miter=  5 |orbl|= 7.8389E-02 |csfl|= 1.1842E+00 rznorm= 6.1330E-03 rpnorm= 8.2270E-03 noldr=  5 nnewr=  6 nolds=  4 nnews=  5
+ miter=  6 |orbl|= 7.9949E-02 |csfl|= 8.2404E-01 rznorm= 2.1150E-03 rpnorm= 8.0424E-03 noldr=  6 nnewr=  7 nolds=  5 nnews=  6
+ miter=  7 |orbl|= 8.0217E-02 |csfl|= 7.5685E-01 rznorm= 1.4551E-03 rpnorm= 5.5093E-03 noldr=  7 nnewr=  8 nolds=  6 nnews=  7
+ miter=  8 |orbl|= 7.9865E-02 |csfl|= 7.7638E-01 rznorm= 8.9201E-04 rpnorm= 9.1797E-04 noldr=  8 nnewr=  9 nolds=  7 nnews=  8
+ miter=  9 |orbl|= 7.9901E-02 |csfl|= 7.7088E-01 rznorm= 5.6774E-04 rpnorm= 5.2598E-04 noldr=  9 nnewr= 10 nolds=  8 nnews=  9
+ miter= 10 |orbl|= 8.0056E-02 |csfl|= 7.7022E-01 rznorm= 1.2933E-04 rpnorm= 7.7290E-05 noldr= 10 nnewr= 11 nolds=  9 nnews= 10
+ miter= 11 |orbl|= 8.0038E-02 |csfl|= 7.7005E-01 rznorm= 4.0307E-05 rpnorm= 2.5070E-05 noldr= 11 nnewr= 12 nolds= 10 nnews= 11
+ miter= 12 |orbl|= 8.0058E-02 |csfl|= 7.7004E-01 rznorm= 1.5160E-05 rpnorm= 6.0346E-06 noldr= 12 nnewr= 13 nolds= 11 nnews= 12
+ miter= 13 |orbl|= 8.0064E-02 |csfl|= 7.7005E-01 rznorm= 5.4917E-06 rpnorm= 1.3101E-06 noldr= 13 nnewr= 14 nolds= 12 nnews= 13
+ miter= 14 |orbl|= 8.0066E-02 |csfl|= 7.7005E-01 rznorm= 2.1358E-06 rpnorm= 3.3749E-07 noldr= 14 nnewr= 15 nolds= 13 nnews= 13
+ lmicro: final convergence values.
+ miter= 15 |orbl|= 8.0067E-02 |csfl|= 7.7005E-01 rznorm= 5.1010E-07 rpnorm= 3.3502E-07 noldr= 15 nnewr= 15 nolds= 13 nnews= 13
+
+ ************************************************************
+
+ mcscf hessian file read and processed
+
+ mcscf 2-particle density file: fortran unit=16, name( 9)=/work/swmoon/Col.25235/TRAJ_shxf/md/scr_qm/WORK/mcd2fl      
+
+ effective 1-particle density file: fortran unit=21, name(14)=/work/swmoon/Col.25235/TRAJ_shxf/md/scr_qm/WORK/effd1fl     
+ icd(44):                     1                192474
+ icd(45):                     1                  4095
+ icd(46):                     1                  2729
+ icd(47):                     1                  2730
+ mcscf restart read
+
+ wrnat: orbital occupations and coefficents for the effective density matrix d1_eff(:,:) were written.
+
+ effno and effocc file : fortran unit=23, name(16)=/work/swmoon/Col.25235/TRAJ_shxf/md/scr_qm/WORK/nocoef_cigrd
+ beginning effective two-particle density matrix sort...
+ sort1: nvals=      6506 nvlout=     12982
+ SA-MCSCF: fockmatrix construction only over non-zero matrices
+
+ ************************************************************
+
+        ***  RESULTS:  ***
+
+     norm of Lambda(orb) =      0.08006654
+     norm of Lambda(csf) =      0.21502935
+
+     isym= 1   tr(d1(eff)*h) - tr(d1*h)=       1.129749685617
+tr(d1(eff)*h)=       -0.1448564183
+tr(d1*h)     =       -0.2578313869
+tr((d1(eff)-d1)*h)=        0.1129749686
+
+      eci = tr(d1*h) + tr(d2*g) =                               -0.000000000000
+      eci(eff) = tr(d1eff * h) + tr(d2eff * g) =                -0.000000010706
+
+      abs(eci - eci(eff))       =  1.0706E-08
+***warning***  effective fock matrix is not symmetric 
+     isym=  1 i,j=  7  6 f(ij)-f(ji)=   1.5834E-03 ftol=********f(ij)= -3.8766E-03
+***warning***  effective fock matrix is not symmetric 
+     isym=  1 i,j=  8  6 f(ij)-f(ji)=   1.8200E-03 ftol=********f(ij)= -3.4356E-02
+***warning***  effective fock matrix is not symmetric 
+     isym=  1 i,j=  8  7 f(ij)-f(ji)=   2.7029E-02 ftol=********f(ij)=  5.2253E-03
+***warning***  effective fock matrix is not symmetric 
+     isym=  1 i,j=  9  6 f(ij)-f(ji)=   4.2422E-03 ftol=********f(ij)= -4.9818E-03
+***warning***  effective fock matrix is not symmetric 
+     isym=  1 i,j=  9  7 f(ij)-f(ji)=   8.2797E-03 ftol=********f(ij)= -9.7401E-03
+***warning***  effective fock matrix is not symmetric 
+     isym=  1 i,j=  9  8 f(ij)-f(ji)=   1.8257E-03 ftol=********f(ij)=  2.5336E-01
+
+ effective 1-particle density file: fortran unit=21, name(14)=/work/swmoon/Col.25235/TRAJ_shxf/md/scr_qm/WORK/effd1fl     
