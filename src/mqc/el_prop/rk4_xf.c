@@ -3,195 +3,28 @@
 #include <complex.h>
 #include <math.h>
 #include <string.h>
+#include "derivs.h"
+#include "derivs_xf.h"
 
-//double dot(double complex* u, double complex* v, int nst);
-//void cdot(int nst, double complex* c, double* e, double **dv, double complex *c_dot);
+static void RK4_coef_xf(int nst, int nesteps, double dt, double complex *coef, 
+                     double *energy, double *energy_old, double **nacme, double **nacme_old,  // normal rk4_coef up to this arg
+                     int nat, int nsp, int *l_coh, double *wsigma, double *mass, double **pos, double ***aux_pos, double ***phase);
 
-static double dot(double complex *u, double complex *v, int nst){
-    double complex sum = 0.0 + 0.0 * I;
-    double norm;
-    int ist;
-    for(ist = 0; ist < nst; ist++){
-        sum += conj(u[ist]) * v[ist];
-    }
-    norm = creal(sum);
-    return norm;
-}
+static void RK4_rho_xf(int nst, int nesteps, double dt, double complex **rho, 
+                       double *energy, double *energy_old, double **nacme, double **nacme_old,
+                       int nat, int nsp, double *mass, double **pos,
+                       int *l_coh, double *wsigma, double ***aux_pos, double ***phase);
 
-static void cdot(int nst, double complex *c, double *e, double **dv, double complex *c_dot){
-
-    double complex *na_term = malloc(nst * sizeof(double complex));
-    int ist, jst;
-    double egs;
-
-    for(ist = 0; ist < nst; ist++){
-        na_term[ist] = 0.0 + 0.0 * I;
-        for(jst = 0; jst < nst; jst++){
-//            if(ist != jst){
-                na_term[ist] -= dv[ist][jst] * c[jst];
-//            }
-        }
+static void RK4_xf(char *propagation, int nst, int nesteps, double dt, double complex *coef, 
+                   double complex **rho, double *energy, double *energy_old, double **nacme, 
+                   double **nacme_old, int nat, int nsp, int *l_coh, double *wsigma, 
+                   double *mass, double **pos, double ***aux_pos, double ***phase){
+    if(strcmp(propagation, "coefficient") == 0){
+        RK4_coef_xf(nst, nesteps, dt, coef, energy, energy_old, nacme, nacme_old, nat, nsp, l_coh, wsigma, mass, pos, aux_pos, phase);
     }
-    egs = e[0];
-    for(ist = 0; ist < nst; ist++){
-        c_dot[ist] = -1.0 * I * c[ist] * (e[ist] - egs) + na_term[ist];
-    }
-
-    free(na_term);
-}
-
-static void rhodot(int nst, double complex **rho, double *e, double **dv, double complex **rho_dot){
-    
-    int ist, jst, kst;
-    for(ist = 0; ist < nst; ist++){
-        for(jst = 0; jst < nst; jst++){
-            rho_dot[ist][jst] = 0.0 + 0.0 * I;
-        }
-    }
-
-    for(ist = 0; ist < nst; ist++){
-        for(jst = 0; jst < nst; jst++){
-            if(ist != jst){
-                rho_dot[ist][ist] -= dv[ist][jst] * 2.0 * creal(rho[ist][jst]);
-            }
-        }
-    }
-
-    for(ist = 0; ist < nst; ist++){
-        for(jst = ist + 1; jst < nst; jst++){
-            rho_dot[ist][jst] -=  1.0 * I * (e[jst] - e[ist]) * rho[ist][jst];
-
-            for(kst = 0; kst < nst; kst++){
-                rho_dot[ist][jst] -= dv[ist][kst] * rho[kst][jst] + dv[jst][kst] * rho[ist][kst];
-            }
-            rho_dot[jst][ist] = conj(rho_dot[ist][jst]);
-        }
-    }
-}
-
-static void xf_cdot(int nst, int nat, int nsp, int *l_coh, double *wsigma, 
-                        double *mass, double complex *c, double **pos, double ***aux_pos, double ***phase, 
-                        double complex *xfcdot){
-    
-    int ist, jst, iat, isp;
-    double **qmom = malloc(nat * sizeof(double*));
-    double **dec = malloc(nst * sizeof(double*));
-    double *rho = malloc(nst * sizeof(double)); 
-    
-    for(iat = 0; iat < nat; iat++){
-        qmom[iat] = malloc(nsp * sizeof(double));
-        for(isp = 0; isp < nsp; isp++){
-            qmom[iat][isp] = 0.0;
-        }
-    }
-    for(ist = 0; ist < nst; ist++){
-        dec[ist] = malloc(nst * sizeof(double));
-        rho[ist] = creal(conj(c[ist]) * c[ist]);
-    }
-    
-    // get qmom
-    for(ist = 0; ist < nst; ist++){
-        if(l_coh[ist] == 1){
-            for(iat = 0; iat < nat; iat++){
-                for(isp = 0; isp < nsp; isp++){
-                    qmom[iat][isp] += 0.5 * rho[ist] * (pos[iat][isp] - aux_pos[ist][iat][isp]) / pow(wsigma[iat],2.0) / mass[iat];
-                }
-            }
-        }
-    }
-    for(ist = 0; ist < nst; ist++){
-        dec[ist][ist] = 0.0;
-        for(jst = ist + 1; jst < nst; jst++){
-            dec[ist][jst] = 0.0;
-            if(l_coh[ist] == 1 && l_coh[jst] == 1){
-                for(iat = 0; iat < nat; iat++){
-                    for(isp = 0; isp < nsp; isp++){
-                        dec[ist][jst] += qmom[iat][isp]*(phase[ist][iat][isp]-phase[jst][iat][isp]);
-                    }
-                }
-            }
-            dec[jst][ist] = -1.0 * dec[ist][jst];
-        }
-    }
-    for(ist = 0; ist < nst; ist++){
-        xfcdot[ist] = 0.0 + 0.0 * I;
-        for(jst = 0; jst < nst; jst++){
-            xfcdot[ist] -= rho[jst] * dec[jst][ist] * c[ist];
-        }
-    }
-    free(rho);
-    for(ist = 0; ist < nst; ist++){
-        free(dec[ist]);
-    }
-    for(iat = 0; iat < nat; iat++){
-        free(qmom[iat]);
-    }
-    free(dec);
-    free(qmom);
-}
-
-static void xf_rhodot(int nst, int nat, int nsp, int *l_coh, double *wsigma, 
-                      double *mass, double complex **rho, double **pos, double ***aux_pos, double ***phase, 
-                      double complex **xfrhodot){
-    int ist, jst, kst, iat, isp;
-    double **qmom = malloc(nat * sizeof(double*));
-    double **dec = malloc(nst * sizeof(double*));
-    
-    for(iat = 0; iat < nat; iat++){
-        qmom[iat] = malloc(nsp * sizeof(double));
-        for(isp = 0; isp < nsp; isp++){
-            qmom[iat][isp] = 0.0;
-        }
-    }
-    for(ist = 0; ist < nst; ist++){
-        dec[ist] = malloc(nst * sizeof(double));
-    }
-    
-    // get qmom
-    for(ist = 0; ist < nst; ist++){
-        if(l_coh[ist] == 1){
-            for(iat = 0; iat < nat; iat++){
-                for(isp = 0; isp < nsp; isp++){
-                    qmom[iat][isp] += 0.5 * creal(rho[ist][ist]) * (pos[iat][isp] - aux_pos[ist][iat][isp]) / pow(wsigma[iat],2.0) / mass[iat];
-                }
-            }
-        }
-    }
-    for(ist = 0; ist < nst; ist++){
-        dec[ist][ist] = 0.0;
-        for(jst = ist + 1; jst < nst; jst++){
-            dec[ist][jst] = 0.0;
-            if(l_coh[ist] == 1 && l_coh[jst] == 1){
-                for(iat = 0; iat < nat; iat++){
-                    for(isp = 0; isp < nsp; isp++){
-                        dec[ist][jst] += qmom[iat][isp]*(phase[ist][iat][isp]-phase[jst][iat][isp]);
-                    }
-                }
-            }
-            dec[jst][ist] = -1.0 * dec[ist][jst];
-        }
-    }
-    for(ist = 0; ist < nst; ist++){
-        xfrhodot[ist][ist] = 0.0 + 0.0 * I; 
-        for(kst = 0; kst < nst; kst++){
-            xfrhodot[ist][ist] -= 2.0 * dec[kst][ist] * rho[ist][kst] * rho[kst][ist];
-        }
-        for(jst = ist + 1; jst < nst; jst++){
-            xfrhodot[ist][jst] = 0.0 + 0.0 * I;
-            for(kst = 0; kst < nst; kst++){
-                xfrhodot[ist][jst] -= (dec[kst][ist]+dec[kst][jst]) * rho[ist][kst] * rho[kst][jst];
-            }
-            xfrhodot[jst][ist] = conj(xfrhodot[ist][jst]);
-        }
-    }
-    for(ist = 0; ist < nst; ist++){
-        free(dec[ist]);
-    }
-    for(iat = 0; iat < nat; iat++){
-        free(qmom[iat]);
-    }
-    free(dec);
-    free(qmom);
+    else if(strcmp(propagation, "density") == 0){
+        RK4_rho_xf(nst, nesteps, dt, rho, energy, energy_old, nacme, nacme_old, nat, nsp, mass, pos, l_coh, wsigma, aux_pos, phase);
+    } 
 }
 
 static void RK4_coef_xf(int nst, int nesteps, double dt, double complex *coef, 
@@ -444,16 +277,3 @@ static void RK4_rho_xf(int nst, int nesteps, double dt, double complex **rho,
     free(xf_rho_dot);
     free(rho_new);
 }
-
-static void RK4_xf(char *propagation, int nst, int nesteps, double dt, double complex *coef, 
-                   double complex **rho, double *energy, double *energy_old, double **nacme, 
-                   double **nacme_old, int nat, int nsp, int *l_coh, double *wsigma, 
-                   double *mass, double **pos, double ***aux_pos, double ***phase){
-    if(strcmp(propagation, "coefficient") == 0){
-        RK4_coef_xf(nst, nesteps, dt, coef, energy, energy_old, nacme, nacme_old, nat, nsp, l_coh, wsigma, mass, pos, aux_pos, phase);
-    }
-    else if(strcmp(propagation, "density") == 0){
-        RK4_rho_xf(nst, nesteps, dt, rho, energy, energy_old, nacme, nacme_old, nat, nsp, mass, pos, l_coh, wsigma, aux_pos, phase);
-    } 
-}
-
