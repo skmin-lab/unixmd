@@ -35,7 +35,7 @@ def State_avg(ntraj, index, nstep):
             avg_state[j] += float(tmp[1])
 
     for i in range(nstep + 1):
-        tmp = avg_state[j]/ntraj
+        tmp = avg_state[i]/ntraj
         w.write(f"{i:8d}{tmp:15.8f}\n")
 
     w.close()
