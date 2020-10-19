@@ -6,28 +6,28 @@
 #include "derivs.h"
 #include "derivs_xf.h"
 
-static void RK4_coef(int nst, int nesteps, double dt, double complex *coef, 
+static void rk4_coef(int nst, int nesteps, double dt, double complex *coef, 
                      double *energy, double *energy_old, double **nacme, double **nacme_old,  // normal rk4_coef up to this arg
                      int nat, int nsp, int *l_coh, double *wsigma, double *mass, double **pos, double ***aux_pos, double ***phase);
 
-static void RK4_rho(int nst, int nesteps, double dt, double complex **rho, 
+static void rk4_rho(int nst, int nesteps, double dt, double complex **rho, 
                        double *energy, double *energy_old, double **nacme, double **nacme_old,
                        int nat, int nsp, double *mass, double **pos,
                        int *l_coh, double *wsigma, double ***aux_pos, double ***phase);
 
-static void RK4(char *propagation, int nst, int nesteps, double dt, double complex *coef, 
+static void rk4(char *propagation, int nst, int nesteps, double dt, double complex *coef, 
                    double complex **rho, double *energy, double *energy_old, double **nacme, 
                    double **nacme_old, int nat, int nsp, int *l_coh, double *wsigma, 
                    double *mass, double **pos, double ***aux_pos, double ***phase){
     if(strcmp(propagation, "coefficient") == 0){
-        RK4_coef(nst, nesteps, dt, coef, energy, energy_old, nacme, nacme_old, nat, nsp, l_coh, wsigma, mass, pos, aux_pos, phase);
+        rk4_coef(nst, nesteps, dt, coef, energy, energy_old, nacme, nacme_old, nat, nsp, l_coh, wsigma, mass, pos, aux_pos, phase);
     }
     else if(strcmp(propagation, "density") == 0){
-        RK4_rho(nst, nesteps, dt, rho, energy, energy_old, nacme, nacme_old, nat, nsp, mass, pos, l_coh, wsigma, aux_pos, phase);
+        rk4_rho(nst, nesteps, dt, rho, energy, energy_old, nacme, nacme_old, nat, nsp, mass, pos, l_coh, wsigma, aux_pos, phase);
     } 
 }
 
-static void RK4_coef(int nst, int nesteps, double dt, double complex *coef, 
+static void rk4_coef(int nst, int nesteps, double dt, double complex *coef, 
                      double *energy, double *energy_old, double **nacme, double **nacme_old,  // normal rk4_coef up to this arg
                      int nat, int nsp, int *l_coh, double *wsigma, double *mass, double **pos, double ***aux_pos, double ***phase){
     double complex *c_dot = malloc(nst * sizeof(double complex));
@@ -144,7 +144,7 @@ static void RK4_coef(int nst, int nesteps, double dt, double complex *coef,
     free(xf_c_dot);
 }
 
-static void RK4_rho(int nst, int nesteps, double dt, double complex **rho, 
+static void rk4_rho(int nst, int nesteps, double dt, double complex **rho, 
                        double *energy, double *energy_old, double **nacme, double **nacme_old,
                        int nat, int nsp, double *mass, double **pos,
                        int *l_coh, double *wsigma, double ***aux_pos, double ***phase){

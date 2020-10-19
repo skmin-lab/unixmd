@@ -5,19 +5,19 @@
 #include <string.h>
 #include "derivs.h"
 
-static void RK4_coef(int nst, int nesteps, double dt, double complex *coef, double *energy, double *energy_old, double **nacme, double **nacme_old);
-static void RK4_rho(int nst, int nesteps, double dt, double complex **rho, double *energy, double *energy_old, double **nacme, double **nacme_old);
+static void rk4_coef(int nst, int nesteps, double dt, double complex *coef, double *energy, double *energy_old, double **nacme, double **nacme_old);
+static void rk4_rho(int nst, int nesteps, double dt, double complex **rho, double *energy, double *energy_old, double **nacme, double **nacme_old);
 
-static void RK4(char *propagation, int nst, int nesteps, double dt, double complex *coef, double complex **rho, double *energy, double *energy_old, double **nacme, double **nacme_old){
+static void rk4(char *propagation, int nst, int nesteps, double dt, double complex *coef, double complex **rho, double *energy, double *energy_old, double **nacme, double **nacme_old){
     if(strcmp(propagation, "coefficient") == 0){
-        RK4_coef(nst, nesteps, dt, coef, energy, energy_old, nacme, nacme_old);
+        rk4_coef(nst, nesteps, dt, coef, energy, energy_old, nacme, nacme_old);
     }
     else if(strcmp(propagation, "density") == 0){
-        RK4_rho(nst, nesteps, dt, rho, energy, energy_old, nacme, nacme_old);
+        rk4_rho(nst, nesteps, dt, rho, energy, energy_old, nacme, nacme_old);
     }
 }
 
-static void RK4_coef(int nst, int nesteps, double dt, double complex *coef, double *energy, double *energy_old, double **nacme, double **nacme_old){
+static void rk4_coef(int nst, int nesteps, double dt, double complex *coef, double *energy, double *energy_old, double **nacme, double **nacme_old){
     double complex *c_dot = malloc(nst * sizeof(double complex));
     double complex *coef_new = malloc(nst * sizeof(double complex));
     double complex *k1 = malloc(nst * sizeof(double complex));
@@ -115,7 +115,7 @@ static void RK4_coef(int nst, int nesteps, double dt, double complex *coef, doub
     free(dv);
 }
 
-static void RK4_rho(int nst, int nesteps, double dt, double complex **rho, double *energy, double *energy_old, double **nacme, double **nacme_old){
+static void rk4_rho(int nst, int nesteps, double dt, double complex **rho, double *energy, double *energy_old, double **nacme, double **nacme_old){
     double complex **rho_dot = malloc(nst * sizeof(double complex *));
     double complex **rho_new = malloc(nst * sizeof(double complex *));
     double complex **k1 = malloc(nst * sizeof(double complex *));

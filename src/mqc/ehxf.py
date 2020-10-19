@@ -39,7 +39,7 @@ class EhXF(MQC):
         :type coefficient: double, list or complex, list
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", solver="RK4", l_pop_print=False ,l_adjnac=True, threshold=0.01, wsigma=0.1,\
+        propagation="density", solver="rk4", l_pop_print=False ,l_adjnac=True, threshold=0.01, wsigma=0.1,\
         l_qmom_force=False, coefficient=None):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \

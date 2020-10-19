@@ -5,7 +5,7 @@ from cpython.complex cimport complex
 cimport numpy as np
 
 cdef extern from "rk4.c":
-    void RK4(char *propagation, int nst, int nesteps, double dt, double complex *coef, double complex **rho, double *energy, double *energy_old, double **nacme, double **nacme_old)
+    void rk4(char *propagation, int nst, int nesteps, double dt, double complex *coef, double complex **rho, double *energy, double *energy_old, double **nacme, double **nacme_old)
 
 def el_run(md, molecule):
     cdef:
@@ -54,8 +54,8 @@ def el_run(md, molecule):
 
     py_bytes = md.propagation.encode() 
     propagation_c = py_bytes
-    if md.solver == "RK4":
-        RK4(propagation_c, nst, nesteps, dt, coef, rho, energy, energy_old, nacme, nacme_old)
+    if md.solver == "rk4":
+        rk4(propagation_c, nst, nesteps, dt, coef, rho, energy, energy_old, nacme, nacme_old)
     #else:  
     #    raise ValueError (f"( {md.md_type}.{call_name()} ) Other solver not implemented! {self.propagation}")
       
