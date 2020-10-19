@@ -113,7 +113,7 @@ class Eh(MQC):
             if (not molecule.l_nacme):
                 molecule.get_nacme()
 
-            self.el_propagator(molecule)
+            el_run(self, molecule)
 
             if (thermostat != None):
                 thermostat.run(molecule, self)
@@ -162,13 +162,6 @@ class Eh(MQC):
         for ist, istate in enumerate(molecule.states):
             molecule.epot += molecule.rho.real[ist, ist] * molecule.states[ist].energy
         molecule.etot = molecule.epot + molecule.ekin
-
-    def el_propagator(self, molecule):
-        """ Routine to propagate BO coefficients or density matrix
-
-            :param object molecule: molecule object
-        """
-        el_run(self, molecule)
 
     def print_init(self, molecule, qm, mm, thermostat, debug):
         """ Routine to print the initial information of dynamics

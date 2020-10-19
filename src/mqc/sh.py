@@ -142,7 +142,7 @@ class SH(MQC):
             if (not molecule.l_nacme):
                 molecule.get_nacme()
 
-            self.el_propagator(molecule)
+            el_run(self, molecule)
 
             self.hop_prob(molecule, unixmd_dir, istep=istep)
             self.hop_check(molecule, bo_list)
@@ -319,13 +319,6 @@ class SH(MQC):
         molecule.update_kinetic()
         molecule.epot = molecule.states[self.rstate].energy
         molecule.etot = molecule.epot + molecule.ekin
-
-    def el_propagator(self, molecule):
-        """ Routine to propagate BO coefficients or density matrix
-
-            :param object molecule: molecule object
-        """
-        el_run(self, molecule)
 
     def print_init(self, molecule, qm, mm, thermostat, debug):
         """ Routine to print the initial information of dynamics

@@ -1,5 +1,5 @@
 from __future__ import division
-from build.el_propagator_xf import el_run_xf
+from build.el_propagator_xf import el_run
 from mqc.mqc import MQC
 from fileio import touch_file, write_md_output, write_final_xyz, typewriter
 from misc import eps, au_to_K, call_name
@@ -211,7 +211,7 @@ class SHXF(MQC):
             if (not molecule.l_nacme):
                 molecule.get_nacme()
 
-            self.el_propagator(molecule)
+            el_run(self, molecule)
 
             self.hop_prob(molecule, unixmd_dir, istep=istep)
             self.hop_check(molecule, bo_list)
@@ -523,13 +523,6 @@ class SHXF(MQC):
                     for iat in range(self.aux.nat):
                         self.phase[ist, iat] += molecule.mass[iat] * \
                             (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
-
-    def el_propagator(self, molecule):
-        """ Routine to propagate BO coefficients or density matrix
-
-            :param object molecule: molecule object
-        """
-        el_run_xf(self, molecule)
 
     def append_wsigma(self):
         """ Routine to append sigma values when single float number is provided
