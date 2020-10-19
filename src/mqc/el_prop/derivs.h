@@ -23,9 +23,9 @@ static void cdot(int nst, double complex *c, double *e, double **dv, double comp
     for(ist = 0; ist < nst; ist++){
         na_term[ist] = 0.0 + 0.0 * I;
         for(jst = 0; jst < nst; jst++){
-//            if(ist != jst){
+            if(ist != jst){
                 na_term[ist] -= dv[ist][jst] * c[jst];
-//            }
+            }
         }
     }
     egs = e[0];

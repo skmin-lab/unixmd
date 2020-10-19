@@ -85,7 +85,8 @@ static void RK4_coef(int nst, int nesteps, double dt, double complex *coef, doub
             coef[ist] = coef_new[ist];
         }
     }
-    
+   
+    /* 
     for(ist = 0; ist < nst; ist++){
         na_term[ist] = 0.0;
         for(jst = 0; jst < nst; jst++){
@@ -93,9 +94,10 @@ static void RK4_coef(int nst, int nesteps, double dt, double complex *coef, doub
                 na_term[ist] -= dv[ist][jst] * coef[jst];
             }
         }
-        //printf("RHODOT_NAC %d %f\n",ist+1,2.0*creal(conj(coef[ist])) * na_term[ist]);
+        printf("RHODOT_NAC %d %f\n",ist+1,2.0*creal(conj(coef[ist])) * na_term[ist]);
     }
-    /*printf("RK4_COEF : NORM = %15.8f\n", creal(norm));*/
+    printf("RK4_COEF : NORM = %15.8f\n", creal(norm));
+    */
 
     free(k1);
     free(k2);
@@ -192,6 +194,7 @@ static void RK4_rho(int nst, int nesteps, double dt, double complex **rho, doubl
         }
     }
     
+    /*
     for(ist = 0; ist < nst; ist++){
         na_term[ist] = 0.0;
         for(jst = 0; jst < nst; jst++){
@@ -199,13 +202,14 @@ static void RK4_rho(int nst, int nesteps, double dt, double complex **rho, doubl
                 na_term[ist] -= 2.0 * dv[ist][jst] * creal(rho[ist][jst]);
             }
         }
-        /*printf("RHODOT_NAC %d %f\n",ist+1, na_term[ist]);*/
+        printf("RHODOT_NAC %d %f\n",ist+1, na_term[ist]);
     }
     norm = 0.0;
     for(ist = 0; ist < nst; ist++){
         norm += creal(rho[ist][ist]);
     }
-    /*printf("RK4_COEF : NORM = %15.8f\n", norm);*/
+    printf("RK4_COEF : NORM = %15.8f\n", norm);
+    */
 
     free(eenergy);
     free(na_term);
