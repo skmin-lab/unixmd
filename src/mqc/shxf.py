@@ -50,10 +50,11 @@ class SHXF(MQC):
         :type wsigma: double or double,list
         :param coefficient: initial BO coefficient
         :type coefficient: double, list or complex, list
+        :param boolean l_state_wise: logical to use state-wise total energies for auxiliary trajectories
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", \
-        threshold=0.01, wsigma=None, one_dim=False, coefficient=None, aux_tot_en="running_state"):
+        threshold=0.01, wsigma=None, one_dim=False, coefficient=None, l_state_wise=False):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
             propagation, l_pop_print, l_adjnac, coefficient)
@@ -70,7 +71,7 @@ class SHXF(MQC):
         self.force_hop = False
 
         self.vel_rescale = vel_rescale
-        self.aux_tot_en = aux_tot_en
+        self.l_state_wise = l_state_wise
         
         if (self.vel_rescale == "energy"):
             pass
@@ -488,7 +489,7 @@ class SHXF(MQC):
                 else:
                     if (self.l_first[ist]):
                         alpha = molecule.ekin_qm
-                        if (self.aux_tot_en == "state-wise"):
+                        if (not self.l_state_wise):
                             alpha += molecule.states[self.rstate].energy - molecule.states[ist].energy
                     else:
                         ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
