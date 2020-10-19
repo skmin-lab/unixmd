@@ -64,8 +64,6 @@ class EhXF(MQC):
             # atom-resolved values for wsigma
             if (len(self.wsigma) != molecule.nat_qm):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Wrong number of elements of sigma given! {self.wsigma}")
-            if (self.one_dim):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) SHXF1D requires only 1 float number for sigma! {self.wsigma}")
         else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Wrong type for sigma given! {self.wsigma}")
 
