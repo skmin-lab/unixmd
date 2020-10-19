@@ -42,6 +42,7 @@ class SHXF(MQC):
         :param integer nsteps: nuclear step
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
+        :param string solver: propagation solver
         :param boolean l_pop_print: logical to print BO population and coherence
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param string vel_rescale: velocity rescaling method after hop
@@ -57,7 +58,6 @@ class SHXF(MQC):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
             propagation, solver, l_pop_print, l_adjnac, coefficient)
-
         # Initialize SH variables
         self.rstate = istate
         self.rstate_old = self.rstate

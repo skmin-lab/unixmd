@@ -1,5 +1,5 @@
 from __future__ import division
-from misc import fs_to_au
+from misc import fs_to_au, call_name
 import textwrap
 import numpy as np
 
@@ -31,6 +31,10 @@ class MQC(object):
 
         self.propagation = propagation
         self.solver = solver
+        # None for BOMD case
+        if not(self.solver in [None, "rk4"]): 
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'solver'! {self.solver}")
+
         self.l_pop_print = l_pop_print
 
         self.l_adjnac = l_adjnac
