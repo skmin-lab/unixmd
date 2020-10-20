@@ -29,9 +29,11 @@ class MQC(object):
         self.nsteps = nsteps
         self.nesteps = nesteps
 
-        self.propagation = propagation
-        self.solver = solver
         # None for BOMD case
+        self.propagation = propagation
+        if not(self.solver in [None, "coefficient", "density"]): 
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'propagation'! {self.propagation}")
+        self.solver = solver
         if not(self.solver in [None, "rk4"]): 
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'solver'! {self.solver}")
 
