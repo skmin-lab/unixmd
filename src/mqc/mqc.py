@@ -124,7 +124,7 @@ class MQC(object):
         if (self.md_type == "SHXF"):
             if (self.one_dim):
                 # Print reduced mass
-                dynamics_info += f"  Reduced Mass             = {self.aux.mass[0]:15.5f}\n"
+                dynamics_info += f"\n  Reduced Mass             = {self.aux.mass[0]:16.6f}"
             # Print wsigma values
             if (isinstance(self.wsigma, float)):
                 dynamics_info += f"\n  Sigma                    = {self.wsigma:16.3f}\n"
