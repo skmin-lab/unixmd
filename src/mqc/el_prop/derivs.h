@@ -4,7 +4,7 @@
 #include <math.h>
 
 // Routine to calculate dot product from two temporary arrays
-static double dot(double complex *u, double complex *v, int nst){
+static double dot(int nst, double complex *u, double complex *v){
 
     double complex sum;
     double norm;
