@@ -121,8 +121,11 @@ class MQC(object):
             dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
             dynamics_info += f"  Propagation Scheme       = {self.propagation:>16s}\n"
 
-        # Print wsigma values
         if (self.md_type == "SHXF"):
+            if (self.one_dim):
+                # Print reduced mass
+                dynamics_info += f"\n  Reduced Mass             = {self.aux.mass[0]:16.6f}"
+            # Print wsigma values
             if (isinstance(self.wsigma, float)):
                 dynamics_info += f"\n  Sigma                    = {self.wsigma:16.3f}\n"
             elif (isinstance(self.wsigma, list)):

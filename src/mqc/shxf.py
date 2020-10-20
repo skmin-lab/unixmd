@@ -19,7 +19,7 @@ class Auxiliary_Molecule(object):
             self.nsp = 1
 
             self.mass = np.zeros((self.nat))
-            self.mass[0] = 1. / np.sum(1. / molecule.mass)
+            self.mass[0] = 1. / np.sum(1. / molecule.mass[0:molecule.nat_qm])
 
         else:
 
@@ -516,7 +516,7 @@ class SHXF(MQC):
                     self.phase[ist] = 0.
                 else:
                     for iat in range(self.aux.nat):
-                        self.phase[ist, iat] += molecule.mass[iat] * \
+                        self.phase[ist, iat] += self.aux.mass[iat] * \
                             (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
 
     def el_propagator(self, molecule):
