@@ -23,7 +23,7 @@ static void xf_cdot(int nat, int nsp, int nst, int *l_coh, double *mass, double 
 
     for(ist = 0; ist < nst; ist++){
         dec[ist] = malloc(nst * sizeof(double));
-        for(jst = 0; jst < nst; ist++){
+        for(jst = 0; jst < nst; jst++){
             dec[ist][jst] = 0.0;
         }
     }
@@ -104,7 +104,7 @@ static void xf_rhodot(int nat, int nsp, int nst, int *l_coh, double *mass, doubl
 
     for(ist = 0; ist < nst; ist++){
         dec[ist] = malloc(nst * sizeof(double));
-        for(jst = 0; jst < nst; ist++){
+        for(jst = 0; jst < nst; jst++){
             dec[ist][jst] = 0.0;
         }
     }
