@@ -15,7 +15,7 @@ class BOMD(MQC):
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000):
         # Initialize input values
-        super().__init__(molecule, istate, dt, nsteps, None, None, False, None, None)
+        super().__init__(molecule, istate, dt, nsteps, None, None, None, False, None, None)
 
     def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):

@@ -1,5 +1,5 @@
 from __future__ import division
-from misc import fs_to_au
+from misc import fs_to_au, call_name
 import textwrap
 import numpy as np
 
@@ -12,13 +12,14 @@ class MQC(object):
         :param integer nsteps: nuclear step
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
+        :param string solver: propagation solver
         :param boolean l_pop_print: logical to print BO population and coherence
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param coefficient: initial BO coefficient
         :type coefficient: double, list or complex, list
     """
     def __init__(self, molecule, istate, dt, nsteps, nesteps, \
-        propagation, l_pop_print, l_adjnac, coefficient):
+        propagation, solver, l_pop_print, l_adjnac, coefficient):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -28,7 +29,14 @@ class MQC(object):
         self.nsteps = nsteps
         self.nesteps = nesteps
 
+        # None for BOMD case
         self.propagation = propagation
+        if not(self.propagation in [None, "coefficient", "density"]): 
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'propagation'! {self.propagation}")
+        self.solver = solver
+        if not(self.solver in [None, "rk4"]): 
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'solver'! {self.solver}")
+
         self.l_pop_print = l_pop_print
 
         self.l_adjnac = l_adjnac

@@ -1,5 +1,5 @@
 from __future__ import division
-from build.el_propagator import *
+from build.el_propagator import el_run
 from mqc.mqc import MQC
 from fileio import touch_file, write_md_output, write_final_xyz
 from misc import au_to_K, call_name
@@ -15,16 +15,17 @@ class Eh(MQC):
         :param integer nsteps: nuclear step
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
+        :param string solver: propagation solver
         :param boolean l_pop_print: logical to print BO population and coherence
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param coefficient: initial BO coefficient
         :type coefficient: double, list or complex, list
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_pop_print=False, l_adjnac=True, coefficient=None):
+        propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, coefficient=None):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, l_pop_print, l_adjnac, coefficient)
+            propagation, solver, l_pop_print, l_adjnac, coefficient)
 
     def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
@@ -112,7 +113,7 @@ class Eh(MQC):
             if (not molecule.l_nacme):
                 molecule.get_nacme()
 
-            self.el_propagator(molecule)
+            el_run(self, molecule)
 
             if (thermostat != None):
                 thermostat.run(molecule, self)
@@ -161,18 +162,6 @@ class Eh(MQC):
         for ist, istate in enumerate(molecule.states):
             molecule.epot += molecule.rho.real[ist, ist] * molecule.states[ist].energy
         molecule.etot = molecule.epot + molecule.ekin
-
-    def el_propagator(self, molecule):
-        """ Routine to propagate BO coefficients or density matrix
-
-            :param object molecule: molecule object
-        """
-        if (self.propagation == "coefficient"):
-            el_coef(self.nesteps, self.dt, molecule)
-        elif (self.propagation == "density"):
-            el_rho(self.nesteps, self.dt, molecule)
-        else:
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Other propagator not implemented! {self.propagation}")
 
     def print_init(self, molecule, qm, mm, thermostat, debug):
         """ Routine to print the initial information of dynamics

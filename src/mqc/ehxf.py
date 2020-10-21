@@ -1,5 +1,5 @@
 from __future__ import division
-from build.el_propagator import *
+from build.el_propagator_xf import el_run
 from mqc.mqc import MQC
 from fileio import touch_file, write_md_output, write_final_xyz
 from misc import eps, au_to_K, call_name
@@ -32,6 +32,7 @@ class EhXF(MQC):
         :param integer nsteps: nuclear step
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
+        :param string solver: propagation solver
         :param boolean l_pop_print: logical to print BO population and coherence
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param double threshold: electronic density threshold for decoherence term calculation
@@ -42,11 +43,11 @@ class EhXF(MQC):
         :param boolean l_state_wise: logical to use state-wise total energies for auxiliary trajectories
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_pop_print=False ,l_adjnac=True, threshold=0.01, wsigma=None,\
+        propagation="density", solver="rk4", l_pop_print=False ,l_adjnac=True, threshold=0.01, wsigma=None,\
         l_qmom_force=False, coefficient=None, l_state_wise=False):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, l_pop_print, l_adjnac, coefficient)
+            propagation, solver, l_pop_print, l_adjnac, coefficient)
 
         # Initialize XF related variables
         self.l_coh = []
@@ -170,7 +171,7 @@ class EhXF(MQC):
             if (not molecule.l_nacme):
                 molecule.get_nacme()
 
-            self.el_propagator(molecule)
+            el_run(self, molecule)
 
             if (thermostat != None):
                 thermostat.run(molecule, self)
@@ -340,18 +341,6 @@ class EhXF(MQC):
                     for iat in range(self.aux.nat):
                         self.phase[ist, iat] += molecule.mass[iat] * \
                             (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
-
-    def el_propagator(self, molecule):
-        """ Routine to propagate BO coefficients or density matrix
-
-            :param object molecule: molecule object
-        """
-        if (self.propagation == "coefficient"):
-            el_coef_xf(self, molecule)
-        elif (self.propagation == "density"):
-            el_rho_xf(self, molecule)
-        else:
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Other propagator not implemented! {self.propagation}")
 
     def append_wsigma(self):
         """ Routine to append sigma values when single float number is provided
