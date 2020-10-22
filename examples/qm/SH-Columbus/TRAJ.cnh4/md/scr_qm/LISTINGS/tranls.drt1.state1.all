@@ -1,0 +1,211 @@
+
+&& iteration number 1 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  program "tran"
+
+ this program transforms one- and two-electron
+ integral and density matrix arrays.
+
+ references:  i. shavitt, in "methods of electronic structure theory",
+                  h. f. schaefer, ed. (plenum, new york, 1977), p. 189.
+              h. lischka, r. shepard, f. b. brown, and i. shavitt,
+                  int. j. quantum chem. symp. 15, 91 (1981).
+
+ original author: Frank B. Brown.
+ SIFS version:    Ron Shepard.
+
+ version date: 20-feb-02
+
+ This Version of Program TRAN is Maintained by:
+     Thomas Mueller
+     Juelich Supercomputing Centre (JSC)
+     Institute of Advanced Simulation (IAS)
+     D-52425 Juelich, Germany 
+     Email: th.mueller@fz-juelich.de
+
+
+
+     ******************************************
+     **    PROGRAM:              TRAN        **
+     **    PROGRAM VERSION:      5.6b2       **
+     **    DISTRIBUTION VERSION: 5.9.a       **
+     ******************************************
+
+
+ workspace allocation parameters: lcore= 131072000
+
+ === echo of the input records ===
+ ------------------------------------------------------------------------
+  &input
+   denopt=1,
+   freeze = 1,
+   nsymao= 1
+   naopsy=   36,
+  ldamax=8191
+  &end
+ ------------------------------------------------------------------------
+
+ program input parameters:
+
+ prnopt    =     0, chkopt    =     0, ortopt    =     0, denopt    =     1
+ mapin(1 ) =    -1, nsymao    =     1, naopsy(1) =    36, freeze(1) =     1
+ mapout(1) =    -1, nsymmo    =    -1, nmopsy(1) =    -1, fsplit    =     1
+ outlab    =     0, seward    =     0, lumorb    =     0, DALTON2   =     0
+ nextint   =     4, tr1e      =     0, trdens    =     0
+ LDAMIN    =   127, LDAMAX    =  8191, LDAINC    =    64
+ LRC1MX    =    -1, LRC2MX    =    -1, LRCSCR    = 32768
+
+ THRESH    =  5.0000E-12  [cutoff threshold]
+
+ file description                 unit filename
+ ---- -----------                 ---- --------
+   1: input file:                   5  tranin                                                      
+   2: listing file:                 6  tranls                                                      
+   3: input ao integral file:      30  aoints                                                      
+   4: input mo density file:       30  modens                                                      
+   5: output mo integral file:     31  moints                                                      
+   6: output ao density file:      31  aodens                                                      
+   7: scratch file:                34  trscr1                                                      
+   8: ci drt file:                 33  cidrtfl                                                     
+   9: orbital coefficient file:    32  mocoef                                                      
+  10: da1 scratch file:            20  trda1s                                                      
+  11: da2 scratch file:            21  trda2s                                                      
+  12: split input 2-e ao file:     35  aoints2                                                     
+  13: split input d2mo file:       35  modens2                                                     
+  14: FSPLIT=2 output 2-e mo file: 31  moints2                                                     
+  15: FSPLIT=2 output d2ao file:   31  aodens2                                                     
+  16: input file:                   0                                                              
+
+  using 32 bits compression in sort step
+
+ input file header information:
+ cidrt_title                                                                     
+  title                                                                          
+ NO-coefficients from mcscf.x                                                    
+
+ input energy(*) values:
+ energy( 1)= -9.439275265654E+01, ietype=-1025,   total energy of type: MCSCF   
+
+ total ao core energy =   0.000000000000E+00
+
+ nsym = 1 nbft=  36
+
+ symmetry  =    1
+ SLABEL(*) = sym1
+ NBPSY(*)  =   36
+
+ INFOAO(*) =          2      8192      6552      8192      5460         0
+
+ input basis function labels, i:AOLAB(i)=
+   1:md1mo  1   2:md1mo  2   3:md1mo  3   4:md1mo  4   5:md1mo  5   6:md1mo  6   7:md1mo  7   8:md1mo  8   9:md1mo  9  10:md1mo 10
+  11:md1mo 11  12:md1mo 12  13:md1mo 13  14:md1mo 14  15:md1mo 15  16:md1mo 16  17:md1mo 17  18:md1mo 18  19:md1mo 19  20:md1mo 20
+  21:md1mo 21  22:md1mo 22  23:md1mo 23  24:md1mo 24  25:md1mo 25  26:md1mo 26  27:md1mo 27  28:md1mo 28  29:md1mo 29  30:md1mo 30
+  31:md1mo 31  32:md1mo 32  33:md1mo 33  34:md1mo 34  35:md1mo 35  36:md1mo 36
+
+ setsym: changing nsym = 1 to nsym = 1
+
+ setsym: original csymb%NBPSY(*) =  36
+
+ setsym: updated csymb%NBPSY(*)  =  36
+ user-specified FREEZE(*) used in program tran.                                  
+
+ transformation information:
+ number of symmetry irreps in point group, nsym   =  1
+ total number of basis functions,          nbft   = 36
+ number of orbitals to be transformed,     norbt  = 36
+ number of frozen core orbitals,           nfrzct =  0
+ number of frozen virtual orbitals,        nfrzvt =  0
+
+ symmetry blocking information:
+ symmetry  =    1
+ SLABEL(*) = sym1
+ NBPSY(*)  =   36
+ NMPSY(*)  =   36
+ NFCPSY(*) =    0
+
+ mocoef file titles:
+ MO-coefficients from mcscf.x                                                    
+  with dummy occupation 1.0 for active orbitals                                  
+  total ao core energy =   38.801547843                                          
+ MCSCF energy =     -94.157709014                                                
+
+ job title for this run:
+ SIFS file created by program tran.      odin1             11:04:45.495 15-Oct-20
+
+ inoutp: segmentation information:
+ in-core transformation space,   avcinc = 130965788
+ address segment size,           sizesg = 130986055
+ number of in-core blocks,       nincbk =         1
+ number of out-of-core blocks,   noutbk =         0
+ number of in-core segments,     incseg =         1
+ number of out-of-core segments, outseg =         0
+
+ inoutp: approximate total flop counts:
+           type      in-core   out-of-core
+         ------  ------------  ------------
+          total    133270002.            0. grand total =    133270002.
+
+ input file sort statistics:
+ length of records,           csort%LENDAR =  8191
+ number of buckets,           csort%NBUK   =     1
+ number of values per bucket, csort%NPBUK  =  5460
+
+ fixed workspace needed for the ao sort,  itotal =     58953
+ workspace available for da sort buffers, avcore = 131032824
+
+ beginning the first half-sort of the input d2(*)    array elements...
+
+       6459 array elements in     2 records were read by twoaof,
+       6459 array elements were written into     2 da records of length    8191.
+
+ output file header information:
+ cidrt_title                                                                     
+  title                                                                          
+ NO-coefficients from mcscf.x                                                    
+ user-specified FREEZE(*) used in program tran.                                  
+ MO-coefficients from mcscf.x                                                    
+  with dummy occupation 1.0 for active orbitals                                  
+  total ao core energy =   38.801547843                                          
+ MCSCF energy =     -94.157709014                                                
+ SIFS file created by program tran.      odin1             11:04:45.495 15-Oct-20
+
+ output energy(*) values:
+ energy( 1)= -9.439275265654E+01, ietype=-1025,   total energy of type: MCSCF   
+
+ total mo core energy =   0.000000000000E+00
+
+ inputc%NSYMMO = 1 norbt=  36
+
+ symmetry  =    1
+ SLABEL(*) = sym1
+ NMOPSY(*) =   36
+
+ INFOMO(*) =          1      8192      6552      8192      5460         0
+
+ output orbital labels, i:MOLAB(i)=
+   1:tout:001   2:tout:002   3:tout:003   4:tout:004   5:tout:005   6:tout:006   7:tout:007   8:tout:008   9:tout:009  10:tout:010
+  11:tout:011  12:tout:012  13:tout:013  14:tout:014  15:tout:015  16:tout:016  17:tout:017  18:tout:018  19:tout:019  20:tout:020
+  21:tout:021  22:tout:022  23:tout:023  24:tout:024  25:tout:025  26:tout:026  27:tout:027  28:tout:028  29:tout:029  30:tout:030
+  31:tout:031  32:tout:032  33:tout:033  34:tout:034  35:tout:035  36:tout:036
+
+ tran1e: D1(*)    array: ITYPEA= 0 ITYPEB=   7 numaot=  278 nummot=  666 nrecao=  1 nrecmo=  1
+         fcorao=  0.000000000000E+00 fcore=  0.000000000000E+00 fcormo=  0.000000000000E+00
+
+ tran1e: F(*)     array: ITYPEA= 0 ITYPEB=   8 numaot=  376 nummot=  666 nrecao=  1 nrecmo=  1
+         fcorao=  0.000000000000E+00 fcore=  0.000000000000E+00 fcormo=  0.000000000000E+00
+
+ tran1e: transformation of the input 1-e arrays is complete.
+
+ beginning the last half-sort of the in-core d2(*)    array elements...
+
+ srtinc:      6459 array elements were read, and            222111 array elements were written in     7 records.
+
+ beginning the transformation of the in-core d2(*)    array elements...
+ executing in-core transformation trainc
+
+ trainc:    222111 sorted array elements were read,    222111 transformed array elements were written.
+
+ 1-e and 2-e transformation complete.
+
+ trmain:     222111 transformed d2(*)    array elements were written in      41 records.
+

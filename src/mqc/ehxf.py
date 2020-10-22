@@ -1,5 +1,5 @@
 from __future__ import division
-from build.el_propagator import *
+from build.el_propagator_xf import el_run
 from mqc.mqc import MQC
 from fileio import touch_file, write_md_output, write_final_xyz
 from misc import eps, au_to_K, call_name
@@ -11,7 +11,7 @@ class Auxiliary_Molecule(object):
 
         :param object molecule: molecule object
     """
-    def __init__(self, molecule, one_dim):
+    def __init__(self, molecule):
         # Initialize auxiliary molecule
         self.nat = molecule.nat_qm
         self.nsp = molecule.nsp
@@ -32,17 +32,22 @@ class EhXF(MQC):
         :param integer nsteps: nuclear step
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
+        :param string solver: propagation solver
         :param boolean l_pop_print: logical to print BO population and coherence
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
+        :param double threshold: electronic density threshold for decoherence term calculation
+        :param wsigma: width of nuclear wave packet of auxiliary trajectory
+        :type wsigma: double or double,list
         :param coefficient: initial BO coefficient
         :type coefficient: double, list or complex, list
+        :param boolean l_state_wise: logical to use state-wise total energies for auxiliary trajectories
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_pop_print=False ,l_adjnac=True, threshold=0.01, wsigma=0.1,\
-        l_qmom_force=False, coefficient=None):
+        propagation="density", solver="rk4", l_pop_print=False ,l_adjnac=True, threshold=0.01, wsigma=None,\
+        l_qmom_force=False, coefficient=None, l_state_wise=False):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, l_pop_print, l_adjnac, coefficient)
+            propagation, solver, l_pop_print, l_adjnac, coefficient)
 
         # Initialize XF related variables
         self.l_coh = []
@@ -53,10 +58,22 @@ class EhXF(MQC):
         self.threshold = threshold
         self.wsigma = wsigma
 
+        if (isinstance(self.wsigma, float)):
+            # uniform value for wsigma
+            pass
+        elif (isinstance(self.wsigma, list)):
+            # atom-resolved values for wsigma
+            if (len(self.wsigma) != molecule.nat_qm):
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Wrong number of elements of sigma given! {self.wsigma}")
+        else:
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Wrong type for sigma given! {self.wsigma}")
+
         self.upper_th = 1. - self.threshold
         self.lower_th = self.threshold
 
         self.l_qmom_force = l_qmom_force
+
+        self.l_state_wise = l_state_wise
 
         # Initialize auxiliary molecule object
         self.aux = Auxiliary_Molecule(molecule)
@@ -114,6 +131,9 @@ class EhXF(MQC):
         touch_file(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=False)
         self.print_init(molecule, qm, mm, thermostat, debug)
 
+        # Initialize decoherence variables
+        self.append_wsigma()
+
         # Calculate initial input geometry at t = 0.0 s
         molecule.reset_bo(qm.calc_coupling)
         qm.get_data(molecule, base_dir, bo_list, self.dt, istep=-1, calc_force_only=False)
@@ -151,7 +171,7 @@ class EhXF(MQC):
             if (not molecule.l_nacme):
                 molecule.get_nacme()
 
-            self.el_propagator(molecule)
+            el_run(self, molecule)
 
             if (thermostat != None):
                 thermostat.run(molecule, self)
@@ -293,21 +313,20 @@ class EhXF(MQC):
 
         # Get auxiliary velocity
         self.aux.vel_old = np.copy(self.aux.vel)
-
         for ist in range(molecule.nst):
             if (self.l_coh[ist]):
                 if (self.l_first[ist]):
-                    self.aux.vel[ist] = molecule.vel[0:self.aux.nat]
+                    alpha = molecule.ekin_qm
+                    if (not self.l_state_wise):
+                        alpha += molecule.epot - molecule.states[ist].energy
                 else:
                     ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
                     alpha = ekin_old + molecule.states[ist].energy_old - molecule.states[ist].energy
-                    if (alpha < eps):
-                        self.aux.vel[ist] = 0.
-                    else:
-                        alpha /= molecule.ekin
-                        self.aux.vel[ist] = molecule.vel[0:self.aux.nat] * np.sqrt(alpha)
-            else:
-                self.aux.vel[ist] = molecule.vel[0:self.aux.nat]
+                if (alpha < 0.):
+                    alpha = 0.
+                
+                alpha /= molecule.ekin_qm
+                self.aux.vel[ist] = molecule.vel[0:self.aux.nat] * np.sqrt(alpha)
 
     def get_phase(self, molecule):
         """ Routine to calculate phase term
@@ -323,17 +342,13 @@ class EhXF(MQC):
                         self.phase[ist, iat] += molecule.mass[iat] * \
                             (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
 
-    def el_propagator(self, molecule):
-        """ Routine to propagate BO coefficients or density matrix
-
-            :param object molecule: molecule object
+    def append_wsigma(self):
+        """ Routine to append sigma values when single float number is provided
         """
-        if (self.propagation == "coefficient"):
-            el_coef_xf(self, molecule)
-        elif (self.propagation == "density"):
-            el_rho_xf(self, molecule)
-        else:
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Other propagator not implemented! {self.propagation}")
+        # Create a list from single float number
+        if (isinstance(self.wsigma, float)):
+            sigma = self.wsigma
+            self.wsigma = self.aux.nat * [sigma]
 
     def print_init(self, molecule, qm, mm, thermostat, debug):
         """ Routine to print the initial information of dynamics

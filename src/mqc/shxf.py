@@ -1,5 +1,5 @@
 from __future__ import division
-from build.el_propagator import *
+from build.el_propagator_xf import el_run
 from mqc.mqc import MQC
 from fileio import touch_file, write_md_output, write_final_xyz, typewriter
 from misc import eps, au_to_K, call_name
@@ -19,7 +19,7 @@ class Auxiliary_Molecule(object):
             self.nsp = 1
 
             self.mass = np.zeros((self.nat))
-            self.mass[0] = 1. / np.sum(1. / molecule.mass)
+            self.mass[0] = 1. / np.sum(1. / molecule.mass[0:molecule.nat_qm])
 
         else:
 
@@ -42,6 +42,7 @@ class SHXF(MQC):
         :param integer nsteps: nuclear step
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
+        :param string solver: propagation solver
         :param boolean l_pop_print: logical to print BO population and coherence
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param string vel_rescale: velocity rescaling method after hop
@@ -50,14 +51,14 @@ class SHXF(MQC):
         :type wsigma: double or double,list
         :param coefficient: initial BO coefficient
         :type coefficient: double, list or complex, list
+        :param boolean l_state_wise: logical to use state-wise total energies for auxiliary trajectories
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", \
-        threshold=0.01, wsigma=None, one_dim=False, coefficient=None):
+        propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", \
+        threshold=0.01, wsigma=None, one_dim=False, coefficient=None, l_state_wise=False):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, l_pop_print, l_adjnac, coefficient)
-
+            propagation, solver, l_pop_print, l_adjnac, coefficient)
         # Initialize SH variables
         self.rstate = istate
         self.rstate_old = self.rstate
@@ -72,6 +73,8 @@ class SHXF(MQC):
         self.force_hop = False
 
         self.vel_rescale = vel_rescale
+        self.l_state_wise = l_state_wise
+        
         if (self.vel_rescale == "energy"):
             pass
         elif (self.vel_rescale == "velocity"):
@@ -212,7 +215,7 @@ class SHXF(MQC):
             if (not molecule.l_nacme):
                 molecule.get_nacme()
 
-            self.el_propagator(molecule)
+            el_run(self, molecule)
 
             self.hop_prob(molecule, unixmd_dir, istep=istep)
             self.hop_check(molecule, bo_list)
@@ -489,37 +492,29 @@ class SHXF(MQC):
 
         # Get auxiliary velocity
         self.aux.vel_old = np.copy(self.aux.vel)
-
-        if (self.one_dim):
-            self.aux.vel[self.rstate] = np.sqrt(2. * molecule.ekin / self.aux.mass[0])
-        else:
-            self.aux.vel[self.rstate] = molecule.vel[0:self.aux.nat]
-
         for ist in range(molecule.nst):
+            # Calculate propagation factor alpha
             if (self.l_coh[ist]):
-                if (self.l_first[ist]):
-#                    self.tot_E[ist] = molecule.ekin + molecule.states[ist].energy
-                    self.aux.vel[ist] = self.aux.vel[self.rstate]
+                if (ist == self.rstate):
+                    alpha = molecule.ekin_qm
                 else:
-                    ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
-                    alpha = ekin_old + molecule.states[ist].energy_old - molecule.states[ist].energy
-                    if (alpha < eps):
-                        self.aux.vel[ist] = 0.
+                    if (self.l_first[ist]):
+                        alpha = molecule.ekin_qm
+                        if (not self.l_state_wise):
+                            alpha += molecule.states[self.rstate].energy - molecule.states[ist].energy
                     else:
-                        if (self.one_dim):
-                            alpha /= 0.5 * self.aux.mass[0]
-                            self.aux.vel[ist] = np.sqrt(alpha)
-                        else:
-                            if (ist == self.rstate):
-                                alpha = 1.
-                            else:
-                                alpha /= molecule.ekin
-                            self.aux.vel[ist] = molecule.vel[0:self.aux.nat] * np.sqrt(alpha)
-            else:
+                        ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
+                        alpha = ekin_old + molecule.states[ist].energy_old - molecule.states[ist].energy
+                if (alpha < 0.):
+                    alpha = 0.
+                
+                # Calculate auxiliary velocity from alpha
                 if (self.one_dim):
-                    self.aux.vel[ist] = self.aux.vel[self.rstate]
+                    alpha /= 0.5 * self.aux.mass[0]
+                    self.aux.vel[ist] = np.sqrt(alpha)
                 else:
-                    self.aux.vel[ist] = molecule.vel[0:self.aux.nat]
+                    alpha /= molecule.ekin_qm
+                    self.aux.vel[ist] = molecule.vel[0:self.aux.nat] * np.sqrt(alpha) 
 
     def get_phase(self, molecule):
         """ Routine to calculate phase term
@@ -532,20 +527,8 @@ class SHXF(MQC):
                     self.phase[ist] = 0.
                 else:
                     for iat in range(self.aux.nat):
-                        self.phase[ist, iat] += molecule.mass[iat] * \
+                        self.phase[ist, iat] += self.aux.mass[iat] * \
                             (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
-
-    def el_propagator(self, molecule):
-        """ Routine to propagate BO coefficients or density matrix
-
-            :param object molecule: molecule object
-        """
-        if (self.propagation == "coefficient"):
-            el_coef_xf(self, molecule)
-        elif (self.propagation == "density"):
-            el_rho_xf(self, molecule)
-        else:
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Other propagator not implemented! {self.propagation}")
 
     def append_wsigma(self):
         """ Routine to append sigma values when single float number is provided
