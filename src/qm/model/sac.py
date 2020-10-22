@@ -15,7 +15,7 @@ class SAC(Model):
         # Initialize model common variables
         super(SAC, self).__init__(None)
 
-        # define parameters
+        # Define parameters
         self.A = A
         self.B = B
         self.C = C
@@ -25,7 +25,7 @@ class SAC(Model):
         self.re_calc = False
 
     def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
-        """ Extract energy, gradient and nonadiabatic couplings from Shin-Metiu BO calculation
+        """ Extract energy, gradient and nonadiabatic couplings from simple avoided crossing model BO calculation
             
             :param object molecule: molecule object
             :param string base_dir: base directory
@@ -42,34 +42,34 @@ class SAC(Model):
         x = molecule.pos[0]
 
         # Define Hamiltonian
-        H[0][0] = np.sign(x) * self.A * (1. - np.exp(-self.B * abs(x)))
-        H[1][1] = -H[0][0]
-        H[1][0] = self.C * np.exp(-self.D * x ** 2)
-        H[0][1] = H[1][0]
+        H[0, 0] = np.sign(x) * self.A * (1. - np.exp(- self.B * abs(x)))
+        H[1, 1] = - H[0, 0]
+        H[1, 0] = self.C * np.exp(- self.D * x ** 2)
+        H[0, 1] = H[1, 0]
 
         # Define a derivative of Hamiltonian
-        dH[0][0] = self.A * self.B * np.exp(-self.B * abs(x))
-        dH[1][1] = - dH[0][0]
-        dH[1][0] = -2. * self.D * self.C * x * np.exp(-self.D * x ** 2)
-        dH[0][1] = dH[1][0]
+        dH[0, 0] = self.A * self.B * np.exp(- self.B * abs(x))
+        dH[1, 1] = - dH[0, 0]
+        dH[1, 0] = -2. * self.D * self.C * x * np.exp(- self.D * x ** 2)
+        dH[0, 1] = dH[1, 0]
 
         # Diagonalization
-        a = 4. * H[1][0] * H[0][1] + (H[1][1] - H[0][0]) ** 2
+        a = 4. * H[1, 0] * H[0, 1] + (H[1, 1] - H[0, 0]) ** 2
         sqa = np.sqrt(a)
-        tantheta = (H[1][1] - H[0][0] - sqa) / H[1][0]  * 0.5
+        tantheta = (H[1, 1] - H[0, 0] - sqa) / H[1, 0]  * 0.5
         theta = np.arctan(tantheta)
 
-        unitary[0][0] = np.cos(theta)
-        unitary[1][0] = np.sin(theta)
-        unitary[0][1] = -np.sin(theta)
-        unitary[1][1] = np.cos(theta)
+        unitary[0, 0] = np.cos(theta)
+        unitary[1, 0] = np.sin(theta)
+        unitary[0, 1] = - np.sin(theta)
+        unitary[1, 1] = np.cos(theta)
 
         # Extract adiabatic quantity
-        molecule.states[0].energy = 0.5 * (H[0][0] + H[1][1]) - 0.5 * sqa
-        molecule.states[1].energy = 0.5 * (H[0][0] + H[1][1]) + 0.5 * sqa
+        molecule.states[0].energy = 0.5 * (H[0, 0] + H[1, 1]) - 0.5 * sqa
+        molecule.states[1].energy = 0.5 * (H[0, 0] + H[1, 1]) + 0.5 * sqa
 
         molecule.states[0].force = np.dot(unitary[:, 1], np.matmul(dH, unitary[:, 1]))
         molecule.states[1].force = np.dot(unitary[:, 0], np.matmul(dH, unitary[:, 0]))
 
         molecule.nac[0, 1, 0, 0] = np.dot(unitary[:, 0], np.matmul(dH, unitary[:, 1])) / sqa
-        molecule.nac[1, 0, 0, 0] = -np.copy(molecule.nac[0, 1, 0, 0])
+        molecule.nac[1, 0, 0, 0] = - np.copy(molecule.nac[0, 1, 0, 0])
