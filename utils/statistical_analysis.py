@@ -36,7 +36,7 @@ def State_avg(ntraj, index, nstep):
             avg_state[j] += float(tmp[1])
 
     for i in range(nstep + 1):
-        tmp = avg_state[j]/ntraj
+        tmp = avg_state[i]/ntraj
         w.write(f"{i:8d}{tmp:15.8f}\n")
 
     w.close()
@@ -93,6 +93,37 @@ def Coherence_avg(ntraj, index, nstep):
 
             for k in range(flength):
                 avg_state[j][k] += float(tmp[k+1])
+
+    for i in range(nstep + 1):
+        w_str = f"{i:8d}"
+        for j in range(flength):
+            tmp = avg_state[i][j]/ntraj
+            w_str += f"{tmp:15.8f}"
+        w.write(w_str + "\n")
+
+    w.close()
+            
+                                      
+def NACME_avg(ntraj, index, nstep):
+    w = open("NACME_avg", 'w')
+    w.write("#    Averaged Non-Adiabatic Coupling Matrix Eliments: off-diagonal\n")
+
+    for i in range(ntraj):
+        path = os.path.join(f"./TRAJ_{i+1:0{index}d}/md/", "NACME")
+        f2 = open(path, 'r')
+        lines_2 = f2.readlines()
+        f2.close()
+
+        if (i == 0):
+            tmp = lines_2[1].split()
+            flength = len(tmp) - 1
+            avg_state = [[0 for j in range(flength)] for k in range(nstep+1)]
+
+        for j in range(nstep + 1):
+            tmp = lines_2[j+1].split()
+
+            for k in range(flength):
+                avg_state[j][k] += float(math.sqrt(float(tmp[k+1])**2))
 
     for i in range(nstep + 1):
         w_str = f"{i:8d}"
