@@ -50,7 +50,7 @@ class SAC(Model):
         # Define a derivative of Hamiltonian
         dH[0, 0] = self.A * self.B * np.exp(- self.B * abs(x))
         dH[1, 1] = - dH[0, 0]
-        dH[1, 0] = -2. * self.D * self.C * x * np.exp(- self.D * x ** 2)
+        dH[1, 0] = - 2. * self.D * self.C * x * np.exp(- self.D * x ** 2)
         dH[0, 1] = dH[1, 0]
 
         # Diagonalization
