@@ -21,12 +21,12 @@ thermostat.py
    :show-inheritance:
 
 ===========================================
-bo
+qm
 ===========================================
 
-bo_calculator.py
+qm_calculator.py
 -------------------------------------------
-.. automodule:: bo.bo_calculator
+.. automodule:: qm.qm_calculator
    :members:
    :show-inheritance:
 
@@ -35,7 +35,7 @@ columbus
 
 casscf.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.columbus.casscf
+.. automodule:: qm.columbus.casscf
    :members:
    :show-inheritance:
 
@@ -44,19 +44,19 @@ dftbplus
 
 dftbplus.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.dftbplus.dftbplus
+.. automodule:: qm.dftbplus.dftbplus
    :members:
    :show-inheritance:
 
 dftb.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.dftbplus.dftb
+.. automodule:: qm.dftbplus.dftb
    :members:
    :show-inheritance:
 
 ssr.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.dftbplus.ssr
+.. automodule:: qm.dftbplus.ssr
    :members:
    :show-inheritance:
 
@@ -65,13 +65,13 @@ gaussian09
 
 gaussian09.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.gaussian09.gaussian09
+.. automodule:: qm.gaussian09.gaussian09
    :members:
    :show-inheritance:
 
 dft.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.gaussian09.dft
+.. automodule:: qm.gaussian09.dft
    :members:
    :show-inheritance:
 
@@ -80,13 +80,13 @@ molpro
 
 molpro.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.molpro.molpro
+.. automodule:: qm.molpro.molpro
    :members:
    :show-inheritance:
 
 casscf.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.molpro.casscf
+.. automodule:: qm.molpro.casscf
    :members:
    :show-inheritance:
 
@@ -95,13 +95,13 @@ qchem
 
 qchem.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.qchem.qchem
+.. automodule:: qm.qchem.qchem
    :members:
    :show-inheritance:
 
 dft.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.qchem.dft
+.. automodule:: qm.qchem.dft
    :members:
    :show-inheritance:
 
@@ -110,13 +110,13 @@ terachem
 
 terachem.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.terachem.terachem
+.. automodule:: qm.terachem.terachem
    :members:
    :show-inheritance:
 
 ssr.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.terachem.ssr
+.. automodule:: qm.terachem.ssr
    :members:
    :show-inheritance:
 
@@ -125,13 +125,13 @@ turbomole
 
 turbomole.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.turbomole.turbomole
+.. automodule:: qm.turbomole.turbomole
    :members:
    :show-inheritance:
 
 dft.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.turbomole.dft
+.. automodule:: qm.turbomole.dft
    :members:
    :show-inheritance:
 
@@ -140,13 +140,19 @@ model
 
 model.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.model.model
+.. automodule:: qm.model.model
+   :members:
+   :show-inheritance:
+
+sac.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: qm.model.sac
    :members:
    :show-inheritance:
 
 shin_metiu.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bo.model.shin_metiu
+.. automodule:: qm.model.shin_metiu
    :members:
    :show-inheritance:
 

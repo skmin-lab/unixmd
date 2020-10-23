@@ -12,45 +12,45 @@ Thermostat
 
 
 ===========================================
-BO Interfaces
+QM Interfaces
 ===========================================
-.. include:: bo/bo_calculator.rst
+.. include:: qm/qm_calculator.rst
 
 Columbus
 -------------------------------------------
-.. include:: bo/columbus.rst
+.. include:: qm/columbus.rst
 
 DFTBplus
 -------------------------------------------
-.. include:: bo/dftbplus.rst
+.. include:: qm/dftbplus.rst
 
 Gaussian09
 -------------------------------------------
-.. include:: bo/gaussian09.rst
+.. include:: qm/gaussian09.rst
 
 Molpro
 -------------------------------------------
-.. include:: bo/molpro.rst
+.. include:: qm/molpro.rst
 
 QChem
 -------------------------------------------
-.. include:: bo/qchem.rst
+.. include:: qm/qchem.rst
 
 TeraChem
 -------------------------------------------
-.. include:: bo/terachem.rst
+.. include:: qm/terachem.rst
 
 Turbomole
 -------------------------------------------
-.. include:: bo/turbomole.rst
+.. include:: qm/turbomole.rst
 
 Model
 -------------------------------------------
-.. include:: bo/model.rst
+.. include:: qm/model.rst
 
 Do It Yourself
 -------------------------------------------
-.. include:: bo/DIY.rst
+.. include:: qm/DIY.rst
 
 
 ===========================================
