@@ -31,6 +31,6 @@ and 5.0 in atomic units, respectively. Only lowest two BO states are calculated 
 +----------------+------------------------------------------------+---------+
 | Keywords       | Work                                           | Default |
 +================+================================================+=========+
-| qm_path        | path for QM binary                             | ./      |
+| ``qm_path``    | path for QM binary                             | ``./``  |
 +----------------+------------------------------------------------+---------+
 
