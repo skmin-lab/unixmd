@@ -99,7 +99,7 @@ thing is that the object inherited from** ``Molecule`` **class is created in the
 
    mol = Molecule(geometry=geom, ARGUMENTS)
 
-.. note:: ``mol`` object should be already created before creating another objects which describe BO, MQC and thermostat.
+.. note:: ``mol`` object should be already created before creating another objects which describe QM, MQC and thermostat.
 
 - Determine electronic structure calculation program and method to get energy, force and nonadiabatic coupling vector.
 

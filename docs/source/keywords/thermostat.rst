@@ -41,6 +41,5 @@ NHC
 
    from thermostat import *
 
-   bathT = none() # no thermostating case
    bathT = rescale1(temperature=300.0, nrescale=20) # velocity rescaling thermostat
 
