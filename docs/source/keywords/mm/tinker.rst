@@ -8,8 +8,8 @@ charge penetration effects, and our new HIPPO (Hydrogen-like Interatomic Polariz
 force field.
 
 .. note:: Our interface script is generated with 8.7 version of Tinker program. Tinker can be
-   used for QM/MM calculation. UNI-xMD supports two types of QM/MM scheme. One is additive scheme
-   and the other is subtractive scheme, which are controlled by ``scheme`` variable.
+   used for QM/MM calculation. UNI-xMD supports two types of QM/MM scheme. One is ``additive``
+   scheme and the other is ``subtractive`` scheme, which are controlled by ``scheme`` variable.
 
 .. note:: Currently, ``embedding`` and ``vdw`` variables control the charge-charge interactions
    and the van der Walls interactions, respectively. For ``embedding`` option, ``electrostatic``
