@@ -1,9 +1,9 @@
 
-The propagation of molecular dynamics needs the information about  potential enrgy surfaces.
+The propagation of molecular dynamics needs the information about potential enrgy surfaces.
 The object for QM calculator should be constructed in UNI-xMD to evaluate the energies,
 forces and nonadiabatic couplings. UNI-xMD interfaces with followings in current version.
 
-- Columbus, DFTB+, Gaussian09, Molpro, TeraChem, Turbomole, Model system
+- Columbus, DFTB+, Gaussian09, Molpro, QChem, TeraChem, Turbomole, Model system
 
 Only some methods support with QM interface of UNI-xMD in current version.
 If you want to add other methods such as CASPT2, see "Do It yourself" section.

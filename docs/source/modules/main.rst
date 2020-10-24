@@ -157,6 +157,22 @@ shin_metiu.py
    :show-inheritance:
 
 ===========================================
+mm
+===========================================
+
+mm_calculator.py
+-------------------------------------------
+.. automodule:: mm.mm_calculator
+   :members:
+   :show-inheritance:
+
+tinker.py
+-------------------------------------------
+.. automodule:: mm.tinker
+   :members:
+   :show-inheritance:
+
+===========================================
 mqc
 ===========================================
 
