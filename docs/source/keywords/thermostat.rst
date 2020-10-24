@@ -29,6 +29,12 @@ The target temperature and the temperature difference threshold can be specified
 | ``dtemperature`` | threshold temperature difference (K)               | ``100.0`` |
 +------------------+----------------------------------------------------+-----------+
 
+Berendsen
+-------------------------------------
+
+NHC
+-------------------------------------
+
 **Ex.** Making thermostat objects
 
 .. code-block:: python
@@ -37,10 +43,4 @@ The target temperature and the temperature difference threshold can be specified
 
    bathT = none() # no thermostating case
    bathT = rescale1(temperature=300.0, nrescale=20) # velocity rescaling thermostat
-
-Berendsen
--------------------------------------
-
-NHC
--------------------------------------
 
