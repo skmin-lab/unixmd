@@ -1,7 +1,7 @@
 from __future__ import division
 from build.el_propagator_xf import el_run
 from mqc.mqc import MQC
-from fileio import touch_file, write_md_output, write_final_xyz, typewriter
+from fileio import touch_file, write_md_output, write_final_xyz, write_aux_movie, typewriter
 from misc import eps, au_to_K, call_name
 import random, os, shutil, textwrap
 import numpy as np
@@ -59,6 +59,7 @@ class SHXF(MQC):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
             propagation, solver, l_pop_print, l_adjnac, coefficient)
+        
         # Initialize SH variables
         self.rstate = istate
         self.rstate_old = self.rstate
@@ -193,6 +194,9 @@ class SHXF(MQC):
         self.get_phase(molecule)
 
         write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
+        for ist in range(molecule.nst):
+            if (self.l_coh[ist]):
+                write_aux_output(molecule, self.aux.pos[ist], self.aux.vel[ist], unixmd_dir, ist, istep=-1) 
         self.print_step(molecule, debug, istep=-1)
 
         # Main MD loop
@@ -235,7 +239,11 @@ class SHXF(MQC):
             self.get_phase(molecule)
 
             write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
+            for ist in range(molecule.nst):
+                if (self.l_coh[ist]):
+                    write_aux_output(molecule, self.aux.pos[ist], self.aux.vel[ist], unixmd_dir, ist, istep) 
             self.print_step(molecule, debug, istep=istep)
+
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, unixmd_dir, istep=istep)
 
