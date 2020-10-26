@@ -79,8 +79,7 @@ A straightfoward way to perform a UNI-xMD calculation is as follows:
 .. code-block:: python
 
    from molecule import Molecule
-   import qm
-   import mqc
+   import qm, mqc
    from thermostat import *
    from misc import data
 
@@ -148,8 +147,7 @@ Here, we provide executable running script file, which contains:
 .. code-block:: python
 
    from molecule import Molecule
-   import qm
-   import mqc
+   import qm, mqc
    from thermostat import *
    from misc import data
 
