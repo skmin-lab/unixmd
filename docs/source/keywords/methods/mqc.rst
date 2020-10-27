@@ -22,16 +22,23 @@ md subclasses of ``MQC``, not ``MQC`` itself.
 +================+=================================================+===========+
 | ``molecule``   | molecule object                                 |           |
 +----------------+-------------------------------------------------+-----------+
-| ``theory``     | theory object containing on-the-fly             |           |
+| ``qm``         | qm object containing on-the-fly                 |           |
 |                | calculation information                         |           |
 +----------------+-------------------------------------------------+-----------+
-| ``thermostat`` | thermostat type                                 |           |
+| ``mm``         | mm object containing MM                         | ``None``  |
+|                | calculation information                         |           |
++----------------+-------------------------------------------------+-----------+
+| ``thermostat`` | thermostat type                                 | ``None``  |
 +----------------+-------------------------------------------------+-----------+
 | ``input_dir``  | location of input directory                     | ``./``    |
 +----------------+-------------------------------------------------+-----------+
+| ``save_QMlog`` | logical for saving QM calculation log           | ``False`` |
++----------------+-------------------------------------------------+-----------+
+| ``save_MMlog`` | logical for saving MM calculation log           | ``False`` |
++----------------+-------------------------------------------------+-----------+
 | ``save_scr``   | logical for saving scratch directory            | ``True``  |
 +----------------+-------------------------------------------------+-----------+
-| ``save_QMlog`` | logical for saving QM calculation log           | ``False`` |
+| ``debug``      | verbosity level for standard output             | ``0``     |
 +----------------+-------------------------------------------------+-----------+
 
 Further information of each individual md objects are listed in next section.
@@ -44,7 +51,7 @@ Further information of each individual md objects are listed in next section.
 
    md = mqc.SH(molecule=mol, nsteps=1000, dt=0.125, istate=1, propagation="density")
 
-   md.run(molecule=mol, theory=qm, thermostat=bathT, input_dir="./TRAJ.sh", save_scr=True, save_QMlog=False)
+   md.run(molecule=mol, qm=qm, thermostat=bathT, input_dir="./TRAJ.sh", save_scr=True, save_QMlog=False)
 
-   # theory and thermostat must be classified before md.run is called. They are omitted in this sample code.
+   # qm and thermostat must be classified before md.run is called. They are omitted in this sample code.
 

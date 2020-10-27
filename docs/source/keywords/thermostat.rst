@@ -2,10 +2,6 @@
 A thermostat object should be provided to set temperature conditions of the dynamics (even in the
 case that no thermostating process is needed). The following are the options.
 
-none
--------------------------------------
-When there's no need to control the temperature during the dynamics, this dummy object is used.
-
 rescale1
 -------------------------------------
 :class:`rescale1` thermostat rescales the velocities periodically during the dynamics.
@@ -33,12 +29,17 @@ The target temperature and the temperature difference threshold can be specified
 | ``dtemperature`` | threshold temperature difference (K)               | ``100.0`` |
 +------------------+----------------------------------------------------+-----------+
 
+Berendsen
+-------------------------------------
+
+NHC
+-------------------------------------
+
 **Ex.** Making thermostat objects
 
 .. code-block:: python
 
    from thermostat import *
 
-   bathT = none() # no thermostating case
    bathT = rescale1(temperature=300.0, nrescale=20) # velocity rescaling thermostat
 
