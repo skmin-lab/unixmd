@@ -531,7 +531,7 @@ class SHXF(MQC):
         """
         for ist in range(molecule.nst):
             if (self.l_coh[ist]):
-                 if (self.l_first[ist]):
+                if (self.l_first[ist]):
                     self.phase[ist] = 0.
                 else:
                     for iat in range(self.aux.nat):
