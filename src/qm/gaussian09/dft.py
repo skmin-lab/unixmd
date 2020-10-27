@@ -141,7 +141,7 @@ class DFT(Gaussian09):
         # {self.functional}/{self.basis_set}""")
 
         if (restart):
-            input_route += f" Guess=Read"
+            input_route += f" guess=read"
 
         if (molecule.nst >1):
             if (self.calc_coupling):
@@ -155,7 +155,7 @@ class DFT(Gaussian09):
 
             if (bo_list[0] != 0):
                 input_route += f" force\n\n"
-            # If the running state is the ground state, an additional input is created later.
+            # If the running state is the ground state, another run is needed to print the forces.
             else:
                 input_route += f"\n\n"
         else:
@@ -180,59 +180,26 @@ class DFT(Gaussian09):
         input_molecule += "\n"
         input_g09 += input_molecule
 
-        # Write 'g09.inp' file
-        file_name = "g09.inp"
-        with open(file_name, "w") as f:
-            f.write(input_g09)
-
         # In the nonadiabatic case where the running state is the ground state, another static 
         # calculation without the td option must be done to provide the BO(ground-state) force.
         if (molecule.nst > 1 and bo_list[0] == 0 and not calc_force_only):
-            input_g09 = ""
-
             input_route = textwrap.dedent(f"""\
-            %nproc={self.nthreads}
-            %mem={self.memory}
-            %chk=g09_g.chk
+            --Link1--
+            %chk=g09.chk
             # {self.functional}/{self.basis_set}""")
 
-            if (restart):
-                input_route += f" Guess=Read"
-
-            input_route += f" force nosymm\n\n"
+            input_route += f" force nosymm geom=allcheck guess=read\n\n"
             input_g09 += input_route
-        
-            # Title section block
-            input_title = f"g09 input\n\n"
-            input_g09 += input_title
-    
-            # Molecule specification block
-            input_molecule = textwrap.dedent(f"""\
-            {int(molecule.charge)} 1
-            """)
-            for iat in range(molecule.nat):
-                list_pos = list(molecule.pos[iat] * au_to_A)
-                input_molecule += \
-                    f"{molecule.symbols[iat]}{list_pos[0]:15.8f}{list_pos[1]:15.8f}{list_pos[2]:15.8f}\n"
-            input_molecule += "\n"
-            input_g09 += input_molecule
-    
-            # Write 'g09_g.inp' file
-            file_name = "g09_g.inp"
-            with open(file_name, "w") as f:
-                f.write(input_g09)
         
         # Write "doubled molecule" input
         if (self.calc_coupling and molecule.nst > 1 and not calc_force_only and istep >= 0):
             if (istep == 0):
                 os.rename('../g09.rwf.pre', './g09.rwf.pre')
-            input_g09 = ""
             
             # Stop the run after L302 calculating overlap
             # Keep running the job regardless of interatomic distances; IOp(2/12=3)
             input_route = textwrap.dedent(f"""\
-            %nproc={self.nthreads}
-            %mem={self.memory}
+            --Link1--
             %kjob l302
             %rwf=g09_double.rwf
             # {self.functional}/{self.basis_set} IOp(2/12=3) nosymm\n\n""")
@@ -258,10 +225,10 @@ class DFT(Gaussian09):
                     f"{molecule.symbols[iat]}{list_pos[0]:15.8f}{list_pos[1]:15.8f}{list_pos[2]:15.8f}\n"
             input_molecule += "\n"
             input_g09 += input_molecule
-            
-            file_name = "g09_double.inp"
-            with open(file_name, "w") as f:
-                f.write(input_g09)
+
+        file_name = "g09.inp"
+        with open(file_name, "w") as f:
+            f.write(input_g09)
 
     def run_QM(self, molecule, base_dir, istep, bo_list, calc_force_only):
         """ Run (TD)DFT calculation and save the output files to QMlog directory
@@ -295,18 +262,6 @@ class DFT(Gaussian09):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
             shutil.copy("log", os.path.join(tmp_dir, log_step))
 
-        # Run Gaussian for the ground-state force
-        if (molecule.nst > 1 and bo_list[0] == 0 and not calc_force_only):
-           qm_command = os.path.join(self.g09_root_path, "g09/g09")
-           command = f"{qm_command} < g09_g.inp > log_g"
-           os.system(command)
-
-        # Run Gaussian09 for the overlap matrix
-        if (self.calc_coupling and molecule.nst > 1 and not calc_force_only and istep >= 0):
-           qm_command = os.path.join(self.g09_root_path, "g09/g09")
-           command = f"{qm_command} < g09_double.inp > log_double"
-           os.system(command)
-
     def extract_QM(self, molecule, istep, bo_list, dt, calc_force_only):
         """ Read the output files to get BO information
 
@@ -338,30 +293,13 @@ class DFT(Gaussian09):
                 for ist in range(1, molecule.nst):
                     molecule.states[ist].energy = molecule.states[0].energy + energy[ist - 1]
 
-        if (molecule.nst == 1 or bo_list[0] != 0 or calc_force_only):
-            # Force
-            tmp_f = "Forces\s+\(Hartrees\/Bohr\)\n.+\n.+" \
-                + "\n\s+\d*\s+\d*\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)" * molecule.nat
-            force = re.findall(tmp_f, log)
-            force = np.array(force[0], dtype=np.float)
-            force = force.reshape(molecule.nat, 3, order='C')
-            molecule.states[bo_list[0]].force = np.copy(force)
-        else:
-            file_name = "log_g"
-            with open(file_name, "r") as f:
-                log = f.read()
-
-            # Check the convergence of the calculation
-            if "Convergence failure" in log:
-                raise Exception (f"The SCF failed to converge! Check {file_name} in {self.scr_qm_dir}.")
-
-            # Force
-            tmp_f = "Forces\s+\(Hartrees\/Bohr\)\n.+\n.+" \
-                + "\n\s+\d*\s+\d*\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)" * molecule.nat
-            force = re.findall(tmp_f, log)
-            force = np.array(force[0], dtype=np.float)
-            force = force.reshape(molecule.nat, 3, order='C')
-            molecule.states[bo_list[0]].force = np.copy(force)
+        # Force
+        tmp_f = "Forces\s+\(Hartrees\/Bohr\)\n.+\n.+" \
+            + "\n\s+\d*\s+\d*\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)" * molecule.nat
+        force = re.findall(tmp_f, log)
+        force = np.array(force[0], dtype=np.float)
+        force = force.reshape(molecule.nat, 3, order='C')
+        molecule.states[bo_list[0]].force = np.copy(force)
 
         # NACME
         if (self.calc_coupling and molecule.nst > 1 and not calc_force_only):
