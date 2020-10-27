@@ -320,6 +320,10 @@ class DFT(Gaussian09):
         with open(file_name, "r") as f:
             log = f.read()
 
+        # Check the convergence of the calculation
+        if "Convergence failure" in log:
+            raise Exception (f"The SCF failed to converge! Check {file_name} in {self.scr_qm_dir}.")
+
         # Energy
         if (not calc_force_only):
             # Read ground energy
@@ -346,6 +350,10 @@ class DFT(Gaussian09):
             file_name = "log_g"
             with open(file_name, "r") as f:
                 log = f.read()
+
+            # Check the convergence of the calculation
+            if "Convergence failure" in log:
+                raise Exception (f"The SCF failed to converge! Check {file_name} in {self.scr_qm_dir}.")
 
             # Force
             tmp_f = "Forces\s+\(Hartrees\/Bohr\)\n.+\n.+" \
