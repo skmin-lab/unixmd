@@ -359,7 +359,6 @@ class DFT(Gaussian09):
         if (self.calc_coupling and molecule.nst > 1 and not calc_force_only):
             molecule.nacme = np.zeros((molecule.nst, molecule.nst))
             if (istep == -1):
-                self.pos_old = np.zeros((molecule.nat, molecule.nsp))
                 self.init_buffer(molecule)
             else:
                 self.CI_overlap(molecule, istep, dt)
@@ -386,6 +385,7 @@ class DFT(Gaussian09):
         self.nvirt = int(self.nvirt[0])
         self.norb = self.nocc + self.nvirt
     
+        self.pos_old = np.zeros((molecule.nat, molecule.nsp))
         self.ao_overlap = np.zeros((self.nbasis, self.nbasis))
         self.mo_coef_old = np.zeros((self.norb, self.nbasis))
         self.mo_coef_new = np.zeros((self.norb, self.nbasis))
@@ -400,9 +400,28 @@ class DFT(Gaussian09):
             :param integer istep: current MD step
             :param double dt: time interval
         """
-        # Read overlap
         path_rwfdump = os.path.join(self.g09_root_path, "g09/rwfdump")
-        os.system(path_rwfdump+' g09_double.rwf ao_overlap.dat 514R')
+       
+        # Read overlap
+        self.ao_overlap = self.read_ao_overlap(path_rwfdump, "g09_double.rwf")
+    
+        # Read mo coefficients
+        if (istep == 0):
+            self.mo_coef_old = self.read_mo_coef(path_rwfdump, "g09.rwf.pre") 
+   
+        self.mo_coef_new = self.read_mo_coef(path_rwfdump, "g09.rwf") 
+    
+        # Read CI coefficients
+        if (istep == 0):
+            self.ci_coef_old[1:] = self.read_xy_coef(molecule, path_rwfdump, "g09.rwf.pre")
+       
+        self.ci_coef_new[1:] = self.read_xy_coef(molecule, path_rwfdump, "g09.rwf") 
+        
+        # Calculate wavefunction overlap with orbital scheme
+        wf_overlap(self, molecule, istep, dt)
+
+    def read_ao_overlap(self, path_rwfdump, fn_rwf):
+        os.system(path_rwfdump+f" {fn_rwf} ao_overlap.dat 514R")
     
         with open('ao_overlap.dat', "r") as f:
             log = f.read()
@@ -421,24 +440,10 @@ class DFT(Gaussian09):
         tmp_ovr = tmp_ovr + np.transpose(tmp_ovr) - np.diag(np.diag(tmp_ovr))
     
         # Slicing the components between t and t+dt
-        self.ao_overlap = np.copy(tmp_ovr[:self.nbasis, self.nbasis:])
-    
-        # Read mo coefficients
-        if (istep == 0):
-            os.system(path_rwfdump+' g09.rwf.pre mo_coef.dat 524R')
-        
-            with open('mo_coef.dat', "r") as f:
-                log = f.read()
-        
-            tmp = re.findall('[-]?\d+\.\d+D[+-]\d\d', log)
-            tmp = np.array([x.replace('D','e') for x in tmp], dtype=np.float)
-        
-            tmp_mo = tmp.reshape(self.nbasis, self.nbasis)
-        
-            tmp_mo = tmp_mo[self.nfc:self.nbasis]
-            self.mo_coef_old = np.copy(tmp_mo)
-    
-        os.system(path_rwfdump+' g09.rwf mo_coef.dat 524R')
+        return tmp_ovr[:self.nbasis, self.nbasis:]
+
+    def read_mo_coef(self, path_rwfdump, fn_rwf):
+        os.system(path_rwfdump+f" {fn_rwf} mo_coef.dat 524R")
         
         with open('mo_coef.dat', "r") as f:
             log = f.read()
@@ -448,42 +453,12 @@ class DFT(Gaussian09):
         
         tmp_mo = tmp.reshape(self.nbasis, self.nbasis)
         
-        tmp_mo = tmp_mo[self.nfc:self.nbasis]
-        self.mo_coef_new = np.copy(tmp_mo)
-    
-        # Read CI coefficients
-        if (istep == 0):
-            os.system(path_rwfdump+' g09.rwf.pre xy_coef.dat 635R')
-        
-            with open('xy_coef.dat', "r") as f:
-                log = f.read()
-        
-            tmp = re.findall('[-]?\d+\.\S+[+-]\d+', log)
-        
-            # Drop the first 12 dummy elements
-            tmp = tmp[12:]
-        
-            # Gaussian deals with 4 times as much roots as the input NStates value. 
-            # the nr. of excitation function => nocc \times nvirt
-            # spin degrees of freedom => 2
-            # X+Y, X-Y => 2
-            roots = (molecule.nst - 1) * 4
-            num_coef = 4 * (self.nocc * self.nvirt) * roots
-        
-            tmp = tmp[:num_coef]
-            tmp = [t.replace('D','e') for t in tmp]
-            tmp = np.array(tmp, dtype=np.float)
-            xpy, xmy = tmp.reshape(2, roots, 2, -1)
-            x = 0.5 * (xpy + xmy)
-        
-            # Drop beta part and unrequested excited states
-            x = x[:(molecule.nst - 1), 0, :]
-        
-            self.ci_coef_old[1:] = x.reshape(-1, self.nocc, self.nvirt)
-        
-        os.system(path_rwfdump+' g09.rwf xy_coef.dat 635R')
-        
-        with open('xy_coef.dat', "r") as f:
+        return tmp_mo[self.nfc:self.nbasis]
+
+    def read_xy_coef(self, molecule, path_rwfdump, fn_rwf):
+        os.system(path_rwfdump+f" {fn_rwf} xy_coef.dat 635R")
+
+        with open(f'xy_coef.dat', "r") as f:
             log = f.read()
         
         tmp = re.findall('[-]?\d+\.\S+[+-]\d+', log)
@@ -506,9 +481,6 @@ class DFT(Gaussian09):
         # Drop beta part and unrequested excited states
         x = x[:(molecule.nst - 1), 0, :]
         
-        self.ci_coef_new[1:] = x.reshape(-1, self.nocc, self.nvirt)
+        return x.reshape(-1, self.nocc, self.nvirt)
         
-        # Calculate wavefunction overlap with orbital scheme
-        # Reference: J. Phys. Chem. Lett. 2015, 6, 4200-4203
-        wf_overlap(self, molecule, istep, dt)
 
