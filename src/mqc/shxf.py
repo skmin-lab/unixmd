@@ -196,7 +196,7 @@ class SHXF(MQC):
         write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
         for ist in range(molecule.nst):
             if (self.l_coh[ist]):
-                write_aux_output(molecule, self.aux.pos[ist], self.aux.vel[ist], unixmd_dir, ist, istep=-1) 
+                write_aux_movie(molecule, self.aux.pos[ist], self.aux.vel[ist], unixmd_dir, ist, istep=-1) 
         self.print_step(molecule, debug, istep=-1)
 
         # Main MD loop
@@ -241,7 +241,7 @@ class SHXF(MQC):
             write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
             for ist in range(molecule.nst):
                 if (self.l_coh[ist]):
-                    write_aux_output(molecule, self.aux.pos[ist], self.aux.vel[ist], unixmd_dir, ist, istep) 
+                    write_aux_movie(molecule, self.aux.pos[ist], self.aux.vel[ist], unixmd_dir, ist, istep) 
             self.print_step(molecule, debug, istep=istep)
 
             if (istep == self.nsteps - 1):
@@ -351,6 +351,7 @@ class SHXF(MQC):
                         self.force_hop = False
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
+                        self.event.append("Reject hopping: no solution to find rescale factor")
                     else:
                         if (b < 0.):
                             x = 0.5 * (- b - np.sqrt(det)) / a
@@ -371,6 +372,7 @@ class SHXF(MQC):
                         self.force_hop = False
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
+                        self.event.append("Reject hopping: no solution to find rescale factor")
                     else:
                         if (b < 0.):
                             x = 0.5 * (- b - np.sqrt(det)) / a
@@ -383,6 +385,13 @@ class SHXF(MQC):
 
                 # Update kinetic energy
                 molecule.update_kinetic()
+
+        # Record event
+        if (self.rstate != self.rstate_old):
+            if (self.force_hop):
+                self.event.append(f"Force hop {self.rstate_old} -> {self.rstate}")
+            else:
+                self.event.append(f"Hopping {self.rstate_old} -> {self.rstate}")
 
         # Write SHSTATE file
         tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
@@ -419,6 +428,7 @@ class SHXF(MQC):
                     rho = molecule.rho.real[ist, ist]
                     if (rho > self.upper_th):
                         self.set_decoherence(molecule, ist)
+                        self.event.append("Decoherence complete")
                         return
 
     def check_coherence(self, molecule):
@@ -436,6 +446,7 @@ class SHXF(MQC):
                     self.l_first[ist] = False
                 else:
                     self.l_first[ist] = True
+                    self.event.append(f"Generate auxiliary trajectory on {ist} state")
                 self.l_coh[ist] = True
                 count += 1
 
@@ -520,7 +531,7 @@ class SHXF(MQC):
         """
         for ist in range(molecule.nst):
             if (self.l_coh[ist]):
-                if (self.l_first[ist]):
+                 if (self.l_first[ist]):
                     self.phase[ist] = 0.
                 else:
                     for iat in range(self.aux.nat):
@@ -614,10 +625,6 @@ class SHXF(MQC):
             print (DEBUG2, flush=True)
 
         # Print event in surface hopping
-        if (self.rstate != self.rstate_old):
-            print (f" Hopping {self.rstate_old} -> {self.rstate}", flush=True)
-
-        if (self.force_hop):
-            print (f" Force hop {self.rstate_old} -> {self.rstate}", flush=True)
-
-
+        for ievent in self.event:
+            print(f"EVENT{istep + 1:>9d}  {ievent}", flush=True)
+        self.event = []

@@ -43,6 +43,9 @@ class MQC(object):
 
         self.rforce = np.zeros((molecule.nat, molecule.nsp))
 
+        # Initialize event to print
+        self.event = []
+
         # Initialize coefficients and densities
         molecule.get_coefficient(coefficient, self.istate)
 
