@@ -17,7 +17,7 @@ In contrast, if the program cannot calculate NACVs, ``molecule.l_nacme`` should 
 If the program can calculate gradients of multiple electronic states at a single run, you can set ``self.re_calc`` to ``False``.
 
 Theory class must have ``get_data`` method because ``run`` method in dynamics object calls ``get_data`` method.
-The method should get all arguments shown in the example code.
+The method must get all arguments shown in the example code.
 
 Arguments in ``get_data`` method is explained in modules section.
 

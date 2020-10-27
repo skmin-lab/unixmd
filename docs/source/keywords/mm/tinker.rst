@@ -4,8 +4,7 @@ features for biopolymers. Tinker has the ability to use any of several common pa
 as Amber (ff94, ff96, ff98, ff99, ff99SB), CHARMM (19, 22, 22/CMAP), Allinger MM (MM2-1991 and
 MM3-2000), OPLS (OPLS-UA, OPLS-AA), Merck Molecular Force (MMFF), Liam Dang's polarizable model,
 AMOEBA (2004, 2009, 2013, 2017, 2018) polarizable atomic multipole force fields, AMOEBA+ that adds
-charge penetration effects, and our new HIPPO (Hydrogen-like Interatomic Polarizable POtential)
-force field.
+charge penetration effects, and HIPPO (Hydrogen-like Interatomic Polarizable POtential) force field.
 
 .. note:: Our interface script is generated with 8.7 version of Tinker program. Tinker can be
    used for QM/MM calculation. UNI-xMD supports two types of QM/MM scheme. One is ``additive``
