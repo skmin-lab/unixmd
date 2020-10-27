@@ -423,8 +423,8 @@ class DFT(Gaussian09):
     def read_ao_overlap(self, path_rwfdump, fn_rwf):
         """ Read a rwf file to obtain ao_overlap data
 
-            :param path_rwfdump: the path for rwfdump binary
-            :param fn_rwf: the name of the rwf file
+            :param string path_rwfdump: the path for rwfdump binary
+            :param string fn_rwf: the name of the rwf file
         """
         os.system(path_rwfdump + f" {fn_rwf} ao_overlap.dat 514R")
     
@@ -450,8 +450,8 @@ class DFT(Gaussian09):
     def read_mo_coef(self, path_rwfdump, fn_rwf):
         """ Read a rwf file to obtain mo_coef data
 
-            :param path_rwfdump: the path for rwfdump binary
-            :param fn_rwf: the name of the rwf file
+            :param string path_rwfdump: the path for rwfdump binary
+            :param string fn_rwf: the name of the rwf file
         """
         os.system(path_rwfdump + f" {fn_rwf} mo_coef.dat 524R")
         
@@ -469,8 +469,8 @@ class DFT(Gaussian09):
         """ Read a rwf file to obtain xy_coef data
 
             :param object molecule: molecule object
-            :param path_rwfdump: the path for rwfdump binary
-            :param fn_rwf: the name of the rwf file
+            :param string path_rwfdump: the path for rwfdump binary
+            :param string fn_rwf: the name of the rwf file
         """
         os.system(path_rwfdump + f" {fn_rwf} xy_coef.dat 635R")
 
