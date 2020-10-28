@@ -29,12 +29,16 @@ class MQC(object):
         self.nsteps = nsteps
         self.nesteps = nesteps
 
+        # Check number of state and initial state
+        if (self.istate >= molecule.nst): 
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid initial state! {self.istate}")
+
         # None for BOMD case
         self.propagation = propagation
-        if not(self.propagation in [None, "coefficient", "density"]): 
+        if not (self.propagation in [None, "coefficient", "density"]): 
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'propagation'! {self.propagation}")
         self.solver = solver
-        if not(self.solver in [None, "rk4"]): 
+        if not (self.solver in [None, "rk4"]): 
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'solver'! {self.solver}")
 
         self.l_pop_print = l_pop_print
