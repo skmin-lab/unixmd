@@ -31,7 +31,7 @@ class MQC(object):
 
         # Check number of state and initial state
         if (self.istate >= molecule.nst): 
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid initial state! {self.istate}")
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Index for initial state should be smaller than number of states! {self.istate}")
 
         # None for BOMD case
         self.propagation = propagation
