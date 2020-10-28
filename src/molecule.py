@@ -209,8 +209,6 @@ class Molecule(object):
                     self.nac[ist, jst] = - self.nac[ist, jst]
                     self.nac[jst, ist] = - self.nac[jst, ist]
 
-        self.nac_old = np.copy(self.nac)
-
     def get_nacme(self):
         """ Get NACME from nonadiabatic couplings
         """
@@ -247,6 +245,7 @@ class Molecule(object):
         """
         for states in self.states:
             states.energy_old = states.energy
+        self.nac_old = np.copy(self.nac)
         self.nacme_old = np.copy(self.nacme)
 
     def get_nr_electrons(self):
