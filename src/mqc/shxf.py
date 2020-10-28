@@ -477,7 +477,7 @@ class SHXF(MQC):
                         else:
                             self.aux.pos[ist] += self.aux.vel[ist] * self.dt
 
-        self.pos_0 = np.copy(molecule.pos[0:self.aux.nat])
+        self.pos_0 = np.copy(self.aux.pos[self.rstate])
 
         # Get auxiliary velocity
         self.aux.vel_old = np.copy(self.aux.vel)
