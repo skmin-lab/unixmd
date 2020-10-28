@@ -35,8 +35,6 @@ where :math:`d_{ij}` is nonadiabatic couping between i-th and j-th adiabatic sta
 +--------------------+------------------------------------------------+-------------+
 | ``coefficient``    | initial BO coefficient                         | ``None``    |
 +--------------------+------------------------------------------------+-------------+
-| ``coefficient``    | initial BO coefficient                         | ``None``    |
-+--------------------+------------------------------------------------+-------------+
 | ``unit_pos``       | unit of time step (fs = femtosecond,           | ``fs``      |
 |                    | au = atomic unit)                              |             |
 +--------------------+------------------------------------------------+-------------+
