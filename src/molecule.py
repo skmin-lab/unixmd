@@ -172,6 +172,7 @@ class Molecule(object):
             raise ValueError (f"( {self.mol_type}.{call_name()} ) Invalid unit for position! {unit_pos}")
 
         self.pos = np.array(self.pos) * fac_pos
+
         if (unit_vel == 'au'):
             fac_vel = 1.
         elif (unit_vel == 'A/ps'):

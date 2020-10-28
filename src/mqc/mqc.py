@@ -17,21 +17,32 @@ class MQC(object):
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param coefficient: initial BO coefficient
         :type coefficient: double, list or complex, list
+        :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
     def __init__(self, molecule, istate, dt, nsteps, nesteps, \
-        propagation, solver, l_pop_print, l_adjnac, coefficient):
+        propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
         # Initialize input values
         self.istate = istate
-        self.dt = dt * fs_to_au
+        self.dt = dt
         self.nsteps = nsteps
         self.nesteps = nesteps
 
+        # Decide unit of time step
+        if (unit_dt == 'au'):
+            fac_dt = 1.
+        elif (unit_dt == 'fs'):
+            fac_dt = fs_to_au
+        else:
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid unit for time step! {unit_dt}")
+
+        self.dt *= fac_dt
+
         # Check number of state and initial state
         if (self.istate >= molecule.nst): 
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Index for initial state should be smaller than number of states! {self.istate}")
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Index for initial state must be smaller than number of states! {self.istate}")
 
         # None for BOMD case
         self.propagation = propagation

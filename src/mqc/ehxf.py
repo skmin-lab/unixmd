@@ -41,13 +41,15 @@ class EhXF(MQC):
         :param coefficient: initial BO coefficient
         :type coefficient: double, list or complex, list
         :param boolean l_state_wise: logical to use state-wise total energies for auxiliary trajectories
+        :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", solver="rk4", l_pop_print=False ,l_adjnac=True, threshold=0.01, wsigma=None,\
-        l_qmom_force=False, coefficient=None, l_state_wise=False):
+        propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
+        threshold=0.01, wsigma=None, l_qmom_force=False, coefficient=None, \
+        l_state_wise=False, unit_dt="fs"):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, solver, l_pop_print, l_adjnac, coefficient)
+            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
 
         # Initialize XF related variables
         self.l_coh = []

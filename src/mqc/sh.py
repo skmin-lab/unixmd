@@ -21,12 +21,14 @@ class SH(MQC):
         :param string vel_rescale: velocity rescaling method after hop
         :param coefficient: initial BO coefficient
         :type coefficient: double, list or complex, list
+        :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", coefficient=None):
+        propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
+        vel_rescale="momentum", coefficient=None, unit_dt="fs"):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, solver, l_pop_print, l_adjnac, coefficient)
+            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
 
         # Initialize SH variables
         self.rstate = istate
