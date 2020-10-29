@@ -158,9 +158,6 @@ class DFT(Gaussian09):
             else:
                 input_route += f"\n\n"
         else:
-            if (bo_list[0] != 0):
-                input_route += f" td(Root={bo_list[0]}, Nstates={molecule.nst - 1}) force nosymm\n\n"
-            else:
                 input_route += f" force nosymm\n\n"
         input_g09 += input_route
 
