@@ -43,7 +43,7 @@ class DFT(Gaussian09):
         else:
             self.re_calc = False
 
-        # MO dimension, initialized later by reading Gaussian log
+        # MO dimension, initialized later by reading Gaussian09 log
         self.nbasis = 0
         self.norb = 0
         self.nfc = 0
@@ -51,9 +51,9 @@ class DFT(Gaussian09):
         self.nvirt = 0
         
         # Temporaries for NACME calculation, also initialized later if not allocated
-        # ao_overlap - the nr. of AOs, the nr. of AOs
-        # mo_coef - the nr. of MOs, the nr. of AOs
-        # ci_coef - the nr. BO states, the nr. of occ, the nr. of virt
+        # ao_overlap - the number of AOs, the number of AOs
+        # mo_coef - the number of MOs, the number of AOs
+        # ci_coef - the number BO states, the number of occ, the number of virt
         self.pos_old = []
         self.ao_overlap = []
         self.mo_coef_old = []
@@ -105,7 +105,6 @@ class DFT(Gaussian09):
             :param integer,list bo_list: list of BO states for BO calculation
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-
         # Read check-point file from previous step
         if (self.guess == "read"):
             if (istep == -1):
@@ -134,16 +133,16 @@ class DFT(Gaussian09):
         %chk=g09.chk\n""")
         
         if (molecule.nst > 1 and not calc_force_only):
-            input_route = input_route + textwrap.dedent(f"""\
+            input_route += textwrap.dedent(f"""\
             %rwf=g09.rwf\n""")
         
-        input_route = input_route + textwrap.dedent(f"""\
+        input_route += textwrap.dedent(f"""\
         # {self.functional}/{self.basis_set}""")
 
         if (restart):
             input_route += f" guess=read"
 
-        if (molecule.nst >1):
+        if (molecule.nst > 1):
             if (self.calc_coupling):
                 if (calc_force_only and bo_list[0] == 0):
                     input_route += f" force nosymm"
@@ -276,7 +275,7 @@ class DFT(Gaussian09):
             log = f.read()
 
         # Check the convergence of the calculation
-        if "Convergence failure" in log:
+        if ("Convergence failure" in log):
             raise Exception (f"The SCF failed to converge! Check {file_name} in {self.scr_qm_dir}.")
 
         # Energy
@@ -303,7 +302,6 @@ class DFT(Gaussian09):
 
         # NACME
         if (self.calc_coupling and molecule.nst > 1 and not calc_force_only):
-            molecule.nacme = np.zeros((molecule.nst, molecule.nst))
             if (istep == -1):
                 self.init_buffer(molecule)
             else:
@@ -428,7 +426,7 @@ class DFT(Gaussian09):
         # Drop the first 12 dummy elements
         tmp = tmp[12:]
     
-        # Gaussian deals with 4 times as much roots as the input NStates value.
+        # Gaussian09 deals with 4 times as much roots as the input NStates value.
         # the nr. of excitation function => nocc \times nvirt
         # spin degrees of freedom => 2
         # X+Y, X-Y => 2
