@@ -42,7 +42,7 @@ package or a customized Hamiltonian, and nuclear propagation is done by the Velo
 +----------------+------------------------------------------------+------------+
 | ``nsteps``     | Total step of nuclear propagation              | ``1000``   |
 +----------------+------------------------------------------------+------------+
-| ``unit_pos``   | unit of time step (fs = femtosecond,           | ``fs``     |
+| ``unit_dt``    | unit of time step (fs = femtosecond,           | ``fs``     |
 |                | au = atomic unit)                              |            |
 +----------------+------------------------------------------------+------------+
 
