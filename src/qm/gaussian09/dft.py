@@ -123,6 +123,9 @@ class DFT(Gaussian09):
         elif (self.guess == "Harris"):
             restart = False
 
+        if (calc_force_only):
+            restart = True
+
         # Make 'g09.inp' file
         input_g09 = ""
 
