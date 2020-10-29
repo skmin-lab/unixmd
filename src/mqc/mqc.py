@@ -26,19 +26,16 @@ class MQC(object):
 
         # Initialize input values
         self.istate = istate
-        self.dt = dt
         self.nsteps = nsteps
         self.nesteps = nesteps
 
         # Decide unit of time step
         if (unit_dt == 'au'):
-            fac_dt = 1.
+            self.dt = dt
         elif (unit_dt == 'fs'):
-            fac_dt = fs_to_au
+            self.dt = dt * fs_to_au
         else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid unit for time step! {unit_dt}")
-
-        self.dt *= fac_dt
 
         # Check number of state and initial state
         if (self.istate >= molecule.nst): 
