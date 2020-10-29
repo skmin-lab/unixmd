@@ -74,7 +74,7 @@ class DFT(Gaussian09):
         self.copy_files(molecule, istep, calc_force_only)
         super().get_data(base_dir, calc_force_only)
         self.get_input(molecule, istep, bo_list, calc_force_only)
-        self.run_QM(molecule, base_dir, istep, bo_list, calc_force_only)
+        self.run_QM(base_dir, istep, bo_list)
         self.extract_QM(molecule, istep, bo_list, dt, calc_force_only)
         self.move_dir(base_dir)
 
@@ -229,14 +229,12 @@ class DFT(Gaussian09):
         with open(file_name, "w") as f:
             f.write(input_g09)
 
-    def run_QM(self, molecule, base_dir, istep, bo_list, calc_force_only):
+    def run_QM(self, base_dir, istep, bo_list):
         """ Run (TD)DFT calculation and save the output files to QMlog directory
 
-            :param object molecule: molecule object
             :param string base_dir: base directory
             :param integer istep: current MD step
             :param integer,list bo_list: list of BO states for BO calculation
-            :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # Set environment variables
         # TODO : move to gaussian09.py
@@ -312,7 +310,7 @@ class DFT(Gaussian09):
 
     def init_buffer(self, molecule):
         """ Initialize buffer variables to get NACME
-    
+
             :param object molecule: molecule object
         """
         file_name = "log"
@@ -339,7 +337,7 @@ class DFT(Gaussian09):
     def CI_overlap(self, molecule, istep, dt):
         """ Read the necessary files and calculate NACME from tdnac.c routine
             note that only reading of several files is required in this method
-    
+
             :param object molecule: molecule object
             :param integer istep: current MD step
             :param double dt: time interval
