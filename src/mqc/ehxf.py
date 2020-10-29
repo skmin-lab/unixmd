@@ -1,7 +1,7 @@
 from __future__ import division
 from build.el_propagator_xf import el_run
 from mqc.mqc import MQC
-from fileio import touch_file, write_md_output, write_final_xyz
+from fileio import touch_file, write_md_output, write_final_xyz, typewriter
 from misc import eps, au_to_K, call_name
 import os, shutil, textwrap
 import numpy as np
@@ -80,6 +80,9 @@ class EhXF(MQC):
         self.pos_0 = np.zeros((self.aux.nat, self.aux.nsp))
         self.phase = np.zeros((molecule.nst, self.aux.nat, self.aux.nsp))
 
+        # Debug variables
+        self.dotpopd = np.zeros(molecule.nst)
+
     def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
         """ Run MQC dynamics according to Ehrenfest-XF dynamics
@@ -128,7 +131,7 @@ class EhXF(MQC):
         bo_list = [ist for ist in range(molecule.nst)]
         qm.calc_coupling = True
 
-        touch_file(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=False)
+        touch_file(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=False, XF_chk=True)
         self.print_init(molecule, qm, mm, thermostat, debug)
 
         # Initialize decoherence variables
@@ -148,6 +151,7 @@ class EhXF(MQC):
         self.check_coherence(molecule)
         self.aux_propagator(molecule)
         self.get_phase(molecule)
+        self.print_deco(molecule, unixmd_dir, istep=-1)
 
         write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
         self.print_step(molecule, debug, istep=-1)
@@ -182,6 +186,7 @@ class EhXF(MQC):
             self.check_coherence(molecule)
             self.aux_propagator(molecule)
             self.get_phase(molecule)
+            self.print_deco(molecule, unixmd_dir, istep=istep)
 
             write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
             self.print_step(molecule, debug, istep=istep)
@@ -349,6 +354,16 @@ class EhXF(MQC):
         if (isinstance(self.wsigma, float)):
             sigma = self.wsigma
             self.wsigma = self.aux.nat * [sigma]
+
+    def print_deco(self, molecule, unixmd_dir, istep):
+        """ Routine to print decoherence information
+
+            :param object molecule: molecule object
+            :param string unixmd_dir: unixmd directory
+            :param integer istep: current MD step
+        """
+        tmp = f'{istep + 1:9d}' + "".join([f'{self.dotpopd[ist]:15.8f}' for ist in range(molecule.nst)])
+        typewriter(tmp, unixmd_dir, "DOTPOPD")
 
     def print_init(self, molecule, qm, mm, thermostat, debug):
         """ Routine to print the initial information of dynamics

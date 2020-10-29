@@ -85,6 +85,15 @@ static void xf_cdot(int nat, int nsp, int nst, int *l_coh, double *mass, double 
 
 }
 
+// Routine to print xf debug info 
+static void xf_print_coef(int nst, double complex *coef, double complex *xfcdot, double *dotpopd){
+    int ist;
+    
+    for(ist = 0; ist < nst; ist++){
+       dotpopd[ist] = 2.0*creal(xfcdot[ist] * conj(coef[ist]));
+    }
+}
+
 // Routine to calculate rhodot contribution originated from XF term
 static void xf_rhodot(int nat, int nsp, int nst, int *l_coh, double *mass, double *wsigma,
     double **pos, double ***aux_pos, double ***phase, double complex **rho, double complex **xfrhodot){
@@ -169,4 +178,12 @@ static void xf_rhodot(int nat, int nsp, int nst, int *l_coh, double *mass, doubl
 
 }
 
+// Routine to print xf debug info 
+static void xf_print_rho(int nst, double complex **xfrhodot, double *dotpopd){
+    int ist;
+    
+    for(ist = 0; ist < nst; ist++){
+       dotpopd[ist] = creal(xfrhodot[ist][ist]);
+    }
+}
 

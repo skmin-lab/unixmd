@@ -8,7 +8,7 @@ cdef extern from "rk4_xf.c":
     void rk4(int nat, int nsp, int nst, int nesteps, double dt, char *propagation, \
         bint *l_coh, double *mass, double *energy, double *energy_old, double *wsigma, \
         double **nacme, double **nacme_old, double **pos, double ***aux_pos, \
-        double ***phase, double complex *coef, double complex **rho)
+        double ***phase, double complex *coef, double complex **rho, double *dotpopd)
 
 def el_run(md, molecule):
     cdef:
@@ -25,6 +25,7 @@ def el_run(md, molecule):
         double ***phase
         double complex *coef
         double complex **rho
+        double *dotpopd
 
         bytes py_bytes
         int ist, jst, nst, nesteps, iat, aux_nat, aux_nsp
@@ -62,6 +63,8 @@ def el_run(md, molecule):
         for iat in range(aux_nat):
             aux_pos[ist][iat] = <double*> PyMem_Malloc(aux_nsp * sizeof(double))
             phase[ist][iat] = <double*> PyMem_Malloc(aux_nsp * sizeof(double))
+    
+    dotpopd = <double*> PyMem_Malloc(nst * sizeof(double))
 
     # Assign variables from python to C
     for ist in range(nst):
@@ -106,13 +109,17 @@ def el_run(md, molecule):
             for jst in range(nst):
                 rho[ist][jst] = molecule.rho[ist, jst]
 
+    # Debug
+    for ist in range(nst):
+        dotpopd[ist] = 0.0
+
     py_bytes = md.propagation.encode()
     propagation_c = py_bytes
 
     # Propagate electrons depending on the solver
     if (md.solver == "rk4"):
         rk4(aux_nat, aux_nsp, nst, nesteps, dt, propagation_c, l_coh, mass, energy, \
-            energy_old, wsigma, nacme, nacme_old, pos, aux_pos, phase, coef, rho)
+            energy_old, wsigma, nacme, nacme_old, pos, aux_pos, phase, coef, rho, dotpopd)
 
     # Assign variables from C to python
     if (md.propagation == "coefficient"):
@@ -135,6 +142,10 @@ def el_run(md, molecule):
         for ist in range(nst):
             PyMem_Free(rho[ist])
         PyMem_Free(rho)
+
+    # Debug
+    for ist in range(nst):
+        md.dotpopd[ist] = dotpopd[ist]
 
     # Deallocate variables
     for ist in range(nst):
@@ -165,5 +176,7 @@ def el_run(md, molecule):
 
     PyMem_Free(aux_pos)
     PyMem_Free(phase)
+    
+    PyMem_Free(dotpopd)
 
 
