@@ -9,25 +9,28 @@
 // Routine for coefficient propagation scheme in rk4 solver
 static void rk4_coef(int nat, int nsp, int nst, int nesteps, double dt, int *l_coh,
     double *mass, double *energy, double *energy_old, double *wsigma, double **nacme,
-    double **nacme_old, double **pos, double ***aux_pos, double ***phase, double complex *coef);
+    double **nacme_old, double **pos, double ***aux_pos, double ***phase, double complex *coef,
+    double *dotpopd);
 
 // Routine for density propagation scheme in rk4 solver
 static void rk4_rho(int nat, int nsp, int nst, int nesteps, double dt, int *l_coh,
     double *mass, double *energy, double *energy_old, double *wsigma, double **nacme,
-    double **nacme_old, double **pos, double ***aux_pos, double ***phase, double complex **rho);
+    double **nacme_old, double **pos, double ***aux_pos, double ***phase, double complex **rho,
+    double *dotpopd);
 
 // Interface routine for propagation scheme in rk4 solver
 static void rk4(int nat, int nsp, int nst, int nesteps, double dt, char *propagation, int *l_coh,
     double *mass, double *energy, double *energy_old, double *wsigma, double **nacme, double **nacme_old,
-    double **pos, double ***aux_pos, double ***phase, double complex *coef, double complex **rho){
+    double **pos, double ***aux_pos, double ***phase, double complex *coef, double complex **rho,
+    double *dotpopd){
 
     if(strcmp(propagation, "coefficient") == 0){
         rk4_coef(nat, nsp, nst, nesteps, dt, l_coh, mass, energy, energy_old, wsigma,
-            nacme, nacme_old, pos, aux_pos, phase, coef);
+            nacme, nacme_old, pos, aux_pos, phase, coef, dotpopd);
     }
     else if(strcmp(propagation, "density") == 0){
         rk4_rho(nat, nsp, nst, nesteps, dt, l_coh, mass, energy, energy_old, wsigma,
-            nacme, nacme_old, pos, aux_pos, phase, rho);
+            nacme, nacme_old, pos, aux_pos, phase, rho, dotpopd);
     }
 
 }
@@ -35,7 +38,8 @@ static void rk4(int nat, int nsp, int nst, int nesteps, double dt, char *propaga
 // Routine for coefficient propagation scheme in rk4 solver
 static void rk4_coef(int nat, int nsp, int nst, int nesteps, double dt, int *l_coh,
     double *mass, double *energy, double *energy_old, double *wsigma, double **nacme,
-    double **nacme_old, double **pos, double ***aux_pos, double ***phase, double complex *coef){
+    double **nacme_old, double **pos, double ***aux_pos, double ***phase, double complex *coef,
+    double *dotpopd){
 
     double complex *k1 = malloc(nst * sizeof(double complex));
     double complex *k2 = malloc(nst * sizeof(double complex));
@@ -47,7 +51,6 @@ static void rk4_coef(int nat, int nsp, int nst, int nesteps, double dt, int *l_c
     double complex *xf_c_dot = malloc(nst * sizeof(double complex));
     double complex *coef_new = malloc(nst * sizeof(double complex));
     double *eenergy = malloc(nst * sizeof(double));
-//    double *na_term = malloc(nst * sizeof(double));
     double **dv = malloc(nst * sizeof(double*));
 
     int ist, jst, iestep;
@@ -121,21 +124,7 @@ static void rk4_coef(int nat, int nsp, int nst, int nesteps, double dt, int *l_c
 
     }
 
-    /*
-    for(ist = 0; ist < nst; ist++){
-        printf(" TSHXF RHODOT           %d %22.15E\n",ist+1,2.0*creal(xf_c_dot[ist] * conj(coef[ist])));
-        na_term[ist] = 0.0;
-        c_dot[ist] = variation[ist]/edt;
-        for(jst = 0; jst < nst; jst++){
-            if(jst != ist){
-                na_term[ist] -= dv[ist][jst] * coef[jst];
-            }
-        }
-        printf("RHODOT_NAC %d %f\n",ist+1,2.0*creal(conj(coef[ist])) * na_term[ist]);
-        printf("RHODOT_TOT %d %f\n",ist+1,2.0*creal(conj(coef[ist])) * c_dot[ist]);
-    }
-    printf("RK4_COEF : NORM = %15.8f\n", creal(norm));
-    */
+    xf_print_coef(nst, xf_c_dot, coef, dotpopd);
 
     for(ist = 0; ist < nst; ist++){
         free(dv[ist]);
@@ -151,7 +140,6 @@ static void rk4_coef(int nat, int nsp, int nst, int nesteps, double dt, int *l_c
     free(xf_c_dot);
     free(coef_new);
     free(eenergy);
-//    free(na_term);
     free(dv);
 
 }
@@ -159,7 +147,8 @@ static void rk4_coef(int nat, int nsp, int nst, int nesteps, double dt, int *l_c
 // Routine for density propagation scheme in rk4 solver
 static void rk4_rho(int nat, int nsp, int nst, int nesteps, double dt, int *l_coh,
     double *mass, double *energy, double *energy_old, double *wsigma, double **nacme,
-    double **nacme_old, double **pos, double ***aux_pos, double ***phase, double complex **rho){
+    double **nacme_old, double **pos, double ***aux_pos, double ***phase, double complex **rho,
+    double *dotpopd){
 
     double complex **k1 = malloc(nst * sizeof(double complex*));
     double complex **k2 = malloc(nst * sizeof(double complex*));
@@ -171,7 +160,6 @@ static void rk4_rho(int nat, int nsp, int nst, int nesteps, double dt, int *l_co
     double complex **xf_rho_dot = malloc(nst * sizeof(double complex*));
     double complex **rho_new = malloc(nst * sizeof(double complex*));
     double *eenergy = malloc(nst * sizeof(double));
-//    double *na_term = malloc(nst * sizeof(double));
     double **dv = malloc(nst * sizeof(double*));
 
     int ist, jst, iestep;
@@ -256,22 +244,7 @@ static void rk4_rho(int nat, int nsp, int nst, int nesteps, double dt, int *l_co
 
     }
 
-    /* 
-    for(ist = 0; ist < nst; ist++){
-        na_term[ist] = 0.0;
-        for(jst = 0; jst < nst; jst++){
-            if(jst != ist){
-                na_term[ist] -= 2.0 * dv[ist][jst] * creal(rho[ist][jst]);
-            }
-        }
-        printf("RHODOT_NAC %d %f\n",ist+1, na_term[ist]);
-    }
-    norm = 0.0;
-    for(ist = 0; ist < nst; ist++){
-        norm += creal(rho[ist][ist]);
-    }
-    printf("RK4_COEF : NORM = %15.8f\n", norm);
-    */
+    xf_print_rho(nst, xf_rho_dot, dotpopd); 
 
     for(ist = 0; ist < nst; ist++){
         free(k1[ist]);
@@ -296,7 +269,6 @@ static void rk4_rho(int nat, int nsp, int nst, int nesteps, double dt, int *l_co
     free(xf_rho_dot);
     free(rho_new);
     free(eenergy);
-//    free(na_term);
     free(dv);
 
 }

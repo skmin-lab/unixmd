@@ -116,6 +116,9 @@ class SHXF(MQC):
         self.pos_0 = np.zeros((self.aux.nat, self.aux.nsp))
         self.phase = np.array(np.zeros((molecule.nst, self.aux.nat, self.aux.nsp)))
 
+        # Debug variables
+        self.dotpopd = np.zeros(molecule.nst)
+
     def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
         """ Run MQC dynamics according to decoherence-induced surface hopping dynamics
@@ -164,7 +167,7 @@ class SHXF(MQC):
         bo_list = [self.rstate]
         qm.calc_coupling = True
 
-        touch_file(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=True)
+        touch_file(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=True, XF_chk=True)
         self.print_init(molecule, qm, mm, thermostat, debug)
 
         # Initialize decoherence variables
@@ -192,6 +195,7 @@ class SHXF(MQC):
         self.check_coherence(molecule)
         self.aux_propagator(molecule)
         self.get_phase(molecule)
+        self.print_deco(molecule, unixmd_dir, istep=-1)
 
         write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
         self.print_step(molecule, debug, istep=-1)
@@ -234,8 +238,10 @@ class SHXF(MQC):
             self.check_coherence(molecule)
             self.aux_propagator(molecule)
             self.get_phase(molecule)
+            self.print_deco(molecule, unixmd_dir, istep=istep)
 
             write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
+
             self.print_step(molecule, debug, istep=istep)
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, unixmd_dir, istep=istep)
@@ -527,6 +533,16 @@ class SHXF(MQC):
         if (isinstance(self.wsigma, float)):
             sigma = self.wsigma
             self.wsigma = self.aux.nat * [sigma]
+
+    def print_deco(self, molecule, unixmd_dir, istep):
+        """ Routine to print decoherence information
+
+            :param object molecule: molecule object
+            :param string unixmd_dir: unixmd directory
+            :param integer istep: current MD step
+        """
+        tmp = f'{istep + 1:9d}' + "".join([f'{self.dotpopd[ist]:15.8f}' for ist in range(molecule.nst)])
+        typewriter(tmp, unixmd_dir, "DOTPOPD")
 
     def print_init(self, molecule, qm, mm, thermostat, debug):
         """ Routine to print the initial information of dynamics

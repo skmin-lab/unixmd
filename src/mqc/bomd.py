@@ -67,7 +67,7 @@ class BOMD(MQC):
         bo_list = [self.istate]
         qm.calc_coupling = False
 
-        touch_file(molecule, qm.calc_coupling, None, False, unixmd_dir, SH_chk=False)
+        touch_file(molecule, qm.calc_coupling, None, False, unixmd_dir, SH_chk=False, XF_chk=False)
         self.print_init(molecule, qm, mm, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
