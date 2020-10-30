@@ -141,8 +141,15 @@ class MQC(object):
             dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
             dynamics_info += f"  Propagation Scheme       = {self.propagation:>16s}\n"
 
-        if (self.md_type == "SHXF"):
-            if (self.one_dim):
+        # Print surface hopping variables
+        if (self.md_type == "SH" or self.md_type == "SHXF"):
+            dynamics_info += f"\n  Velocity Rescale in Hop  = {self.vel_rescale:>16s}\n"
+
+        # Print XF variables
+        if (self.md_type == "SHXF" or self.md_type == "EhXF"):
+            # Print density threshold used in decoherence term
+            dynamics_info += f"\n  Density Threshold        = {self.threshold:>16.6f}"
+            if (self.md_type == "SHXF" and self.one_dim):
                 # Print reduced mass
                 dynamics_info += f"\n  Reduced Mass             = {self.aux.mass[0]:16.6f}"
             # Print wsigma values
