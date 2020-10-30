@@ -109,10 +109,6 @@ def el_run(md, molecule):
             for jst in range(nst):
                 rho[ist][jst] = molecule.rho[ist, jst]
 
-    # Debug
-    for ist in range(nst):
-        dotpopd[ist] = 0.0
-
     py_bytes = md.propagation.encode()
     propagation_c = py_bytes
 

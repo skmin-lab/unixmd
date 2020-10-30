@@ -160,7 +160,6 @@ static void rk4_rho(int nat, int nsp, int nst, int nesteps, double dt, int *l_co
     double complex **xf_rho_dot = malloc(nst * sizeof(double complex*));
     double complex **rho_new = malloc(nst * sizeof(double complex*));
     double *eenergy = malloc(nst * sizeof(double));
-//    double *na_term = malloc(nst * sizeof(double));
     double **dv = malloc(nst * sizeof(double*));
 
     int ist, jst, iestep;
@@ -270,7 +269,6 @@ static void rk4_rho(int nat, int nsp, int nst, int nesteps, double dt, int *l_co
     free(xf_rho_dot);
     free(rho_new);
     free(eenergy);
-//    free(na_term);
     free(dv);
 
 }
