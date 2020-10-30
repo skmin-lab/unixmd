@@ -18,7 +18,7 @@ If you don't have numpy or Cython, you can install them using pip command.
 
 .. code-block:: bash
 
-   $ pip install --upgade numpy Cython
+   $ pip install --upgrade numpy Cython
 
 Compilation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -28,7 +28,7 @@ command in root directory of the program which contains setup.py file.
 
 .. code-block:: bash
 
-   $ python3 setup.py build_ext -b ./src/mqc/el_prop
+   $ python3 setup.py build_ext -b ./src/build
 
 
 ================================
@@ -51,11 +51,13 @@ Central modules of UNI-xMD can be divided into followings.
 
 - MQC : Class for dynamics propagation. Contains subclasses for each method such as Ehrenfest or surface hopping.
 
-- BO : Class for calculating dynamics properties using external software such as Molpro or DFTB+.
+- QM : Class for calculating dynamics properties using external software such as Molpro or DFTB+.
+
+- MM : Class for calculating dynamics properties using external software such as Tinker.
 
 - Thermostat : Class for a component which controls the temperature of a physical system.
 
-Subclasses of MQC and BO classes are organized in inheritance structure.
+Subclasses of MQC, QM and MM classes are organized in inheritance structure.
 This helps to simplify codes by inheriting common arguments to the subclasses.
 
 For the detailed information of each module, check each section in below.
@@ -77,8 +79,7 @@ A straightfoward way to perform a UNI-xMD calculation is as follows:
 .. code-block:: python
 
    from molecule import Molecule
-   import bo
-   import mqc
+   import qm, mqc
    from thermostat import *
    from misc import data
 
@@ -97,13 +98,13 @@ thing is that the object inherited from** ``Molecule`` **class is created in the
 
    mol = Molecule(geometry=geom, ARGUMENTS)
 
-.. note:: ``mol`` object should be already created before creating another objects which describe BO, MQC and thermostat.
+.. note:: ``mol`` object should be already created before creating another objects which describe QM, MQC and thermostat.
 
 - Determine electronic structure calculation program and method to get energy, force and nonadiabatic coupling vector.
 
 .. code-block:: python
 
-   qm = bo.QM_prog.QM_method(molecule=mol, ARGUMENTS)
+   qm = qm.QM_prog.QM_method(molecule=mol, ARGUMENTS)
 
 **QM_prog** and **QM_method** are electronic structure calculation program and theory, respectively. They are listed in ???.
 
@@ -146,8 +147,7 @@ Here, we provide executable running script file, which contains:
 .. code-block:: python
 
    from molecule import Molecule
-   import bo
-   import mqc
+   import qm, mqc
    from thermostat import *
    from misc import data
 
@@ -159,7 +159,7 @@ Here, we provide executable running script file, which contains:
 
    mol = Molecule(geometry=geom, nstates=NSTATES)
 
-   qm = bo.QM_PROG.QM_METHOD(ARGUMENTS)
+   qm = qm.QM_PROG.QM_METHOD(ARGUMENTS)
 
    md = mqc.MDTYPE(ARGUMETNS)
 

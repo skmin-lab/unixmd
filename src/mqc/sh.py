@@ -22,13 +22,14 @@ class SH(MQC):
         :param double threshold: electronic density threshold for unphysical density
         :param coefficient: initial BO coefficient
         :type coefficient: double, list or complex, list
+        :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
-        vel_rescale="momentum", threshold=0.01, coefficient=None):
+        vel_rescale="momentum", threshold=0.01, coefficient=None, unit_dt="fs"):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, solver, l_pop_print, l_adjnac, coefficient)
+            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
 
         # Initialize SH variables
         self.rstate = istate
@@ -103,7 +104,7 @@ class SH(MQC):
         bo_list = [self.rstate]
         qm.calc_coupling = True
 
-        touch_file(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=True)
+        touch_file(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=True, XF_chk=False)
         self.print_init(molecule, qm, mm, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
