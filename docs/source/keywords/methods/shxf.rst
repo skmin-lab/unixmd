@@ -46,4 +46,7 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | ``l_state_wise``   | logical to use state-wise total energies             | ``False``    |
 |                    | for auxiliary trajectories                           |              |
 +--------------------+------------------------------------------------------+--------------+
+| ``unit_dt``        | unit of time step (fs = femtosecond,                 | ``fs``      |
+|                    | au = atomic unit)                                    |             |
++--------------------+------------------------------------------------------+-------------+
 

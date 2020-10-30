@@ -12,10 +12,12 @@ class BOMD(MQC):
         :param integer istate: initial adiabatic state
         :param double dt: time interval
         :param integer nsteps: nuclear step
+        :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
-    def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000):
+    def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, unit_dt="fs"):
         # Initialize input values
-        super().__init__(molecule, istate, dt, nsteps, None, None, None, False, None, None)
+        super().__init__(molecule, istate, dt, nsteps, None, None, None, \
+            False, None, None, unit_dt)
 
     def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):

@@ -52,4 +52,7 @@ trajectories will be transit to that state in stochastical behavior.
 +--------------------+------------------------------------------------+--------------+
 | ``coefficient``    | initial BO coefficient                         | ``None``     |
 +--------------------+------------------------------------------------+--------------+
+| ``unit_dt``        | unit of time step (fs = femtosecond,           | ``fs``       |
+|                    | au = atomic unit)                              |              |
++--------------------+------------------------------------------------+--------------+
 
