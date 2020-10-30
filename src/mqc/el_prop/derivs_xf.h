@@ -90,7 +90,7 @@ static void xf_print_coef(int nst, double complex *coef, double complex *xfcdot,
     int ist;
     
     for(ist = 0; ist < nst; ist++){
-       dotpopd[ist] = 2.0*creal(xfcdot[ist] * conj(coef[ist]));
+       dotpopd[ist] = 2.0 * creal(xfcdot[ist] * conj(coef[ist]));
     }
 }
 
