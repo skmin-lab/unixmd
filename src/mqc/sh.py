@@ -39,7 +39,6 @@ class SH(MQC):
         self.acc_prob = np.zeros(molecule.nst + 1)
 
         self.l_hop = False
-        self.force_hop = False
 
         self.vel_rescale = vel_rescale
         if (self.vel_rescale == "energy"):
@@ -189,20 +188,13 @@ class SH(MQC):
         self.acc_prob = np.zeros(molecule.nst + 1)
 
         self.l_hop = False
-        self.force_hop = False
 
         accum = 0.
 
-        if (molecule.rho.real[self.rstate, self.rstate] < eps):
-            self.force_hop = True
-
         for ist in range(molecule.nst):
             if (ist != self.rstate):
-                if (self.force_hop):
-                    self.prob[ist] = molecule.rho.real[ist, ist] / (1. - eps)
-                else:
-                    self.prob[ist] = - 2. * molecule.rho.real[ist, self.rstate] * \
-                        molecule.nacme[ist, self.rstate] * self.dt / molecule.rho.real[self.rstate, self.rstate]
+                self.prob[ist] = - 2. * molecule.rho.real[ist, self.rstate] * \
+                    molecule.nacme[ist, self.rstate] * self.dt / molecule.rho.real[self.rstate, self.rstate]
 
                 if (self.prob[ist] < 0.):
                     self.prob[ist] = 0.
@@ -244,10 +236,9 @@ class SH(MQC):
         if (self.l_hop):
             pot_diff = molecule.states[self.rstate].energy - molecule.states[self.rstate_old].energy
             if (molecule.ekin_qm < pot_diff):
-                if (not self.force_hop):
-                    self.l_hop = False
-                    self.rstate = self.rstate_old
-                    bo_list[0] = self.rstate
+                self.l_hop = False
+                self.rstate = self.rstate_old
+                bo_list[0] = self.rstate
             else:
                 if (molecule.ekin_qm < eps):
                     raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin_qm}")
@@ -265,7 +256,6 @@ class SH(MQC):
 
                     if (det < 0.):
                         self.l_hop = False
-                        self.force_hop = False
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
                     else:
@@ -285,7 +275,6 @@ class SH(MQC):
 
                     if (det < 0.):
                         self.l_hop = False
-                        self.force_hop = False
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
                     else:
@@ -403,8 +392,5 @@ class SH(MQC):
         # Print event in surface hopping
         if (self.rstate != self.rstate_old):
             print (f" Hopping {self.rstate_old} -> {self.rstate}", flush=True)
-
-        if (self.force_hop):
-            print (f" Force hop {self.rstate_old} -> {self.rstate}", flush=True)
 
 
