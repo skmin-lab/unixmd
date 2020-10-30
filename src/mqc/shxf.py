@@ -89,7 +89,6 @@ class SHXF(MQC):
         self.one_dim = one_dim
         self.l_coh = [False] * molecule.nst
         self.l_first = [False] * molecule.nst
-#        self.tot_E = np.array(np.zeros((molecule.nst)))
         self.threshold = threshold
 
         self.wsigma = wsigma
@@ -275,13 +274,13 @@ class SHXF(MQC):
 
         accum = 0.
 
-        if (molecule.rho.real[self.rstate, self.rstate] < eps):
+        if (molecule.rho.real[self.rstate, self.rstate] < self.threshold):
             self.force_hop = True
 
         for ist in range(molecule.nst):
             if (ist != self.rstate):
                 if (self.force_hop):
-                    self.prob[ist] = molecule.rho.real[ist, ist] / (1. - eps)
+                    self.prob[ist] = molecule.rho.real[ist, ist] / (1. - self.threshold)
                 else:
                     self.prob[ist] = - 2. * molecule.rho.real[ist, self.rstate] * \
                         molecule.nacme[ist, self.rstate] * self.dt / molecule.rho.real[self.rstate, self.rstate]
