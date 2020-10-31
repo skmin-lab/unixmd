@@ -226,8 +226,8 @@ class EhXF(MQC):
             qmom = np.zeros((molecule.nat, molecule.nsp))
             for ist in range(molecule.nst):
                 for iat in range(molecule.nat):
-                    qmom[iat] += molecule.rho.real[ist, ist] * (self.pos_0[iat] - self.aux.pos[ist, iat]) / molecule.mass[iat]
-            qmom /= 2. * self.wsigma ** 2
+                    qmom[iat] += 0.5 * molecule.rho.real[ist, ist] * (self.pos_0[iat] - self.aux.pos[ist, iat]) \
+                        / self.wsigma[iat] ** 2 / molecule.mass[iat]
 
             # Calculate XF force
             for ist in range(molecule.nst):
