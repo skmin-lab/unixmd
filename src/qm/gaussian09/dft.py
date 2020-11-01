@@ -129,65 +129,60 @@ class DFT(Gaussian09):
         # Make 'g09.inp' file
         input_g09 = ""
 
-        # Route section block
+        # Ground-state calculation
         input_route = textwrap.dedent(f"""\
         %nproc={self.nthreads}
         %mem={self.memory}
         %chk=g09.chk\n""")
         
-        if (molecule.nst > 1 and not calc_force_only):
-            input_route += textwrap.dedent(f"""\
-            %rwf=g09.rwf\n""")
-        
         input_route += textwrap.dedent(f"""\
-        # {self.functional}/{self.basis_set}""")
+        # {self.functional}/{self.basis_set} nosymm""")
 
         if (restart):
             input_route += f" guess=read"
 
-        if (molecule.nst > 1):
-            if (self.calc_coupling):
-                if (calc_force_only and bo_list[0] == 0):
-                    input_route += f" force nosymm"
-                else:
-                    input_route += f" td(Root={bo_list[0]}, Nstates={molecule.nst - 1}) nosymm"
-            # BOMD
-            else:
-                input_route += f" td(Root={bo_list[0]}, Nstates={molecule.nst - 1}) nosymm"
+        if (bo_list[0] == 0):
+            input_route += f" force"
 
-            if (bo_list[0] != 0):
-                input_route += f" force\n\n"
-            # If the running state is the ground state, another run is needed to print the forces.
-            else:
-                input_route += f"\n\n"
-        else:
-                input_route += f" force nosymm\n\n"
+        if (calc_force_only):
+            input_route += f" geom=allcheck"
+        input_route += "\n\n"
+
         input_g09 += input_route
 
-        # Title section block
-        input_title = f"g09 input\n\n"
-        input_g09 += input_title
+        if (not calc_force_only):
+            # Title section block
+            input_title = f"g09 input\n\n"
+            input_g09 += input_title
 
-        # Molecule specification block
-        input_molecule = textwrap.dedent(f"""\
-        {int(molecule.charge)} 1
-        """)
-        for iat in range(molecule.nat):
-            list_pos = list(molecule.pos[iat] * au_to_A)
-            input_molecule += \
-                f"{molecule.symbols[iat]}{list_pos[0]:15.8f}{list_pos[1]:15.8f}{list_pos[2]:15.8f}\n"
-        input_molecule += "\n"
-        input_g09 += input_molecule
+            # Molecule specification block
+            input_molecule = textwrap.dedent(f"""\
+            {int(molecule.charge)} 1
+            """)
+            for iat in range(molecule.nat):
+                list_pos = list(molecule.pos[iat] * au_to_A)
+                input_molecule += \
+                    f"{molecule.symbols[iat]}{list_pos[0]:15.8f}{list_pos[1]:15.8f}{list_pos[2]:15.8f}\n"
+            input_molecule += "\n"
+            input_g09 += input_molecule
 
-        # In the nonadiabatic case where the running state is the ground state, another static 
-        # calculation without the td option must be done to provide the BO(ground-state) force.
-        if (molecule.nst > 1 and bo_list[0] == 0 and not calc_force_only):
+        # Excited-state calculation
+        if (molecule.nst > 1 and not (calc_force_only and bo_list[0] == 0)):
             input_route = textwrap.dedent(f"""\
             --Link1--
-            %chk=g09.chk
-            # {self.functional}/{self.basis_set}""")
+            %nproc={self.nthreads}
+            %mem={self.memory}
+            %chk=g09.chk\n""")
 
-            input_route += f" force nosymm geom=allcheck guess=read\n\n"
+            if (not calc_force_only):
+                input_route += f"""%rwf=g09.rwf\n"""
+
+            input_route += f"""# {self.functional}/{self.basis_set} td(Root={bo_list[0]}, Nstates={molecule.nst - 1})"""\
+            """ geom=allcheck guess=read nosymm"""
+
+            if (bo_list[0] > 0):
+                input_route += " force"
+            input_route += "\n\n"
             input_g09 += input_route
         
         # Write "doubled molecule" input
@@ -384,7 +379,7 @@ class DFT(Gaussian09):
                 tmp_ovr[ibasis, jbasis] = tmp[cnt]
                 cnt += 1
     
-        tmp_ovr = tmp_ovr + np.transpose(tmp_ovr) - np.diag(np.diag(tmp_ovr))
+        tmp_ovr += np.transpose(tmp_ovr) - np.diag(np.diag(tmp_ovr))
     
         # Slicing the components between t and t+dt
         return tmp_ovr[:self.nbasis, self.nbasis:]
