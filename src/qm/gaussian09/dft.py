@@ -232,14 +232,14 @@ class DFT(Gaussian09):
             :param integer,list bo_list: list of BO states for BO calculation
         """
         # Set environment variables
-        # TODO : move to gaussian09.py
-        os.environ["g09root"] = self.g09_root_path
-        os.environ["GAUSS_SCDIR"] = self.scr_qm_dir
-        path_profile = os.path.join(self.g09_root_path, "g09/bsd/g09.profile")
-        command = f'env -i sh -c "source {path_profile} && env"'
-        for line in subprocess.getoutput(command).split("\n"):
-            key, value = line.split("=")
-            os.environ[key] = value
+        if (istep == -1):
+            os.environ["g09root"] = self.g09_root_path
+            os.environ["GAUSS_SCDIR"] = self.scr_qm_dir
+            path_profile = os.path.join(self.g09_root_path, "g09/bsd/g09.profile")
+            command = f'env -i sh -c "source {path_profile} && env"'
+            for line in subprocess.getoutput(command).split("\n"):
+                key, value = line.split("=")
+                os.environ[key] = value
 
         # Set run command
         qm_command = os.path.join(self.g09_root_path, "g09/g09")
