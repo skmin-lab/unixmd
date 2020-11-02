@@ -52,14 +52,15 @@ class SHXF(MQC):
         :param coefficient: initial BO coefficient
         :type coefficient: double, list or complex, list
         :param boolean l_state_wise: logical to use state-wise total energies for auxiliary trajectories
+        :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", \
-        threshold=0.01, wsigma=None, one_dim=False, coefficient=None, l_state_wise=False):
+        threshold=0.01, wsigma=None, one_dim=False, coefficient=None, l_state_wise=False, unit_dt="fs"):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, solver, l_pop_print, l_adjnac, coefficient)
-        
+            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
+
         # Initialize SH variables
         self.rstate = istate
         self.rstate_old = self.rstate
@@ -89,7 +90,6 @@ class SHXF(MQC):
         self.one_dim = one_dim
         self.l_coh = [False] * molecule.nst
         self.l_first = [False] * molecule.nst
-#        self.tot_E = np.array(np.zeros((molecule.nst)))
         self.threshold = threshold
 
         self.wsigma = wsigma
@@ -115,6 +115,9 @@ class SHXF(MQC):
         self.aux = Auxiliary_Molecule(molecule, self.one_dim)
         self.pos_0 = np.zeros((self.aux.nat, self.aux.nsp))
         self.phase = np.array(np.zeros((molecule.nst, self.aux.nat, self.aux.nsp)))
+
+        # Debug variables
+        self.dotpopd = np.zeros(molecule.nst)
 
     def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
@@ -164,7 +167,7 @@ class SHXF(MQC):
         bo_list = [self.rstate]
         qm.calc_coupling = True
 
-        touch_file(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=True)
+        touch_file(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=True, XF_chk=True)
         self.print_init(molecule, qm, mm, thermostat, debug)
 
         # Initialize decoherence variables
@@ -192,6 +195,7 @@ class SHXF(MQC):
         self.check_coherence(molecule)
         self.aux_propagator(molecule)
         self.get_phase(molecule)
+        self.print_deco(molecule, unixmd_dir, istep=-1)
 
         write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
         for ist in range(molecule.nst):
@@ -237,6 +241,7 @@ class SHXF(MQC):
             self.check_coherence(molecule)
             self.aux_propagator(molecule)
             self.get_phase(molecule)
+            self.print_deco(molecule, unixmd_dir, istep=istep)
 
             write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
             for ist in range(molecule.nst):
@@ -276,13 +281,13 @@ class SHXF(MQC):
 
         accum = 0.
 
-        if (molecule.rho.real[self.rstate, self.rstate] < eps):
+        if (molecule.rho.real[self.rstate, self.rstate] < self.threshold):
             self.force_hop = True
 
         for ist in range(molecule.nst):
             if (ist != self.rstate):
                 if (self.force_hop):
-                    self.prob[ist] = molecule.rho.real[ist, ist] / (1. - eps)
+                    self.prob[ist] = molecule.rho.real[ist, ist] / (1. - self.threshold)
                 else:
                     self.prob[ist] = - 2. * molecule.rho.real[ist, self.rstate] * \
                         molecule.nacme[ist, self.rstate] * self.dt / molecule.rho.real[self.rstate, self.rstate]
@@ -496,7 +501,7 @@ class SHXF(MQC):
                         else:
                             self.aux.pos[ist] += self.aux.vel[ist] * self.dt
 
-        self.pos_0 = np.copy(molecule.pos[0:self.aux.nat])
+        self.pos_0 = np.copy(self.aux.pos[self.rstate])
 
         # Get auxiliary velocity
         self.aux.vel_old = np.copy(self.aux.vel)
@@ -545,6 +550,16 @@ class SHXF(MQC):
         if (isinstance(self.wsigma, float)):
             sigma = self.wsigma
             self.wsigma = self.aux.nat * [sigma]
+
+    def print_deco(self, molecule, unixmd_dir, istep):
+        """ Routine to print decoherence information
+
+            :param object molecule: molecule object
+            :param string unixmd_dir: unixmd directory
+            :param integer istep: current MD step
+        """
+        tmp = f'{istep + 1:9d}' + "".join([f'{self.dotpopd[ist]:15.8f}' for ist in range(molecule.nst)])
+        typewriter(tmp, unixmd_dir, "DOTPOPD")
 
     def print_init(self, molecule, qm, mm, thermostat, debug):
         """ Routine to print the initial information of dynamics

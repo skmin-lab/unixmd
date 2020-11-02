@@ -1,7 +1,7 @@
 from __future__ import division
 from build.el_propagator_xf import el_run
 from mqc.mqc import MQC
-from fileio import touch_file, write_md_output, write_final_xyz
+from fileio import touch_file, write_md_output, write_final_xyz, typewriter
 from misc import eps, au_to_K, call_name
 import os, shutil, textwrap
 import numpy as np
@@ -41,13 +41,15 @@ class EhXF(MQC):
         :param coefficient: initial BO coefficient
         :type coefficient: double, list or complex, list
         :param boolean l_state_wise: logical to use state-wise total energies for auxiliary trajectories
+        :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", solver="rk4", l_pop_print=False ,l_adjnac=True, threshold=0.01, wsigma=None,\
-        l_qmom_force=False, coefficient=None, l_state_wise=False):
+        propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
+        threshold=0.01, wsigma=None, l_qmom_force=False, coefficient=None, \
+        l_state_wise=False, unit_dt="fs"):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, solver, l_pop_print, l_adjnac, coefficient)
+            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
 
         # Initialize XF related variables
         self.l_coh = []
@@ -79,6 +81,9 @@ class EhXF(MQC):
         self.aux = Auxiliary_Molecule(molecule)
         self.pos_0 = np.zeros((self.aux.nat, self.aux.nsp))
         self.phase = np.zeros((molecule.nst, self.aux.nat, self.aux.nsp))
+
+        # Debug variables
+        self.dotpopd = np.zeros(molecule.nst)
 
     def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
@@ -128,7 +133,7 @@ class EhXF(MQC):
         bo_list = [ist for ist in range(molecule.nst)]
         qm.calc_coupling = True
 
-        touch_file(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=False)
+        touch_file(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=False, XF_chk=True)
         self.print_init(molecule, qm, mm, thermostat, debug)
 
         # Initialize decoherence variables
@@ -148,6 +153,7 @@ class EhXF(MQC):
         self.check_coherence(molecule)
         self.aux_propagator(molecule)
         self.get_phase(molecule)
+        self.print_deco(molecule, unixmd_dir, istep=-1)
 
         write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
         self.print_step(molecule, debug, istep=-1)
@@ -182,6 +188,7 @@ class EhXF(MQC):
             self.check_coherence(molecule)
             self.aux_propagator(molecule)
             self.get_phase(molecule)
+            self.print_deco(molecule, unixmd_dir, istep=istep)
 
             write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
             self.print_step(molecule, debug, istep=istep)
@@ -216,11 +223,11 @@ class EhXF(MQC):
 
         if (self.l_qmom_force):
             # Calculate quantum momentum
-            qmom = np.zeros((molecule.nat, molecule.nsp))
+            qmom = np.zeros((self.aux.nat, molecule.nsp))
             for ist in range(molecule.nst):
-                for iat in range(molecule.nat):
-                    qmom[iat] += molecule.rho.real[ist, ist] * (self.pos_0[iat] - self.aux.pos[ist, iat]) / molecule.mass[iat]
-            qmom /= 2. * self.wsigma ** 2
+                for iat in range(self.aux.nat):
+                    qmom[iat] += 0.5 * molecule.rho.real[ist, ist] * (self.pos_0[iat] - self.aux.pos[ist, iat]) \
+                        / self.wsigma[iat] ** 2 / molecule.mass[iat]
 
             # Calculate XF force
             for ist in range(molecule.nst):
@@ -339,7 +346,7 @@ class EhXF(MQC):
                     self.phase[ist] = 0.
                 else:
                     for iat in range(self.aux.nat):
-                        self.phase[ist, iat] += molecule.mass[iat] * \
+                        self.phase[ist, iat] += self.aux.mass[iat] * \
                             (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
 
     def append_wsigma(self):
@@ -349,6 +356,16 @@ class EhXF(MQC):
         if (isinstance(self.wsigma, float)):
             sigma = self.wsigma
             self.wsigma = self.aux.nat * [sigma]
+
+    def print_deco(self, molecule, unixmd_dir, istep):
+        """ Routine to print decoherence information
+
+            :param object molecule: molecule object
+            :param string unixmd_dir: unixmd directory
+            :param integer istep: current MD step
+        """
+        tmp = f'{istep + 1:9d}' + "".join([f'{self.dotpopd[ist]:15.8f}' for ist in range(molecule.nst)])
+        typewriter(tmp, unixmd_dir, "DOTPOPD")
 
     def print_init(self, molecule, qm, mm, thermostat, debug):
         """ Routine to print the initial information of dynamics

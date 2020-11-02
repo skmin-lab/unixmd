@@ -17,24 +17,36 @@ class MQC(object):
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param coefficient: initial BO coefficient
         :type coefficient: double, list or complex, list
+        :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
     def __init__(self, molecule, istate, dt, nsteps, nesteps, \
-        propagation, solver, l_pop_print, l_adjnac, coefficient):
+        propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
         # Initialize input values
         self.istate = istate
-        self.dt = dt * fs_to_au
         self.nsteps = nsteps
         self.nesteps = nesteps
 
+        # Decide unit of time step
+        if (unit_dt == 'au'):
+            self.dt = dt
+        elif (unit_dt == 'fs'):
+            self.dt = dt * fs_to_au
+        else:
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid unit for time step! {unit_dt}")
+
+        # Check number of state and initial state
+        if (self.istate >= molecule.nst): 
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Index for initial state must be smaller than number of states! {self.istate}")
+
         # None for BOMD case
         self.propagation = propagation
-        if not(self.propagation in [None, "coefficient", "density"]): 
+        if not (self.propagation in [None, "coefficient", "density"]): 
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'propagation'! {self.propagation}")
         self.solver = solver
-        if not(self.solver in [None, "rk4"]): 
+        if not (self.solver in [None, "rk4"]): 
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'solver'! {self.solver}")
 
         self.l_pop_print = l_pop_print
@@ -132,8 +144,15 @@ class MQC(object):
             dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
             dynamics_info += f"  Propagation Scheme       = {self.propagation:>16s}\n"
 
-        if (self.md_type == "SHXF"):
-            if (self.one_dim):
+        # Print surface hopping variables
+        if (self.md_type == "SH" or self.md_type == "SHXF"):
+            dynamics_info += f"\n  Velocity Rescale in Hop  = {self.vel_rescale:>16s}\n"
+
+        # Print XF variables
+        if (self.md_type == "SHXF" or self.md_type == "EhXF"):
+            # Print density threshold used in decoherence term
+            dynamics_info += f"\n  Density Threshold        = {self.threshold:>16.6f}"
+            if (self.md_type == "SHXF" and self.one_dim):
                 # Print reduced mass
                 dynamics_info += f"\n  Reduced Mass             = {self.aux.mass[0]:16.6f}"
             # Print wsigma values

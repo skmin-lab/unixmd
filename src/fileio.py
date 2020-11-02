@@ -2,7 +2,7 @@ from __future__ import division
 from misc import au_to_A, call_name
 import os, textwrap, datetime
 
-def touch_file(molecule, calc_coupling, propagation, l_pop_print, unixmd_dir, SH_chk):
+def touch_file(molecule, calc_coupling, propagation, l_pop_print, unixmd_dir, SH_chk, XF_chk):
     """ Open the UNI-xMD output files
 
         :param object molecule: molecule object
@@ -11,10 +11,11 @@ def touch_file(molecule, calc_coupling, propagation, l_pop_print, unixmd_dir, SH
         :param boolean l_pop_print: logical to print BO population and coherence
         :param string unixmd_dir: unixmd directory
         :param boolean SH_chk: check whether the dynamics is surface hopping for initial file header
+        :param boolean XF_chk: check whether the XF-based decoherence is used for initial file header
     """
     write_init_base(molecule, unixmd_dir)
     if (calc_coupling):
-        write_init_coupling(molecule, propagation, l_pop_print, unixmd_dir, SH_chk)
+        write_init_coupling(molecule, propagation, l_pop_print, unixmd_dir, SH_chk, XF_chk)
 
     # Print UNI-xMD version
     cur_time = datetime.datetime.now()
@@ -48,7 +49,7 @@ def write_init_base(molecule, unixmd_dir):
         "".join([f'E({ist})(H){"":8s}' for ist in range(molecule.nst)])
     typewriter(tmp, unixmd_dir, "MDENERGY")
 
-def write_init_coupling(molecule, propagation, l_pop_print, unixmd_dir, SH_chk):
+def write_init_coupling(molecule, propagation, l_pop_print, unixmd_dir, SH_chk, XF_chk):
     """ Header for coupling output files
 
         :param object molecule: molecule object
@@ -64,6 +65,10 @@ def write_init_coupling(molecule, propagation, l_pop_print, unixmd_dir, SH_chk):
 
         tmp = f'{"#":5s}{"Step":12s}' + "".join([f'Prob({ist}){"":8s}' for ist in range(molecule.nst)])
         typewriter(tmp, unixmd_dir, "SHPROB")
+
+    if (XF_chk):
+        tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
+        typewriter(tmp, unixmd_dir, "DOTPOPD")
 
     # BO coefficents, densities file header
     if (propagation == "density"):
