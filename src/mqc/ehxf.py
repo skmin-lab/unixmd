@@ -223,9 +223,10 @@ class EhXF(MQC):
 
         if (self.l_qmom_force):
             # Calculate quantum momentum
-            qmom = np.zeros((molecule.nat, molecule.nsp))
+            # TODO : If 1D is implemented, the index of wsigma must be modified
+            qmom = np.zeros((self.aux.nat, molecule.nsp))
             for ist in range(molecule.nst):
-                for iat in range(molecule.nat):
+                for iat in range(self.aux.nat):
                     qmom[iat] += 0.5 * molecule.rho.real[ist, ist] * (self.pos_0[iat] - self.aux.pos[ist, iat]) \
                         / self.wsigma[iat] ** 2 / molecule.mass[iat]
 
