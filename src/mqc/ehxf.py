@@ -223,7 +223,6 @@ class EhXF(MQC):
 
         if (self.l_qmom_force):
             # Calculate quantum momentum
-            # TODO : If 1D is implemented, the index of wsigma must be modified
             qmom = np.zeros((self.aux.nat, molecule.nsp))
             for ist in range(molecule.nst):
                 for iat in range(self.aux.nat):
@@ -347,7 +346,7 @@ class EhXF(MQC):
                     self.phase[ist] = 0.
                 else:
                     for iat in range(self.aux.nat):
-                        self.phase[ist, iat] += molecule.mass[iat] * \
+                        self.phase[ist, iat] += self.aux.mass[iat] * \
                             (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
 
     def append_wsigma(self):
