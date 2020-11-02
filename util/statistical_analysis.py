@@ -1,4 +1,3 @@
-#!/usr/bin/python2
 import math
 import os
 
