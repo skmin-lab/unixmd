@@ -139,7 +139,7 @@ def write_md_output(molecule, calc_coupling, propagation, l_pop_print, unixmd_di
             for ist in range(molecule.nst) for jst in range(ist + 1, molecule.nst)])
         typewriter(tmp, unixmd_dir, "NACME")
 
-def write_aux_movie(molecule, aux_pos, aux_vel, unixmd_dir, ist, istep):
+def write_aux_movie(auxiliary, unixmd_dir, ist, istep):
     """ Write auxiliary trajecoty movie file
 
         :param object molecule: molecule object
@@ -148,12 +148,12 @@ def write_aux_movie(molecule, aux_pos, aux_vel, unixmd_dir, ist, istep):
         :param string unixmd_dir: unixmd directory
     """
     # Write auxiliary trajecotry movie files
-    tmp = f'{molecule.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)'
+    tmp = f'{auxiliary.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)'
     typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz")
-    for iat in range(molecule.nat):
-        tmp = f'{molecule.symbols[iat]:5s}' + \
-            "".join([f'{aux_pos[iat, isp] * au_to_A:15.8f}' for isp in range(molecule.nsp)]) \
-            + "".join([f"{aux_vel[iat, isp]:15.8f}" for isp in range(molecule.nsp)])
+    for iat in range(auxiliary.nat):
+        tmp = f'{auxiliary.symbols[iat]:5s}' + \
+                "".join([f'{auxiliary.pos[ist, iat, isp] * au_to_A:15.8f}' for isp in range(auxiliary.nsp)]) \
+                        + "".join([f"{auxiliary.vel[ist, iat, isp]:15.8f}" for isp in range(auxiliary.nsp)])
         typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz")
 
 def write_final_xyz(molecule, unixmd_dir, istep):

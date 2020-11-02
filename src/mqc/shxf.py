@@ -17,6 +17,7 @@ class Auxiliary_Molecule(object):
 
             self.nat = 1
             self.nsp = 1
+            self.symbols = ['XX']
 
             self.mass = np.zeros((self.nat))
             self.mass[0] = 1. / np.sum(1. / molecule.mass[0:molecule.nat_qm])
@@ -25,6 +26,7 @@ class Auxiliary_Molecule(object):
 
             self.nat = molecule.nat_qm
             self.nsp = molecule.nsp
+            self.symbols = molecule.symbols
 
             self.mass = np.copy(molecule.mass)
         
@@ -200,7 +202,7 @@ class SHXF(MQC):
         write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
         for ist in range(molecule.nst):
             if (self.l_coh[ist]):
-                write_aux_movie(molecule, self.aux.pos[ist], self.aux.vel[ist], unixmd_dir, ist, istep=-1) 
+                write_aux_movie(self.aux, unixmd_dir, ist, istep=-1) 
         self.print_step(molecule, debug, istep=-1)
 
         # Main MD loop
@@ -246,7 +248,7 @@ class SHXF(MQC):
             write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
             for ist in range(molecule.nst):
                 if (self.l_coh[ist]):
-                    write_aux_movie(molecule, self.aux.pos[ist], self.aux.vel[ist], unixmd_dir, ist, istep) 
+                    write_aux_movie(self.aux, unixmd_dir, ist, istep) 
             self.print_step(molecule, debug, istep=istep)
 
             if (istep == self.nsteps - 1):
@@ -433,7 +435,7 @@ class SHXF(MQC):
                     rho = molecule.rho.real[ist, ist]
                     if (rho > self.upper_th):
                         self.set_decoherence(molecule, ist)
-                        self.event.append("Decoherence complete")
+                        self.event.append(f"Decoherence complete: decohered to {ist}")
                         return
 
     def check_coherence(self, molecule):
@@ -442,6 +444,7 @@ class SHXF(MQC):
             :param object molecule: molecule object
         """
         count = 0
+        tmp_st = ""
         for ist in range(molecule.nst):
             rho = molecule.rho.real[ist, ist]
             if (rho > self.upper_th or rho < self.lower_th):
@@ -451,13 +454,17 @@ class SHXF(MQC):
                     self.l_first[ist] = False
                 else:
                     self.l_first[ist] = True
-                    self.event.append(f"Generate auxiliary trajectory on {ist} state")
+                    tmp_st += f"{ist}, "
                 self.l_coh[ist] = True
                 count += 1
 
         if (count < 2):
             self.l_coh = [False] * molecule.nst
             self.l_first = [False] * molecule.nst
+
+        if (len(tmp_st) >= 1):
+            tmp_st = tmp_st.rstrip(', ')
+            self.event.append(f"Generate auxiliary trajectory on {tmp_st} state")
 
     def set_decoherence(self, molecule, one_st):
         """ Routine to reset coefficient/density if the state is decohered
