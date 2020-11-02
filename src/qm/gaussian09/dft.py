@@ -159,7 +159,7 @@ class DFT(Gaussian09):
             input_molecule = textwrap.dedent(f"""\
             {int(molecule.charge)} 1
             """)
-            for iat in range(molecule.nat):
+            for iat in range(molecule.nat_qm):
                 list_pos = list(molecule.pos[iat] * au_to_A)
                 input_molecule += \
                     f"{molecule.symbols[iat]}{list_pos[0]:15.8f}{list_pos[1]:15.8f}{list_pos[2]:15.8f}\n"
@@ -208,12 +208,12 @@ class DFT(Gaussian09):
             input_molecule = textwrap.dedent(f"""\
             {2 * int(molecule.charge)} 1
             """)
-            for iat in range(molecule.nat):
+            for iat in range(molecule.nat_qm):
                 list_pos = list(self.pos_old[iat] * au_to_A)
                 input_molecule += \
                     f"{molecule.symbols[iat]}{list_pos[0]:15.8f}{list_pos[1]:15.8f}{list_pos[2]:15.8f}\n"
             
-            for iat in range(molecule.nat):
+            for iat in range(molecule.nat_qm):
                 list_pos = list(molecule.pos[iat] * au_to_A)
                 input_molecule += \
                     f"{molecule.symbols[iat]}{list_pos[0]:15.8f}{list_pos[1]:15.8f}{list_pos[2]:15.8f}\n"
@@ -287,10 +287,10 @@ class DFT(Gaussian09):
 
         # Force
         tmp_f = "Forces\s+\(Hartrees\/Bohr\)\n.+\n.+" \
-            + "\n\s+\d*\s+\d*\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)" * molecule.nat
+            + "\n\s+\d*\s+\d*\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)" * molecule.nat_qm
         force = re.findall(tmp_f, log)
         force = np.array(force[0], dtype=np.float)
-        force = force.reshape(molecule.nat, 3, order='C')
+        force = force.reshape(molecule.nat_qm, 3, order='C')
         molecule.states[bo_list[0]].force = np.copy(force)
 
         # NACME
@@ -322,7 +322,7 @@ class DFT(Gaussian09):
         self.nvirt = int(self.nvirt[0])
         self.norb = self.nocc + self.nvirt
     
-        self.pos_old = np.zeros((molecule.nat, molecule.nsp))
+        self.pos_old = np.zeros((molecule.nat_qm, molecule.nsp))
         self.ao_overlap = np.zeros((self.nbasis, self.nbasis))
         self.mo_coef_old = np.zeros((self.norb, self.nbasis))
         self.mo_coef_new = np.zeros((self.norb, self.nbasis))
