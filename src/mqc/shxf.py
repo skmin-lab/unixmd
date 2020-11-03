@@ -251,7 +251,7 @@ class SHXF(MQC):
             write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
             for ist in range(molecule.nst):
                 if (self.l_coh[ist]):
-                    write_aux_movie(self.aux, unixmd_dir, ist, istep) 
+                    write_aux_movie(self.aux, unixmd_dir, ist, istep=istep) 
             self.print_step(molecule, debug, istep=istep)
 
             if (istep == self.nsteps - 1):
@@ -532,7 +532,7 @@ class SHXF(MQC):
                         alpha = ekin_old + molecule.states[ist].energy_old - molecule.states[ist].energy
                 if (alpha < 0.):
                     alpha = 0.
-                
+
                 # Calculate auxiliary velocity from alpha
                 if (self.one_dim):
                     alpha /= 0.5 * self.aux.mass[0]
