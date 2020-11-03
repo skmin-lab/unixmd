@@ -403,5 +403,5 @@ class SH(MQC):
             if (len(events) != 0):
                 for ievent in events:
                     print (f" {category}{istep + 1:>9d}  {ievent}", flush=True)
-        self.event = {"HOP": []}
+        self.event["HOP"]= []
 

@@ -651,9 +651,10 @@ class SHXF(MQC):
                 DEBUG2 += f"{self.acc_prob[ist]:12.5f}({self.rstate}->{ist})"
             print (DEBUG2, flush=True)
 
-        # Print event in surface hopping
+        # Print event in SHXF
         for category, events in self.event.items():
             if (len(events) != 0):
                 for ievent in events:
                     print (f" {category}{istep + 1:>9d}  {ievent}", flush=True)
-        self.event = {"HOP": [], "DECO": []}
+        self.event["HOP"] = []
+        self.event["DECO"] = []
