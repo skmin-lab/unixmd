@@ -4,7 +4,7 @@ import textwrap
 import numpy as np
 
 # In a model example, a specific routine should be devised separately.
-class thermo(object):
+class Thermo(object):
     """ Object class for a thermostat. The type of given thermostat is classified by its subclasses.
 
         :param double temperature: temperature (K) set in the NVT ensemble
@@ -17,7 +17,7 @@ class thermo(object):
         self.temp = temperature
 
 
-class rescale1(thermo):
+class Rescale1(thermo):
     """ Rescale the velocities in a given period
 
         :param double temperature: the temperature (K) set in the NVT ensemble
@@ -65,7 +65,7 @@ class rescale1(thermo):
         print (thermostat_info, flush=True)
 
 
-class rescale2(thermo):
+class Rescale2(thermo):
     """ Rescale the velocities when the temerature is out of a given range
 
         :param double temperature: the temperature (K) set in the NVT ensemble
