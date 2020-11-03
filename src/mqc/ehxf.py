@@ -1,7 +1,7 @@
 from __future__ import division
 from build.el_propagator_xf import el_run
 from mqc.mqc import MQC
-from fileio import touch_file, write_md_output, write_final_xyz, typewriter
+from fileio import touch_file, write_md_output, write_final_xyz, write_aux_movie, typewriter
 from misc import eps, au_to_K, call_name
 import os, shutil, textwrap
 import numpy as np
@@ -84,6 +84,9 @@ class EhXF(MQC):
 
         # Debug variables
         self.dotpopd = np.zeros(molecule.nst)
+        
+        # Initialize event to print
+        self.event = {"DECO": []}
 
     def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
@@ -156,6 +159,9 @@ class EhXF(MQC):
         self.print_deco(molecule, unixmd_dir, istep=-1)
 
         write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
+        for ist in range(molecule.nst):
+            if (self.l_coh[ist]):
+                write_aux_movie(self.aux, unixmd_dir, ist, istep=-1) 
         self.print_step(molecule, debug, istep=-1)
 
         # Main MD loop
@@ -191,6 +197,9 @@ class EhXF(MQC):
             self.print_deco(molecule, unixmd_dir, istep=istep)
 
             write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
+            for ist in range(molecule.nst):
+                if (self.l_coh[ist]):
+                    write_aux_movie(self.aux, unixmd_dir, ist, istep=istep) 
             self.print_step(molecule, debug, istep=istep)
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, unixmd_dir, istep=istep)
@@ -257,6 +266,7 @@ class EhXF(MQC):
                 rho = molecule.rho.real[ist, ist]
                 if (rho > self.upper_th):
                     self.set_decoherence(molecule, ist)
+                    self.event["DECO"].append(f"Destroy auxiliary trajectories: decohered to {ist} state")
                     return
 
     def check_coherence(self, molecule):
@@ -265,6 +275,7 @@ class EhXF(MQC):
             :param object molecule: molecule object
         """
         count = 0
+        tmp_st = ""
         for ist in range(molecule.nst):
             rho = molecule.rho.real[ist, ist]
             if (rho > self.upper_th or rho < self.lower_th):
@@ -274,12 +285,17 @@ class EhXF(MQC):
                     self.l_first[ist] = False
                 else:
                     self.l_first[ist] = True
+                    tmp_st += f"{ist}, "
                 self.l_coh[ist] = True
                 count += 1
 
         if (count < 2):
             self.l_coh = [False] * molecule.nst
             self.l_first = [False] * molecule.nst
+
+        if (len(tmp_st) >= 1):
+            tmp_st = tmp_st.rstrip(', ')
+            self.event["DECO"].append(f"Generate auxiliary trajectory on {tmp_st} state")
 
     def set_decoherence(self, molecule, one_st):
         """ Routine to reset coefficient/density if the state is decohered
@@ -426,4 +442,10 @@ class EhXF(MQC):
                 DEBUG1 += f"{molecule.states[ist].energy:17.8f} "
             print (DEBUG1, flush=True)
 
+        # Print event in EhXF
+        for category, events in self.event.items():
+            if (len(events) != 0):
+                for ievent in events:
+                    print (f" {category}{istep + 1:>9d}  {ievent}", flush=True)
+        self.event = {"DECO": []}
 
