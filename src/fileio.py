@@ -152,10 +152,10 @@ def write_md_output(molecule, calc_coupling, propagation, l_pop_print, unixmd_di
 def write_aux_movie(auxiliary, unixmd_dir, ist, istep):
     """ Write auxiliary trajecoty movie file
 
-        :param object molecule: molecule object
-        :param double, list aux_pos: auxiliary molecule position
-        :param double, list aux_vel: auxiliary molecule velocity
+        :param object auxiliart: auxiliary molecule object
         :param string unixmd_dir: unixmd directory
+        :param integer ist: current adiabatic state
+        :param integer istep: current MD step
     """
     # Write auxiliary trajecotry movie files
     tmp = f'{auxiliary.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)'
