@@ -98,8 +98,10 @@ def wf_overlap(theory, molecule, istep_py, dt_py):
 
     for ibasis in range(nbasis):
         PyMem_Free(ao_overlap[ibasis])
-        PyMem_Free(mo_coef_old[ibasis])
-        PyMem_Free(mo_coef_new[ibasis])
+
+    for iorb in range(norb):
+        PyMem_Free(mo_coef_old[iorb])
+        PyMem_Free(mo_coef_new[iorb])
 
     PyMem_Free(ao_overlap)
     PyMem_Free(mo_coef_old)
