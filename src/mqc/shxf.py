@@ -76,7 +76,7 @@ class SHXF(MQC):
 
         self.vel_rescale = vel_rescale
         self.l_state_wise = l_state_wise
-        
+
         if (self.vel_rescale == "energy"):
             pass
         elif (self.vel_rescale == "velocity"):
@@ -655,5 +655,5 @@ class SHXF(MQC):
         for category, events in self.event.items():
             if (len(events) != 0):
                 for ievent in events:
-                    print(f" {category}{istep + 1:>9d}  {ievent}", flush=True)
+                    print (f" {category}{istep + 1:>9d}  {ievent}", flush=True)
         self.event = {"HOP": [], "DECO": []}

@@ -142,9 +142,9 @@ def write_md_output(molecule, calc_coupling, propagation, l_pop_print, unixmd_di
         # Write NACV file
         for ist in range(molecule.nst):
             for jst in range(ist + 1, molecule.nst):
-                tmp = f'{molecule.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV'
+                tmp = f'{molecule.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV'
                 typewriter(tmp, unixmd_dir, f"NACV_{ist}_{jst}")
-                for iat in range(molecule.nat):
+                for iat in range(molecule.nat_qm):
                     tmp = f'{molecule.symbols[iat]:5s}' + \
                         "".join([f'{molecule.nac[ist, jst, iat, isp]:15.8f}' for isp in range(molecule.nsp)])
                     typewriter(tmp, unixmd_dir, f"NACV_{ist}_{jst}")
@@ -152,7 +152,7 @@ def write_md_output(molecule, calc_coupling, propagation, l_pop_print, unixmd_di
 def write_aux_movie(auxiliary, unixmd_dir, ist, istep):
     """ Write auxiliary trajecoty movie file
 
-        :param object auxiliart: auxiliary molecule object
+        :param object auxiliary: auxiliary molecule object
         :param string unixmd_dir: unixmd directory
         :param integer ist: current adiabatic state
         :param integer istep: current MD step
@@ -163,7 +163,7 @@ def write_aux_movie(auxiliary, unixmd_dir, ist, istep):
     for iat in range(auxiliary.nat):
         tmp = f'{auxiliary.symbols[iat]:5s}' + \
                 "".join([f'{auxiliary.pos[ist, iat, isp] * au_to_A:15.8f}' for isp in range(auxiliary.nsp)]) \
-                        + "".join([f"{auxiliary.vel[ist, iat, isp]:15.8f}" for isp in range(auxiliary.nsp)])
+                + "".join([f"{auxiliary.vel[ist, iat, isp]:15.8f}" for isp in range(auxiliary.nsp)])
         typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz")
 
 def write_final_xyz(molecule, unixmd_dir, istep):
