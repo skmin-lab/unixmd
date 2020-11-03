@@ -121,6 +121,9 @@ class SHXF(MQC):
         # Debug variables
         self.dotpopd = np.zeros(molecule.nst)
 
+        # Initialize event to print
+        self.event = {"HOP": [], "DECO": []}
+
     def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
         """ Run MQC dynamics according to decoherence-induced surface hopping dynamics
@@ -358,7 +361,7 @@ class SHXF(MQC):
                         self.force_hop = False
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
-                        self.event.append("Reject hopping: no solution to find rescale factor")
+                        self.event["HOP"].append("Reject hopping: no solution to find rescale factor")
                     else:
                         if (b < 0.):
                             x = 0.5 * (- b - np.sqrt(det)) / a
@@ -379,7 +382,7 @@ class SHXF(MQC):
                         self.force_hop = False
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
-                        self.event.append("Reject hopping: no solution to find rescale factor")
+                        self.event["HOP"].append("Reject hopping: no solution to find rescale factor")
                     else:
                         if (b < 0.):
                             x = 0.5 * (- b - np.sqrt(det)) / a
@@ -396,9 +399,9 @@ class SHXF(MQC):
         # Record event
         if (self.rstate != self.rstate_old):
             if (self.force_hop):
-                self.event.append(f"Force hop {self.rstate_old} -> {self.rstate}")
+                self.event["HOP"].append(f"Force hop {self.rstate_old} -> {self.rstate}")
             else:
-                self.event.append(f"Hopping {self.rstate_old} -> {self.rstate}")
+                self.event["HOP"].append(f"Hopping {self.rstate_old} -> {self.rstate}")
 
         # Write SHSTATE file
         tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
@@ -427,6 +430,8 @@ class SHXF(MQC):
             :param object molecule: molecule object
         """
         if (self.l_hop):
+            if (True in self.l_coh):
+                self.event["DECO"].append(f"Destroy auxiliary trajectories: hopping occurs")
             self.l_coh = [False] * molecule.nst
             self.l_first = [False] * molecule.nst
         else:
@@ -435,7 +440,7 @@ class SHXF(MQC):
                     rho = molecule.rho.real[ist, ist]
                     if (rho > self.upper_th):
                         self.set_decoherence(molecule, ist)
-                        self.event.append(f"Decoherence complete: decohered to {ist}")
+                        self.event["DECO"].append(f"Destroy auxiliary trajectories: decohered to {ist} state")
                         return
 
     def check_coherence(self, molecule):
@@ -464,7 +469,7 @@ class SHXF(MQC):
 
         if (len(tmp_st) >= 1):
             tmp_st = tmp_st.rstrip(', ')
-            self.event.append(f"Generate auxiliary trajectory on {tmp_st} state")
+            self.event["DECO"].append(f"Generate auxiliary trajectory on {tmp_st} state")
 
     def set_decoherence(self, molecule, one_st):
         """ Routine to reset coefficient/density if the state is decohered
@@ -647,6 +652,8 @@ class SHXF(MQC):
             print (DEBUG2, flush=True)
 
         # Print event in surface hopping
-        for ievent in self.event:
-            print(f"EVENT{istep + 1:>9d}  {ievent}", flush=True)
-        self.event = []
+        for category, events in self.event.items():
+            if (len(events) != 0):
+                for ievent in events:
+                    print(f" {category}{istep + 1:>9d}  {ievent}", flush=True)
+        self.event = {"HOP": [], "DECO": []}
