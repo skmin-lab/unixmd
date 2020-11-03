@@ -52,6 +52,9 @@ class SH(MQC):
         else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
 
+        # Initialize event to print
+        self.event = {"HOP": []}
+
     def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
         """ Run MQC dynamics according to surface hopping dynamics
@@ -258,6 +261,7 @@ class SH(MQC):
                         self.l_hop = False
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
+                        self.event["HOP"].append("Reject hopping: no solution to find rescale factor")
                     else:
                         if (b < 0.):
                             x = 0.5 * (- b - np.sqrt(det)) / a
@@ -277,6 +281,7 @@ class SH(MQC):
                         self.l_hop = False
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
+                        self.event["HOP"].append("Reject hopping: no solution to find rescale factor")
                     else:
                         if (b < 0.):
                             x = 0.5 * (- b - np.sqrt(det)) / a
@@ -289,6 +294,10 @@ class SH(MQC):
 
                 # Update kinetic energy
                 molecule.update_kinetic()
+
+        # Record event
+        if (self.rstate != self.rstate_old):
+            self.event["HOP"].append(f"Hopping {self.rstate_old} -> {self.rstate}")
 
         # Write SHSTATE file
         tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
@@ -390,7 +399,9 @@ class SH(MQC):
             print (DEBUG2, flush=True)
 
         # Print event in surface hopping
-        if (self.rstate != self.rstate_old):
-            print (f" Hopping {self.rstate_old} -> {self.rstate}", flush=True)
-
+        for category, events in self.event.items():
+            if (len(events) != 0):
+                for ievent in events:
+                    print (f" {category}{istep + 1:>9d}  {ievent}", flush=True)
+        self.event["HOP"] = []
 

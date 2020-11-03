@@ -1,7 +1,7 @@
 from __future__ import division
 from build.el_propagator_xf import el_run
 from mqc.mqc import MQC
-from fileio import touch_file, write_md_output, write_final_xyz, typewriter
+from fileio import touch_file, write_md_output, write_final_xyz, write_aux_movie, typewriter
 from misc import eps, au_to_K, call_name
 import random, os, shutil, textwrap
 import numpy as np
@@ -17,6 +17,7 @@ class Auxiliary_Molecule(object):
 
             self.nat = 1
             self.nsp = 1
+            self.symbols = ['XX']
 
             self.mass = np.zeros((self.nat))
             self.mass[0] = 1. / np.sum(1. / molecule.mass[0:molecule.nat_qm])
@@ -25,6 +26,7 @@ class Auxiliary_Molecule(object):
 
             self.nat = molecule.nat_qm
             self.nsp = molecule.nsp
+            self.symbols = molecule.symbols
 
             self.mass = np.copy(molecule.mass)
         
@@ -60,6 +62,7 @@ class SHXF(MQC):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, \
             propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
+
         # Initialize SH variables
         self.rstate = istate
         self.rstate_old = self.rstate
@@ -73,7 +76,7 @@ class SHXF(MQC):
 
         self.vel_rescale = vel_rescale
         self.l_state_wise = l_state_wise
-        
+
         if (self.vel_rescale == "energy"):
             pass
         elif (self.vel_rescale == "velocity"):
@@ -117,6 +120,9 @@ class SHXF(MQC):
 
         # Debug variables
         self.dotpopd = np.zeros(molecule.nst)
+
+        # Initialize event to print
+        self.event = {"HOP": [], "DECO": []}
 
     def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
@@ -197,6 +203,9 @@ class SHXF(MQC):
         self.print_deco(molecule, unixmd_dir, istep=-1)
 
         write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
+        for ist in range(molecule.nst):
+            if (self.l_coh[ist]):
+                write_aux_movie(self.aux, unixmd_dir, ist, istep=-1) 
         self.print_step(molecule, debug, istep=-1)
 
         # Main MD loop
@@ -240,8 +249,11 @@ class SHXF(MQC):
             self.print_deco(molecule, unixmd_dir, istep=istep)
 
             write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
-
+            for ist in range(molecule.nst):
+                if (self.l_coh[ist]):
+                    write_aux_movie(self.aux, unixmd_dir, ist, istep=istep) 
             self.print_step(molecule, debug, istep=istep)
+
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, unixmd_dir, istep=istep)
 
@@ -349,6 +361,7 @@ class SHXF(MQC):
                         self.force_hop = False
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
+                        self.event["HOP"].append("Reject hopping: no solution to find rescale factor")
                     else:
                         if (b < 0.):
                             x = 0.5 * (- b - np.sqrt(det)) / a
@@ -369,6 +382,7 @@ class SHXF(MQC):
                         self.force_hop = False
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
+                        self.event["HOP"].append("Reject hopping: no solution to find rescale factor")
                     else:
                         if (b < 0.):
                             x = 0.5 * (- b - np.sqrt(det)) / a
@@ -381,6 +395,13 @@ class SHXF(MQC):
 
                 # Update kinetic energy
                 molecule.update_kinetic()
+
+        # Record event
+        if (self.rstate != self.rstate_old):
+            if (self.force_hop):
+                self.event["HOP"].append(f"Force hop {self.rstate_old} -> {self.rstate}")
+            else:
+                self.event["HOP"].append(f"Hopping {self.rstate_old} -> {self.rstate}")
 
         # Write SHSTATE file
         tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
@@ -409,6 +430,8 @@ class SHXF(MQC):
             :param object molecule: molecule object
         """
         if (self.l_hop):
+            if (True in self.l_coh):
+                self.event["DECO"].append(f"Destroy auxiliary trajectories: hopping occurs")
             self.l_coh = [False] * molecule.nst
             self.l_first = [False] * molecule.nst
         else:
@@ -417,6 +440,7 @@ class SHXF(MQC):
                     rho = molecule.rho.real[ist, ist]
                     if (rho > self.upper_th):
                         self.set_decoherence(molecule, ist)
+                        self.event["DECO"].append(f"Destroy auxiliary trajectories: decohered to {ist} state")
                         return
 
     def check_coherence(self, molecule):
@@ -425,6 +449,7 @@ class SHXF(MQC):
             :param object molecule: molecule object
         """
         count = 0
+        tmp_st = ""
         for ist in range(molecule.nst):
             rho = molecule.rho.real[ist, ist]
             if (rho > self.upper_th or rho < self.lower_th):
@@ -434,12 +459,17 @@ class SHXF(MQC):
                     self.l_first[ist] = False
                 else:
                     self.l_first[ist] = True
+                    tmp_st += f"{ist}, "
                 self.l_coh[ist] = True
                 count += 1
 
         if (count < 2):
             self.l_coh = [False] * molecule.nst
             self.l_first = [False] * molecule.nst
+
+        if (len(tmp_st) >= 1):
+            tmp_st = tmp_st.rstrip(', ')
+            self.event["DECO"].append(f"Generate auxiliary trajectory on {tmp_st} state")
 
     def set_decoherence(self, molecule, one_st):
         """ Routine to reset coefficient/density if the state is decohered
@@ -502,7 +532,7 @@ class SHXF(MQC):
                         alpha = ekin_old + molecule.states[ist].energy_old - molecule.states[ist].energy
                 if (alpha < 0.):
                     alpha = 0.
-                
+
                 # Calculate auxiliary velocity from alpha
                 if (self.one_dim):
                     alpha /= 0.5 * self.aux.mass[0]
@@ -621,11 +651,10 @@ class SHXF(MQC):
                 DEBUG2 += f"{self.acc_prob[ist]:12.5f}({self.rstate}->{ist})"
             print (DEBUG2, flush=True)
 
-        # Print event in surface hopping
-        if (self.rstate != self.rstate_old):
-            print (f" Hopping {self.rstate_old} -> {self.rstate}", flush=True)
-
-        if (self.force_hop):
-            print (f" Force hop {self.rstate_old} -> {self.rstate}", flush=True)
-
-
+        # Print event in SHXF
+        for category, events in self.event.items():
+            if (len(events) != 0):
+                for ievent in events:
+                    print (f" {category}{istep + 1:>9d}  {ievent}", flush=True)
+        self.event["HOP"] = []
+        self.event["DECO"] = []
