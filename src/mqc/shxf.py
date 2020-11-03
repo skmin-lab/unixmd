@@ -325,10 +325,10 @@ class SHXF(MQC):
         if (self.l_hop):
             pot_diff = molecule.states[self.rstate].energy - molecule.states[self.rstate_old].energy
             if (molecule.ekin_qm < pot_diff):
-                if (not self.force_hop):
-                    self.l_hop = False
-                    self.rstate = self.rstate_old
-                    bo_list[0] = self.rstate
+                self.l_hop = False
+                self.force_hop = False
+                self.rstate = self.rstate_old
+                bo_list[0] = self.rstate
             else:
                 if (molecule.ekin_qm < eps):
                     raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {molecule.ekin_qm}")
