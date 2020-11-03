@@ -49,7 +49,7 @@ class DFT(Gaussian09):
         self.nfc = 0
         self.nocc = 0
         self.nvirt = 0
-        
+ 
         # Temporaries for NACME calculation, also initialized later if not allocated
         # ao_overlap - the number of AOs, the number of AOs
         # mo_coef - the number of MOs, the number of AOs
@@ -134,7 +134,7 @@ class DFT(Gaussian09):
         %nproc={self.nthreads}
         %mem={self.memory}
         %chk=g09.chk\n""")
-        
+ 
         input_route += textwrap.dedent(f"""\
         # {self.functional}/{self.basis_set} nosymm""")
 
@@ -184,12 +184,12 @@ class DFT(Gaussian09):
                 input_route += " force"
             input_route += "\n\n"
             input_g09 += input_route
-        
+
         # Write "doubled molecule" input
         if (self.calc_coupling and molecule.nst > 1 and not calc_force_only and istep >= 0):
             if (istep == 0):
                 os.rename('../g09.rwf.pre', './g09.rwf.pre')
-            
+ 
             # Stop the run after L302 calculating overlap
             # Keep running the job regardless of interatomic distances; IOp(2/12=3)
             input_route = textwrap.dedent(f"""\
@@ -197,13 +197,13 @@ class DFT(Gaussian09):
             %kjob l302
             %rwf=g09_double.rwf
             # {self.functional}/{self.basis_set} IOp(2/12=3) nosymm\n\n""")
-            
+ 
             input_g09 += input_route
-            
+ 
             # Title section block
             input_title = f"g09 double input\n\n"
             input_g09 += input_title
-            
+ 
             # Molecule specification block
             input_molecule = textwrap.dedent(f"""\
             {2 * int(molecule.charge)} 1
@@ -212,7 +212,7 @@ class DFT(Gaussian09):
                 list_pos = list(self.pos_old[iat] * au_to_A)
                 input_molecule += \
                     f"{molecule.symbols[iat]}{list_pos[0]:15.8f}{list_pos[1]:15.8f}{list_pos[2]:15.8f}\n"
-            
+ 
             for iat in range(molecule.nat_qm):
                 list_pos = list(molecule.pos[iat] * au_to_A)
                 input_molecule += \
@@ -299,7 +299,7 @@ class DFT(Gaussian09):
                 self.init_buffer(molecule)
             else:
                 self.CI_overlap(molecule, istep, dt)
-        
+ 
             # Save geometry in the buffer
             self.pos_old = np.copy(molecule.pos)
 
@@ -311,7 +311,7 @@ class DFT(Gaussian09):
         file_name = "log"
         with open(file_name, "r") as f:
             log = f.read()
-    
+
         self.nbasis = re.findall('NBasis=\s+(\d+)\s+', log)
         self.nbasis = int(self.nbasis[0])
         self.nfc = re.findall('NFC=\s+(\d+)\s+', log)
@@ -321,7 +321,7 @@ class DFT(Gaussian09):
         self.nvirt = re.findall('NVA=\s+(\d+)\s+', log)
         self.nvirt = int(self.nvirt[0])
         self.norb = self.nocc + self.nvirt
-    
+
         self.pos_old = np.zeros((molecule.nat_qm, molecule.nsp))
         self.ao_overlap = np.zeros((self.nbasis, self.nbasis))
         self.mo_coef_old = np.zeros((self.norb, self.nbasis))
@@ -338,22 +338,22 @@ class DFT(Gaussian09):
             :param double dt: time interval
         """
         path_rwfdump = os.path.join(self.g09_root_path, "g09/rwfdump")
-       
+ 
         # Read overlap
         self.ao_overlap = self.read_ao_overlap(path_rwfdump, "g09_double.rwf")
-    
+
         # Read mo coefficients
         if (istep == 0):
             self.mo_coef_old = self.read_mo_coef(path_rwfdump, "g09.rwf.pre") 
-   
+
         self.mo_coef_new = self.read_mo_coef(path_rwfdump, "g09.rwf") 
-    
+
         # Read CI coefficients
         if (istep == 0):
             self.ci_coef_old[1:] = self.read_xy_coef(molecule, path_rwfdump, "g09.rwf.pre")
-       
+
         self.ci_coef_new[1:] = self.read_xy_coef(molecule, path_rwfdump, "g09.rwf") 
-        
+
         # Calculate wavefunction overlap with orbital scheme
         wf_overlap(self, molecule, istep, dt)
 
@@ -364,23 +364,23 @@ class DFT(Gaussian09):
             :param string fn_rwf: the name of the rwf file
         """
         os.system(path_rwfdump + f" {fn_rwf} ao_overlap.dat 514R")
-    
+
         with open('ao_overlap.dat', "r") as f:
             log = f.read()
-    
+
         tmp = re.findall('[-]?\d+\.\d+D[+-]\d\d', log)
         tmp = [float(x.replace('D', 'e')) for x in tmp]
-    
+ 
         tmp_ovr = np.zeros((self.nbasis * 2, self.nbasis * 2))
-    
+ 
         cnt = 0
         for ibasis in range(self.nbasis * 2):
             for jbasis in range(ibasis + 1):
                 tmp_ovr[ibasis, jbasis] = tmp[cnt]
                 cnt += 1
-    
+
         tmp_ovr += np.transpose(tmp_ovr) - np.diag(np.diag(tmp_ovr))
-    
+
         # Slicing the components between t and t+dt
         return tmp_ovr[:self.nbasis, self.nbasis:]
 
@@ -391,15 +391,15 @@ class DFT(Gaussian09):
             :param string fn_rwf: the name of the rwf file
         """
         os.system(path_rwfdump + f" {fn_rwf} mo_coef.dat 524R")
-        
+
         with open('mo_coef.dat', "r") as f:
             log = f.read()
-        
+
         tmp = re.findall('[-]?\d+\.\d+D[+-]\d\d', log)
         tmp = np.array([x.replace('D','e') for x in tmp], dtype=np.float)
-        
+
         tmp_mo = tmp.reshape(self.nbasis, self.nbasis)
-        
+
         return tmp_mo[self.nfc:self.nbasis]
 
     def read_xy_coef(self, molecule, path_rwfdump, fn_rwf):
@@ -413,27 +413,27 @@ class DFT(Gaussian09):
 
         with open(f'xy_coef.dat', "r") as f:
             log = f.read()
-        
+
         tmp = re.findall('[-]?\d+\.\S+[+-]\d+', log)
-        
+
         # Drop the first 12 dummy elements
         tmp = tmp[12:]
-    
+ 
         # Gaussian09 deals with 4 times as much roots as the input NStates value.
         # the nr. of excitation function => nocc \times nvirt
         # spin degrees of freedom => 2
         # X+Y, X-Y => 2
         roots = (molecule.nst - 1) * 4
         num_coef = 4 * (self.nocc * self.nvirt) * roots
-        
+ 
         tmp = tmp[:num_coef]
         tmp = np.array([x.replace('D','e') for x in tmp], dtype=np.float)
         xpy, xmy = tmp.reshape(2, roots, 2, -1)
         x = 0.5 * (xpy + xmy)
-        
+ 
         # Drop beta part and unrequested excited states
         x = x[:(molecule.nst - 1), 0, :]
-        
+ 
         return x.reshape(-1, self.nocc, self.nvirt)
-        
+ 
 
