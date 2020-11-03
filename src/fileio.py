@@ -139,6 +139,16 @@ def write_md_output(molecule, calc_coupling, propagation, l_pop_print, unixmd_di
             for ist in range(molecule.nst) for jst in range(ist + 1, molecule.nst)])
         typewriter(tmp, unixmd_dir, "NACME")
 
+        # Write NACV file
+        for ist in range(molecule.nst):
+            for jst in range(ist+1, molecule.nst):
+                tmp = f'{molecule.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV'
+                typewriter(tmp, unixmd_dir, f"NACV_{ist}_{jst}")
+                for iat in range(molecule.nat):
+                    tmp = f'{molecule.symbols[iat]:5s}' + \
+                        "".join([f'{molecule.nac[ist, jst, iat, isp]:15.8f}' for isp in range(molecule.nsp)])
+                    typewriter(tmp, unixmd_dir, f"NACV_{ist}_{jst}")
+
 def write_aux_movie(auxiliary, unixmd_dir, ist, istep):
     """ Write auxiliary trajecoty movie file
 
