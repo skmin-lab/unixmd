@@ -17,7 +17,7 @@ class Thermo(object):
         self.temp = temperature
 
 
-class Rescale1(thermo):
+class Rescale1(Thermo):
     """ Rescale the velocities in a given period
 
         :param double temperature: the temperature (K) set in the NVT ensemble
@@ -65,7 +65,7 @@ class Rescale1(thermo):
         print (thermostat_info, flush=True)
 
 
-class Rescale2(thermo):
+class Rescale2(Thermo):
     """ Rescale the velocities when the temerature is out of a given range
 
         :param double temperature: the temperature (K) set in the NVT ensemble
@@ -109,7 +109,7 @@ class Rescale2(thermo):
         print (thermostat_info, flush=True)
 
 
-class Berendsen(thermo):
+class Berendsen(Thermo):
     """ Rescale the velocities by Berendsen thermostat
         
         :param double temperature: the temperature (K) set in the NVT ensemble
@@ -171,7 +171,7 @@ class Berendsen(thermo):
         print (thermostat_info, flush=True)
 
 
-class NHC(thermo):
+class NHC(Thermo):
     """ Rescale the velocities by Nose-Hoover chain thermostat
         
         :param double temperature: the temperature (K) set in the NVT ensemble
