@@ -162,8 +162,8 @@ def write_aux_movie(auxiliary, unixmd_dir, ist, istep):
     typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz")
     for iat in range(auxiliary.nat):
         tmp = f'{auxiliary.symbols[iat]:5s}' + \
-                "".join([f'{auxiliary.pos[ist, iat, isp] * au_to_A:15.8f}' for isp in range(auxiliary.nsp)]) \
-                + "".join([f"{auxiliary.vel[ist, iat, isp]:15.8f}" for isp in range(auxiliary.nsp)])
+            "".join([f'{auxiliary.pos[ist, iat, isp] * au_to_A:15.8f}' for isp in range(auxiliary.nsp)]) \
+            + "".join([f"{auxiliary.vel[ist, iat, isp]:15.8f}" for isp in range(auxiliary.nsp)])
         typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz")
 
 def write_final_xyz(molecule, unixmd_dir, istep):
