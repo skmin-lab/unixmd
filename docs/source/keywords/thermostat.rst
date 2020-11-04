@@ -31,7 +31,7 @@ The target temperature and the temperature difference threshold can be specified
 
 Berendsen
 -------------------------------------
-:class:`Berendsen` thermostat rescales the velocities by mimicing weak coupling with first-order kinetics
+:class:`Berendsen` thermostat :cite:`Berendsen`  rescales the velocities by mimicing weak coupling with first-order kinetics
 to an external heat bath with given temperature.
 
 +------------------------+----------------------------------------------------+-----------+
@@ -47,22 +47,24 @@ to an external heat bath with given temperature.
 
 NHC
 -------------------------------------
-:class:`NHC` thermostat rescales the velocities by using frition factor, which comes from imaginary particles. 
+:class:`NHC` thermostat, which is Nosé-Hoover chain thermostat :cite:`NHC` , rescales the velocities by using frition factor, which comes from imaginary particles. 
 
+.. note:: ``order`` should be ``3`` or ``5``.
+   
 +------------------------+----------------------------------------------------+-----------+
 | Keywords               | Work                                               | Default   |
 +========================+====================================================+===========+
 | ``temperature``        | target temperature (K) of the thermostat           | ``300.0`` |
 +------------------------+----------------------------------------------------+-----------+
-| ``coupling_strength``  | dimensionless coupling strength for the thermostat | ``None``  |
+| ``coupling_strength``  | the coupling strength (cm\ :sup:`-1`\) for the     | ``None``  |
+|                        | thermostat                                         |           |
 +------------------------+----------------------------------------------------+-----------+
-| ``time_scale``         | target temperature (K) of the thermostat           | ``None``  |
+| ``time_scale``         | the coupling time scale (fs)                       | ``None``  |
 +------------------------+----------------------------------------------------+-----------+
 | ``chain_length``       | the number of imaginary particles in the thermostat| ``3``     |
 |                        | chain                                              |           |
 +------------------------+----------------------------------------------------+-----------+
-| ``order``              | the order of the evolution operator should be      | ``3``     |
-|                        | ``3`` or ``5``.                                    |           |
+| ``order``              | the order of the evolution operator                | ``3``     |
 +------------------------+----------------------------------------------------+-----------+
 | ``nsteps``             | NHC propagation step                               | ``1``     |
 +------------------------+----------------------------------------------------+-----------+
