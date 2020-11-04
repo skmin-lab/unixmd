@@ -47,6 +47,25 @@ to an external heat bath with given temperature.
 
 NHC
 -------------------------------------
+:class:`NHC` thermostat rescales the velocities by using frition factor, which comes from imaginary particles. 
+
++------------------------+----------------------------------------------------+-----------+
+| Keywords               | Work                                               | Default   |
++========================+====================================================+===========+
+| ``temperature``        | target temperature (K) of the thermostat           | ``300.0`` |
++------------------------+----------------------------------------------------+-----------+
+| ``coupling_strength``  | dimensionless coupling strength for the thermostat | ``None``  |
++------------------------+----------------------------------------------------+-----------+
+| ``time_scale``         | target temperature (K) of the thermostat           | ``None``  |
++------------------------+----------------------------------------------------+-----------+
+| ``chain_length``       | the number of imaginary particles in the thermostat| ``3``     |
+|                        | chain                                              |           |
++------------------------+----------------------------------------------------+-----------+
+| ``order``              | the order of the evolution operator should be      | ``3``     |
+|                        | ``3`` or ``5``.                                    |           |
++------------------------+----------------------------------------------------+-----------+
+| ``nsteps``             | NHC propagation step                               | ``1``     |
++------------------------+----------------------------------------------------+-----------+
 
 **Ex.** Making thermostat objects
 
