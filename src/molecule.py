@@ -1,5 +1,5 @@
 from __future__ import division
-from misc import data, eps, A_to_au, call_name
+from misc import data, eps, A_to_au, fs_to_au, call_name
 import textwrap
 import numpy as np
 
