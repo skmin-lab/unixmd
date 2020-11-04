@@ -34,6 +34,8 @@ Berendsen
 :class:`Berendsen` thermostat :cite:`Berendsen`  rescales the velocities by mimicing weak coupling with first-order kinetics
 to an external heat bath with given temperature.
 
+.. note:: Either ``coupling_parameter`` or ``coupling_strength`` should be set and only ``coupling_parameter`` or ``coupling_strength`` can be set.
+
 +------------------------+----------------------------------------------------+-----------+
 | Keywords               | Work                                               | Default   |
 +========================+====================================================+===========+
@@ -49,7 +51,8 @@ NHC
 -------------------------------------
 :class:`NHC` thermostat, which is Nosé-Hoover chain thermostat :cite:`NHC` , rescales the velocities by using frition factor, which comes from imaginary particles. 
 
-.. note:: ``order`` should be ``3`` or ``5``.
+.. note:: Either ``coupling_strength`` or ``time_scale`` should be set and only ``coupling_strength`` or ``time_scale`` can be set. 
+   ``order`` should be ``3`` or ``5``.
    
 +------------------------+----------------------------------------------------+-----------+
 | Keywords               | Work                                               | Default   |
