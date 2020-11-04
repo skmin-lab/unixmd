@@ -14,8 +14,8 @@ class Shin_Metiu(Model):
         :param double xmax: upper bound of the 1D space
         :param double L: the distance between two fixed nuclei
         :param double Rc: the parameter of a moving nucleus
-        :param double Rl: the parameter of a fixed nuclei in the left side
-        :param double Rr: the parameter of a fixed nuclei in the right side
+        :param double Rl: the parameter of a fixed nucleus in the left side
+        :param double Rr: the parameter of a fixed nucleus in the right side
     """
     def __init__(self, molecule, nx=401, xmin=-20.0, xmax=20.0, L=19.0, Rc=5.0, Rl=4.0, Rr=3.1):
         # Initialize model common variables
@@ -73,6 +73,11 @@ class Shin_Metiu(Model):
         idx = np.argsort(ws)
         ws = ws[idx]
         unitary = unitary[:, idx]
+
+        # Slicing eigenvalues and eigenvectors up to the given number of states
+        ws = ws[0:molecule.nst]
+        unitary = unitary[:, 0:molecule.nst]
+
         for ist in range(molecule.nst):
             molecule.states[ist].energy = ws[ist]
 
