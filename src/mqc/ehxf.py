@@ -292,6 +292,7 @@ class EhXF(MQC):
         if (count < 2):
             self.l_coh = [False] * molecule.nst
             self.l_first = [False] * molecule.nst
+            tmp_st = ""
 
         if (len(tmp_st) >= 1):
             tmp_st = tmp_st.rstrip(', ')

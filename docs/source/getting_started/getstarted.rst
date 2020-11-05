@@ -8,7 +8,7 @@ electronic propagation part interfaced via Cython, therefore compilation is need
 Requirements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Python 3.5 (or newer)
+Python 3.6 (or newer)
 
 Numpy
 
