@@ -1,7 +1,7 @@
 Compile Cython
 
   [Prerequisite]
-        Python 3.5 (or newer)
+        Python 3.6 (or newer)
         Numpy
         Cython https://cython.org
         
