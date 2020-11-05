@@ -203,7 +203,7 @@ class SHXF(MQC):
         self.print_deco(molecule, unixmd_dir, istep=-1)
 
         write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
-        if (self.verbosity == 2):
+        if (self.verbosity >= 2):
             if (not molecule.l_nacme):
                 write_nacv(molecule, unixmd_dir, istep=-1)
             for ist in range(molecule.nst):
@@ -252,7 +252,7 @@ class SHXF(MQC):
             self.print_deco(molecule, unixmd_dir, istep=istep)
 
             write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
-            if (self.verbosity == 2):
+            if (self.verbosity >= 2):
                 if (not molecule.l_nacme):
                     write_nacv(molecule, unixmd_dir, istep=istep)
                 for ist in range(molecule.nst):
