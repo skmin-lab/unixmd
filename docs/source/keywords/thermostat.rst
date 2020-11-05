@@ -31,7 +31,7 @@ The target temperature and the temperature difference threshold can be specified
 
 Berendsen
 -------------------------------------
-:class:`Berendsen` thermostat :cite:`Berendsen`  rescales the velocities by mimicing weak coupling with first-order kinetics
+:class:`Berendsen` thermostat :cite:`Berendsen`  rescales the velocities by mimicking weak coupling with first-order kinetics
 to an external heat bath with given temperature.
 
 .. note:: Either ``coupling_parameter`` or ``coupling_strength`` should be set and only ``coupling_parameter`` or ``coupling_strength`` can be set.
