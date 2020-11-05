@@ -19,8 +19,8 @@ class MQC(object):
         :type coefficient: double, list or complex, list
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
-    def __init__(self, molecule, istate, dt, nsteps, nesteps, \
-        propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt):
+    def __init__(self, molecule, istate, dt, nsteps, nesteps, propagation, \
+        solver, l_pop_print, l_adjnac, coefficient, unit_dt, outfreq, debug):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -57,6 +57,10 @@ class MQC(object):
 
         # Initialize coefficients and densities
         molecule.get_coefficient(coefficient, self.istate)
+
+        # option for output
+        self.outfreq = outfreq
+        self.debug = debug
 
     def cl_update_position(self, molecule):
         """ Routine to update nuclear positions
