@@ -20,7 +20,7 @@ class MQC(object):
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
     def __init__(self, molecule, istate, dt, nsteps, nesteps, propagation, \
-        solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, debug):
+        solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -60,7 +60,7 @@ class MQC(object):
 
         # option for output
         self.out_freq = out_freq
-        self.debug = debug
+        self.verbosity = verbosity
 
     def cl_update_position(self, molecule):
         """ Routine to update nuclear positions
@@ -98,14 +98,13 @@ class MQC(object):
         """
         pass
 
-    def print_init(self, molecule, qm, mm, thermostat, debug):
+    def print_init(self, molecule, qm, mm, thermostat):
         """ Routine to print the initial information of dynamics
 
             :param object molecule: molecule object
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
             :param object thermostat: thermostat type
-            :param integer debug: verbosity level for standard output
         """
         # Print molecule information: coordinate, velocity
         molecule.print_init(mm)

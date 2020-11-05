@@ -14,13 +14,13 @@ class BOMD(MQC):
         :param integer nsteps: nuclear step
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
-    def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, unit_dt="fs", out_freq=0, debug=0):
+    def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, None, None, None, \
-            False, None, None, unit_dt, out_freq, debug)
+            False, None, None, unit_dt, out_freq, verbosity)
 
     def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
-        save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
+        save_QMlog=False, save_MMlog=False, save_scr=True):
         """ Run MQC dynamics according to BOMD
 
             :param object molecule: molecule object
@@ -31,7 +31,6 @@ class BOMD(MQC):
             :param boolean save_QMlog: logical for saving QM calculation log
             :param boolean save_MMlog: logical for saving MM calculation log
             :param boolean save_scr: logical for saving scratch directory
-            :param integer debug: verbosity level for standard output
         """
         # Set directory information
         input_dir = os.path.expanduser(input_dir)
@@ -68,7 +67,7 @@ class BOMD(MQC):
         qm.calc_coupling = False
 
         touch_file(molecule, qm.calc_coupling, None, False, unixmd_dir, SH_chk=False, XF_chk=False)
-        self.print_init(molecule, qm, mm, thermostat, debug)
+        self.print_init(molecule, qm, mm, thermostat)
 
         # Calculate initial input geometry at t = 0.0 s
         molecule.reset_bo(qm.calc_coupling)
@@ -79,7 +78,7 @@ class BOMD(MQC):
         self.update_energy(molecule)
 
         write_md_output(molecule, qm.calc_coupling, None, False, unixmd_dir, istep=-1)
-        self.print_step(molecule, debug, istep=-1)
+        self.print_step(molecule, istep=-1)
 
         # Main MD loop
         for istep in range(self.nsteps):
@@ -99,7 +98,7 @@ class BOMD(MQC):
             self.update_energy(molecule)
 
             write_md_output(molecule, qm.calc_coupling, None, False, unixmd_dir, istep=istep)
-            self.print_step(molecule, debug, istep=istep)
+            self.print_step(molecule, istep=istep)
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, unixmd_dir, istep=istep)
 
@@ -131,17 +130,16 @@ class BOMD(MQC):
         molecule.epot = molecule.states[self.istate].energy
         molecule.etot = molecule.epot + molecule.ekin
 
-    def print_init(self, molecule, qm, mm, thermostat, debug):
+    def print_init(self, molecule, qm, mm, thermostat):
         """ Routine to print the initial information of dynamics
 
             :param object molecule: molecule object
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
             :param object thermostat: thermostat type
-            :param integer debug: verbosity level for standard output
         """
         # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(molecule, qm, mm, thermostat, debug)
+        super().print_init(molecule, qm, mm, thermostat)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
@@ -155,20 +153,19 @@ class BOMD(MQC):
         INIT = f" #INFO{'STEP':>8s}{'State':>7s}{'Kinetic(H)':>13s}{'Potential(H)':>15s}{'Total(H)':>13s}{'Temperature(K)':>17s}"
         dynamics_step_info += INIT
 
-        # Print DEBUG1 for each step
-        if (debug >= 1):
-            DEBUG1 = f" #DEBUG1{'STEP':>6s}"
-            for ist in range(molecule.nst):
-                DEBUG1 += f"{'Potential_':>14s}{ist}(H)"
-            dynamics_step_info += "\n" + DEBUG1
+        ## Print DEBUG1 for each step
+        #if (debug >= 1):
+        #    DEBUG1 = f" #DEBUG1{'STEP':>6s}"
+        #    for ist in range(molecule.nst):
+        #        DEBUG1 += f"{'Potential_':>14s}{ist}(H)"
+        #    dynamics_step_info += "\n" + DEBUG1
 
         print (dynamics_step_info, flush=True)
 
-    def print_step(self, molecule, debug, istep):
+    def print_step(self, molecule, istep):
         """ Routine to print each steps infomation about dynamics
 
             :param object molecule: molecule object
-            :param integer debug: verbosity level for standard output
             :param integer istep: current MD step
         """
         ctemp = molecule.ekin * 2. / float(molecule.dof) * au_to_K
@@ -179,11 +176,11 @@ class BOMD(MQC):
         INFO += f"{ctemp:13.6f}"
         print (INFO, flush=True)
 
-        # Print DEBUG1 for each step
-        if (debug >= 1):
-            DEBUG1 = f" DEBUG1{istep + 1:>7d}"
-            for ist in range(molecule.nst):
-                DEBUG1 += f"{molecule.states[ist].energy:17.8f} "
-            print (DEBUG1, flush=True)
+        ## Print DEBUG1 for each step
+        #if (debug >= 1):
+        #    DEBUG1 = f" DEBUG1{istep + 1:>7d}"
+        #    for ist in range(molecule.nst):
+        #        DEBUG1 += f"{molecule.states[ist].energy:17.8f} "
+        #    print (DEBUG1, flush=True)
 
 
