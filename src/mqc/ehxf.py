@@ -1,7 +1,7 @@
 from __future__ import division
 from build.el_propagator_xf import el_run
 from mqc.mqc import MQC
-from fileio import touch_file, write_md_output, write_final_xyz, write_aux_movie, typewriter
+from fileio import touch_file, write_md_output, write_final_xyz, write_nacv, write_aux_movie, typewriter
 from misc import eps, au_to_K, call_name
 import os, shutil, textwrap
 import numpy as np
@@ -158,9 +158,12 @@ class EhXF(MQC):
         self.print_deco(molecule, unixmd_dir, istep=-1)
 
         write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
-        for ist in range(molecule.nst):
-            if (self.l_coh[ist]):
-                write_aux_movie(self.aux, unixmd_dir, ist, istep=-1) 
+        if (self.verbosity >= 2):
+            if (not molecule.l_nacme):
+                write_nacv(molecule, unixmd_dir, istep=-1)
+            for ist in range(molecule.nst):
+                if (self.l_coh[ist]):
+                    write_aux_movie(self.aux, unixmd_dir, ist, istep=-1) 
         self.print_step(molecule, istep=-1)
 
         # Main MD loop
@@ -196,9 +199,12 @@ class EhXF(MQC):
             self.print_deco(molecule, unixmd_dir, istep=istep)
 
             write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
-            for ist in range(molecule.nst):
-                if (self.l_coh[ist]):
-                    write_aux_movie(self.aux, unixmd_dir, ist, istep=istep) 
+            if (self.verbosity >= 2):
+                if (not molecule.l_nacme):
+                    write_nacv(molecule, unixmd_dir, istep=istep)
+                for ist in range(molecule.nst):
+                    if (self.l_coh[ist]):
+                        write_aux_movie(self.aux, unixmd_dir, ist, istep=istep) 
             self.print_step(molecule, istep=istep)
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, unixmd_dir, istep=istep)

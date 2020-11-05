@@ -1,7 +1,7 @@
 from __future__ import division
 from build.el_propagator import el_run
 from mqc.mqc import MQC
-from fileio import touch_file, write_md_output, write_final_xyz, typewriter
+from fileio import touch_file, write_md_output, write_final_xyz, write_nacv, typewriter
 from misc import eps, au_to_K, call_name
 import random, os, shutil, textwrap
 import numpy as np
@@ -124,6 +124,10 @@ class SH(MQC):
         self.update_energy(molecule)
 
         write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
+        if (self.verbosity >= 2):
+            if (not molecule.l_nacme):
+                write_nacv(molecule, unixmd_dir, istep=-1)
+            
         self.print_step(molecule, istep=-1)
 
         # Main MD loop
@@ -161,6 +165,9 @@ class SH(MQC):
             self.update_energy(molecule)
 
             write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
+            if (self.verbosity >= 2):
+                if (not molecule.l_nacme):
+                    write_nacv(molecule, unixmd_dir, istep=istep)
             self.print_step(molecule, istep=istep)
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, unixmd_dir, istep=istep)
