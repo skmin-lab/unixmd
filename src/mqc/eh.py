@@ -24,10 +24,10 @@ class Eh(MQC):
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
-        coefficient=None, unit_dt="fs", outfreq=0, debug=0):
+        coefficient=None, unit_dt="fs", out_freq=0, debug=0):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, propagation, \
-        solver, l_pop_print, l_adjnac, coefficient, unit_dt, outfreq, debug)
+        solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, debug)
 
     def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):

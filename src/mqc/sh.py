@@ -25,10 +25,10 @@ class SH(MQC):
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
-        vel_rescale="momentum", coefficient=None, unit_dt="fs", outfreq=0, debug=0):
+        vel_rescale="momentum", coefficient=None, unit_dt="fs", out_freq=0, debug=0):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, propagation, \
-        solver, l_pop_print, l_adjnac, coefficient, unit_dt, outfreq, debug)
+        solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, debug)
 
         # Initialize SH variables
         self.rstate = istate
