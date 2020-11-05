@@ -4,7 +4,7 @@ import textwrap
 import numpy as np
 
 # In a model example, a specific routine should be devised separately.
-class Thermo(object):
+class Thermostat(object):
     """ Object class for a thermostat. The type of given thermostat is classified by its subclasses.
 
         :param double temperature: temperature (K) set in the NVT ensemble
@@ -17,7 +17,7 @@ class Thermo(object):
         self.temp = temperature
 
 
-class Rescale1(Thermo):
+class Rescale1(Thermostat):
     """ Rescale the velocities in a given period
 
         :param double temperature: the temperature (K) set in the NVT ensemble
@@ -65,7 +65,7 @@ class Rescale1(Thermo):
         print (thermostat_info, flush=True)
 
 
-class Rescale2(Thermo):
+class Rescale2(Thermostat):
     """ Rescale the velocities when the temerature is out of a given range
 
         :param double temperature: the temperature (K) set in the NVT ensemble
@@ -109,7 +109,7 @@ class Rescale2(Thermo):
         print (thermostat_info, flush=True)
 
 
-class Berendsen(Thermo):
+class Berendsen(Thermostat):
     """ Rescale the velocities by Berendsen thermostat
         
         :param double temperature: the temperature (K) set in the NVT ensemble
@@ -171,7 +171,7 @@ class Berendsen(Thermo):
         print (thermostat_info, flush=True)
 
 
-class NHC(Thermo):
+class NHC(Thermostat):
     """ Rescale the velocities by Nose-Hoover chain thermostat
         
         :param double temperature: the temperature (K) set in the NVT ensemble
