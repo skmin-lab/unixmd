@@ -240,6 +240,7 @@ class SH(MQC):
             pot_diff = molecule.states[self.rstate].energy - molecule.states[self.rstate_old].energy
             if (molecule.ekin_qm < pot_diff):
                 self.l_hop = False
+                self.event["HOP"].append(f"Reject hopping: smaller kinetic energy than potential energy difference between {self.rstate} and {self.rstate_old}")
                 self.rstate = self.rstate_old
                 bo_list[0] = self.rstate
             else:
