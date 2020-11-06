@@ -1,137 +1,160 @@
 import argparse
-import math
 import os
 import numpy as np
 
-def main():
+def statistical_analysis():
     """ Python utility script for UNI-xMD output analysis
     """
     parser = argparse.ArgumentParser(description="Python script for UNI-xMD output analysis")
     parser.add_argument('-n', action='store', dest='ntraj', type=int, \
         help="Total trajectory number", required=True)
+    parser.add_argument('-s', action='store', dest='nstep', type=int, \
+        help="Total step number for analysis", required=True)
+    parser.add_argument('-t', action='store', dest='nstate', type=int, \
+        help="Total state number for analysis", required=True)
     args = parser.parse_args()
 
     index = len(str(args.ntraj))
     
-    path = os.path.join(f"./TRAJ_{1:0{index}d}/md/", "MDENERGY")
-    f1 = open(path, 'r') 
-    lines_1 = f1.readlines()
-    f1.close()
-
-    nstep = len(lines_1) - 2
-
-    State_avg(args.ntraj, index, nstep)
-    Population_avg(args.ntraj, index, nstep)
-    Coherence_avg(args.ntraj, index, nstep)
-    NACME_avg(args.ntraj, index, nstep)
+    State_avg(args.ntraj, index, args.nstep, args.nstate)
+    Population_avg(args.ntraj, index, args.nstep, args.nstate)
+    Coherence_avg(args.ntraj, index, args.nstep, args.nstate)
+    NACME_avg(args.ntraj, index, args.nstep, args.nstate)
 #    Motion_avg(ntraj, index, nstep, parameter_geom)
 
 
-def State_avg(ntraj, index, nstep):
-    wtmp = "#    Step    Average Running State\n"
-    avg_state = np.zeros(nstep + 1)
+def State_avg(ntraj, index, nstep, nstate):
+    f_write = ""
+
+    header = "#    Step    Average Running State\n"
+    f_write += header
+
+    # include step 0 
+    nstep += 1
+        
+    avg_state = np.zeros((nstep, nstate))
 
     for itraj in range(ntraj):
         path = os.path.join(f"./TRAJ_{itraj + 1:0{index}d}/md/", "SHSTATE")
-        f2 = open(path, 'r')
-        lines_2 = f2.readlines()
-        f2.close()
 
-        for jstep in range(nstep + 1):
-            tmp = lines_2[jstep + 1].split()
-            avg_state[jstep] += float(tmp[1])
+        with open(path, 'r') as f:
+            lines = f.readlines()
+        
+        for istep in range(nstep):
+            rstate = lines[istep + 1].split()[1]
+            avg_state[istep, int(rstate)] += 1
 
-    for jstep in range(nstep + 1):
-        tmp = avg_state[jstep] / ntraj
-        wtmp += f"{jstep:8d}{tmp:15.8f}\n"
-    typewriter(wtmp, "SHSTATE_avg")
+    avg_state /= ntraj
+   
+    for istep in range(nstep):
+        avg_data = f"{istep:8d}"
+        for istate in range(nstate):
+            avg_data += f"{avg_state[istep, istate]:15.8f}"
+        f_write += avg_data + "\n"
+    typewriter(f_write.rstrip(), "BOSTATE_avg")
 
 
-def Population_avg(ntraj, index, nstep):
-    wtmp = "#    Averaged Density Matrix\n"
+def Population_avg(ntraj, index, nstep, nstate):
+    f_write = ""
+
+    header = "#    Averaged Density Matrix\n"
+    f_write += header
+  
+    # include step 0 
+    nstep += 1
+
+    avg_pop = np.zeros((nstate, nstep))
 
     for itraj in range(ntraj):
         path = os.path.join(f"./TRAJ_{itraj + 1:0{index}d}/md/", "BOPOP")
-        f2 = open(path, 'r')
-        lines_2 = f2.readlines()
-        f2.close()
-        
-        if (itraj == 0):
-            tmp = lines_2[1].split()
-            flength = len(tmp) - 1
-            avg_state = np.zeros((nstep + 1, flength))
 
-        for jstep in range(nstep + 1):
-            tmp = lines_2[jstep + 1].split()
+        with open(path, 'r') as f:
+            # skip header and read rest
+            line = f.readline()
+            line = f.read()
+            lines = line.split()
 
-            for klength in range(flength):
-                avg_state[jstep, klength] += float(tmp[klength + 1])
+        avg_pop += np.array([lines[(istate + 1)::(nstate + 1)][:nstep] for istate in range(nstate)], dtype=np.float)
 
-    for jstep in range(nstep + 1):
-        w_str = f"{jstep:8d}"
-        for klength in range(flength):
-            tmp = avg_state[jstep, klength] / ntraj
-            w_str += f"{tmp:15.8f}"
-        wtmp += w_str + "\n"
-    typewriter(wtmp, "BOPOP_avg")
+    avg_pop /= ntraj
+
+    for istep in range(nstep):
+        avg_data = f"{istep:8d}"
+        for istate in range(nstate):
+            avg_data += f"{avg_pop[istate, istep]:15.8f}"
+        f_write += avg_data + "\n"
+    typewriter(f_write.rstrip(), "BOPOP_avg")
 
 
-def Coherence_avg(ntraj, index, nstep):
-    wtmp = "#    Averaged Density Matrix: coherence Re-Im\n"
+def Coherence_avg(ntraj, index, nstep, nstate):
+    f_write = ""
+
+    header = "#    Averaged Density Matrix: coherence Re-Im\n"
+    f_write += header
+
+    # include step 0 
+    nstep += 1
+
+    nstate_pair = int(nstate * (nstate - 1) / 2)
+    avg_coh = np.zeros((nstep, nstate_pair))
 
     for itraj in range(ntraj):
-        path = os.path.join(f"./TRAJ_{itraj + 1:0{index}d}/md/", "BOCOH")
-        f2 = open(path, 'r')
-        lines_2 = f2.readlines()
-        f2.close()
-        
-        if (itraj == 0):
-            tmp = lines_2[1].split()
-            flength = len(tmp) - 1
-            avg_state = np.zeros((nstep + 1, flength))
+        path = os.path.join(f"./TRAJ_{itraj + 1:0{index}d}/md/", "BOPOP")
 
-        for jstep in range(nstep + 1):
-            tmp = lines_2[jstep + 1].split()
+        with open(path, 'r') as f:
+            lines = f.readlines()
+       
+        for istep in range(nstep):
+            i_pop = lines[istep + 1].split()
 
-            for klength in range(flength):
-                avg_state[jstep, klength] += float(tmp[klength + 1])
+            ntmp = 0
+            for istate in range(0, nstate):
+                for jstate in range(istate + 1, nstate):
+                    # i_pop[0] is stepnumber
+                    avg_coh[istep, ntmp] += float(i_pop[istate + 1]) * float(i_pop[jstate + 1])
+                    ntmp += 1
 
-    for jstep in range(nstep + 1):
-        w_str = f"{jstep:8d}"
-        for klength in range(flength):
-            tmp = avg_state[jstep, klength] / ntraj
-            w_str += f"{tmp:15.8f}"
-        wtmp += w_str + "\n"
-    typewriter(wtmp, "BOCOH_avg")
+    avg_coh /= ntraj
+
+    for istep in range(nstep):
+        avg_data = f"{istep:8d}"
+        for istate in range(nstate):
+            avg_data += f"{avg_coh[istep, istate]:15.8f}"
+        f_write += avg_data + "\n"
+    typewriter(f_write.rstrip(), "BOCOH_avg")
             
                                       
-def NACME_avg(ntraj, index, nstep):
-    wtmp = "#    Averaged Non-Adiabatic Coupling Matrix Eliments: off-diagonal\n"
+def NACME_avg(ntraj, index, nstep, nstate):
+    f_write = ""
 
+    header = "#    Averaged Non-Adiabatic Coupling Matrix Eliments: off-diagonal\n"
+    f_write += header
+    
+    # include step 0
+    nstep += 1
+    
+    nstate_pair = int(nstate * (nstate - 1) / 2)
+    avg_nacme = np.zeros((nstate_pair, nstep))
+    
     for itraj in range(ntraj):
         path = os.path.join(f"./TRAJ_{itraj + 1:0{index}d}/md/", "NACME")
-        f2 = open(path, 'r')
-        lines_2 = f2.readlines()
-        f2.close()
 
-        if (itraj == 0):
-            tmp = lines_2[1].split()
-            flength = len(tmp) - 1
-            avg_state = np.zeros((nstep + 1, flength))
+        with open(path, 'r') as f:
+            # skip header and read rest
+            line = f.readline()
+            line = f.read()
+            lines = line.split()
 
-        for jstep in range(nstep + 1):
-            tmp = lines_2[jstep + 1].split()
+        avg_nacme += abs(np.array([lines[(istate + 1)::(nstate_pair + 1)][:nstep] for istate in range(nstate_pair)], dtype=np.float))
 
-            for klength in range(flength):
-                avg_state[jstep, klength] += float(math.sqrt(float(tmp[klength + 1]) ** 2))
+    avg_nacme /= ntraj
 
-    for jstep in range(nstep + 1):
-        w_str = f"{jstep:8d}"
-        for klength in range(flength):
-            tmp = avg_state[jstep, klength] / ntraj
-            w_str += f"{tmp:15.8f}"
-        wtmp += w_str + "\n"
-    typewriter(wtmp, "NACME_avg")
+    for istep in range(nstep):
+        avg_data = f"{istep:8d}"
+        for istate in range(nstate_pair):
+            avg_data += f"{avg_nacme[istate, istep]:15.8f}"
+        f_write += avg_data + "\n"
+    typewriter(f_write.rstrip(), "NACME_avg")
 
 
 def typewriter(string, file_name):
@@ -139,6 +162,6 @@ def typewriter(string, file_name):
         f.write(string + "\n")
 
 
-if __name__ == "__main__":
-    main()
+if (__name__ == "__main__"):
+    statistical_analysis()
 
