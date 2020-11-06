@@ -31,6 +31,18 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 | SI-SA-REKS (SSR)  | o    | o  | o  | o   |
 +-------------------+------+----+----+-----+
 
+.. note:: To run DFTB+ interfacing script, the information about maximum angular momentum is
+   needed. In current version of UNI-xMD, the values for maximum angular momentum is included
+   in ``max_l`` dictionary variable of dftbpar.py file. The user can add or modify the key and
+   value to ``max_l``. The following example shows addition of new information about Si atom.
+
+.. code-block:: python
+
+   from qm.dftbplus.dftbpar import max_l
+
+   max_l["Si"] = "p" # add value of new atom
+   max_l["C"] = "s" # modify value of already existing atom
+
 (TD)DFTB
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
