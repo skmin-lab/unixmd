@@ -2,7 +2,7 @@ from __future__ import division
 from build.cioverlap import *
 from qm.dftbplus.dftbplus import DFTBplus
 from qm.dftbplus.dftbpar import spin_w, spin_w_lc, onsite_uu, onsite_ud, max_l
-from misc import eV_to_au, call_name
+from misc import data, eV_to_au, call_name
 import os, shutil, re, textwrap
 import numpy as np
 
@@ -90,19 +90,33 @@ class DFTB(DFTBplus):
         core_elec = 0.
         self.nbasis = 0
         self.check_atom = [0]
-        for iat in range(molecule.nat):
+        for iat in range(molecule.nat_qm):
+            # Check number of basis functions with respect to maximum angular momentum
             max_ang = max_l[molecule.symbols[iat]]
             if (max_ang == 's'):
                 self.nbasis += 1
             elif (max_ang == 'p'):
                 self.nbasis += 4
-                core_elec += 2.
+            elif (max_ang == 'd'):
+                self.nbasis += 9
+            else:
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) Not added to basis sets for f orbitals! {max_ang}")
             self.check_atom.append(self.nbasis)
+            # Check number of core electrons with respect to atomic number
+            sym_index = list(data.keys()).index(molecule.symbols[iat])
+            if (sym_index > 0 and sym_index <= 2):
+                core_elec += 0.
+            elif (sym_index > 2 and sym_index <= 10):
+                core_elec += 2.
+            elif (sym_index > 10 and sym_index <= 18):
+                core_elec += 10.
+            else:
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) Not added to core electrons for current element! {sym_index}")
 
         # Set new variable to decide the position of atoms in terms of basis functions
         self.check_basis = []
         for ibasis in range(self.nbasis):
-            for iat in range(molecule.nat):
+            for iat in range(molecule.nat_qm):
                 ind_a = self.check_atom[iat] + 1
                 ind_b = self.check_atom[iat + 1]
                 if (ibasis + 1 >= ind_a and ibasis + 1 <= ind_b):
