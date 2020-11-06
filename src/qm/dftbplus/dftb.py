@@ -112,6 +112,10 @@ class DFTB(DFTBplus):
                 core_elec += 2.
             elif (sym_index > 10 and sym_index <= 18):
                 core_elec += 10.
+            elif (sym_index > 18 and sym_index <= 36):
+                core_elec += 18.
+            elif (sym_index > 36 and sym_index <= 54):
+                core_elec += 36.
             else:
                 raise ValueError (f"( {self.qm_method}.{call_name()} ) Not added to core electrons for current element! {sym_index}")
 
