@@ -251,14 +251,22 @@ class SHXF(MQC):
             self.get_phase(molecule)
             self.print_deco(molecule, unixmd_dir, istep=istep)
 
-            write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
-            if (self.verbosity >= 2):
-                if (not molecule.l_nacme):
-                    write_nacv(molecule, unixmd_dir, istep=istep)
-                for ist in range(molecule.nst):
-                    if (self.l_coh[ist]):
-                        write_aux_movie(self.aux, unixmd_dir, ist, istep=istep) 
-            self.print_step(molecule, istep=istep)
+            if (istep % self.out_freq == 0):
+                write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
+                if (self.verbosity >= 2):
+                    if (not molecule.l_nacme):
+                        write_nacv(molecule, unixmd_dir, istep=istep)
+                    for ist in range(molecule.nst):
+                        if (self.l_coh[ist]):
+                            write_aux_movie(self.aux, unixmd_dir, ist, istep=istep) 
+            
+            if (self.out_freq != 1):
+                event_list = list(self.event.values())
+                event_hop_length = len(event_list[0])
+                event_deco_length = len(event_list[1])
+            
+            if (istep % self.out_freq == 0 or event_hop_length > 0 or event_deco_length > 0):
+                self.print_step(molecule, istep=istep)
 
             if (istep == self.nsteps - 1):
                 write_final_xyz(molecule, unixmd_dir, istep=istep)
