@@ -92,7 +92,6 @@ def Coherence_avg(ntraj, index, nstep, nstate):
     cohr = np.zeros((nstate_pair, nstep))
     cohi = np.zeros((nstate_pair, nstep))
 
-   
     for itraj in range(ntraj):
         path = os.path.join(f"./TRAJ_{itraj + 1:0{index}d}/md/", "BOCOH")
 
@@ -130,7 +129,7 @@ def NACME_avg(ntraj, index, nstep, nstate):
         path = os.path.join(f"./TRAJ_{itraj + 1:0{index}d}/md/", "NACME")
 
         with open(path, 'r') as f:
-            # skip header and read rest
+            # Skip header and read rest
             line = f.readline()
             line = f.read()
             lines = line.split()
