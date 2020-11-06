@@ -33,7 +33,6 @@ class DFTB(DFTBplus):
         :param integer nthreads: number of threads in the calculations
         :param double version: version of DFTB+ program
     """
-    # TODO : add keyword explanation to here and manual
     def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=100, ocdftb=False, \
         lcdftb=False, lc_method="MatrixBased", sdftb=False, unpaired_elec=0., guess="h0", \
         guess_file="./charges.bin", elec_temp=0., mixer="Broyden", ex_symmetry="singlet", \
