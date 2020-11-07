@@ -2,7 +2,7 @@
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
 
 cdef extern from "tdnac.c":
-    void TD_NAC(int istep, int nst, int nbasis, int norb, int nocc, int nvirt, double dt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new)
+    void TD_NAC(int istep, int nst, int nbasis, int norb, int *norb_m int nocc, int nvirt, double dt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new)
 
 def wf_overlap(theory, molecule, istep_py, dt_py):
     cdef:
@@ -13,7 +13,7 @@ def wf_overlap(theory, molecule, istep_py, dt_py):
         double ***ci_coef_old
         double ***ci_coef_new
         double dt
-        int istep, ist, nst, ibasis, jbasis, iorb, jorb, nbasis, norb, nocc, nvirt
+        int istep, ist, nst, ibasis, jbasis, iorb, jorb, nbasis, norb, *norb_m, nocc, nvirt, ii
 
     # Assign size variables
     dt = dt_py
@@ -23,6 +23,10 @@ def wf_overlap(theory, molecule, istep_py, dt_py):
     norb = theory.norb
     nocc = theory.nocc
     nvirt = theory.nvirt
+    norb_m = <int*> PyMem_Malloc(2 * sizeof(int))
+
+    for ii in range(2):
+        norb_m[ii] = theory.norb_m[ii]
 
     # Allocate NACME variables
     nacme = <double**> PyMem_Malloc(nst * sizeof(double*))
@@ -74,7 +78,7 @@ def wf_overlap(theory, molecule, istep_py, dt_py):
                 ci_coef_new[ist][iorb][jorb] = theory.ci_coef_new[ist, iorb, jorb]
 
     # Calculate TDNAC term for CIoverlap
-    TD_NAC(istep, nst, nbasis, norb, nocc, nvirt, dt, nacme, ao_overlap, mo_coef_old, mo_coef_new, ci_coef_old, ci_coef_new)
+    TD_NAC(istep, nst, nbasis, norb, norb_m, nocc, nvirt, dt, nacme, ao_overlap, mo_coef_old, mo_coef_new, ci_coef_old, ci_coef_new)
 
     # Assign NACME variables from C to python
     for ist in range(nst):

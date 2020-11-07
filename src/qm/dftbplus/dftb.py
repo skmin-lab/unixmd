@@ -36,7 +36,7 @@ class DFTB(DFTBplus):
         lcdftb=False, lc_method="MatrixBased", sdftb=False, unpaired_elec=0., guess="h0", \
         guess_file="./charges.bin", elec_temp=0., mixer="Broyden", ex_symmetry="singlet", \
         periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.,], sk_path="./", \
-        install_path="./", mpi=False, mpi_path="./", nthreads=1, version=20.1):
+        install_path="./", mpi=False, mpi_path="./", nthreads=1, version=20.1, e_window=-1):
         # Initialize DFTB+ common variables
         super(DFTB, self).__init__(molecule, sk_path, install_path, nthreads, version)
 
@@ -61,6 +61,13 @@ class DFTB(DFTBplus):
 
         self.elec_temp = elec_temp
         self.mixer = mixer
+
+        self.e_window = self.e_window
+
+        if (self.e_window < 0.0):
+            self.logwindow = False
+        else:
+            self.logwindow = True
 
         self.ex_symmetry = ex_symmetry
 
@@ -111,9 +118,19 @@ class DFTB(DFTBplus):
         # Initialize NACME variables
         # There is no core orbitals in TDDFTB (fixed occupations)
         # nocc is number of occupied orbitals and nvirt is number of virtual orbitals
+
         self.norb = self.nbasis
         self.nocc = int(int(molecule.nelec - core_elec) / 2)
         self.nvirt = self.norb - self.nocc
+    
+        #replacing norb by a matrix containing the limits of the for loops. For energy window calculations loops will not go from 0 to nocc/nvirt or norb but from noccmin to nocc/0 to nvirtmax or noccmin to norb.
+        self.norb_m = np.zeros((2))
+        self.norb_m[1] = self.norb
+
+        if (self.logwindow):
+            # swapping of minimal and maximal values to replace them in reading of SPX.DAT by the minimal/maximal values.
+            self.norb_m[0] = self.norb
+            self.norb_m[1] = 0.0
 
         self.ao_overlap = np.zeros((self.nbasis, self.nbasis))
         self.mo_coef_old = np.zeros((self.norb, self.nbasis))
@@ -400,18 +417,36 @@ class DFTB(DFTBplus):
             else:
                 xpy = "No"
 
-            input_excited = textwrap.dedent(f"""\
-            ExcitedState = Casida{{
-              NrOfExcitations = {num_ex}
-              StateOfInterest = {rst}
-              Symmetry = {self.ex_symmetry}
-              WriteTransitions = Yes
-              WriteSPTransitions = {xpy}
-              WriteMulliken = Yes
-              WriteXplusY = {xpy}
-              ExcitedStateForces = {ex_force}
-            }}
-            """)
+            if (self.logwindow):
+                en_wind = "EnergyWindow = %f"%(self.enwindow)
+
+                input_excited = textwrap.dedent(f"""\
+                ExcitedState = Casida{{
+                  NrOfExcitations = {num_ex}
+                  StateOfInterest = {rst}
+                  Symmetry = {self.ex_symmetry}
+                  WriteTransitions = Yes
+                  WriteSPTransitions = {xpy}
+                  WriteMulliken = Yes
+                  WriteXplusY = {xpy}
+                  {en_wind}
+                  ExcitedStateForces = {ex_force}
+                }}
+                """)
+            else:
+                input_excited = textwrap.dedent(f"""\
+                ExcitedState = Casida{{
+                  NrOfExcitations = {num_ex}
+                  StateOfInterest = {rst}
+                  Symmetry = {self.ex_symmetry}
+                  WriteTransitions = Yes
+                  WriteSPTransitions = {xpy}
+                  WriteMulliken = Yes
+                  WriteXplusY = {xpy}
+                  ExcitedStateForces = {ex_force}
+                }}
+                """)
+
             input_dftb += input_excited
 
         # ParserOptions Block
@@ -650,7 +685,7 @@ class DFTB(DFTBplus):
 #        np.savetxt("test-mo2", self.mo_coef_new, fmt=f"%12.6f")
 
         # Dimension for CI coefficients
-        nmat = self.nocc * self.nvirt
+        # nmat = self.nocc * self.nvirt
 
         # The CI coefficients are arranged in order of single-particle excitations
         # Read 'SPX.DAT.pre' file at time t
@@ -660,12 +695,20 @@ class DFTB(DFTBplus):
             get_wij_ind_old = np.zeros((nmat, 2), dtype=np.int_)
             with open(file_name_in, "r") as f_in:
                 lines = f_in.readlines()
+                # dimension of get_wij changes when number of excitations is reduced so nmat is not required.
+                ndim = int(lines[-2].strip().split()[0])
+                get_wij_ind_old = np.zeros((ndim, 3), dtype=np.int_)
                 iline = 0
                 for line in lines:
                     # Skip first five lines
                     if (iline in range(5, 5 + nmat)):
                         # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
                         field = line.split()
+                        # determining new limits for for-loops
+                        if int(field[5]) > self.norb_m[1]:
+                            self.norb_m[1] = int(field[5])
+                        if int(field[3]) < self.norb_m[0]:
+                            self.norb_m[0] = int(field[3])
                         get_wij_ind_old[int(field[0]) - 1] = [int(field[3]), int(field[5])]
                     iline += 1
 
@@ -681,6 +724,10 @@ class DFTB(DFTBplus):
                 if (iline in range(5, 5 + nmat)):
                     # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
                     field = line.split()
+                    if int(field[5]) > self.norb_m[1]:
+                        self.norb_m[1] = int(field[5])
+                    if int(field[3]) < self.norb_m[0]:
+                        self.norb_m[0] = int(field[3])
                     get_wij_ind_new[int(field[0]) - 1] = [int(field[3]), int(field[5])]
                 iline += 1
 
