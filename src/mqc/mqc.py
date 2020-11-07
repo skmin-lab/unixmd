@@ -65,7 +65,7 @@ class MQC(object):
         """ Routine to update nuclear positions
 
         """
-        self.calculate_force(molecule)
+        self.calculate_force(self.mol)
 
         self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.nsp)
         self.mol.pos += self.dt * self.mol.vel
@@ -74,7 +74,7 @@ class MQC(object):
         """ Routine to update nuclear velocities
 
         """
-        self.calculate_force(molecule)
+        self.calculate_force(self.mol)
 
         self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.nsp)
         self.mol.update_kinetic()
