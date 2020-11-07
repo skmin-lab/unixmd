@@ -62,7 +62,7 @@ class DFTB(DFTBplus):
         self.elec_temp = elec_temp
         self.mixer = mixer
 
-        self.e_window = self.e_window
+        self.e_window = e_window
 
         if (self.e_window < 0.0):
             self.logwindow = False
@@ -418,7 +418,7 @@ class DFTB(DFTBplus):
                 xpy = "No"
 
             if (self.logwindow):
-                en_wind = "EnergyWindow = %f"%(self.enwindow)
+                en_wind = "EnergyWindow = %f"%(self.e_window)
 
                 input_excited = textwrap.dedent(f"""\
                 ExcitedState = Casida{{
@@ -692,16 +692,15 @@ class DFTB(DFTBplus):
         if (istep == 0):
             file_name_in = "SPX.DAT.pre"
 
-            get_wij_ind_old = np.zeros((nmat, 2), dtype=np.int_)
             with open(file_name_in, "r") as f_in:
                 lines = f_in.readlines()
                 # dimension of get_wij changes when number of excitations is reduced so nmat is not required.
                 ndim = int(lines[-2].strip().split()[0])
-                get_wij_ind_old = np.zeros((ndim, 3), dtype=np.int_)
+                get_wij_ind_old = np.zeros((ndim, 2), dtype=np.int_)
                 iline = 0
                 for line in lines:
                     # Skip first five lines
-                    if (iline in range(5, 5 + nmat)):
+                    if (iline in range(5, 5 + ndim)):
                         # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
                         field = line.split()
                         # determining new limits for for-loops
@@ -715,13 +714,14 @@ class DFTB(DFTBplus):
         # Read 'SPX.DAT' file at time t + dt
         file_name_in = "SPX.DAT"
 
-        get_wij_ind_new = np.zeros((nmat, 2), dtype=np.int_)
         with open(file_name_in, "r") as f_in:
             lines = f_in.readlines()
+            ndim = int(lines[-2].strip().split()[0])
+            get_wij_ind_new = np.zeros((ndim, 2), dtype=np.int_)
             iline = 0
             for line in lines:
                 # Skip first five lines
-                if (iline in range(5, 5 + nmat)):
+                if (iline in range(5, 5 + ndim)):
                     # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
                     field = line.split()
                     if int(field[5]) > self.norb_m[1]:
@@ -742,11 +742,11 @@ class DFTB(DFTBplus):
                 for line in lines:
                     if (iline == 0):
                         field = line.split()
-                        assert (int(field[0]) == nmat)
+                        assert (int(field[0]) == ndim)
                         assert (int(field[1]) >= molecule.nst - 1)
                         # nxply is number of lines for each excited state in 'XplusY.dat'
-                        nxply = int(nmat / 6) + 1
-                        if (nmat % 6 != 0):
+                        nxply = int(ndim / 6) + 1
+                        if (ndim % 6 != 0):
                             nxply += 1
                     else:
                         field = line.split()
@@ -777,11 +777,11 @@ class DFTB(DFTBplus):
             for line in lines:
                 if (iline == 0):
                     field = line.split()
-                    assert (int(field[0]) == nmat)
+                    assert (int(field[0]) == ndim)
                     assert (int(field[1]) >= molecule.nst - 1)
                     # nxply is number of lines for each excited state in 'XplusY.dat'
-                    nxply = int(nmat / 6) + 1
-                    if (nmat % 6 != 0):
+                    nxply = int(ndim / 6) + 1
+                    if (ndim % 6 != 0):
                         nxply += 1
                 else:
                     field = line.split()
