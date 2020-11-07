@@ -24,7 +24,7 @@ class MQC(object):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
-        # Initialize input values
+        # Initialize Molecule class object
         self.mol = molecule
 
         # Initialize input values
