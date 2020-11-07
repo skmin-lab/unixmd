@@ -61,7 +61,7 @@ class MQC(object):
         # Initialize coefficients and densities
         self.mol.get_coefficient(coefficient, self.istate)
 
-    def cl_update_position(self, molecule):
+    def cl_update_position(self):
         """ Routine to update nuclear positions
 
             :param object molecule: molecule object
@@ -71,7 +71,7 @@ class MQC(object):
         self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.nsp)
         self.mol.pos += self.dt * self.mol.vel
 
-    def cl_update_velocity(self, molecule):
+    def cl_update_velocity(self):
         """ Routine to update nuclear velocities
 
             :param object molecule: molecule object
@@ -81,7 +81,7 @@ class MQC(object):
         self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.nsp)
         self.mol.update_kinetic()
 
-#    def calculate_temperature(self, molecule):
+#    def calculate_temperature(self):
 #        """ Routine to calculate current temperature
 #        """
 #        pass
@@ -97,7 +97,7 @@ class MQC(object):
         """
         pass
 
-    def print_init(self, molecule, qm, mm, thermostat, debug):
+    def print_init(self, qm, mm, thermostat, debug):
         """ Routine to print the initial information of dynamics
 
             :param object molecule: molecule object
