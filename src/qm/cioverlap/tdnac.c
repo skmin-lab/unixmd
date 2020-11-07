@@ -18,7 +18,7 @@ static void state_phase(int nst, int nocc, int nvirt, double ***ci_coef_old, dou
 static void norm_CI_coef(int nst, int nocc, int nvirt, double ***ci_coef);
 
 // Routine to calculate TDNAC term used in electronic propagation
-static void TD_NAC(int istep, int nst, int nbasis, int norb, int *norb_m int nocc, int nvirt, double dt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new){
+static void TD_NAC(int istep, int nst, int nbasis, int norb, int *norb_m, int nocc, int nvirt, double dt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new){
 
     double **mo_overlap = malloc(norb * sizeof(double*));
     double **permut_mat = malloc(norb * sizeof(double*));
