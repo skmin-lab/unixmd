@@ -67,7 +67,7 @@ class BOMD(MQC):
         qm.calc_coupling = False
 
         touch_file(self.mol, qm.calc_coupling, None, False, unixmd_dir, SH_chk=False, XF_chk=False)
-        self.print_init(self.mol, qm, mm, thermostat, debug)
+        self.print_init(qm, mm, thermostat, debug)
 
         # Calculate initial input geometry at t = 0.0 s
         self.mol.reset_bo(qm.calc_coupling)
@@ -75,30 +75,30 @@ class BOMD(MQC):
         if (self.mol.qmmm and mm != None):
             mm.get_data(self.mol, base_dir, bo_list, istep=-1, calc_force_only=False)
 
-        self.update_energy(self.mol)
+        self.update_energy()
 
         write_md_output(self.mol, qm.calc_coupling, None, False, unixmd_dir, istep=-1)
-        self.print_step(self.mol, debug, istep=-1)
+        self.print_step(debug, istep=-1)
 
         # Main MD loop
         for istep in range(self.nsteps):
 
-            self.cl_update_position(self.mol)
+            self.cl_update_position()
 
             self.mol.reset_bo(qm.calc_coupling)
             qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=istep, calc_force_only=False)
             if (self.mol.qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, istep=istep, calc_force_only=False)
 
-            self.cl_update_velocity(self.mol)
+            self.cl_update_velocity()
 
             if (thermostat != None):
                 thermostat.run(self.mol, self)
 
-            self.update_energy(self.mol)
+            self.update_energy()
 
             write_md_output(self.mol, qm.calc_coupling, None, False, unixmd_dir, istep=istep)
-            self.print_step(self.mol, debug, istep=istep)
+            self.print_step(debug, istep=istep)
             if (istep == self.nsteps - 1):
                 write_final_xyz(self.mol, unixmd_dir, istep=istep)
 
