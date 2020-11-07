@@ -31,6 +31,7 @@ class DFTB(DFTBplus):
         :param string mpi_path: path for MPI binary
         :param integer nthreads: number of threads in the calculations
         :param double version: version of DFTB+ program
+        :param double e_window: energy window for excited state calculation. Increases efficiency of NACME calculation.
     """
     def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=100, ocdftb=False, \
         lcdftb=False, lc_method="MatrixBased", sdftb=False, unpaired_elec=0., guess="h0", \
