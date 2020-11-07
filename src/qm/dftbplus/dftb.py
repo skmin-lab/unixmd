@@ -707,8 +707,8 @@ class DFTB(DFTBplus):
                         # determining new limits for for-loops
                         if int(field[5]) > self.norb_m[1]:
                             self.norb_m[1] = int(field[5])
-                        if int(field[3]) < self.norb_m[0]:
-                            self.norb_m[0] = int(field[3])
+                        if int(field[3]) < (self.norb_m[0]-1):
+                            self.norb_m[0] = int(field[3])-1
                         get_wij_ind_old[int(field[0]) - 1] = [int(field[3]), int(field[5])]
                     iline += 1
 
