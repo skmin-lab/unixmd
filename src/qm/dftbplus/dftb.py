@@ -5,6 +5,7 @@ from qm.dftbplus.dftbpar import spin_w, spin_w_lc, onsite_uu, onsite_ud, max_l
 from misc import eV_to_au, call_name
 import os, shutil, re, textwrap
 import numpy as np
+import sys
 
 class DFTB(DFTBplus):
     """ Class for (TD)DFTB method of DFTB+ program
@@ -62,19 +63,22 @@ class DFTB(DFTBplus):
         self.elec_temp = elec_temp
         self.mixer = mixer
 
-        self.ex_symmetry = ex_symmetry
+        # symmetry only needed if not spinpolarized!
+        if (not self.sdftb):
+            self.ex_symmetry = ex_symmetry
 
         self.periodic = periodic
         self.a_axis = np.copy(cell_length[0:3])
         self.b_axis = np.copy(cell_length[3:6])
         self.c_axis = np.copy(cell_length[6:9])
 
+        # this check is not required for spin polarized calculation
         # Check excitation symmetry in TDDFTB
         # TODO : Currently, allows only singlet excited states with TDDFTB
 #        if (not (self.ex_symmetry == "singlet" or self.ex_symmetry == "triplet")):
-        if (not (self.ex_symmetry == "singlet")):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong symmetry for excited state! {self.ex_symmetry}")
-
+#        if (not (self.ex_symmetry == "singlet")):
+#            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong symmetry for excited state! {self.ex_symmetry}")
+#
         self.mpi = mpi
         self.mpi_path = mpi_path
 
@@ -112,14 +116,34 @@ class DFTB(DFTBplus):
         # There is no core orbitals in TDDFTB (fixed occupations)
         # nocc is number of occupied orbitals and nvirt is number of virtual orbitals
         self.norb = self.nbasis
-        self.nocc = int(int(molecule.nelec - core_elec) / 2)
-        self.nvirt = self.norb - self.nocc
 
+        if (not self.sdftb):
+            self.nocc = int(int(molecule.nelec - core_elec) / 2)
+            self.nvirt = self.norb - self.nocc
+
+            self.mo_coef_old = np.zeros((self.norb, self.nbasis))
+            self.mo_coef_new = np.zeros((self.norb, self.nbasis))
+            self.ci_coef_old = np.zeros((molecule.nst, self.nocc, self.nvirt))
+            self.ci_coef_new = np.zeros((molecule.nst, self.nocc, self.nvirt))
+        else:
+            # determining _u (up) spin channel occupation and _d (down) spin channel occupation.
+            self.nocc_u = int(int(molecule.nelec - core_elec +  self.unpaired_e) / 2)
+            self.nvirt_u = self.norb - self.nocc_u
+            self.nocc_d = int(int(molecule.nelec - core_elec - self.unpaired_e) / 2)
+            self.nvirt_d = self.norb - self.nocc_d
+            # nocc and nvirt will be a 2 dimensional array containing spin up information on [0] and spin down information on [1].
+            self.nocc = np.stack((self.nocc_u, self.nocc_d))
+            self.nvirt = np.stack((self.nvirt_u, self.nvirt_d))
+            # adding extra dimension to mo_coefs and changing dimension for ci_coefs in dependence of the spin-channel occupation. AS up and down spin-channel have different occupations and thus ci_coef dimensions will differ different parameters _u and _d are introduced instead of combining it in one.
+            self.mo_coef_old = np.zeros((self.norb, self.norb, 2))
+            self.mo_coef_new = np.zeros((self.norb, self.norb, 2))
+            self.ci_coef_old_u = np.zeros((molecule.nst, self.nocc[0], self.nvirt[0]))
+            self.ci_coef_old_d = np.zeros((molecule.nst, self.nocc[1], self.nvirt[1]))
+            self.ci_coef_new_u = np.zeros((molecule.nst, self.nocc[0], self.nvirt[0]))
+            self.ci_coef_new_d = np.zeros((molecule.nst, self.nocc[1], self.nvirt[1]))
+
+        # ao_overlap is independent of spin.
         self.ao_overlap = np.zeros((self.nbasis, self.nbasis))
-        self.mo_coef_old = np.zeros((self.norb, self.nbasis))
-        self.mo_coef_new = np.zeros((self.norb, self.nbasis))
-        self.ci_coef_old = np.zeros((molecule.nst, self.nocc, self.nvirt))
-        self.ci_coef_new = np.zeros((molecule.nst, self.nocc, self.nvirt))
 
     def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from (TD)DFTB method
@@ -275,8 +299,8 @@ class DFTB(DFTBplus):
                 """), "  ")
                 input_dftb += input_ham_lc
 
-            # Spin-polarized DFTB option
-            if (self.sdftb and molecule.nst == 1):
+            # Spin-polarized DFTB option, why would nst have to be ==1?
+            if (self.sdftb):
                 input_ham_spin = textwrap.dedent(f"""\
                 SpinPolarisation = Colinear{{
                   UnpairedElectrons = {self.unpaired_elec}
@@ -287,7 +311,7 @@ class DFTB(DFTBplus):
             # Read atomic spin constants used in spin-polarized DFTB or TDDFTB
             # TODO : Currently, allows only singlet excited states with TDDFTB
 #            if (self.sdftb or self.ex_symmetry == "triplet"):
-            if (self.sdftb and molecule.nst == 1):
+            if (self.sdftb):
                 if (self.lcdftb):
                     spin_constant = ("\n" + " " * 18).join([f"  {itype} = {{ {spin_w_lc[f'{itype}']} }}" for itype in self.atom_type])
                 else:
@@ -400,18 +424,31 @@ class DFTB(DFTBplus):
             else:
                 xpy = "No"
 
-            input_excited = textwrap.dedent(f"""\
-            ExcitedState = Casida{{
-              NrOfExcitations = {num_ex}
-              StateOfInterest = {rst}
-              Symmetry = {self.ex_symmetry}
-              WriteTransitions = Yes
-              WriteSPTransitions = {xpy}
-              WriteMulliken = Yes
-              WriteXplusY = {xpy}
-              ExcitedStateForces = {ex_force}
-            }}
-            """)
+            if (self.sdftb):
+                input_excited = textwrap.dedent(f"""\
+                ExcitedState = Casida{{
+                  NrOfExcitations = {num_ex}
+                  StateOfInterest = {rst}
+                  WriteTransitions = Yes
+                  WriteSPTransitions = {xpy}
+                  WriteMulliken = Yes
+                  WriteXplusY = {xpy}
+                  ExcitedStateForces = {ex_force}
+                }}
+                """)
+            else:
+                input_excited = textwrap.dedent(f"""\
+                ExcitedState = Casida{{
+                  NrOfExcitations = {num_ex}
+                  StateOfInterest = {rst}
+                  Symmetry = {self.ex_symmetry}
+                  WriteTransitions = Yes
+                  WriteSPTransitions = {xpy}
+                  WriteMulliken = Yes
+                  WriteXplusY = {xpy}
+                  ExcitedStateForces = {ex_force}
+                }}
+                """)
             input_dftb += input_excited
 
         # ParserOptions Block
@@ -552,7 +589,11 @@ class DFTB(DFTBplus):
             molecule.states[0].energy = energy
 
             if (molecule.nst > 1):
-                tmp_e = f'[=]+\n' + ('\s+([-]*\S+)\s+\S+\s+\d+\s+->\s+\d+\s+\S+\s+\S+\s+[ST]') * molecule.nst
+                if self.sdftb:
+                    #EXC.DAT output last column does contain the <DS**2> values not S/T.
+                    tmp_e = f'[=]+\n' + ('\s+([-]*\S+)\s+\S+\s+\d+\s+->\s+\d+\s+\S+\s+\S+\s+\S+') * molecule.nst
+                else:
+                    tmp_e = f'[=]+\n' + ('\s+([-]*\S+)\s+\S+\s+\d+\s+->\s+\d+\s+\S+\s+\S+\s+[ST]') * molecule.nst
                 energy = re.findall(tmp_e, exc_out)
                 energy = np.array(energy[0])
                 energy = energy.astype(float)
@@ -628,36 +669,229 @@ class DFTB(DFTBplus):
         if (istep == 0):
             file_name_in = "eigenvec.bin.pre"
 
-            self.mo_coef_old = np.zeros((self.norb, self.nbasis))
+            if (self.sdftb):
+                self.mo_coef_old = np.zeros((self.norb, self.nbasis, 2))
+                with open(file_name_in, "rb") as f_in:
+                    dummy = np.fromfile(f_in, dtype=np.integer, count=1)
+                    for iorb in range(2*self.norb):
+                        dummy = np.fromfile(f_in, dtype=np.integer, count=1)
+                        data = np.fromfile(f_in, dtype=np.float64, count=self.nbasis)
+                        if (iorb < self.norb):
+                            # upchannel
+                            self.mo_coef_old[iorb,:,0] = data
+                        else:
+                            # downchannel
+                            self.mo_coef_old[iorb,:,1] = data
+
+#               np.savetxt("test-mo1", self.mo_coef_old, fmt=f"%12.6f")
+            else:
+                self.mo_coef_old = np.zeros((self.norb, self.nbasis))
+                with open(file_name_in, "rb") as f_in:
+                    dummy = np.fromfile(f_in, dtype=np.integer, count=1)
+                    for iorb in range(self.norb):
+                        dummy = np.fromfile(f_in, dtype=np.integer, count=1)
+                        data = np.fromfile(f_in, dtype=np.float64, count=self.nbasis)
+                        self.mo_coef_old[iorb] = data
+#               np.savetxt("test-mo1", self.mo_coef_old, fmt=f"%12.6f")
+
+        # Read 'eigenvec.bin' file at time t + dt
+        file_name_in = "eigenvec.bin"
+
+        if (self.sdftb):
+            self.mo_coef_new = np.zeros((self.norb, self.nbasis,2))
+            with open(file_name_in, "rb") as f_in:
+                dummy = np.fromfile(f_in, dtype=np.integer, count=1)
+                for iorb in range(2*self.norb):
+                    dummy = np.fromfile(f_in, dtype=np.integer, count=1)
+                    data = np.fromfile(f_in, dtype=np.float64, count=self.nbasis)
+                    if (iorb < self.norb):
+                        self.mo_coef_new[iorb,:,0] = data
+                    else:
+                        self.mo_coef_new[iorb,:,1] = data
+
+#           np.savetxt("test-mo2", self.mo_coef_new, fmt=f"%12.6f")
+        else:
+            self.mo_coef_new = np.zeros((self.norb, self.nbasis))
             with open(file_name_in, "rb") as f_in:
                 dummy = np.fromfile(f_in, dtype=np.integer, count=1)
                 for iorb in range(self.norb):
                     dummy = np.fromfile(f_in, dtype=np.integer, count=1)
                     data = np.fromfile(f_in, dtype=np.float64, count=self.nbasis)
-                    self.mo_coef_old[iorb] = data
-#            np.savetxt("test-mo1", self.mo_coef_old, fmt=f"%12.6f")
-
-        # Read 'eigenvec.bin' file at time t + dt
-        file_name_in = "eigenvec.bin"
-
-        self.mo_coef_new = np.zeros((self.norb, self.nbasis))
-        with open(file_name_in, "rb") as f_in:
-            dummy = np.fromfile(f_in, dtype=np.integer, count=1)
-            for iorb in range(self.norb):
-                dummy = np.fromfile(f_in, dtype=np.integer, count=1)
-                data = np.fromfile(f_in, dtype=np.float64, count=self.nbasis)
-                self.mo_coef_new[iorb] = data
-#        np.savetxt("test-mo2", self.mo_coef_new, fmt=f"%12.6f")
+                    self.mo_coef_new[iorb] = data
+#           np.savetxt("test-mo2", self.mo_coef_new, fmt=f"%12.6f")
 
         # Dimension for CI coefficients
-        nmat = self.nocc * self.nvirt
+        if (self.sdftb):
+            # dimension for up and down differ, so creating a matrix with the dimensions [0] for up and [1] for down.
+            nmat = np.stack((self.nocc[0]*self.nvirt[0],self.nocc[1]*self.nvirt[1]))
+        else:
+            nmat = self.nocc * self.nvirt
 
         # The CI coefficients are arranged in order of single-particle excitations
         # Read 'SPX.DAT.pre' file at time t
-        if (istep == 0):
-            file_name_in = "SPX.DAT.pre"
+        if (self.sdftb):
+            if (istep == 0):
+                file_name_in = "SPX.DAT.pre"
+                # setting spin variable arbitrarily to 5
+                spin = 5
 
-            get_wij_ind_old = np.zeros((nmat, 2), dtype=np.int_)
+                with open(file_name_in, "r") as f_in:
+                    lines = f_in.readlines()
+                    iline = 0
+                    ndim = int(lines[-2].strip().split()[0])
+                    #using ndim simplifies the choice of dimension. get_wij_in has to have 3 zeros in second dimension to include spin type of SPX
+                    get_wij_ind_old = np.zeros((ndim, 3), dtype=np.int_)
+                    for line in lines:
+                        # Skip first five lines
+                        if (iline in range(5, 5 + ndim)):
+                            # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
+                            field = line.split()
+                            if field[6] == "U":
+                                spin = 0
+                            elif field[6] == "D":
+                                spin = 1
+                            else:
+                                print("ERROR in get_wij_ind_old. Output not spin polarized.")
+                                sys.exit()
+                            get_wij_ind_old[int(field[0]) - 1,:] = [int(field[3]), int(field[5]), spin]
+                        iline += 1
+
+            # Read 'SPX.DAT' file at time t + dt
+            file_name_in = "SPX.DAT"
+            spin = 5
+            with open(file_name_in, "r") as f_in:
+                lines = f_in.readlines()
+                iline = 0
+                ndim = int(lines[-2].strip().split()[0])
+                get_wij_ind_new = np.zeros((ndim, 3), dtype=np.int_)
+                for line in lines:
+                    # Skip first five lines
+                    if (iline in range(5, 5 + ndim)):
+                        # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
+                        field = line.split()
+                        if field[6] == "U":
+                            spin = 0
+                        elif field[6] == "D":
+                            spin = 1
+                        else:
+                            print("ERROR in get_wij_ind_old. Output not spin polarized.")
+                            sys.exit()
+                        get_wij_ind_new[int(field[0]) - 1,:] = [int(field[3]), int(field[5]), spin]
+                    iline += 1
+
+            # Read 'XplusY.DAT.pre' file at time t
+            if (istep == 0):
+                file_name_in = "XplusY.DAT.pre"
+
+                self.ci_coef_old_u = np.zeros((molecule.nst, self.nocc[0], self.nvirt[0]))
+                self.ci_coef_old_d = np.zeros((molecule.nst, self.nocc[1], self.nvirt[1]))
+                with open(file_name_in, "r") as f_in:
+                    lines = f_in.readlines()
+                    iline = 0
+                    for line in lines:
+                        if (iline == 0):
+                            field = line.split()
+                            assert (int(field[0]) == ndim)
+                            assert (int(field[1]) >= molecule.nst - 1)
+                            # nxply is number of lines for each excited state in 'XplusY.dat'
+                            nxply = int(ndim / 6) + 1
+                            if (ndim % 6 != 0):
+                                nxply += 1
+                        else:
+                            field = line.split()
+                            if (iline % nxply == 1):
+                                ind = 0
+                                ist = int(field[0]) - 1
+                                # In general, TDDFTB calculate the excited states more than molecule.nst,
+                                # so we do not need to read all data for 'XplusY.DAT'
+                                if (ist == molecule.nst - 1):
+                                    break
+                            else:
+                                # Currently, elements for CI coefficients for S0 state are zero (not used values)
+                                for element in field:
+
+                                    ind_occ = get_wij_ind_old[ind, 0] - 1
+                                    spintype = get_wij_ind_old[ind, 2]
+                                    ind_virt = get_wij_ind_old[ind, 1] - self.nocc[spintype] - 1
+                                    if (spintype == 0):
+                                        self.ci_coef_old_u[ist + 1, ind_occ, ind_virt] = float(element)
+                                    elif (spintype == 1):
+                                        self.ci_coef_old_d[ist + 1, ind_occ, ind_virt] = float(element)
+                                    else:
+                                        print('ERROR: Spintype wrpng in self.ci_coef_old routine.')
+                                        sys.exit()
+                                    ind += 1
+                        iline += 1
+#               np.savetxt("test-ci1", self.ci_coef_old[1], fmt=f"%12.6f")
+
+            # Read 'XplusY.DAT' file at time t + dt
+            file_name_in = "XplusY.DAT"
+
+            self.ci_coef_new_u = np.zeros((molecule.nst, self.nocc[0], self.nvirt[0]))
+            self.ci_coef_new_d = np.zeros((molecule.nst, self.nocc[1], self.nvirt[1]))
+            with open(file_name_in, "r") as f_in:
+                lines = f_in.readlines()
+                iline = 0
+                for line in lines:
+                    if (iline == 0):
+                        field = line.split()
+                        assert (int(field[0]) == ndim)
+                        assert (int(field[1]) >= molecule.nst - 1)
+                        # nxply is number of lines for each excited state in 'XplusY.dat'
+                        nxply = int(ndim / 6) + 1
+                        if (ndim % 6 != 0):
+                            nxply += 1
+                    else:
+                        field = line.split()
+                        if (iline % nxply == 1):
+                            ind = 0
+                            ist = int(field[0]) - 1
+                            # In general, TDDFTB calculate the excited states more than molecule.nst,
+                            # so we do not need to read all data for 'XplusY.DAT'
+                            if (ist == molecule.nst - 1):
+                                break
+                        else:
+                            # Currently, elements for CI coefficients for S0 state are zero (not used values)
+                            for element in field:
+                                ind_occ = get_wij_ind_new[ind, 0] - 1
+                                spintype = get_wij_ind_new[ind, 2]
+                                ind_virt = get_wij_ind_new[ind, 1] - self.nocc[spintype] - 1
+                                if (spintype == 0):
+                                    self.ci_coef_new_u[ist + 1, ind_occ, ind_virt] = float(element)
+                                elif (spintype == 1):
+                                    self.ci_coef_new_d[ist + 1, ind_occ, ind_virt] = float(element)
+                                else:
+                                    print('Error: spintype in ci_coef_new routine wrong.')
+                                    sys.exit()
+
+                                ind += 1
+                    iline += 1
+#           np.savetxt("test-ci2", self.ci_coef_new[1], fmt=f"%12.6f")
+
+        #   Calculate wavefunction overlap with orbital scheme
+        #   Reference: J. Phys. Chem. Lett. 2015, 6, 4200-4203
+            wf_overlap_s(self, molecule, istep, dt)
+
+        else:
+            if (istep == 0):
+                file_name_in = "SPX.DAT.pre"
+
+                get_wij_ind_old = np.zeros((nmat, 2), dtype=np.int_)
+                with open(file_name_in, "r") as f_in:
+                    lines = f_in.readlines()
+                    iline = 0
+                    for line in lines:
+                        # Skip first five lines
+                        if (iline in range(5, 5 + nmat)):
+                            # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
+                            field = line.split()
+                            get_wij_ind_old[int(field[0]) - 1] = [int(field[3]), int(field[5])]
+                        iline += 1
+
+            # Read 'SPX.DAT' file at time t + dt
+            file_name_in = "SPX.DAT"
+
+            get_wij_ind_new = np.zeros((nmat, 2), dtype=np.int_)
             with open(file_name_in, "r") as f_in:
                 lines = f_in.readlines()
                 iline = 0
@@ -666,29 +900,49 @@ class DFTB(DFTBplus):
                     if (iline in range(5, 5 + nmat)):
                         # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
                         field = line.split()
-                        get_wij_ind_old[int(field[0]) - 1] = [int(field[3]), int(field[5])]
+                        get_wij_ind_new[int(field[0]) - 1] = [int(field[3]), int(field[5])]
                     iline += 1
 
-        # Read 'SPX.DAT' file at time t + dt
-        file_name_in = "SPX.DAT"
+            # Read 'XplusY.DAT.pre' file at time t
+            if (istep == 0):
+                file_name_in = "XplusY.DAT.pre"
 
-        get_wij_ind_new = np.zeros((nmat, 2), dtype=np.int_)
-        with open(file_name_in, "r") as f_in:
-            lines = f_in.readlines()
-            iline = 0
-            for line in lines:
-                # Skip first five lines
-                if (iline in range(5, 5 + nmat)):
-                    # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
-                    field = line.split()
-                    get_wij_ind_new[int(field[0]) - 1] = [int(field[3]), int(field[5])]
-                iline += 1
+                self.ci_coef_old = np.zeros((molecule.nst, self.nocc, self.nvirt))
+                with open(file_name_in, "r") as f_in:
+                    lines = f_in.readlines()
+                    iline = 0
+                    for line in lines:
+                        if (iline == 0):
+                            field = line.split()
+                            assert (int(field[0]) == nmat)
+                            assert (int(field[1]) >= molecule.nst - 1)
+                            # nxply is number of lines for each excited state in 'XplusY.dat'
+                            nxply = int(nmat / 6) + 1
+                            if (nmat % 6 != 0):
+                                nxply += 1
+                        else:
+                            field = line.split()
+                            if (iline % nxply == 1):
+                                ind = 0
+                                ist = int(field[0]) - 1
+                                # In general, TDDFTB calculate the excited states more than molecule.nst,
+                                # so we do not need to read all data for 'XplusY.DAT'
+                                if (ist == molecule.nst - 1):
+                                    break
+                            else:
+                                # Currently, elements for CI coefficients for S0 state are zero (not used values)
+                                for element in field:
+                                    ind_occ = get_wij_ind_old[ind, 0] - 1
+                                    ind_virt = get_wij_ind_old[ind, 1] - self.nocc - 1
+                                    self.ci_coef_old[ist + 1, ind_occ, ind_virt] = float(element)
+                                    ind += 1
+                        iline += 1
+#               np.savetxt("test-ci1", self.ci_coef_old[1], fmt=f"%12.6f")
 
-        # Read 'XplusY.DAT.pre' file at time t
-        if (istep == 0):
-            file_name_in = "XplusY.DAT.pre"
+        #   Read 'XplusY.DAT' file at time t + dt
+            file_name_in = "XplusY.DAT"
 
-            self.ci_coef_old = np.zeros((molecule.nst, self.nocc, self.nvirt))
+            self.ci_coef_new = np.zeros((molecule.nst, self.nocc, self.nvirt))
             with open(file_name_in, "r") as f_in:
                 lines = f_in.readlines()
                 iline = 0
@@ -713,50 +967,14 @@ class DFTB(DFTBplus):
                         else:
                             # Currently, elements for CI coefficients for S0 state are zero (not used values)
                             for element in field:
-                                ind_occ = get_wij_ind_old[ind, 0] - 1
-                                ind_virt = get_wij_ind_old[ind, 1] - self.nocc - 1
-                                self.ci_coef_old[ist + 1, ind_occ, ind_virt] = float(element)
+                                ind_occ = get_wij_ind_new[ind, 0] - 1
+                                ind_virt = get_wij_ind_new[ind, 1] - self.nocc - 1
+                                self.ci_coef_new[ist + 1, ind_occ, ind_virt] = float(element)
                                 ind += 1
                     iline += 1
-#            np.savetxt("test-ci1", self.ci_coef_old[1], fmt=f"%12.6f")
+#           np.savetxt("test-ci2", self.ci_coef_new[1], fmt=f"%12.6f")
 
-        # Read 'XplusY.DAT' file at time t + dt
-        file_name_in = "XplusY.DAT"
-
-        self.ci_coef_new = np.zeros((molecule.nst, self.nocc, self.nvirt))
-        with open(file_name_in, "r") as f_in:
-            lines = f_in.readlines()
-            iline = 0
-            for line in lines:
-                if (iline == 0):
-                    field = line.split()
-                    assert (int(field[0]) == nmat)
-                    assert (int(field[1]) >= molecule.nst - 1)
-                    # nxply is number of lines for each excited state in 'XplusY.dat'
-                    nxply = int(nmat / 6) + 1
-                    if (nmat % 6 != 0):
-                        nxply += 1
-                else:
-                    field = line.split()
-                    if (iline % nxply == 1):
-                        ind = 0
-                        ist = int(field[0]) - 1
-                        # In general, TDDFTB calculate the excited states more than molecule.nst,
-                        # so we do not need to read all data for 'XplusY.DAT'
-                        if (ist == molecule.nst - 1):
-                            break
-                    else:
-                        # Currently, elements for CI coefficients for S0 state are zero (not used values)
-                        for element in field:
-                            ind_occ = get_wij_ind_new[ind, 0] - 1
-                            ind_virt = get_wij_ind_new[ind, 1] - self.nocc - 1
-                            self.ci_coef_new[ist + 1, ind_occ, ind_virt] = float(element)
-                            ind += 1
-                iline += 1
-#        np.savetxt("test-ci2", self.ci_coef_new[1], fmt=f"%12.6f")
-
-        # Calculate wavefunction overlap with orbital scheme
-        # Reference: J. Phys. Chem. Lett. 2015, 6, 4200-4203
-        wf_overlap(self, molecule, istep, dt)
-
+        #   Calculate wavefunction overlap with orbital scheme
+        #   Reference: J. Phys. Chem. Lett. 2015, 6, 4200-4203
+            wf_overlap(self, molecule, istep, dt)
 
