@@ -1,0 +1,57 @@
+Geometry = GenFormat{
+  <<< 'geometry.gen'
+}
+Hamiltonian = DFTB{
+  SCC = Yes
+  SCCTolerance = 1e-06
+  MaxSCCIterations = 200
+  Mixer = Broyden{}
+SpinPolarisation = Colinear{
+  UnpairedElectrons = 1
+}
+  SpinConstants = {
+    ShellResolvedSpin = Yes
+    N = { -0.033 -0.027 -0.027 -0.026 }
+    C = { -0.031 -0.025 -0.025 -0.023 }
+    H = { -0.072 }
+  }
+  ReadInitialCharges = No
+  Charge = 0.0
+  Filling = Fermi{
+    Temperature[K] = 0.0
+  }
+  MaxAngularMomentum = {
+    N = 'p'
+    C = 'p'
+    H = 's'
+  }
+  SlaterKosterFiles = Type2FileNames{
+    Prefix = '/home/vhagemann/SK-files/'
+    Separator = '-'
+    Suffix = '.skf'
+    LowerCaseTypeName = No
+  }
+}
+Analysis = {
+  CalculateForces = Yes
+  WriteBandOut = Yes
+  WriteEigenvectors = Yes
+  MullikenAnalysis = Yes
+}
+Options = {
+  WriteDetailedXml = Yes
+  WriteDetailedOut = Yes
+  TimingVerbosity = -1
+}
+ExcitedState = Casida{
+  NrOfExcitations = 8
+  StateOfInterest = 1
+  WriteTransitions = Yes
+  WriteSPTransitions = Yes
+  WriteMulliken = Yes
+  WriteXplusY = Yes
+  ExcitedStateForces = Yes
+}
+ParserOptions = {
+  ParserVersion = 8
+}

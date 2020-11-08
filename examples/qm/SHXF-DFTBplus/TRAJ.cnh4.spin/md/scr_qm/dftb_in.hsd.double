@@ -1,0 +1,26 @@
+Geometry = GenFormat{
+  <<< 'double.gen'
+}
+Hamiltonian = DFTB{
+  Charge = 0.0
+  Filling = Fermi{
+    Temperature[K] = 0.0
+  }
+  MaxAngularMomentum = {
+    N = 'p'
+    C = 'p'
+    H = 's'
+  }
+  SlaterKosterFiles = Type2FileNames{
+    Prefix = '/home/vhagemann/SK-files/'
+    Separator = '-'
+    Suffix = '.skf'
+    LowerCaseTypeName = No
+  }
+}
+Options = {
+  WriteDetailedXml = Yes
+  WriteDetailedOut = Yes
+  WriteHS = Yes
+  TimingVerbosity = -1
+}

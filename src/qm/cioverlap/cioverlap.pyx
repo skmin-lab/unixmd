@@ -175,18 +175,18 @@ def wf_overlap_s(theory, molecule, istep_py, dt_py):
     ci_coef_new_d = <double***> PyMem_Malloc(nst * sizeof(double**))
 
     for ist in range(nst):
-        ci_coef_old_u[ist] = <double**> PyMem_Malloc(nocc * sizeof(double*))
-        ci_coef_old_d[ist] = <double**> PyMem_Malloc(nocc * sizeof(double*))
-        ci_coef_new_u[ist] = <double**> PyMem_Malloc(nocc * sizeof(double*))
-        ci_coef_new_d[ist] = <double**> PyMem_Malloc(nocc * sizeof(double*))
+        ci_coef_old_u[ist] = <double**> PyMem_Malloc(nocc[0] * sizeof(double*))
+        ci_coef_old_d[ist] = <double**> PyMem_Malloc(nocc[1] * sizeof(double*))
+        ci_coef_new_u[ist] = <double**> PyMem_Malloc(nocc[0] * sizeof(double*))
+        ci_coef_new_d[ist] = <double**> PyMem_Malloc(nocc[1] * sizeof(double*))
 
     for ist in range(nst):
         for iorb in range(nocc[0]):
-            ci_coef_old_u[ist][iorb] = <double*> PyMem_Malloc(nvirt * sizeof(double))
-            ci_coef_new_u[ist][iorb] = <double*> PyMem_Malloc(nvirt * sizeof(double))
+            ci_coef_old_u[ist][iorb] = <double*> PyMem_Malloc(nvirt[0] * sizeof(double))
+            ci_coef_new_u[ist][iorb] = <double*> PyMem_Malloc(nvirt[0] * sizeof(double))
         for iorb in range(nocc[1]):
-            ci_coef_old_d[ist][iorb] = <double*> PyMem_Malloc(nvirt * sizeof(double))
-            ci_coef_new_d[ist][iorb] = <double*> PyMem_Malloc(nvirt * sizeof(double))
+            ci_coef_old_d[ist][iorb] = <double*> PyMem_Malloc(nvirt[1] * sizeof(double))
+            ci_coef_new_d[ist][iorb] = <double*> PyMem_Malloc(nvirt[1] * sizeof(double))
 
     # Assign NACME variables from python to C
     for ist in range(nst):
@@ -200,9 +200,9 @@ def wf_overlap_s(theory, molecule, istep_py, dt_py):
     for iorb in range(norb):
         for ibasis in range(nbasis):
             mo_coef_old[iorb][ibasis][0] = theory.mo_coef_old[iorb, ibasis, 0]
-            mo_coef_new[iorb][ibasis]][0] = theory.mo_coef_new[iorb, ibasis, 0]
+            mo_coef_new[iorb][ibasis][0] = theory.mo_coef_new[iorb, ibasis, 0]
             mo_coef_old[iorb][ibasis][1] = theory.mo_coef_old[iorb, ibasis, 1]
-            mo_coef_new[iorb][ibasis]][1] = theory.mo_coef_new[iorb, ibasis, 1]
+            mo_coef_new[iorb][ibasis][1] = theory.mo_coef_new[iorb, ibasis, 1]
 
     for ist in range(nst):
         for iorb in range(nocc[0]):

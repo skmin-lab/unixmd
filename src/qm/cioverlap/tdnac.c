@@ -27,7 +27,7 @@ static void state_phase(int nst, int nocc, int nvirt, double ***ci_coef_old, dou
 static void norm_CI_coef(int nst, int nocc, int nvirt, double ***ci_coef);
 
 // Routine to calculate TDNAC term used in electronic propagation
-static void TD_NAC_s(int istep, int nst, int nbasis, int norb, int *nocc, int *nvirt, double dt, double **nacme, double **ao_overlap, double ***mo_coef_old, double ***mo_coef_new, double ***ci_coef_old_u, double ***ci_coef_old_d, double ***ci_coef_new_u, double ***ci_coef_new_d){
+static void TD_NAC_s(int istep, int nst, int nbasis, int norb, int *nocc, int *nvirt, double dt, double **nacme, double **ao_overlap, double ***mo_coef_old, double ***mo_coef_new, double ***ci_coef_old_u, double ***ci_coef_old_d, double ***ci_coef_new_u, double ***ci_coef_new_d);
 
 // Routine to calculate TDNAC term used in electronic propagation
 static void TD_NAC(int istep, int nst, int nbasis, int norb, int nocc, int nvirt, double dt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new){
@@ -298,12 +298,14 @@ static void TD_NAC_s(int istep, int nst, int nbasis, int norb, int *nocc, int *n
     // This is temporary option to print several variables
     debug = 0;
 
+    setvbuf(stdout, NULL, _IONBF, 0);
+
     for(iorb = 0; iorb < norb; iorb++){
         mo_overlap[iorb] = malloc(norb * sizeof(double*));
         permut_mat[iorb] = malloc(norb * sizeof(double*));
         for(jorb = 0; jorb < norb; jorb++){
-        	mo_overlap[iorb] = malloc(norb * sizeof(double));
-        	permut_mat[iorb] = malloc(norb * sizeof(double));
+        	mo_overlap[iorb][jorb] = malloc(norb * sizeof(double));
+        	permut_mat[iorb][jorb] = malloc(norb * sizeof(double));
 		for(spi = 0; spi < 2; spi++){
             		mo_overlap[iorb][jorb][spi] = 0.0;
             		permut_mat[iorb][jorb][spi] = 0.0;
@@ -397,21 +399,21 @@ static void TD_NAC_s(int istep, int nst, int nbasis, int norb, int *nocc, int *n
     MO_phase_order_s(nbasis, norb, mo_coef_new, permut_mat);
 
     if(debug == 1){
-        // Print mo_coef_new
-        printf("mo_coef_new after phase correction \n");
-        for(iorb = 0; iorb < norb; iorb++){
-            for(ibasis = 0; ibasis < nbasis; ibasis++){
-                printf("%15.8f ", mo_coef_new[iorb][ibasis][0]);
-            }
-            printf("\n");
-        }
-        printf("\n");
+     //   // Print mo_coef_new
+     //   printf("mo_coef_new after phase correction \n");
+     //   for(iorb = 0; iorb < norb; iorb++){
+     //       for(ibasis = 0; ibasis < nbasis; ibasis++){
+     //           printf("%15.8f ", mo_coef_new[iorb][ibasis][0]);
+     //       }
+     //       printf("\n");
+     //   }
+     //   printf("\n");
 
         // Print ci_coef_old
         printf("ci_coef_old_u \n");
         for(iorb = 0; iorb < nocc[0]; iorb++){
             for(aorb = 0; aorb < nvirt[0]; aorb++){
-                printf("%15.8f ", ci_coef_old_u[1][iorb][aorb]);
+                printf("%15.8f ", ci_coef_old_u[2][iorb][aorb]);
             }
             printf("\n");
         }
@@ -421,7 +423,7 @@ static void TD_NAC_s(int istep, int nst, int nbasis, int norb, int *nocc, int *n
         printf("ci_coef_new_u \n");
         for(iorb = 0; iorb < nocc[0]; iorb++){
             for(aorb = 0; aorb < nvirt[0]; aorb++){
-                printf("%15.8f ", ci_coef_new_u[1][iorb][aorb]);
+                printf("%15.8f ", ci_coef_new_u[2][iorb][aorb]);
             }
             printf("\n");
         }
@@ -435,7 +437,7 @@ static void TD_NAC_s(int istep, int nst, int nbasis, int norb, int *nocc, int *n
         printf("ci_coef_new after phase correction \n");
         for(iorb = 0; iorb < nocc[0]; iorb++){
             for(aorb = 0; aorb < nvirt[0]; aorb++){
-                printf("%15.8f ", ci_coef_new_u[1][iorb][aorb]);
+                printf("%15.8f ", ci_coef_new_u[2][iorb][aorb]);
             }
             printf("\n");
         }
@@ -450,7 +452,7 @@ static void TD_NAC_s(int istep, int nst, int nbasis, int norb, int *nocc, int *n
         printf("ci_coef_new after state correction \n");
         for(iorb = 0; iorb < nocc[0]; iorb++){
             for(aorb = 0; aorb < nvirt[0]; aorb++){
-                printf("%15.8f ", ci_coef_new_u[1][iorb][aorb]);
+                printf("%15.8f ", ci_coef_new_u[2][iorb][aorb]);
             }
             printf("\n");
         }
@@ -462,6 +464,17 @@ static void TD_NAC_s(int istep, int nst, int nbasis, int norb, int *nocc, int *n
         norm_CI_coef(nst, nocc[1], nvirt[1], ci_coef_old_d);
     }
     norm_CI_coef(nst, nocc[0], nvirt[0], ci_coef_new_u);
+    if(debug == 1){
+	// Print ci_coef_new_u
+	printf("ci_coef_new after norm \n");
+	for(iorb = 0; iorb < nocc[0]; iorb++){
+	    for(aorb = 0; aorb < nvirt[0]; aorb++){
+		printf("%15.8f ", ci_coef_new_u[2][iorb][aorb]);
+	    }
+	    printf("\n");
+	}
+	printf("\n");
+    }
     norm_CI_coef(nst, nocc[1], nvirt[1], ci_coef_new_d);
 
     // Re-calculate mo_overlap with phase-corrected MO coefficients
@@ -509,12 +522,12 @@ static void TD_NAC_s(int istep, int nst, int nbasis, int norb, int *nocc, int *n
                     // TDNAC between S_i and S_0 state
                     for(iorb = 0; iorb < nocc[0]; iorb++){
                         for(aorb = 0; aorb < nvirt[0]; aorb++){
-                            nacme[ist][jst] += 0.5 * ci_coef_new_u[ist][iorb][aorb] * (mo_overlap[nocc + aorb][iorb][0] - mo_overlap[iorb][nocc + aorb][0]);
+                            nacme[ist][jst] += 0.5 * ci_coef_new_u[ist][iorb][aorb] * (mo_overlap[nocc[0] + aorb][iorb][0] - mo_overlap[iorb][nocc[0] + aorb][0]);
                         }
                     }
                     for(iorb = 0; iorb < nocc[1]; iorb++){
                         for(aorb = 0; aorb < nvirt[1]; aorb++){
-                            nacme[ist][jst] += 0.5 * ci_coef_new_d[ist][iorb][aorb] * (mo_overlap[nocc + aorb][iorb][1] - mo_overlap[iorb][nocc + aorb][1]);
+                            nacme[ist][jst] += 0.5 * ci_coef_new_d[ist][iorb][aorb] * (mo_overlap[nocc[1] + aorb][iorb][1] - mo_overlap[iorb][nocc[1] + aorb][1]);
                         }
                     }
 
@@ -524,12 +537,12 @@ static void TD_NAC_s(int istep, int nst, int nbasis, int norb, int *nocc, int *n
                     // TDNAC between S_0 and S_j state
                     for(jorb = 0; jorb < nocc[0]; jorb++){
                         for(borb = 0; borb < nvirt[0]; borb++){
-                            nacme[ist][jst] += 0.5 * ci_coef_new_u[jst][jorb][borb] * (mo_overlap[jorb][nocc + borb][0] - mo_overlap[nocc + borb][jorb][0]);
+                            nacme[ist][jst] += 0.5 * ci_coef_new_u[jst][jorb][borb] * (mo_overlap[jorb][nocc[0] + borb][0] - mo_overlap[nocc[0] + borb][jorb][0]);
                         }
                     }
                     for(jorb = 0; jorb < nocc[1]; jorb++){
                         for(borb = 0; borb < nvirt[1]; borb++){
-                            nacme[ist][jst] += 0.5 * ci_coef_new_d[jst][jorb][borb] * (mo_overlap[jorb][nocc + borb][1] - mo_overlap[nocc + borb][jorb][1]);
+                            nacme[ist][jst] += 0.5 * ci_coef_new_d[jst][jorb][borb] * (mo_overlap[jorb][nocc[1] + borb][1] - mo_overlap[nocc[1] + borb][jorb][1]);
                         }
                     }
 
@@ -546,6 +559,8 @@ static void TD_NAC_s(int istep, int nst, int nbasis, int norb, int *nocc, int *n
                         nacme[ist][jst] += 0.5 * (ci_coef_old_u[ist][iorb][aorb] * ci_coef_new_u[jst][iorb][aorb] - ci_coef_old_u[jst][iorb][aorb] * ci_coef_new_u[ist][iorb][aorb]);
                     }
                 }
+		
+
                 for(iorb = 0; iorb < nocc[1]; iorb++){
                     for(aorb = 0; aorb < nvirt[1]; aorb++){
                         nacme[ist][jst] += 0.5 * (ci_coef_old_d[ist][iorb][aorb] * ci_coef_new_d[jst][iorb][aorb] - ci_coef_old_d[jst][iorb][aorb] * ci_coef_new_d[ist][iorb][aorb]);
@@ -557,7 +572,7 @@ static void TD_NAC_s(int istep, int nst, int nbasis, int norb, int *nocc, int *n
                     for(aorb = 0; aorb < nvirt[0]; aorb++){
                         for(borb = 0; borb < nvirt[0]; borb++){
                             if(aorb != borb){
-                                nacme[ist][jst] += 0.5 * ci_coef_new_u[ist][iorb][aorb] * ci_coef_new_u[jst][iorb][borb] * (mo_overlap[nocc + aorb][nocc + borb][0] - mo_overlap[nocc + borb][nocc + aorb][0]);
+                                nacme[ist][jst] += 0.5 * ci_coef_new_u[ist][iorb][aorb] * ci_coef_new_u[jst][iorb][borb] * (mo_overlap[nocc[0] + aorb][nocc[0] + borb][0] - mo_overlap[nocc[0] + borb][nocc[0] + aorb][0]);
                             }
                         }
                     }
@@ -566,7 +581,7 @@ static void TD_NAC_s(int istep, int nst, int nbasis, int norb, int *nocc, int *n
                     for(aorb = 0; aorb < nvirt[1]; aorb++){
                         for(borb = 0; borb < nvirt[1]; borb++){
                             if(aorb != borb){
-                                nacme[ist][jst] += 0.5 * ci_coef_new_d[ist][iorb][aorb] * ci_coef_new_d[jst][iorb][borb] * (mo_overlap[nocc + aorb][nocc + borb][1] - mo_overlap[nocc + borb][nocc + aorb][1]);
+                                nacme[ist][jst] += 0.5 * ci_coef_new_d[ist][iorb][aorb] * ci_coef_new_d[jst][iorb][borb] * (mo_overlap[nocc[1] + aorb][nocc[1] + borb][1] - mo_overlap[nocc[1] + borb][nocc[1] + aorb][1]);
                             }
                         }
                     }
@@ -686,7 +701,7 @@ static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **per
 // Routine to calculate overlap and permutation matrix in MO basis between two time steps
 static void calc_MO_over_s(int nbasis, int norb, double ***mo_overlap, double ***permut_mat, double **ao_overlap, double ***mo_coef_old, double ***mo_coef_new){
 
-    double **tmp_sign = malloc(norb * sizeof(double*));
+    double ***tmp_sign = malloc(norb * sizeof(double**));
     int ibasis, jbasis, iorb, jorb, spi;
 
     // Initialize temporary array to save sign of overlap in MO basis
@@ -791,7 +806,7 @@ static void MO_phase_order_s(int nbasis, int norb, double ***mo_coef_new, double
     for(iorb = 0; iorb < norb; iorb++){
         tmp_mo[iorb] = malloc(nbasis * sizeof(double*));
         for(ibasis = 0; ibasis < nbasis; ibasis++){
-	    tmp_mo[iorb][mu] = malloc(norb * sizeof(double));
+	    tmp_mo[iorb][ibasis] = malloc(norb * sizeof(double));
 	    for(spi = 0; spi < 2 ; spi++){
             	tmp_mo[iorb][ibasis][spi] = 0.0;
 	    }
@@ -922,15 +937,15 @@ static void CI_phase_order_s(int nst, int norb, int *nocc, int *nvirt, double **
 
     // CI coefficients for S_0 are zero
     for(ist = 1; ist < nst; ist++){
-
+	
         for(iorb = 0; iorb < norb; iorb++){
             for(aorb = 0; aorb < norb; aorb++){
                 // Assign CI coefficients at time t to new symmetric array
                 if(iorb < nocc[0] && aorb >= nvirt[0]){
-                    tmp_ci_u[iorb][aorb] = ci_coef_new_u[ist][iorb][aorb - nocc[0]];
+                    tmp_ci_u[iorb][aorb] = ci_coef_new_u[ist][iorb][aorb - nvirt[0]];
                 }
                 else if(iorb >= nvirt[0] && aorb < nocc[0]){
-                    tmp_ci_u[iorb][aorb] = ci_coef_new_u[ist][aorb][iorb - nocc[0]];
+                    tmp_ci_u[iorb][aorb] = ci_coef_new_u[ist][aorb][iorb - nvirt[0]];
                 }
                 else{
                     tmp_ci_u[iorb][aorb] = 0.0;
@@ -939,10 +954,10 @@ static void CI_phase_order_s(int nst, int norb, int *nocc, int *nvirt, double **
                 tmp_ci_new_u[iorb][aorb] = 0.0;
                 // Assign CI coefficients at time t to new symmetric array
                 if(iorb < nocc[1] && aorb >= nvirt[1]){
-                    tmp_ci_d[iorb][aorb] = ci_coef_new_d[ist][iorb][aorb - nocc[1]];
+                    tmp_ci_d[iorb][aorb] = ci_coef_new_d[ist][iorb][aorb - nvirt[1]];
                 }
                 else if(iorb >= nvirt[1] && aorb < nocc[1]){
-                    tmp_ci_d[iorb][aorb] = ci_coef_new_d[ist][aorb][iorb - nocc[1]];
+                    tmp_ci_d[iorb][aorb] = ci_coef_new_d[ist][aorb][iorb - nvirt[1]];
                 }
                 else{
                     tmp_ci_d[iorb][aorb] = 0.0;
@@ -970,12 +985,13 @@ static void CI_phase_order_s(int nst, int norb, int *nocc, int *nvirt, double **
         // Apply new phase correction for the CI coefficients; C = C'
         for(iorb = 0; iorb < nocc[0]; iorb++){
             for(aorb = 0; aorb < nvirt[0]; aorb++){
-                ci_coef_new_u[ist][iorb][aorb] = tmp_ci_new_u[iorb][nocc[0] + aorb];
+                ci_coef_new_u[ist][iorb][aorb] = tmp_ci_new_u[iorb][nvirt[0] + aorb];
+
             }
         }
         for(iorb = 0; iorb < nocc[1]; iorb++){
             for(aorb = 0; aorb < nvirt[1]; aorb++){
-                ci_coef_new_d[ist][iorb][aorb] = tmp_ci_new_d[iorb][nocc[1] + aorb];
+                ci_coef_new_d[ist][iorb][aorb] = tmp_ci_new_d[iorb][nvirt[1] + aorb];
             }
         }
 

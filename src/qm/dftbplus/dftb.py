@@ -127,9 +127,9 @@ class DFTB(DFTBplus):
             self.ci_coef_new = np.zeros((molecule.nst, self.nocc, self.nvirt))
         else:
             # determining _u (up) spin channel occupation and _d (down) spin channel occupation.
-            self.nocc_u = int(int(molecule.nelec - core_elec +  self.unpaired_e) / 2)
+            self.nocc_u = int(int(molecule.nelec - core_elec +  self.unpaired_elec) / 2)
             self.nvirt_u = self.norb - self.nocc_u
-            self.nocc_d = int(int(molecule.nelec - core_elec - self.unpaired_e) / 2)
+            self.nocc_d = int(int(molecule.nelec - core_elec - self.unpaired_elec) / 2)
             self.nvirt_d = self.norb - self.nocc_d
             # nocc and nvirt will be a 2 dimensional array containing spin up information on [0] and spin down information on [1].
             self.nocc = np.stack((self.nocc_u, self.nocc_d))
@@ -681,7 +681,7 @@ class DFTB(DFTBplus):
                             self.mo_coef_old[iorb,:,0] = data
                         else:
                             # downchannel
-                            self.mo_coef_old[iorb,:,1] = data
+                            self.mo_coef_old[iorb-self.norb,:,1] = data
 
 #               np.savetxt("test-mo1", self.mo_coef_old, fmt=f"%12.6f")
             else:
@@ -707,7 +707,7 @@ class DFTB(DFTBplus):
                     if (iorb < self.norb):
                         self.mo_coef_new[iorb,:,0] = data
                     else:
-                        self.mo_coef_new[iorb,:,1] = data
+                        self.mo_coef_new[iorb-self.norb,:,1] = data
 
 #           np.savetxt("test-mo2", self.mo_coef_new, fmt=f"%12.6f")
         else:

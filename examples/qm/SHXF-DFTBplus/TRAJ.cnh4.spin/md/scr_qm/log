@@ -1,0 +1,91 @@
+|===============================================================================
+|
+|  DFTB+ development version (commit: 8efe5ec, base: 17.1)
+|
+|  Copyright (C) 2006 - 2020  DFTB+ developers group
+|
+|===============================================================================
+|
+|  When publishing results obtained with DFTB+, please cite the following
+|  reference:
+|
+|  * DFTB+, a software package for efficient approximate density functional
+|    theory based atomistic simulations, J. Chem. Phys. 152, 124101 (2020).
+|    [doi: 10.1063/1.5143190]
+|
+|  You should also cite additional publications crediting the parametrization
+|  data you use. Please consult the documentation of the SK-files for the
+|  references.
+|
+|===============================================================================
+
+Reading input file 'dftb_in.hsd'
+Parser version: 8
+
+--------------------------------------------------------------------------------
+Reading SK-files:
+Done.
+
+
+Processed input in HSD format written to 'dftb_pin.hsd'
+
+Starting initialization...
+--------------------------------------------------------------------------------
+OpenMP threads:              1
+Chosen random seed:          599162798
+Mode:                        Static calculation
+Self consistent charges:     Yes
+SCC-tolerance:                 0.100000E-05
+Max. scc iterations:                    200
+Shell resolved Hubbard:      No
+Spin polarisation:           Yes
+Nr. of up electrons:             7.000000
+Nr. of down electrons:           6.000000
+Periodic boundaries:         No
+Electronic solver:           Relatively robust
+Mixer:                       Broyden mixer
+Mixing parameter:                  0.200000
+Maximal SCC-cycles:                     200
+Nr. of chrg. vec. in memory:              0
+Electronic temperature:        0.100000E-07 H      0.272114E-06 eV
+Initial charges:             Read in from 'charges'
+Included shells:             C:  s, p
+                             N:  s, p
+                             H:  s
+Spin coupling constants:     C   1(s)-1(s):  -0.310000E-01
+                             C   1(s)-2(p):  -0.250000E-01
+                             C   2(p)-1(s):  -0.250000E-01
+                             C   2(p)-2(p):  -0.230000E-01
+                             N   1(s)-1(s):  -0.330000E-01
+                             N   1(s)-2(p):  -0.270000E-01
+                             N   2(p)-1(s):  -0.270000E-01
+                             N   2(p)-2(p):  -0.260000E-01
+                             H   1(s)-1(s):  -0.720000E-01
+Extra options:
+                             Mulliken analysis
+                             Force calculation
+Force type                   original
+                             Eigenvector printing
+
+--------------------------------------------------------------------------------
+
+***  Geometry step: 0
+
+ iSCC Total electronic   Diff electronic      SCC error    
+    1    0.00000000E+00    0.00000000E+00    0.44757669E-07
+>> Charges saved for restart in charges.bin
+ 
+Total Energy:                       -5.4477844290 H         -148.2418 eV
+Extrapolated to 0:                  -5.4505469379 H         -148.3169 eV
+Total Mermin free energy:           -5.4477844290 H         -148.2418 eV
+Force related energy:               -5.4505469379 H         -148.3169 eV
+ 
+--------------------------------------------------------------------------------
+DFTB+ running times                          cpu [s]             wall clock [s]
+--------------------------------------------------------------------------------
+SCC                                    +     0.00  ( 33.3%)      0.01  ( 21.2%)
+Post-SCC processing                    +     0.01  ( 66.7%)      0.03  ( 57.3%)
+--------------------------------------------------------------------------------
+Missing                                +     0.00  (  0.0%)      0.01  ( 21.5%)
+Total                                  =     0.01  (100.0%)      0.06  (100.0%)
+--------------------------------------------------------------------------------
