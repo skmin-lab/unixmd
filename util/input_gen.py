@@ -10,12 +10,12 @@ def input_gen():
     """
     parser = argparse.ArgumentParser(description="Python script for UNI-xMD input generator", \
         formatter_class = argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-d', action='store', dest='sample_dir', type=str, default="Sampled", \
+    parser.add_argument('-d', '-dir', action='store', dest='sample_dir', type=str, default="Sampled", \
         help="Directory including sampled files, sampled files must be written in extended xyz format.")
-    parser.add_argument('-f', action='store', dest='running_script', type=str, default="run.py", \
+    parser.add_argument('-f', '-script', action='store', dest='running_script', type=str, default="run.py", \
         help="Filename of personal running script, must be written in running script format. \
         The geometry section of the running script must be read from 'geom.xyz'.")
-    parser.add_argument('-n', action='store', dest='ntraj', type=int, \
+    parser.add_argument('-n', '-ntraj', action='store', dest='ntraj', type=int, \
         help="Total trajectory number", required=True)
     args = parser.parse_args()
  
