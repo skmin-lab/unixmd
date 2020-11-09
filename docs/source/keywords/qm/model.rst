@@ -41,8 +41,8 @@ and 5.0 in atomic units, respectively.
 +----------+---------------------------------------------------+-----------+
 | ``Rc``   | the parameter of a moving nucleus                 | ``5.0``   |
 +----------+---------------------------------------------------+-----------+
-| ``Rl``   | the parameter of a dixed nucleus in the left side | ``4.0``   |
+| ``Rl``   | the parameter of a fixed nucleus in the left side | ``4.0``   |
 +----------+---------------------------------------------------+-----------+
-| ``Rr``   | the parameter of a dixed nucleus in the left side | ``3.1``   |
+| ``Rr``   | the parameter of a fixed nucleus in the right side | ``3.1``   |
 +----------+---------------------------------------------------+-----------+
 
