@@ -89,24 +89,19 @@ def Coherence_avg(ntraj, index, nstep, nstate):
 
     nstate_pair = int(nstate * (nstate - 1) / 2)
     avg_coh = np.zeros((nstate_pair, nstep))
-    cohr = np.zeros((nstate_pair, nstep))
-    cohi = np.zeros((nstate_pair, nstep))
 
     for itraj in range(ntraj):
-        path = os.path.join(f"./TRAJ_{itraj + 1:0{index}d}/md/", "BOCOH")
+        path = os.path.join(f"./TRAJ_{itraj + 1:0{index}d}/md/", "BOPOP")
 
         with open(path, 'r') as f:
             # Skip header and read rest
             line = f.readline()
             line = f.read()
             lines = line.split()
+            lines = list(map(float, lines))
 
-        # Slice the columns
-        cohr = np.array([(lines[(2 * ipr + 1)::(2 * nstate + 1)][:nstep]) for ipr in range(nstate_pair)], dtype=np.float)
-        cohi = np.array([(lines[(2 * ipr + 2)::(2 * nstate + 1)][:nstep]) for ipr in range(nstate_pair)], dtype=np.float)
-
-        # Get the indicator by element-wise squaring and summation
-        avg_coh += cohr ** 2 + cohi ** 2
+        avg_coh += np.array([np.multiply(lines[(istate + 1)::(nstate + 1)][:nstep],lines[(jstate + 1)::(nstate + 1)][:nstep]) \
+            for istate in range(nstate) for jstate in range(istate+1,nstate)])
  
     avg_coh /= ntraj
     avg_data = "".join([(f"{istep:8d}" + "".join([f"{avg_coh[istate, istep]:15.8f}" \
