@@ -339,6 +339,7 @@ class SHXF(MQC):
             if (molecule.ekin_qm < pot_diff):
                 self.l_hop = False
                 self.force_hop = False
+                self.event["HOP"].append(f"Reject hopping: smaller kinetic energy than potential energy difference between {self.rstate} and {self.rstate_old}")
                 self.rstate = self.rstate_old
                 bo_list[0] = self.rstate
             else:
@@ -466,6 +467,7 @@ class SHXF(MQC):
         if (count < 2):
             self.l_coh = [False] * molecule.nst
             self.l_first = [False] * molecule.nst
+            tmp_st = ""
 
         if (len(tmp_st) >= 1):
             tmp_st = tmp_st.rstrip(', ')
