@@ -1,6 +1,6 @@
 from molecule import Molecule
 import qm, mqc
-from thermostat import NHC
+from thermostat import Rescale1
 import numpy as np
 from qm.dftbplus.dftbpar import max_l
 
@@ -45,10 +45,10 @@ qm = qm.dftbplus.DFTB(molecule=mol, scc_tol=1E-6, scc_max_iter=200, \
     install_path="/opt/dftbplus-20.1/install-mpi/", nthreads=4, version=20.1)
 
 # Define MQC method
-md = mqc.BOMD(molecule=mol, nsteps=10000, dt=1.0, istate=0, unit_dt="fs")
+md = mqc.BOMD(molecule=mol, nsteps=1000, dt=1.0, istate=0, unit_dt="fs")
 
 # Define thermostat method
-bathT = NHC(temperature=273.15, coupling_strength=600.0)
+bathT = Rescale1(temperature=273.15)
 
-md.run(molecule=mol, qm=qm, thermostat=bathT, input_dir="./TRAJ.NHC", save_QMlog=False, debug=0)
+md.run(molecule=mol, qm=qm, thermostat=bathT, input_dir="./TRAJ.rescale1", save_QMlog=False, debug=0)
 
