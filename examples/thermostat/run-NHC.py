@@ -4,7 +4,7 @@ from thermostat import NHC
 import numpy as np
 from qm.dftbplus.dftbpar import max_l
 
-# This file is to calculate periodic system
+# This file is to perform molecular dynamics for periodic system with thermostat
 # geom is geometry in a unit cell
 geom = """
 8

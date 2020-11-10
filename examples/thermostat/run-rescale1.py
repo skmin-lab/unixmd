@@ -4,7 +4,7 @@ from thermostat import Rescale1
 import numpy as np
 from qm.dftbplus.dftbpar import max_l
 
-# This file is to calculate periodic system
+# This file is to perform molecular dynamics for periodic system with thermostat
 # geom is geometry in a unit cell
 geom = """
 8
@@ -48,7 +48,7 @@ qm = qm.dftbplus.DFTB(molecule=mol, scc_tol=1E-6, scc_max_iter=200, \
 md = mqc.BOMD(molecule=mol, nsteps=1000, dt=1.0, istate=0, unit_dt="fs")
 
 # Define thermostat method
-bathT = Rescale1(temperature=273.15)
+bathT = Rescale1(temperature=273.15, nrescale=20)
 
 md.run(molecule=mol, qm=qm, thermostat=bathT, input_dir="./TRAJ.rescale1", save_QMlog=False, debug=0)
 
