@@ -9,10 +9,10 @@ def input_gen():
                  running script must be read geom from "geom.xyz" file
     """
     parser = argparse.ArgumentParser(description="Python script for UNI-xMD input generator", \
-        formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-d', '-dir', action='store', dest='sample_dir', type=str, default="Sampled", \
         help="Directory including sampled files, sampled files must be written in extended xyz format.")
-    parser.add_argument('-f', '-script', action='store', dest='running_script', type=str, default="run.py", \
+    parser.add_argument('-f', '-file', action='store', dest='running_script', type=str, default="run.py", \
         help="Filename of personal running script, must be written in running script format. \
         The geometry section of the running script must be read from 'geom.xyz'.")
     parser.add_argument('-n', '-ntraj', action='store', dest='ntraj', type=int, \
