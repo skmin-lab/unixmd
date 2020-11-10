@@ -4,8 +4,8 @@ from thermostat import NHC
 import numpy as np
 from qm.dftbplus.dftbpar import max_l
 
-# This file consists of periodic system
-# geom means geometry in a unit cell
+# This file is to calculate periodic system
+# geom is geometry in a unit cell
 geom = """
 8
 
@@ -21,7 +21,7 @@ Si    1.3514228700E+00   4.0683821300E+00   4.1113177300E+00    -0.75549481     
 
 mol = Molecule(geometry=geom, nstates=1, charge=0., unit_pos="A", unit_vel="A/ps")
 
-# Define lattice vector
+# Define lattice vectors
 l_tmp = """
    0.54270920000E+01   0.00000000000E+00   0.00000000000E+00
    0.00000000000E+00   0.54270920000E+01   0.00000000000E+00
@@ -34,7 +34,7 @@ lattice = list(np.array(l_tmp.split(), dtype=np.float))
 # Define K-point
 k_sampling = [2, 2, 2]
 
-# In this calculation, we use 3p orbital as the highest angular momentum for Si atoms.
+# p is used as the highest angular momentum for each Si atoms.
 max_l["Si"] = "p"
 
 qm = qm.dftbplus.DFTB(molecule=mol, scc_tol=1E-6, scc_max_iter=200, \
