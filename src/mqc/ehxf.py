@@ -28,6 +28,7 @@ class EhXF(MQC):
     """ Class for Ehrenfest-XF dynamics
 
         :param object molecule: molecule object
+        :param object thermostat: thermostat type
         :param integer istate: initial adiabatic state
         :param double dt: time interval
         :param integer nsteps: nuclear step
@@ -44,12 +45,12 @@ class EhXF(MQC):
         :param boolean l_state_wise: logical to use state-wise total energies for auxiliary trajectories
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
-    def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
+    def __init__(self, molecule, thermostat, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
         threshold=0.01, wsigma=None, l_qmom_force=False, coefficient=None, \
         l_state_wise=False, unit_dt="fs"):
         # Initialize input values
-        super().__init__(molecule, istate, dt, nsteps, nesteps, \
+        super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
             propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
 
         # Initialize XF related variables
@@ -89,13 +90,12 @@ class EhXF(MQC):
         # Initialize event to print
         self.event = {"DECO": []}
 
-    def run(self, qm, mm=None, thermostat=None, input_dir="./", \
+    def run(self, qm, mm=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
         """ Run MQC dynamics according to Ehrenfest-XF dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
-            :param object thermostat: thermostat type
             :param string input_dir: location of input directory
             :param boolean save_QMlog: logical for saving QM calculation log
             :param boolean save_MMlog: logical for saving MM calculation log
@@ -137,7 +137,7 @@ class EhXF(MQC):
         qm.calc_coupling = True
 
         touch_file(self.mol, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=False, XF_chk=True)
-        self.print_init(qm, mm, thermostat, debug)
+        self.print_init(qm, mm, debug)
 
         # Initialize decoherence variables
         self.append_wsigma()
@@ -185,8 +185,8 @@ class EhXF(MQC):
 
             el_run(self)
 
-            if (thermostat != None):
-                thermostat.run(self.mol, self)
+            if (self.bath != None):
+                self.bath.run(self)
 
             self.update_energy()
 
@@ -370,16 +370,15 @@ class EhXF(MQC):
         tmp = f'{istep + 1:9d}' + "".join([f'{self.dotpopd[ist]:15.8f}' for ist in range(self.mol.nst)])
         typewriter(tmp, unixmd_dir, "DOTPOPD")
 
-    def print_init(self, qm, mm, thermostat, debug):
+    def print_init(self, qm, mm, debug):
         """ Routine to print the initial information of dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
-            :param object thermostat: thermostat type
             :param integer debug: verbosity level for standard output
         """
         # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm, thermostat, debug)
+        super().print_init(qm, mm, debug)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
