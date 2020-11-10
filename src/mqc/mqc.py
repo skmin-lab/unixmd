@@ -7,6 +7,7 @@ class MQC(object):
     """ Class for nuclear/electronic propagator used in MQC dynamics
 
         :param object molecule: molecule object
+        :param object thermostat: thermostat type
         :param integer istate: initial adiabatic state
         :param double dt: time interval
         :param integer nsteps: nuclear step
@@ -19,13 +20,16 @@ class MQC(object):
         :type coefficient: double, list or complex, list
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
-    def __init__(self, molecule, istate, dt, nsteps, nesteps, \
+    def __init__(self, molecule, thermostat, istate, dt, nsteps, nesteps, \
         propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
-        # Initialize Molecule class object
+        # Initialize Molecule object
         self.mol = molecule
+        
+        # Initialize Thermostat object
+        self.bath = thermostat
 
         # Initialize input values
         self.istate = istate
@@ -95,12 +99,11 @@ class MQC(object):
         """
         pass
 
-    def print_init(self, qm, mm, thermostat, debug):
+    def print_init(self, qm, mm, debug):
         """ Routine to print the initial information of dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
-            :param object thermostat: thermostat type
             :param integer debug: verbosity level for standard output
         """
         # Print molecule information: coordinate, velocity
@@ -174,8 +177,8 @@ class MQC(object):
         print (dynamics_info, flush=True)
 
         # Print thermostat information
-        if (thermostat != None):
-            thermostat.print_init()
+        if (self.bath != None):
+            self.bath.print_init()
         else:
             thermostat_info = "  No Thermostat: Total energy is conserved!\n"
             print (thermostat_info, flush=True)
