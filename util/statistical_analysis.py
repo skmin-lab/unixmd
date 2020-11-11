@@ -31,7 +31,7 @@ def averaged_running_state(ntrajs, index, nsteps, nstates):
 
     header = "#    Running state based averaged BO population"
     f_write += header
- 
+
     # define empty array for summation
     avg_state = np.zeros((nstates, nsteps))
     # define variable for count trajectories except halted trajectories
@@ -47,7 +47,7 @@ def averaged_running_state(ntrajs, index, nsteps, nstates):
             lines = line.split()
 
         # read state information of entire steps
-        rstate = np.array(lines[1::2][:nsteps], dtype=np.int)    
+        rstate = np.array(lines[1::2][:nsteps], dtype=np.int)
         try:
             # sum over counted state number of each states 
             avg_state += np.array([(rstate == ist) for ist in range(nstates)], dtype=np.float)
@@ -103,11 +103,11 @@ def averaged_density_matrix(ntrajs, index, nsteps, nstates):
         except ValueError:
             # exclude halted trajectories from total trajectory number
             mtrajs -= 1
- 
+
     # average array and print
     avg_coh /= mtrajs
     avg_pop /= mtrajs
-    
+
     avg_data = "".join([("\n" + f"{istep:8d}" + "".join([f"{avg_coh[istate, istep]:15.8f}" \
         for istate in range(nstates_pair)])) for istep in range(nsteps)])
     f1_write += avg_data
@@ -118,7 +118,7 @@ def averaged_density_matrix(ntrajs, index, nsteps, nstates):
 
     typewriter(f1_write, "AVG_COHRHO")
     typewriter(f2_write, "AVG_POPRHO")
-                                      
+
 def averaged_nacme(ntrajs, index, nsteps, nstates):
     """ Non-adiabatic coupling matrix analysis 
     """
