@@ -4,6 +4,8 @@ import numpy as np
 
 def statistical_analysis():
     """ Python utility script for UNI-xMD output analysis
+        In this script, UNI-xMD output files are post-process into organized analysis data
+        It includes BO population analysis, electron coherence analysis, nacme averaging 
     """
     parser = argparse.ArgumentParser(description="Python script for UNI-xMD output analysis")
     parser.add_argument('-n', '-ntrajs', action='store', dest='ntrajs', type=int, \
@@ -16,10 +18,10 @@ def statistical_analysis():
 
     # Indexing for numbering filename
     index = len(str(args.ntrajs))
-    
+ 
     # Include step 0 
     nsteps1 = args.nsteps + 1
-    
+
     averaged_running_state(args.ntrajs, index, nsteps1, args.nstates)
     averaged_density_matrix(args.ntrajs, index, nsteps1, args.nstates)
     averaged_nacme(args.ntrajs, index, nsteps1, args.nstates)
@@ -46,7 +48,7 @@ def averaged_running_state(ntrajs, index, nsteps, nstates):
             line = f.read()
             lines = line.split()
 
-        # read state information of entire steps
+        # read state information of entire step
         rstate = np.array(lines[1::2][:nsteps], dtype=np.int)
         try:
             # sum over counted state number of each states 
@@ -98,7 +100,7 @@ def averaged_density_matrix(ntrajs, index, nsteps, nstates):
             # sum over population of each states
             avg_pop += np.array([lines[istate::(nstates + 1)][:nsteps] for istate in range(1, nstates + 1)], dtype=np.float)
             # sum over coherence of each states, obtained from multiply istate population and jstate population
-            avg_coh += np.array([np.multiply(lines_list[istate::(nstates + 1)][:nsteps],lines_list[jstate::(nstates + 1)][:nsteps]) \
+            avg_coh += np.array([np.multiply(lines_list[istate::(nstates + 1)][:nsteps], lines_list[jstate::(nstates + 1)][:nsteps]) \
                 for istate in range(1, nstates + 1) for jstate in range(istate + 1, nstates + 1)])
         except ValueError:
             # exclude halted trajectories from total trajectory number
@@ -120,7 +122,8 @@ def averaged_density_matrix(ntrajs, index, nsteps, nstates):
     typewriter(f2_write, "AVG_POPRHO")
 
 def averaged_nacme(ntrajs, index, nsteps, nstates):
-    """ Non-adiabatic coupling matrix analysis 
+    """ averaged off-diagonal Non-adiabatic coupling matrix 
+        Phase is ignored with absolute value 
     """
     f_write = ""
 
@@ -162,7 +165,7 @@ def typewriter(string, file_name):
     """ Function to write a string in filename
     """
     with open(file_name, "w") as f:
-        f.write(string + "\n")
+        f.write(string)
 
 if (__name__ == "__main__"):
     statistical_analysis()

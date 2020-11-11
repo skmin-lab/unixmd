@@ -11,14 +11,14 @@ def input_gen():
     parser = argparse.ArgumentParser(description="Python script for UNI-xMD input generator", \
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-d', '-dir', action='store', dest='sample_dir', type=str, default="Sampled", \
-        help="Directory including sampled files, sampled files must be written in extended xyz format.")
+        help="Directory name of sampled files, sampled files must be written in extended xyz format.")
     parser.add_argument('-f', '-file', action='store', dest='running_script', type=str, default="run.py", \
         help="Filename of personal running script, must be written in running script format. \
-        The geometry section of the running script must be read from 'geom.xyz'.")
+        The geometry section of the running script must be read from 'geom.xyz' file.")
     parser.add_argument('-n', '-ntrajs', action='store', dest='ntrajs', type=int, \
         help="Total trajectory number", required=True)
     args = parser.parse_args()
- 
+
     # number for trajectory indexing
     index = len(str(args.ntrajs))
 
@@ -29,7 +29,7 @@ def input_gen():
         os.mkdir(f"TRAJ_{itraj + 1:0{index}d}")
         shutil.copy(f"{args.running_script}", f"TRAJ_{itraj + 1:0{index}d}/run.py")
         shutil.copy(f"{args.sample_dir}/sample_{itraj + 1:0{index}d}.xyz", "TRAJ_{itraj + 1:0{index}d}/geom.xyz")
- 
+
 if (__name__ == "__main__"):
     input_gen()
 
