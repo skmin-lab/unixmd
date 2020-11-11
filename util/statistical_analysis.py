@@ -61,7 +61,7 @@ def averaged_running_state(ntraj, index, nstep, nstate):
         for istate in range(nstate)])) for istep in range(nstep)])
     f_write += avg_data
 
-    typewriter(f_write, "POP_RUN")
+    typewriter(f_write, "AVG_POPRUN")
 
 def averaged_density_matrix(ntraj, index, nstep, nstate):
     """ Electronic coherence analysis and BO population analysis
@@ -116,8 +116,8 @@ def averaged_density_matrix(ntraj, index, nstep, nstate):
         for istate in range(nstate)])) for istep in range(nstep)])
     f2_write += avg_data
 
-    typewriter(f1_write, "COH_RHO")
-    typewriter(f2_write, "POP_RHO")
+    typewriter(f1_write, "AVG_COHRHO")
+    typewriter(f2_write, "AVG_POPRHO")
                                       
 def averaged_nacme(ntraj, index, nstep, nstate):
     """ Non-adiabatic coupling matrix analysis 
