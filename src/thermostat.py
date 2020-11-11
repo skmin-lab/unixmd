@@ -45,7 +45,7 @@ class Rescale1(Thermostat):
         alpha = np.sqrt(self.temp / ctemp)
         md.mol.vel *= alpha
 
-        # Rescale the auxiliary velocities for DISH-XF
+        # Rescale the auxiliary velocities
         if (md.md_type == "SHXF" or "EhXF"):
             md.aux.vel *= alpha
             md.aux.vel_old *= alpha
@@ -88,7 +88,7 @@ class Rescale2(Thermostat):
             alpha = np.sqrt(self.temp / ctemp)
             md.mol.vel *= alpha
 
-            # Rescale the auxiliary velocities for DISH-XF
+            # Rescale the auxiliary velocities
             if (md.md_type == "SHXF" or "EhXF"):
                 md.aux.vel *= alpha
                 md.aux.vel_old *= alpha
@@ -139,7 +139,7 @@ class Berendsen(Thermostat):
 
         md.mol.vel *= alpha
 
-        # Rescale the auxiliary velocities for DISH-XF
+        # Rescale the auxiliary velocities
         if (md.md_type == "SHXF" or "EhXF"):
             md.aux.vel *= alpha
             md.aux.vel_old *= alpha
@@ -289,7 +289,7 @@ class NHC(Thermostat):
 
         md.mol.vel *= alpha
 
-        # Rescale the auxiliary velocities for DISH-XF
+        # Rescale the auxiliary velocities
         if (md.md_type == "SHXF" or "EhXF"):
             md.aux.vel *= alpha
             md.aux.vel_old *= alpha
