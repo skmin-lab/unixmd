@@ -9,11 +9,11 @@ def statistical_analysis():
     """
     parser = argparse.ArgumentParser(description="Python script for UNI-xMD output analysis")
     parser.add_argument('-n', '-ntrajs', action='store', dest='ntrajs', type=int, \
-        help="Total trajectory number", required=True)
+        help="Total number of trajectories", required=True)
     parser.add_argument('-s', '-nsteps', action='store', dest='nsteps', type=int, \
-        help="Total step number for analysis", required=True)
+        help="Total number of steps", required=True)
     parser.add_argument('-t', '-nstates', action='store', dest='nstates', type=int, \
-        help="Total state number for analysis", required=True)
+        help="Total number of states", required=True)
     args = parser.parse_args()
 
     # Indexing for numbering filename

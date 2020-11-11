@@ -16,13 +16,13 @@ def input_gen():
         help="Filename of personal running script, must be written in running script format. \
         The geometry section of the running script must be read from 'geom.xyz' file.")
     parser.add_argument('-n', '-ntrajs', action='store', dest='ntrajs', type=int, \
-        help="Total trajectory number", required=True)
+        help="Total number of trajectories", required=True)
     args = parser.parse_args()
 
     # number for trajectory indexing
     index = len(str(args.ntrajs))
 
-    print (f"Total trajectory number : {args.ntrajs}\n", flush=True)
+    print (f"Total number of trajectories : {args.ntrajs}\n", flush=True)
 
     # copy from each prepared files
     for itraj in range(args.ntrajs):
