@@ -9,7 +9,7 @@ cdef extern from "rk4.c":
         double *energy_old, double **nacme, double **nacme_old, double complex *coef, \
         double complex **rho)
 
-def el_run(md, molecule):
+def el_run(md):
     cdef:
         char *propagation_c
         double *energy
@@ -24,7 +24,7 @@ def el_run(md, molecule):
         double dt
 
     # Assign size variables
-    nst = molecule.nst
+    nst = md.mol.nst
     nesteps, dt = md.nesteps, md.dt
 
     # Allocate variables
@@ -40,13 +40,13 @@ def el_run(md, molecule):
 
     # Assign variables from python to C
     for ist in range(nst):
-        energy[ist] = molecule.states[ist].energy
-        energy_old[ist] = molecule.states[ist].energy_old
+        energy[ist] = md.mol.states[ist].energy
+        energy_old[ist] = md.mol.states[ist].energy_old
 
     for ist in range(nst):
         for jst in range(nst):
-            nacme[ist][jst] = molecule.nacme[ist, jst]
-            nacme_old[ist][jst] = molecule.nacme_old[ist, jst]
+            nacme[ist][jst] = md.mol.nacme[ist, jst]
+            nacme_old[ist][jst] = md.mol.nacme_old[ist, jst]
 
     # Assign coef or rho with respect to propagation scheme
     if (md.propagation == "coefficient"):
@@ -54,7 +54,7 @@ def el_run(md, molecule):
         coef = <double complex*> PyMem_Malloc(nst * sizeof(double complex))
 
         for ist in range(nst):
-            coef[ist] = molecule.states[ist].coef
+            coef[ist] = md.mol.states[ist].coef
 
     elif (md.propagation == "density"):
 
@@ -64,7 +64,7 @@ def el_run(md, molecule):
 
         for ist in range(nst):
             for jst in range(nst):
-                rho[ist][jst] = molecule.rho[ist, jst]
+                rho[ist][jst] = md.mol.rho[ist, jst]
 
     py_bytes = md.propagation.encode()
     propagation_c = py_bytes
@@ -77,11 +77,11 @@ def el_run(md, molecule):
     if (md.propagation == "coefficient"):
 
         for ist in range(nst):
-            molecule.states[ist].coef = coef[ist]
+            md.mol.states[ist].coef = coef[ist]
 
         for ist in range(nst):
             for jst in range(nst):
-                molecule.rho[ist, jst] = np.conj(molecule.states[ist].coef) * molecule.states[jst].coef
+                md.mol.rho[ist, jst] = np.conj(md.mol.states[ist].coef) * md.mol.states[jst].coef
 
         PyMem_Free(coef)
 
@@ -89,7 +89,7 @@ def el_run(md, molecule):
 
         for ist in range(nst):
             for jst in range(nst):
-                molecule.rho[ist, jst] = rho[ist][jst]
+                md.mol.rho[ist, jst] = rho[ist][jst]
 
         for ist in range(nst):
             PyMem_Free(rho[ist])

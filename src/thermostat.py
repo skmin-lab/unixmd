@@ -29,25 +29,24 @@ class Rescale1(Thermostat):
         self.nrescale = nrescale
         self.istep = -1
 
-    def run(self, molecule, md):
+    def run(self, md):
         """ Control the temperature
 
-            :param object molecule: molecule object
             :param object md: MQC object, the MD theory
         """
         self.istep += 1
         if (not (self.istep + 1) % self.nrescale == 0):
             return
 
-        ctemp = molecule.ekin * 2 / float(molecule.dof) * au_to_K
+        ctemp = md.mol.ekin * 2 / float(md.mol.dof) * au_to_K
         if (ctemp < eps):
             raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Too small current temperature! {ctemp}")
 
         alpha = np.sqrt(self.temp / ctemp)
-        molecule.vel *= alpha
+        md.mol.vel *= alpha
 
-        # Rescale the auxiliary velocities for DISH-XF
-        if (md.md_type == "SHXF"):
+        # Rescale the auxiliary velocities
+        if (md.md_type == "SHXF" or "EhXF"):
             md.aux.vel *= alpha
             md.aux.vel_old *= alpha
 
@@ -76,22 +75,21 @@ class Rescale2(Thermostat):
         super().__init__(temperature)
         self.dtemp = dtemperature
 
-    def run(self, molecule, md):
+    def run(self, md):
         """ Control the temperature
 
-            :param object molecule: molecule object
             :param object md: MQC object, the MD theory
         """
-        ctemp = molecule.ekin * 2 / float(molecule.dof) * au_to_K
+        ctemp = md.mol.ekin * 2 / float(md.mol.dof) * au_to_K
         if (ctemp < eps):
             raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Too small current temperature! {ctemp}")
 
         if (abs(self.temp - ctemp) > self.dtemp):
             alpha = np.sqrt(self.temp / ctemp)
-            molecule.vel *= alpha
+            md.mol.vel *= alpha
 
-            # Rescale the auxiliary velocities for DISH-XF
-            if (md.md_type == "SHXF"):
+            # Rescale the auxiliary velocities
+            if (md.md_type == "SHXF" or "EhXF"):
                 md.aux.vel *= alpha
                 md.aux.vel_old *= alpha
 
@@ -128,22 +126,21 @@ class Berendsen(Thermostat):
         elif (self.coup_prm != None and self.coup_str != None):
             raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Only coupling parameter or coupling strength can be set! {self.coup_prm} and {self.coup_str}")
 
-    def run(self, molecule, md):
+    def run(self, md):
         """ Control the temperature
 
-            :param object molecule: molecule object
             :param object md: MQC object, the MD theory
         """
         if (self.coup_prm != None):
             self.coup_str = md.dt / (self.coup_prm * fs_to_au)
 
-        ctemp = molecule.ekin * 2 / float(molecule.dof) * au_to_K
+        ctemp = md.mol.ekin * 2 / float(md.mol.dof) * au_to_K
         alpha = np.sqrt(1. + self.coup_str * (self.temp / ctemp - 1.))
 
-        molecule.vel *= alpha
+        md.mol.vel *= alpha
 
-        # Rescale the auxiliary velocities for DISH-XF
-        if (md.md_type == "SHXF"):
+        # Rescale the auxiliary velocities
+        if (md.md_type == "SHXF" or "EhXF"):
             md.aux.vel *= alpha
             md.aux.vel_old *= alpha
 
@@ -222,10 +219,9 @@ class NHC(Thermostat):
         else:
             raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Invalid order! {self.order}")
 
-    def run(self, molecule, md):
+    def run(self, md):
         """ Control the temperature
 
-            :param object molecule: molecule object
             :param object md: MQC object, the MD theory
         """
         wdti = np.zeros(self.order)
@@ -250,17 +246,17 @@ class NHC(Thermostat):
             coup_prm = 1 / (self.time_scale * fs_to_au)
 
         # mass of extended variables 1: q_1 = d.o.f*k*T/w_p**2
-        self.q[0] = molecule.dof * ttemp / coup_prm ** 2
+        self.q[0] = md.mol.dof * ttemp / coup_prm ** 2
         
         # mass of extended variables i: q_i = k*T/w_p**2, i>1
         for ipart in range(1, self.chain_length):
             self.q[ipart] = ttemp / coup_prm ** 2
 
         alpha = 1.
-        akin = 2 * molecule.ekin
+        akin = 2 * md.mol.ekin
 
         # update the forces
-        self.g[0] = (akin - molecule.dof * ttemp) / self.q[0]
+        self.g[0] = (akin - md.mol.dof * ttemp) / self.q[0]
 
         # start the multiple time step procedure
         aa = 0.
@@ -278,7 +274,7 @@ class NHC(Thermostat):
                 alpha *= aa
 
                 # update the thermostat forces 
-                self.g[0] = (alpha ** 2 * akin - ttemp * molecule.dof) / self.q[0]
+                self.g[0] = (alpha ** 2 * akin - ttemp * md.mol.dof) / self.q[0]
 
                 # update thermostat positions
                 for ipart in range(self.chain_length):
@@ -291,10 +287,10 @@ class NHC(Thermostat):
                     self.g[ipart + 1] = (self.q[ipart] * self.v[ipart] ** 2 - ttemp) / self.q[ipart + 1]
                 self.v[npart1] += self.g[npart1] * wdti4[iorder]
 
-        molecule.vel *= alpha
+        md.mol.vel *= alpha
 
-        # Rescale the auxiliary velocities for DISH-XF
-        if (md.md_type == "SHXF"):
+        # Rescale the auxiliary velocities
+        if (md.md_type == "SHXF" or "EhXF"):
             md.aux.vel *= alpha
             md.aux.vel_old *= alpha
 
