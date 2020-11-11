@@ -23,7 +23,7 @@ class Eh(MQC):
         :type coefficient: double, list or complex, list
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
-    def __init__(self, molecule, thermostat, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
+    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
         coefficient=None, unit_dt="fs"):
         # Initialize input values
@@ -116,8 +116,8 @@ class Eh(MQC):
 
             el_run(self)
 
-            if (self.bath != None):
-                self.bath.run(self)
+            if (self.thermo != None):
+                self.thermo.run(self)
 
             self.update_energy()
 

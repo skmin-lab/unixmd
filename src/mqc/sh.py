@@ -24,7 +24,7 @@ class SH(MQC):
         :type coefficient: double, list or complex, list
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
-    def __init__(self, molecule, thermostat, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
+    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
         vel_rescale="momentum", coefficient=None, unit_dt="fs"):
         # Initialize input values
@@ -155,8 +155,8 @@ class SH(MQC):
                 if (self.mol.qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, istep=istep, calc_force_only=True)
 
-            if (self.bath != None):
-                self.bath.run(self)
+            if (self.thermo != None):
+                self.thermo.run(self)
 
             self.update_energy()
 

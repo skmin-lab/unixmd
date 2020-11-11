@@ -29,7 +29,7 @@ class MQC(object):
         self.mol = molecule
         
         # Initialize Thermostat object
-        self.bath = thermostat
+        self.thermo = thermostat
 
         # Initialize input values
         self.istate = istate
@@ -177,8 +177,8 @@ class MQC(object):
         print (dynamics_info, flush=True)
 
         # Print thermostat information
-        if (self.bath != None):
-            self.bath.print_init()
+        if (self.thermo != None):
+            self.thermo.print_init()
         else:
             thermostat_info = "  No Thermostat: Total energy is conserved!\n"
             print (thermostat_info, flush=True)

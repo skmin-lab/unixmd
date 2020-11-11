@@ -15,7 +15,7 @@ class BOMD(MQC):
         :param integer nsteps: nuclear step
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
-    def __init__(self, molecule, thermostat, istate=0, dt=0.5, nsteps=1000, unit_dt="fs"):
+    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, unit_dt="fs"):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, None, None, None, \
             False, None, None, unit_dt)
@@ -92,8 +92,8 @@ class BOMD(MQC):
 
             self.cl_update_velocity()
 
-            if (self.bath != None):
-                self.bath.run(self)
+            if (self.thermo != None):
+                self.thermo.run(self)
 
             self.update_energy()
 
