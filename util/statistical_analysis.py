@@ -20,14 +20,11 @@ def statistical_analysis():
     # Include step 0 
     nstep1 = args.nstep + 1
     
-    State_avg(args.ntraj, index, nstep1, args.nstate)
-    Population_avg(args.ntraj, index, nstep1, args.nstate)
-    Coherence_avg(args.ntraj, index, nstep1, args.nstate)
-    NACME_avg(args.ntraj, index, nstep1, args.nstate)
-#    Motion_avg(ntraj, index, nstep, parameter_geom)
+    averaged_running_state(args.ntraj, index, nstep1, args.nstate)
+    averaged_density_matrix(args.ntraj, index, nstep1, args.nstate)
+    averaged_nacme(args.ntraj, index, nstep1, args.nstate)
 
-
-def State_avg(ntraj, index, nstep, nstate):
+def averaged_running_state(ntraj, index, nstep, nstate):
     """ BO population analysis based on the running state of each trajectories
     """
     f_write = ""
@@ -64,18 +61,25 @@ def State_avg(ntraj, index, nstep, nstate):
         for istate in range(nstate)])) for istep in range(nstep)])
     f_write += avg_data
 
-    typewriter(f_write, "BOSTATE_avg")
+    typewriter(f_write, "POP_RUN")
 
-
-def Population_avg(ntraj, index, nstep, nstate):
-    """ BO population analysis based on the density matrix of each trajectories
+def averaged_density_matrix(ntraj, index, nstep, nstate):
+    """ Electronic coherence analysis and BO population analysis
+        based on the density matrix of each trajectories
     """
-    f_write = ""
+    f1_write = ""
+    f2_write = ""
+
+    header = "#    Averaged electronic coherence"
+    f1_write += header
 
     header = "#    Density matrix based averaged BO population"
-    f_write += header
+    f2_write += header
 
+    # calculate number of off-diagonal elements from given nstate
+    nstate_pair = int(nstate * (nstate - 1) / 2)
     # define empty array for summation
+    avg_coh = np.zeros((nstate_pair, nstep))
     avg_pop = np.zeros((nstate, nstep))
     # define variable for count trajectories except halted trajectories
     mtraj = ntraj
@@ -88,51 +92,13 @@ def Population_avg(ntraj, index, nstep, nstate):
             line = f.readline()
             line = f.read()
             lines = line.split()
-        
+            lines_list = list(map(float, lines))
+
         try:
             # sum over population of each states
             avg_pop += np.array([lines[istate::(nstate + 1)][:nstep] for istate in range(1, nstate + 1)], dtype=np.float)
-        except ValueError:
-            # exclude halted trajectories from total trajectory number
-            mtraj -= 1
-
-    # average array and print
-    avg_pop /= mtraj
-    avg_data = "".join([("\n" + f"{istep:8d}" + "".join([f"{avg_pop[istate, istep]:15.8f}" \
-        for istate in range(nstate)])) for istep in range(nstep)])
-    f_write += avg_data
-
-    typewriter(f_write, "BOPOP_avg")
-
-
-def Coherence_avg(ntraj, index, nstep, nstate):
-    """ Electronic coherence analysis based on the density matrix of each trajectories
-    """
-    f_write = ""
-
-    header = "#    Averaged electronic coherence"
-    f_write += header
-
-    # calculate number of off-diagonal elements from given nstate
-    nstate_pair = int(nstate * (nstate - 1) / 2)
-    # define empty array for summation
-    avg_coh = np.zeros((nstate_pair, nstep))
-    # define variable for count trajectories except halted trajectories
-    mtraj = ntraj
-
-    for itraj in range(ntraj):
-        path = os.path.join(f"./TRAJ_{itraj + 1:0{index}d}/md/", "BOPOP")
-
-        with open(path, 'r') as f:
-            # Skip header and read rest
-            line = f.readline()
-            line = f.read()
-            lines = line.split()
-            lines = list(map(float, lines))
-
-        try:
             # sum over coherence of each states, obtained from multiply istate population and jstate population
-            avg_coh += np.array([np.multiply(lines[istate::(nstate + 1)][:nstep],lines[jstate::(nstate + 1)][:nstep]) \
+            avg_coh += np.array([np.multiply(lines_list[istate::(nstate + 1)][:nstep],lines_list[jstate::(nstate + 1)][:nstep]) \
                 for istate in range(1, nstate + 1) for jstate in range(istate + 1, nstate + 1)])
         except ValueError:
             # exclude halted trajectories from total trajectory number
@@ -140,14 +106,20 @@ def Coherence_avg(ntraj, index, nstep, nstate):
  
     # average array and print
     avg_coh /= mtraj
+    avg_pop /= mtraj
+    
     avg_data = "".join([("\n" + f"{istep:8d}" + "".join([f"{avg_coh[istate, istep]:15.8f}" \
         for istate in range(nstate_pair)])) for istep in range(nstep)])
-    f_write += avg_data
+    f1_write += avg_data
 
-    typewriter(f_write, "BOCOH_avg")
-            
+    avg_data = "".join([("\n" + f"{istep:8d}" + "".join([f"{avg_pop[istate, istep]:15.8f}" \
+        for istate in range(nstate)])) for istep in range(nstep)])
+    f2_write += avg_data
+
+    typewriter(f1_write, "COH_RHO")
+    typewriter(f2_write, "POP_RHO")
                                       
-def NACME_avg(ntraj, index, nstep, nstate):
+def averaged_nacme(ntraj, index, nstep, nstate):
     """ Non-adiabatic coupling matrix analysis 
     """
     f_write = ""
@@ -184,15 +156,13 @@ def NACME_avg(ntraj, index, nstep, nstate):
         for istate in range(nstate_pair)])) for istep in range(nstep)])
     f_write += avg_data
 
-    typewriter(f_write, "NACME_avg")
-
+    typewriter(f_write, "AVG_NACME")
 
 def typewriter(string, file_name):
     """ Function to write a string in filename
     """
     with open(file_name, "w") as f:
         f.write(string + "\n")
-
 
 if (__name__ == "__main__"):
     statistical_analysis()
