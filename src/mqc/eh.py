@@ -1,7 +1,6 @@
 from __future__ import division
 from build.el_propagator import el_run
 from mqc.mqc import MQC
-from fileio import write_final_xyz
 from misc import au_to_K, call_name
 import os, shutil, textwrap
 import numpy as np
@@ -124,7 +123,7 @@ class Eh(MQC):
             self.write_md_output(unixmd_dir, istep=istep)
             self.print_step(debug, istep=istep)
             if (istep == self.nsteps - 1):
-                write_final_xyz(self.mol, unixmd_dir, istep=istep)
+                self.write_final_xyz(unixmd_dir, istep=istep)
 
         # Delete scratch directory
         if (not save_scr):

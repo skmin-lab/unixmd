@@ -1,7 +1,7 @@
 from __future__ import division
 from build.el_propagator_xf import el_run
 from mqc.mqc import MQC
-from fileio import write_final_xyz, write_aux_movie
+from fileio import write_aux_movie
 from misc import eps, au_to_K, call_name, typewriter
 import random, os, shutil, textwrap
 import numpy as np
@@ -254,7 +254,7 @@ class SHXF(MQC):
             self.print_step(debug, istep=istep)
 
             if (istep == self.nsteps - 1):
-                write_final_xyz(self.mol, unixmd_dir, istep=istep)
+                self.write_final_xyz(unixmd_dir, istep=istep)
 
         # Delete scratch directory
         if (not save_scr):
