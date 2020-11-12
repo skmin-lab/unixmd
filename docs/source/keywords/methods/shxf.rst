@@ -35,7 +35,9 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 +--------------------+------------------------------------------------------+--------------+
 | ``l_adjnac``       | adjust nonadiabatic coupling                         | ``True``     |
 +--------------------+------------------------------------------------------+--------------+
-| ``vel_rescale``    | velocity rescaling method after hop                  | ``momentum`` |
+| ``vel_rescale``    | velocity rescaling method after successful hop       | ``momentum`` |
++--------------------+------------------------------------------------------+--------------+
+| ``vel_reject``     | velocity rescaling method after frustrated hop       | ``keep``     |
 +--------------------+------------------------------------------------------+--------------+
 | ``threshold``      | electronic density threshold for decoherence term    | ``0.01``     |
 +--------------------+------------------------------------------------------+--------------+

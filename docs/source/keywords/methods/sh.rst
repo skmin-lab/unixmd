@@ -48,7 +48,9 @@ trajectories will be transit to that state in stochastical behavior.
 +--------------------+------------------------------------------------+--------------+
 | ``l_adjnac``       | adjust nonadiabatic coupling                   | ``True``     |
 +--------------------+------------------------------------------------+--------------+
-| ``vel_rescale``    | velocity rescaling method after hop            | ``momentum`` |
+| ``vel_rescale``    | velocity rescaling method after successful hop | ``momentum`` |
++--------------------+------------------------------------------------+--------------+
+| ``vel_reject``     | velocity rescaling method after frustrated hop | ``keep``     |
 +--------------------+------------------------------------------------+--------------+
 | ``coefficient``    | initial BO coefficient                         | ``None``     |
 +--------------------+------------------------------------------------+--------------+
