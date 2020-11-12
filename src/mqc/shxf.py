@@ -75,11 +75,8 @@ class SHXF(MQC):
         self.acc_prob = np.zeros(self.mol.nst + 1)
 
         self.l_hop = False
-        self.force_hop = False
 
         self.vel_rescale = vel_rescale
-        self.l_state_wise = l_state_wise
-
         if (self.vel_rescale == "energy"):
             pass
         elif (self.vel_rescale == "velocity"):
@@ -103,6 +100,8 @@ class SHXF(MQC):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_reject'! {self.vel_reject}")
 
         # Initialize XF related variables
+        self.force_hop = False
+        self.l_state_wise = l_state_wise
         self.one_dim = one_dim
         self.l_coh = [False] * self.mol.nst
         self.l_first = [False] * self.mol.nst
@@ -371,10 +370,10 @@ class SHXF(MQC):
                         self.force_hop = False
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
-                        if (self.reject == "keep"):
+                        if (self.vel_reject == "keep"):
                             self.event["HOP"].append("Reject hopping: no solution to find rescale factor")
                             x = 1.
-                        elif (self.reject == "reverse"):
+                        elif (self.vel_reject == "reverse"):
                             self.event["HOP"].append("Reject hopping: velocity is reversed along coupling direction")
                             x = - b / a
                     else:
@@ -397,10 +396,10 @@ class SHXF(MQC):
                         self.force_hop = False
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
-                        if (self.reject == "keep"):
+                        if (self.vel_reject == "keep"):
                             self.event["HOP"].append("Reject hopping: no solution to find rescale factor")
                             x = 1.
-                        elif (self.reject == "reverse"):
+                        elif (self.vel_reject == "reverse"):
                             self.event["HOP"].append("Reject hopping: velocity is reversed along coupling direction")
                             x = - b / a
                     else:

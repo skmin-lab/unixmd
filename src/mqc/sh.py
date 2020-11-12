@@ -270,10 +270,10 @@ class SH(MQC):
                         self.l_hop = False
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
-                        if (self.reject == "keep"):
+                        if (self.vel_reject == "keep"):
                             self.event["HOP"].append("Reject hopping: no solution to find rescale factor")
                             x = 1.
-                        elif (self.reject == "reverse"):
+                        elif (self.vel_reject == "reverse"):
                             self.event["HOP"].append("Reject hopping: velocity is reversed along coupling direction")
                             x = - b / a
                     else:
@@ -295,10 +295,10 @@ class SH(MQC):
                         self.l_hop = False
                         self.rstate = self.rstate_old
                         bo_list[0] = self.rstate
-                        if (self.reject == "keep"):
+                        if (self.vel_reject == "keep"):
                             self.event["HOP"].append("Reject hopping: no solution to find rescale factor")
                             x = 1.
-                        elif (self.reject == "reverse"):
+                        elif (self.vel_reject == "reverse"):
                             self.event["HOP"].append("Reject hopping: velocity is reversed along coupling direction")
                             x = - b / a
                     else:
