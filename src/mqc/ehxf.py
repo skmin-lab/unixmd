@@ -1,8 +1,7 @@
 from __future__ import division
 from build.el_propagator_xf import el_run
 from mqc.mqc import MQC
-from fileio import write_aux_movie
-from misc import eps, au_to_K, call_name, typewriter
+from misc import eps, au_to_K, au_to_A, call_name, typewriter
 import os, shutil, textwrap
 import numpy as np
 
@@ -156,12 +155,9 @@ class EhXF(MQC):
         self.check_coherence()
         self.aux_propagator()
         self.get_phase()
-        self.print_deco(unixmd_dir, istep=-1)
+        self.write_deco(unixmd_dir, istep=-1)
 
         self.write_md_output(unixmd_dir, istep=-1)
-        for ist in range(self.mol.nst):
-            if (self.l_coh[ist]):
-                write_aux_movie(self.aux, unixmd_dir, ist, istep=-1) 
         self.print_step(debug, istep=-1)
 
         # Main MD loop
@@ -194,12 +190,9 @@ class EhXF(MQC):
             self.check_coherence()
             self.aux_propagator()
             self.get_phase()
-            self.print_deco(unixmd_dir, istep=istep)
+            self.write_deco(unixmd_dir, istep=istep)
 
             self.write_md_output(unixmd_dir, istep=istep)
-            for ist in range(self.mol.nst):
-                if (self.l_coh[ist]):
-                    write_aux_movie(self.aux, unixmd_dir, ist, istep=istep) 
             self.print_step(debug, istep=istep)
             if (istep == self.nsteps - 1):
                 self.write_final_xyz(unixmd_dir, istep=istep)
@@ -361,14 +354,36 @@ class EhXF(MQC):
             sigma = self.wsigma
             self.wsigma = self.aux.nat * [sigma]
 
-    def print_deco(self, unixmd_dir, istep):
-        """ Routine to print decoherence information
+    def write_deco(self, unixmd_dir, istep):
+        """ Routine to print XF-based decoherence information
 
             :param string unixmd_dir: unixmd directory
             :param integer istep: current MD step
         """
+        # Write time-derivative density matrix elements in DOTPOTD
         tmp = f'{istep + 1:9d}' + "".join([f'{self.dotpopd[ist]:15.8f}' for ist in range(self.mol.nst)])
         typewriter(tmp, unixmd_dir, "DOTPOPD")
+        
+        # Write auxiliary trajectories
+        for ist in range(self.mol.nst):
+            if (self.l_coh[ist]):
+                self.write_aux_movie(unixmd_dir, ist, istep=istep) 
+
+    def write_aux_movie(self, unixmd_dir, ist, istep):
+        """ Write auxiliary trajecoty movie file
+    
+            :param string unixmd_dir: unixmd directory
+            :param integer ist: current adiabatic state
+            :param integer istep: current MD step
+        """
+        # Write auxiliary trajectory movie files
+        tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)'
+        typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz")
+        for iat in range(self.aux.nat):
+            tmp = f'{self.aux.symbols[iat]:5s}' + \
+                "".join([f'{self.aux.pos[ist, iat, isp] * au_to_A:15.8f}' for isp in range(self.aux.nsp)]) \
+                + "".join([f"{self.aux.vel[ist, iat, isp]:15.8f}" for isp in range(self.aux.nsp)])
+            typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz")
 
     def print_init(self, qm, mm, debug):
         """ Routine to print the initial information of dynamics
