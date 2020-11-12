@@ -1,7 +1,7 @@
 from __future__ import division
 from build.el_propagator_xf import el_run
 from mqc.mqc import MQC
-from fileio import touch_file, write_md_output, write_final_xyz, write_aux_movie, typewriter
+from fileio import write_md_output, write_final_xyz, write_aux_movie, typewriter
 from misc import eps, au_to_K, call_name
 import os, shutil, textwrap
 import numpy as np
@@ -136,7 +136,7 @@ class EhXF(MQC):
         bo_list = [ist for ist in range(self.mol.nst)]
         qm.calc_coupling = True
 
-        touch_file(self.mol, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=False, XF_chk=True)
+        self.touch_file(unixmd_dir)
         self.print_init(qm, mm, debug)
 
         # Initialize decoherence variables

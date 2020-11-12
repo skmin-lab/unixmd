@@ -1,7 +1,7 @@
 from __future__ import division
 from build.el_propagator import el_run
 from mqc.mqc import MQC
-from fileio import touch_file, write_md_output, write_final_xyz, typewriter
+from fileio import write_md_output, write_final_xyz, typewriter
 from misc import eps, au_to_K, call_name
 import random, os, shutil, textwrap
 import numpy as np
@@ -102,7 +102,7 @@ class SH(MQC):
         bo_list = [self.rstate]
         qm.calc_coupling = True
 
-        touch_file(self.mol, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=True, XF_chk=False)
+        self.touch_file(unixmd_dir)
         self.print_init(qm, mm, debug)
 
         # Calculate initial input geometry at t = 0.0 s

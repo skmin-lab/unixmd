@@ -1,6 +1,6 @@
 from __future__ import division
-from misc import fs_to_au, call_name
-import textwrap
+from misc import fs_to_au, call_name, typewriter
+import textwrap, datetime
 import numpy as np
 
 class MQC(object):
@@ -106,6 +106,28 @@ class MQC(object):
             :param object mm: mm object containing MM calculation infomation
             :param integer debug: verbosity level for standard output
         """
+
+        # Print UNI-xMD version
+        cur_time = datetime.datetime.now()
+        cur_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
+        prog_info = textwrap.dedent(f"""\
+        {"-" * 68}
+
+        {"UNI-xMD version 20.1":>43s}
+
+        {"< Developers >":>40s}
+        {" " * 4}Seung Kyu Min,  In Seong Lee,  Jong-Kwon Ha,  Daeho Han,
+        {" " * 4}Kicheol Kim,  Tae In Kim,  Sung Wook Moon
+
+        {"-" * 68}
+
+        {" " * 4}Please cite UNI-xMD as follows:
+        {" " * 4}This is article
+
+        {" " * 4}UNI-xMD begins on {cur_time}
+        """)
+        print (prog_info, flush=True)
+
         # Print molecule information: coordinate, velocity
         self.mol.print_init(mm)
 
@@ -182,6 +204,52 @@ class MQC(object):
         else:
             thermostat_info = "  No Thermostat: Total energy is conserved!\n"
             print (thermostat_info, flush=True)
+
+    def touch_file(self, unixmd_dir): 
+        """ Routine to write PyUNIxMD output files
+
+            :param string unixmd_dir: unixmd directory
+        """
+
+        # Energy information file header
+        tmp = f'{"#":5s}{"Step":9s}{"Kinetic(H)":15s}{"Potential(H)":15s}{"Total(H)":15s}' + \
+            "".join([f'E({ist})(H){"":8s}' for ist in range(self.mol.nst)])
+        typewriter(tmp, unixmd_dir, "MDENERGY")
+
+        if (self.md_type != "BOMD"):
+        # BO coefficents, densities file header
+            if (self.propagation == "density"):
+                tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
+                typewriter(tmp, unixmd_dir, "BOPOP")
+                tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
+                typewriter(tmp, unixmd_dir, "BOCOH")
+            elif (self.propagation == "coefficient"):
+                tmp = f'{"#":5s} BO State Coefficients: state Re-Im; see the manual for detail orders'
+                typewriter(tmp, unixmd_dir, "BOCOEF")
+                if (self.l_pop_print):
+                    tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
+                    typewriter(tmp, unixmd_dir, "BOPOP")
+                    tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
+                    typewriter(tmp, unixmd_dir, "BOCOH")
+            else:
+                raise ValueError (f"( {call_name()} ) Other propagator not implemented! {propagation}")
+
+            # NACME file header
+            tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
+            typewriter(tmp, unixmd_dir, "NACME")
+
+        # file header for SH-based methods
+        if (self.md_type == "SH" or self.md_type == "SHXF"):
+            tmp = f'{"#":5s}{"Step":8s}{"Running State":10s}'
+            typewriter(tmp, unixmd_dir, "SHSTATE")
+
+            tmp = f'{"#":5s}{"Step":12s}' + "".join([f'Prob({ist}){"":8s}' for ist in range(self.mol.nst)])
+            typewriter(tmp, unixmd_dir, "SHPROB")
+
+        # file header for XF-based methods
+        if (self.md_type == "SHXF" or self.md_type == "EhXF"):
+            tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
+            typewriter(tmp, unixmd_dir, "DOTPOPD")
 
     def check_qmmm(self, qm, mm):
         """ Routine to check compatibility between QM and MM objects

@@ -1,6 +1,6 @@
 from __future__ import division
 from mqc.mqc import MQC
-from fileio import touch_file, write_md_output, write_final_xyz
+from fileio import write_md_output, write_final_xyz
 from misc import au_to_K, call_name
 import os, shutil, textwrap
 import numpy as np
@@ -66,7 +66,7 @@ class BOMD(MQC):
         bo_list = [self.istate]
         qm.calc_coupling = False
 
-        touch_file(self.mol, qm.calc_coupling, None, False, unixmd_dir, SH_chk=False, XF_chk=False)
+        self.touch_file(unixmd_dir)
         self.print_init(qm, mm, debug)
 
         # Calculate initial input geometry at t = 0.0 s
