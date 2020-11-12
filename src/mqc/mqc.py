@@ -1,5 +1,5 @@
 from __future__ import division
-from misc import fs_to_au, call_name, typewriter
+from misc import fs_to_au, au_to_A, call_name, typewriter
 import textwrap, datetime
 import numpy as np
 
@@ -126,7 +126,7 @@ class MQC(object):
 
         {" " * 4}UNI-xMD begins on {cur_time}
         """)
-        print (prog_info, flush=True)
+        print(prog_info, flush=True)
 
         # Print molecule information: coordinate, velocity
         self.mol.print_init(mm)
@@ -250,6 +250,61 @@ class MQC(object):
         if (self.md_type == "SHXF" or self.md_type == "EhXF"):
             tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
             typewriter(tmp, unixmd_dir, "DOTPOPD")
+
+    def write_md_output(self, unixmd_dir, istep):
+        """ Write output files
+
+            :param string unixmd_dir: unixmd directory
+            :param integer istep: current MD step
+        """
+        # Write MOVIE.xyz file including positions and velocities
+        tmp = f'{self.mol.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)'
+        typewriter(tmp, unixmd_dir, "MOVIE.xyz")
+        for iat in range(self.mol.nat):
+            tmp = f'{self.mol.symbols[iat]:5s}' + \
+                "".join([f'{self.mol.pos[iat, isp] * au_to_A:15.8f}' for isp in range(self.mol.nsp)]) \
+                + "".join([f"{self.mol.vel[iat, isp]:15.8f}" for isp in range(self.mol.nsp)])
+            typewriter(tmp, unixmd_dir, "MOVIE.xyz")
+
+        # Write MDENERGY file including several energy information
+        tmp = f'{istep + 1:9d}{self.mol.ekin:15.8f}{self.mol.epot:15.8f}{self.mol.etot:15.8f}' \
+            + "".join([f'{states.energy:15.8f}' for states in self.mol.states])
+        typewriter(tmp, unixmd_dir, "MDENERGY")
+    
+        if (self.md_type != "BOMD"):
+            # Write BOCOEF, BOPOP, BOCOH files
+            if (self.propagation == "density"):
+                tmp = f'{istep + 1:9d}' + "".join([f'{self.mol.rho.real[ist, ist]:15.8f}' for ist in range(self.mol.nst)])
+                typewriter(tmp, unixmd_dir, "BOPOP")
+                tmp = f'{istep + 1:9d}' + "".join([f"{self.mol.rho.real[ist, jst]:15.8f}{self.mol.rho.imag[ist, jst]:15.8f}" \
+                    for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
+                typewriter(tmp, unixmd_dir, "BOCOH")
+            elif (self.propagation == "coefficient"):
+                tmp = f'{istep + 1:9d}' + "".join([f'{states.coef.real:15.8f}{states.coef.imag:15.8f}' \
+                    for states in self.mol.states])
+                typewriter(tmp, unixmd_dir, "BOCOEF")
+                if (self.l_pop_print):
+                    tmp = f'{istep + 1:9d}' + "".join([f'{self.mol.rho.real[ist, ist]:15.8f}' for ist in range(self.mol.nst)])
+                    typewriter(tmp, unixmd_dir, "BOPOP")
+                    tmp = f'{istep + 1:9d}' + "".join([f"{self.mol.rho.real[ist, jst]:15.8f}{self.mol.rho.imag[ist, jst]:15.8f}" \
+                        for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
+                    typewriter(tmp, unixmd_dir, "BOCOH")
+
+            # Write NACME file
+            tmp = f'{istep + 1:10d}' + "".join([f'{self.mol.nacme[ist, jst]:15.8f}' \
+                for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
+            typewriter(tmp, unixmd_dir, "NACME")
+
+            # Write NACV file
+            if(not self.mol.l_nacme):
+                for ist in range(self.mol.nst):
+                    for jst in range(ist + 1, self.mol.nst):
+                        tmp = f'{self.mol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV'
+                        typewriter(tmp, unixmd_dir, f"NACV_{ist}_{jst}")
+                        for iat in range(self.mol.nat_qm):
+                            tmp = f'{self.mol.symbols[iat]:5s}' + \
+                                "".join([f'{self.mol.nac[ist, jst, iat, isp]:15.8f}' for isp in range(self.mol.nsp)])
+                            typewriter(tmp, unixmd_dir, f"NACV_{ist}_{jst}")
 
     def check_qmmm(self, qm, mm):
         """ Routine to check compatibility between QM and MM objects

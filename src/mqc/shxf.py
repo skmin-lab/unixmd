@@ -1,8 +1,8 @@
 from __future__ import division
 from build.el_propagator_xf import el_run
 from mqc.mqc import MQC
-from fileio import write_md_output, write_final_xyz, write_aux_movie, typewriter
-from misc import eps, au_to_K, call_name
+from fileio import write_final_xyz, write_aux_movie
+from misc import eps, au_to_K, call_name, typewriter
 import random, os, shutil, textwrap
 import numpy as np
 
@@ -201,7 +201,7 @@ class SHXF(MQC):
         self.get_phase()
         self.print_deco(unixmd_dir, istep=-1)
 
-        write_md_output(self.mol, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
+        self.write_md_output(unixmd_dir, istep=-1)
         for ist in range(self.mol.nst):
             if (self.l_coh[ist]):
                 write_aux_movie(self.aux, unixmd_dir, ist, istep=-1) 
@@ -247,7 +247,7 @@ class SHXF(MQC):
             self.get_phase()
             self.print_deco(unixmd_dir, istep=istep)
 
-            write_md_output(self.mol, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
+            self.write_md_output(unixmd_dir, istep=istep)
             for ist in range(self.mol.nst):
                 if (self.l_coh[ist]):
                     write_aux_movie(self.aux, unixmd_dir, ist, istep=istep) 

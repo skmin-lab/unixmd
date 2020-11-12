@@ -1,6 +1,6 @@
 from __future__ import division
 from mqc.mqc import MQC
-from fileio import write_md_output, write_final_xyz
+from fileio import write_final_xyz
 from misc import au_to_K, call_name
 import os, shutil, textwrap
 import numpy as np
@@ -77,7 +77,7 @@ class BOMD(MQC):
 
         self.update_energy()
 
-        write_md_output(self.mol, qm.calc_coupling, None, False, unixmd_dir, istep=-1)
+        self.write_md_output(unixmd_dir, istep=-1)
         self.print_step(debug, istep=-1)
 
         # Main MD loop
@@ -97,7 +97,7 @@ class BOMD(MQC):
 
             self.update_energy()
 
-            write_md_output(self.mol, qm.calc_coupling, None, False, unixmd_dir, istep=istep)
+            self.write_md_output(unixmd_dir, istep=istep)
             self.print_step(debug, istep=istep)
             if (istep == self.nsteps - 1):
                 write_final_xyz(self.mol, unixmd_dir, istep=istep)
