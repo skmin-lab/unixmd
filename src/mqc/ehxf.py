@@ -362,7 +362,7 @@ class EhXF(MQC):
         super().write_md_output(unixmd_dir, istep)
 
         # Write decoherence information
-        self.write_deco(unixmd_dir, istep) 
+        self.write_deco(unixmd_dir, istep)
 
     def write_deco(self, unixmd_dir, istep):
         """ Write XF-based decoherence information
@@ -373,15 +373,15 @@ class EhXF(MQC):
         # Write time-derivative density matrix elements in DOTPOTD
         tmp = f'{istep + 1:9d}' + "".join([f'{self.dotpopd[ist]:15.8f}' for ist in range(self.mol.nst)])
         typewriter(tmp, unixmd_dir, "DOTPOPD")
-        
+
         # Write auxiliary trajectories
         for ist in range(self.mol.nst):
             if (self.l_coh[ist]):
-                self.write_aux_movie(unixmd_dir, ist, istep=istep) 
+                self.write_aux_movie(unixmd_dir, ist, istep=istep)
 
     def write_aux_movie(self, unixmd_dir, ist, istep):
-        """ Write auxiliary trajecoty movie file
-    
+        """ Write auxiliary trajecoty movie file 
+
             :param string unixmd_dir: unixmd directory
             :param integer ist: current adiabatic state
             :param integer istep: current MD step

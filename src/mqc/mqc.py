@@ -106,7 +106,6 @@ class MQC(object):
             :param object mm: mm object containing MM calculation infomation
             :param integer debug: verbosity level for standard output
         """
-
         # Print UNI-xMD version
         cur_time = datetime.datetime.now()
         cur_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
@@ -210,14 +209,13 @@ class MQC(object):
 
             :param string unixmd_dir: unixmd directory
         """
-
         # Energy information file header
         tmp = f'{"#":5s}{"Step":9s}{"Kinetic(H)":15s}{"Potential(H)":15s}{"Total(H)":15s}' + \
             "".join([f'E({ist})(H){"":8s}' for ist in range(self.mol.nst)])
         typewriter(tmp, unixmd_dir, "MDENERGY")
 
         if (self.md_type != "BOMD"):
-        # BO coefficents, densities file header
+            # BO coefficents, densities file header
             if (self.propagation == "density"):
                 tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "BOPOP")
@@ -270,7 +268,7 @@ class MQC(object):
         tmp = f'{istep + 1:9d}{self.mol.ekin:15.8f}{self.mol.epot:15.8f}{self.mol.etot:15.8f}' \
             + "".join([f'{states.energy:15.8f}' for states in self.mol.states])
         typewriter(tmp, unixmd_dir, "MDENERGY")
-    
+
         if (self.md_type != "BOMD"):
             # Write BOCOEF, BOPOP, BOCOH files
             if (self.propagation == "density"):
