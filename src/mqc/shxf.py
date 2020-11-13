@@ -184,9 +184,9 @@ class SHXF(MQC):
         if (not self.mol.l_nacme):
             self.mol.get_nacme()
 
-        self.hop_prob(unixmd_dir, istep=-1)
+        self.hop_prob(istep=-1)
         self.hop_check(bo_list)
-        self.evaluate_hop(bo_list, unixmd_dir, istep=-1)
+        self.evaluate_hop(bo_list, istep=-1)
         if (qm.re_calc and self.l_hop):
             qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=-1, calc_force_only=True)
             if (self.mol.qmmm and mm != None):
@@ -198,7 +198,6 @@ class SHXF(MQC):
         self.check_coherence()
         self.aux_propagator()
         self.get_phase()
-        self.write_deco(unixmd_dir, istep=-1)
 
         self.write_md_output(unixmd_dir, istep=-1)
         self.print_step(debug, istep=-1)
@@ -224,9 +223,9 @@ class SHXF(MQC):
 
             el_run(self)
 
-            self.hop_prob(unixmd_dir, istep=istep)
+            self.hop_prob(istep=istep)
             self.hop_check(bo_list)
-            self.evaluate_hop(bo_list, unixmd_dir, istep=istep)
+            self.evaluate_hop(bo_list, istep=istep)
             if (qm.re_calc and self.l_hop):
                 qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=istep, calc_force_only=True)
                 if (self.mol.qmmm and mm != None):
@@ -241,7 +240,6 @@ class SHXF(MQC):
             self.check_coherence()
             self.aux_propagator()
             self.get_phase()
-            self.write_deco(unixmd_dir, istep=istep)
 
             self.write_md_output(unixmd_dir, istep=istep)
             self.print_step(debug, istep=istep)
@@ -259,10 +257,9 @@ class SHXF(MQC):
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
 
-    def hop_prob(self, unixmd_dir, istep):
+    def hop_prob(self, istep):
         """ Routine to calculate hopping probabilities
 
-            :param string unixmd_dir: md directory
             :param integer istep: current MD step
         """
         # Reset surface hopping variables
@@ -297,10 +294,6 @@ class SHXF(MQC):
             self.prob /= psum
             self.acc_prob /= psum
 
-        # Write SHPROB file
-        tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(self.mol.nst)])
-        typewriter(tmp, unixmd_dir, "SHPROB")
-
     def hop_check(self, bo_list):
         """ Routine to check hopping occurs with random number
 
@@ -315,11 +308,10 @@ class SHXF(MQC):
                 self.rstate = ist
                 bo_list[0] = self.rstate
 
-    def evaluate_hop(self, bo_list, unixmd_dir, istep):
+    def evaluate_hop(self, bo_list, istep):
         """ Routine to evaluate hopping and velocity rescaling
 
             :param integer,list bo_list: list of BO states for BO calculation
-            :param string unixmd_dir: unixmd directory
             :param integer istep: current MD step
         """
         if (self.l_hop):
@@ -391,10 +383,6 @@ class SHXF(MQC):
                 self.event["HOP"].append(f"Force hop {self.rstate_old} -> {self.rstate}")
             else:
                 self.event["HOP"].append(f"Hopping {self.rstate_old} -> {self.rstate}")
-
-        # Write SHSTATE file
-        tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
-        typewriter(tmp, unixmd_dir, "SHSTATE")
 
     def calculate_force(self):
         """ Routine to calculate the forces
@@ -540,8 +528,37 @@ class SHXF(MQC):
             sigma = self.wsigma
             self.wsigma = self.aux.nat * [sigma]
 
+    def write_md_output(self, unixmd_dir, istep): 
+        """ Write output files
+
+            :param string unixmd_dir: unixmd directory
+            :param integer istep: current MD step
+        """
+        # Write the common part
+        super().write_md_output(unixmd_dir, istep)
+
+        # Write hopping-related quantities
+        self.write_sh(unixmd_dir, istep)
+
+        # Write decoherence information
+        self.write_deco(unixmd_dir, istep) 
+
+    def write_sh(self, unixmd_dir, istep): 
+        """ Write hopping-related quantities into files
+
+            :param string unixmd_dir: unixmd directory
+            :param integer istep: current MD step
+        """
+        # Write SHSTATE file
+        tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
+        typewriter(tmp, unixmd_dir, "SHSTATE")
+
+        # Write SHPROB file
+        tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(self.mol.nst)])
+        typewriter(tmp, unixmd_dir, "SHPROB")
+
     def write_deco(self, unixmd_dir, istep):
-        """ Routine to print XF-based decoherence information
+        """ Write XF-based decoherence information
 
             :param string unixmd_dir: unixmd directory
             :param integer istep: current MD step

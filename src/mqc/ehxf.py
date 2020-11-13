@@ -155,7 +155,6 @@ class EhXF(MQC):
         self.check_coherence()
         self.aux_propagator()
         self.get_phase()
-        self.write_deco(unixmd_dir, istep=-1)
 
         self.write_md_output(unixmd_dir, istep=-1)
         self.print_step(debug, istep=-1)
@@ -190,7 +189,6 @@ class EhXF(MQC):
             self.check_coherence()
             self.aux_propagator()
             self.get_phase()
-            self.write_deco(unixmd_dir, istep=istep)
 
             self.write_md_output(unixmd_dir, istep=istep)
             self.print_step(debug, istep=istep)
@@ -354,8 +352,20 @@ class EhXF(MQC):
             sigma = self.wsigma
             self.wsigma = self.aux.nat * [sigma]
 
+    def write_md_output(self, unixmd_dir, istep): 
+        """ Write output files
+
+            :param string unixmd_dir: unixmd directory
+            :param integer istep: current MD step
+        """
+        # Write the common part
+        super().write_md_output(unixmd_dir, istep)
+
+        # Write decoherence information
+        self.write_deco(unixmd_dir, istep) 
+
     def write_deco(self, unixmd_dir, istep):
-        """ Routine to print XF-based decoherence information
+        """ Write XF-based decoherence information
 
             :param string unixmd_dir: unixmd directory
             :param integer istep: current MD step
