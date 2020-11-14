@@ -197,9 +197,9 @@ class SHXF(MQC):
         if (not self.mol.l_nacme):
             self.mol.get_nacme()
 
-        self.hop_prob(unixmd_dir, istep=-1)
-        self.hop_check(bo_list)
-        self.evaluate_hop(bo_list, unixmd_dir, istep=-1)
+        #self.hop_prob(unixmd_dir, istep=-1)
+        #self.hop_check(bo_list)
+        #self.evaluate_hop(bo_list, unixmd_dir, istep=-1)
         if (qm.re_calc and self.l_hop):
             qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=-1, calc_force_only=True)
             if (self.mol.qmmm and mm != None):
@@ -348,16 +348,6 @@ class SHXF(MQC):
 
             pot_diff = self.mol.states[self.rstate].energy - self.mol.states[self.rstate_old].energy
 
-            # Clasically forbidden hop due to lack of kinetic energy
-            if (self.mol.ekin_qm < pot_diff):
-                self.event["HOP"].append(f"Reject hopping: smaller kinetic energy than potential energy difference between {self.rstate} and {self.rstate_old}")
-                self.l_hop = False
-                self.force_hop = False
-                self.rstate = self.rstate_old
-                bo_list[0] = self.rstate
-                # TODO : rescale the velocities (x = - b / a) in this case
-                break
-
             # Solve quadratic equation for scaling factor of velocities
             if (self.vel_rescale == "energy"):
                 a = 1.
@@ -375,20 +365,33 @@ class SHXF(MQC):
                 c = 2. * pot_diff
                 det = b ** 2. - 4. * a * c
 
-            if (det < 0.):
-                # Kinetic energy is enough, but there is no solution for scaling factor
+            if (det < 0. or self.mol.ekin_qm < pot_diff):
+                # Clasically forbidden hop due to lack of kinetic energy
+                # or, kinetic energy is enough, but there is no solution for scaling factor
+                l_reject = True
+            else:
+                # Kinetic energy is enough, and real solution for scaling factor exists
+                l_reject = False
+
+            if (l_reject):
+                # Record event for frustrated hop
+                if (self.mol.ekin_qm < pot_diff):
+                    self.event["HOP"].append(f"Reject hopping: smaller kinetic energy than potential energy difference between {self.rstate} and {self.rstate_old}")
+                # Set scaling constant with respect to 'vel_reject'
+                if (self.vel_reject == "keep"):
+                    # 'vel_rescale' == energy or velocity or momentum
+                    self.event["HOP"].append("Reject hopping: no solution to find rescale factor")
+                    x = 1.
+                elif (self.vel_reject == "reverse"):
+                    # 'vel_rescale' == velocity or momentum
+                    # TODO : how about minus one (-1) as scaling constant when 'vel_rescale' is energy
+                    self.event["HOP"].append("Reject hopping: velocity is reversed along coupling direction")
+                    x = - b / a
                 self.l_hop = False
                 self.force_hop = False
                 self.rstate = self.rstate_old
                 bo_list[0] = self.rstate
-                if (self.vel_reject == "keep"):
-                    self.event["HOP"].append("Reject hopping: no solution to find rescale factor")
-                    x = 1.
-                elif (self.vel_reject == "reverse"):
-                    self.event["HOP"].append("Reject hopping: velocity is reversed along coupling direction")
-                    x = - b / a
             else:
-                # Kinetic energy is enough, and real solution for scaling factor exists
                 if (b < 0.):
                     x = 0.5 * (- b - np.sqrt(det)) / a
                 else:
@@ -409,7 +412,7 @@ class SHXF(MQC):
             # Update kinetic energy
             self.mol.update_kinetic()
 
-        # Record event
+        # Record hopping event
         if (self.rstate != self.rstate_old):
             if (self.force_hop):
                 self.event["HOP"].append(f"Force hop {self.rstate_old} -> {self.rstate}")
