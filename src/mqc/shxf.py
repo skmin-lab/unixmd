@@ -60,7 +60,7 @@ class SHXF(MQC):
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", \
-        vel_reject="keep", threshold=0.01, wsigma=None, one_dim=False, coefficient=None, \
+        vel_reject="reverse", threshold=0.01, wsigma=None, one_dim=False, coefficient=None, \
         l_state_wise=False, unit_dt="fs"):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
@@ -193,9 +193,9 @@ class SHXF(MQC):
         if (not self.mol.l_nacme):
             self.mol.get_nacme()
 
-        #self.hop_prob(unixmd_dir, istep=-1)
-        #self.hop_check(bo_list)
-        #self.evaluate_hop(bo_list, unixmd_dir, istep=-1)
+        self.hop_prob(unixmd_dir, istep=-1)
+        self.hop_check(bo_list)
+        self.evaluate_hop(bo_list, unixmd_dir, istep=-1)
         if (qm.re_calc and self.l_hop):
             qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=-1, calc_force_only=True)
             if (self.mol.qmmm and mm != None):
