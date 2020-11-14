@@ -77,27 +77,23 @@ class SHXF(MQC):
         self.l_hop = False
 
         self.vel_rescale = vel_rescale
-        if (self.vel_rescale == "energy"):
-            pass
-        elif (self.vel_rescale == "velocity"):
-            if (self.mol.l_nacme): 
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Nonadiabatic coupling vectors are not available! l_nacme: {self.mol.l_nacme}")
-        elif (self.vel_rescale == "momentum"):
-            if (self.mol.l_nacme): 
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Nonadiabatic coupling vectors are not available! l_nacme: {self.mol.l_nacme}")
-        else:
+        if not (self.vel_rescale in ["energy", "velocity", "momentum"]): 
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
 
         self.vel_reject = vel_reject
-        if (self.vel_reject == "keep"):
-            pass
-        elif (self.vel_reject == "reverse"):
-            if (self.mol.l_nacme): 
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Nonadiabatic coupling vectors are not available! l_nacme: {self.mol.l_nacme}")
-            if (self.vel_rescale == "energy"): 
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Simple rescaling does not need rescaling method for frustrated hop! {self.vel_rescale} and {self.vel_reject}")
-        else:
+        if not (self.vel_reject in ["keep", "reverse"]): 
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_reject'! {self.vel_reject}")
+
+        # Change method for velocity adjustment with respect to QM method
+        if (self.mol.l_nacme): 
+            # No analytical nonadiabatic couplings exist
+            self.vel_rescale = "energy"
+            self.vel_reject = "keep"
+        else:
+            # analytical nonadiabatic couplings exist
+            # TODO : see line number 383
+            if (self.vel_rescale == "energy" and self.vel_reject == "reverse"): 
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Simple rescaling is not compatible with reverse rescaling method! {self.vel_rescale} and {self.vel_reject}")
 
         # Initialize XF related variables
         self.force_hop = False
