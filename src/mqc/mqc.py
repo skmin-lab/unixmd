@@ -256,11 +256,10 @@ class MQC(object):
             :param integer istep: current MD step
         """
         # Write MOVIE.xyz file including positions and velocities
-        tmp = f'{self.mol.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)'
-        for iat in range(self.mol.nat):
-            tmp += "\n" + f'{self.mol.symbols[iat]:5s}' + \
-                "".join([f'{self.mol.pos[iat, isp] * au_to_A:15.8f}' for isp in range(self.mol.nsp)]) \
-                + "".join([f"{self.mol.vel[iat, isp]:15.8f}" for isp in range(self.mol.nsp)])
+        tmp = f'{self.mol.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
+            "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
+            "".join([f'{self.mol.pos[iat, isp] * au_to_A:15.8f}' for isp in range(self.mol.nsp)]) + \
+            "".join([f"{self.mol.vel[iat, isp]:15.8f}" for isp in range(self.mol.nsp)]) for iat in range(self.mol.nat)])
         typewriter(tmp, unixmd_dir, "MOVIE.xyz", "a")
 
         # Write MDENERGY file including several energy information
@@ -296,11 +295,9 @@ class MQC(object):
             if(not self.mol.l_nacme):
                 for ist in range(self.mol.nst):
                     for jst in range(ist + 1, self.mol.nst):
-                        tmp = f'{self.mol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV'
-                        for iat in range(self.mol.nat_qm):
-                            tmp += "\n" + f'{self.mol.symbols[iat]:5s}' + \
-                                "".join([f'{self.mol.nac[ist, jst, iat, isp]:15.8f}' for isp in range(self.mol.nsp)])
-
+                        tmp = f'{self.mol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV' + \
+                            "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
+                            "".join([f'{self.mol.nac[ist, jst, iat, isp]:15.8f}' for isp in range(self.mol.nsp)]) for iat in range(self.mol.nat_qm)])
                         typewriter(tmp, unixmd_dir, f"NACV_{ist}_{jst}", "a")
 
     def write_final_xyz(self, unixmd_dir, istep):
