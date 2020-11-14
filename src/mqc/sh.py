@@ -322,11 +322,11 @@ class SH(MQC):
         """
         # Write SHSTATE file
         tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
-        typewriter(tmp, unixmd_dir, "SHSTATE")
+        typewriter(tmp, unixmd_dir, "SHSTATE", "a")
 
         # Write SHPROB file
         tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(self.mol.nst)])
-        typewriter(tmp, unixmd_dir, "SHPROB")
+        typewriter(tmp, unixmd_dir, "SHPROB", "a")
 
     def print_init(self, qm, mm, debug):
         """ Routine to print the initial information of dynamics

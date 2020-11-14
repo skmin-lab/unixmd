@@ -551,11 +551,11 @@ class SHXF(MQC):
         """
         # Write SHSTATE file
         tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
-        typewriter(tmp, unixmd_dir, "SHSTATE")
+        typewriter(tmp, unixmd_dir, "SHSTATE", "a")
 
         # Write SHPROB file
         tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(self.mol.nst)])
-        typewriter(tmp, unixmd_dir, "SHPROB")
+        typewriter(tmp, unixmd_dir, "SHPROB", "a")
 
     def write_deco(self, unixmd_dir, istep):
         """ Write XF-based decoherence information
@@ -565,7 +565,7 @@ class SHXF(MQC):
         """
         # Write time-derivative density matrix elements in DOTPOTD
         tmp = f'{istep + 1:9d}' + "".join([f'{self.dotpopd[ist]:15.8f}' for ist in range(self.mol.nst)])
-        typewriter(tmp, unixmd_dir, "DOTPOPD")        
+        typewriter(tmp, unixmd_dir, "DOTPOPD", "a")        
 
         # Write auxiliary trajectories
         for ist in range(self.mol.nst):
@@ -581,12 +581,11 @@ class SHXF(MQC):
         """
         # Write auxiliary trajectory movie files
         tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)'
-        typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz")
         for iat in range(self.aux.nat):
-            tmp = f'{self.aux.symbols[iat]:5s}' + \
+            tmp += "\n" + f'{self.aux.symbols[iat]:5s}' + \
                 "".join([f'{self.aux.pos[ist, iat, isp] * au_to_A:15.8f}' for isp in range(self.aux.nsp)]) \
                 + "".join([f"{self.aux.vel[ist, iat, isp]:15.8f}" for isp in range(self.aux.nsp)])
-            typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz")
+        typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz", "a")
 
     def print_init(self, qm, mm, debug):
         """ Routine to print the initial information of dynamics
