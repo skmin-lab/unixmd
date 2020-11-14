@@ -73,19 +73,19 @@ class SH(MQC):
 
         unixmd_dir = os.path.join(base_dir, "md")
         if (os.path.exists(unixmd_dir)):
-            shutil.rmtree(unixmd_dir)
+            shutil.move(unixmd_dir, unixmd_dir + "_old_" + str(os.getpid()))
         os.makedirs(unixmd_dir)
 
         QMlog_dir = os.path.join(base_dir, "QMlog")
         if (os.path.exists(QMlog_dir)):
-            shutil.rmtree(QMlog_dir)
+            shutil.move(QMlog_dir, QMlog_dir + "_old_" + str(os.getpid()))
         if (save_QMlog):
             os.makedirs(QMlog_dir)
 
         if (self.mol.qmmm and mm != None):
             MMlog_dir = os.path.join(base_dir, "MMlog")
             if (os.path.exists(MMlog_dir)):
-                shutil.rmtree(MMlog_dir)
+                shutil.move(MMlog_dir, MMlog_dir + "_old_" + str(os.getpid()))
             if (save_MMlog):
                 os.makedirs(MMlog_dir)
 
