@@ -395,7 +395,7 @@ class SHXF(MQC):
                         x = 0.5 * (- b + np.sqrt(det)) / a
 
             # Rescale velocities for QM atoms
-            if (not self.vel_reject == "keep"):
+            if (not (self.vel_reject == "keep" and l_reject)):
                 if (self.vel_rescale == "energy"):
                     self.mol.vel[0:self.mol.nat_qm] *= x
 
