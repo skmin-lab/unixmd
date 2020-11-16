@@ -3,6 +3,7 @@ from mqc.mqc import MQC
 from misc import au_to_K, call_name
 import os, shutil, textwrap
 import numpy as np
+import pickle
 
 class BOMD(MQC):
     """ Class for born-oppenheimer molecular dynamics (BOMD)
@@ -100,6 +101,10 @@ class BOMD(MQC):
             self.print_step(debug, istep=istep)
             if (istep == self.nsteps - 1):
                 self.write_final_xyz(unixmd_dir, istep=istep)
+
+            restart_file = os.path.join(base_dir, "restart.dat")
+            with open(restart_file, 'wb') as f:
+                pickle.dump({'qm':qm, 'md':self}, f)
 
         # Delete scratch directory
         if (not save_scr):
