@@ -359,10 +359,10 @@ class SHXF(MQC):
                     self.event["HOP"].append(f"Reject hopping: smaller kinetic energy than potential energy difference between {self.rstate} and {self.rstate_old}")
                 # Set scaling constant with respect to 'vel_reject'
                 if (self.vel_reject == "keep"):
-                    self.event["HOP"].append("Reject hopping: no solution to find rescale factor")
+                    self.event["HOP"].append("Reject hopping: no solution to find rescale factor, velocity is not changed")
                 elif (self.vel_reject == "reverse"):
                     # x = - 1 when 'vel_rescale' is 'energy', otherwise x = - b / a
-                    self.event["HOP"].append("Reject hopping: velocity is reversed along coupling direction")
+                    self.event["HOP"].append("Reject hopping: no solution to find rescale factor, velocity is reversed along coupling direction")
                     x = - b / a
                 # Recover old running state
                 self.l_hop = False
