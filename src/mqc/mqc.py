@@ -153,7 +153,7 @@ class MQC(object):
                 dynamics_info += f"  VDW Interaction          = {mm.vdw:>16s}\n"
             else:
                 dynamics_info += f"  VDW Interaction          = {'No':>16s}\n"
-                                 
+
         dynamics_info += textwrap.indent(textwrap.dedent(f"""\
 
           MQC Method               = {self.md_type:>16s}
@@ -292,7 +292,7 @@ class MQC(object):
             typewriter(tmp, unixmd_dir, "NACME", "a")
 
             # Write NACV file
-            if(not self.mol.l_nacme):
+            if (not self.mol.l_nacme):
                 for ist in range(self.mol.nst):
                     for jst in range(ist + 1, self.mol.nst):
                         tmp = f'{self.mol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV' + \

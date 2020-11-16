@@ -302,7 +302,7 @@ class SH(MQC):
         self.mol.epot = self.mol.states[self.rstate].energy
         self.mol.etot = self.mol.epot + self.mol.ekin
 
-    def write_md_output(self, unixmd_dir, istep): 
+    def write_md_output(self, unixmd_dir, istep):
         """ Write output files
 
             :param string unixmd_dir: unixmd directory
@@ -314,7 +314,7 @@ class SH(MQC):
         # Write hopping-related quantities
         self.write_sh(unixmd_dir, istep)
 
-    def write_sh(self, unixmd_dir, istep): 
+    def write_sh(self, unixmd_dir, istep):
         """ Write hopping-related quantities into files
 
             :param string unixmd_dir: unixmd directory

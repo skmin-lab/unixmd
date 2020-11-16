@@ -528,7 +528,7 @@ class SHXF(MQC):
             sigma = self.wsigma
             self.wsigma = self.aux.nat * [sigma]
 
-    def write_md_output(self, unixmd_dir, istep): 
+    def write_md_output(self, unixmd_dir, istep):
         """ Write output files
 
             :param string unixmd_dir: unixmd directory
@@ -543,7 +543,7 @@ class SHXF(MQC):
         # Write decoherence information
         self.write_deco(unixmd_dir, istep)
 
-    def write_sh(self, unixmd_dir, istep): 
+    def write_sh(self, unixmd_dir, istep):
         """ Write hopping-related quantities into files
 
             :param string unixmd_dir: unixmd directory
@@ -565,7 +565,7 @@ class SHXF(MQC):
         """
         # Write time-derivative density matrix elements in DOTPOTD
         tmp = f'{istep + 1:9d}' + "".join([f'{self.dotpopd[ist]:15.8f}' for ist in range(self.mol.nst)])
-        typewriter(tmp, unixmd_dir, "DOTPOPD", "a")        
+        typewriter(tmp, unixmd_dir, "DOTPOPD", "a") 
 
         # Write auxiliary trajectories
         for ist in range(self.mol.nst):
@@ -573,7 +573,7 @@ class SHXF(MQC):
                 self.write_aux_movie(unixmd_dir, ist, istep=istep)
 
     def write_aux_movie(self, unixmd_dir, ist, istep):
-        """ Write auxiliary trajecoty movie file    
+        """ Write auxiliary trajecoty movie file 
 
             :param string unixmd_dir: unixmd directory
             :param integer ist: current adiabatic state
