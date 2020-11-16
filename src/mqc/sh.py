@@ -58,7 +58,6 @@ class SH(MQC):
             if (self.vel_reject == "reverse"):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'keep' rescaling for 'vel_reject'! {self.vel_reject}")
 
-        # Initialize XF related variables
         # Initialize event to print
         self.event = {"HOP": []}
 
