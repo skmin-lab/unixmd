@@ -1,8 +1,7 @@
 from __future__ import division
 from build.el_propagator import el_run
 from mqc.mqc import MQC
-from fileio import touch_file, write_md_output, write_final_xyz, typewriter
-from misc import eps, au_to_K, call_name
+from misc import eps, au_to_K, call_name, typewriter
 import random, os, shutil, textwrap
 import numpy as np
  
@@ -79,19 +78,19 @@ class SH(MQC):
 
         unixmd_dir = os.path.join(base_dir, "md")
         if (os.path.exists(unixmd_dir)):
-            shutil.rmtree(unixmd_dir)
+            shutil.move(unixmd_dir, unixmd_dir + "_old_" + str(os.getpid()))
         os.makedirs(unixmd_dir)
 
         QMlog_dir = os.path.join(base_dir, "QMlog")
         if (os.path.exists(QMlog_dir)):
-            shutil.rmtree(QMlog_dir)
+            shutil.move(QMlog_dir, QMlog_dir + "_old_" + str(os.getpid()))
         if (save_QMlog):
             os.makedirs(QMlog_dir)
 
         if (self.mol.qmmm and mm != None):
             MMlog_dir = os.path.join(base_dir, "MMlog")
             if (os.path.exists(MMlog_dir)):
-                shutil.rmtree(MMlog_dir)
+                shutil.move(MMlog_dir, MMlog_dir + "_old_" + str(os.getpid()))
             if (save_MMlog):
                 os.makedirs(MMlog_dir)
 
@@ -107,7 +106,7 @@ class SH(MQC):
         bo_list = [self.rstate]
         qm.calc_coupling = True
 
-        touch_file(self.mol, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=True, XF_chk=False)
+        self.touch_file(unixmd_dir)
         self.print_init(qm, mm, debug)
 
         # Calculate initial input geometry at t = 0.0 s
@@ -118,9 +117,9 @@ class SH(MQC):
         if (not self.mol.l_nacme):
             self.mol.get_nacme()
 
-        self.hop_prob(unixmd_dir, istep=-1)
+        self.hop_prob(istep=-1)
         self.hop_check(bo_list)
-        self.evaluate_hop(bo_list, unixmd_dir, istep=-1)
+        self.evaluate_hop(bo_list, istep=-1)
         if (qm.re_calc and self.l_hop):
             qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=-1, calc_force_only=True)
             if (self.mol.qmmm and mm != None):
@@ -128,7 +127,7 @@ class SH(MQC):
 
         self.update_energy()
 
-        write_md_output(self.mol, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
+        self.write_md_output(unixmd_dir, istep=-1)
         self.print_step(debug, istep=-1)
 
         # Main MD loop
@@ -152,9 +151,9 @@ class SH(MQC):
 
             el_run(self)
 
-            self.hop_prob(unixmd_dir, istep=istep)
+            self.hop_prob(istep=istep)
             self.hop_check(bo_list)
-            self.evaluate_hop(bo_list, unixmd_dir, istep=istep)
+            self.evaluate_hop(bo_list, istep=istep)
             if (qm.re_calc and self.l_hop):
                 qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=istep, calc_force_only=True)
                 if (self.mol.qmmm and mm != None):
@@ -165,10 +164,10 @@ class SH(MQC):
 
             self.update_energy()
 
-            write_md_output(self.mol, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
+            self.write_md_output(unixmd_dir, istep=istep)
             self.print_step(debug, istep=istep)
             if (istep == self.nsteps - 1):
-                write_final_xyz(self.mol, unixmd_dir, istep=istep)
+                self.write_final_xyz(unixmd_dir, istep=istep)
 
         # Delete scratch directory
         if (not save_scr):
@@ -181,10 +180,9 @@ class SH(MQC):
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
 
-    def hop_prob(self, unixmd_dir, istep):
+    def hop_prob(self, istep):
         """ Routine to calculate hopping probabilities
 
-            :param string unixmd_dir: md directory
             :param integer istep: current MD step
         """
         # Reset surface hopping variables
@@ -212,10 +210,6 @@ class SH(MQC):
             self.prob /= psum
             self.acc_prob /= psum
 
-        # Write SHPROB file
-        tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(self.mol.nst)])
-        typewriter(tmp, unixmd_dir, "SHPROB")
-
     def hop_check(self, bo_list):
         """ Routine to check hopping occurs with random number
 
@@ -230,11 +224,10 @@ class SH(MQC):
                 self.rstate = ist
                 bo_list[0] = self.rstate
 
-    def evaluate_hop(self, bo_list, unixmd_dir, istep):
+    def evaluate_hop(self, bo_list, istep):
         """ Routine to evaluate hopping and velocity rescaling
 
             :param integer,list bo_list: list of BO states for BO calculation
-            :param string unixmd_dir: unixmd directory
             :param integer istep: current MD step
         """
         if (self.l_hop):
@@ -314,10 +307,6 @@ class SH(MQC):
         if (self.rstate != self.rstate_old):
             self.event["HOP"].append(f"Hopping {self.rstate_old} -> {self.rstate}")
 
-        # Write SHSTATE file
-        tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
-        typewriter(tmp, unixmd_dir, "SHSTATE")
-
     def calculate_force(self):
         """ Routine to calculate the forces
         """
@@ -330,6 +319,32 @@ class SH(MQC):
         self.mol.update_kinetic()
         self.mol.epot = self.mol.states[self.rstate].energy
         self.mol.etot = self.mol.epot + self.mol.ekin
+
+    def write_md_output(self, unixmd_dir, istep):
+        """ Write output files
+
+            :param string unixmd_dir: unixmd directory
+            :param integer istep: current MD step
+        """
+        # Write the common part
+        super().write_md_output(unixmd_dir, istep)
+
+        # Write hopping-related quantities
+        self.write_sh(unixmd_dir, istep)
+
+    def write_sh(self, unixmd_dir, istep):
+        """ Write hopping-related quantities into files
+
+            :param string unixmd_dir: unixmd directory
+            :param integer istep: current MD step
+        """
+        # Write SHSTATE file
+        tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
+        typewriter(tmp, unixmd_dir, "SHSTATE", "a")
+
+        # Write SHPROB file
+        tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(self.mol.nst)])
+        typewriter(tmp, unixmd_dir, "SHPROB", "a")
 
     def print_init(self, qm, mm, debug):
         """ Routine to print the initial information of dynamics
