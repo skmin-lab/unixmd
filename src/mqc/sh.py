@@ -21,15 +21,17 @@ class SH(MQC):
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param string vel_rescale: velocity rescaling method after hop
         :param coefficient: initial BO coefficient
+        :param string decoherence_method: simple decoherence correction schemes 
+        :param double c_edc: energy constant for rescaling coefficients
         :type coefficient: double, list or complex, list
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
-        vel_rescale="momentum", coefficient=None, unit_dt="fs"):
+        vel_rescale="momentum", coefficient=None, decoherence_method="IDC", c_edc=0.1 , unit_dt="fs"):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
+            propagation, solver, l_pop_print, l_adjnac, coefficient, decoherence_method, c_edc, unit_dt)
 
         # Initialize SH variables
         self.rstate = istate
@@ -38,6 +40,8 @@ class SH(MQC):
         self.rand = 0.
         self.prob = np.zeros(self.mol.nst)
         self.acc_prob = np.zeros(self.mol.nst + 1)
+        self.decoherence_method = decoherence_method
+        self.c_edc = c_edc
 
         self.l_hop = False
 
@@ -154,6 +158,8 @@ class SH(MQC):
                 qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=istep, calc_force_only=True)
                 if (self.mol.qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, istep=istep, calc_force_only=True)
+
+            self.decoherence_scheme()
 
             if (self.thermo != None):
                 self.thermo.run(self)
@@ -299,6 +305,21 @@ class SH(MQC):
         # Write SHSTATE file
         tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
         typewriter(tmp, unixmd_dir, "SHSTATE")
+
+    def decoherence_scheme(self):
+        """ Routine to simple decoherence correction
+        """
+        if (self.decoherence_method == "IDC" and self.l_hop == True):
+            if (self.propagation == "density"):
+#                self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex_)
+                self.mol.rho[:] = 0.
+                self.mol.rho.real[self.rstate, self.rstate] = 1.0 
+            elif (self.propagation == "coefficient"):
+                for ist in range(self.mol.nst):
+                    self.mol.states[ist].coef = 0. 
+                self.mol.states[self.rstate].coef = 1. + 0.j 
+        elif (self.decoherence_method == "EDC"):
+            raise ValueError (f"EDC is not yet implemented")
 
     def calculate_force(self):
         """ Routine to calculate the forces
