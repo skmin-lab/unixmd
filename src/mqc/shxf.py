@@ -375,28 +375,29 @@ class SHXF(MQC):
                     self.event["HOP"].append(f"Reject hopping: smaller kinetic energy than potential energy difference between {self.rstate} and {self.rstate_old}")
                 # Set scaling constant with respect to 'vel_reject'
                 if (self.vel_reject == "keep"):
-                    # 'vel_rescale' == energy or velocity or momentum
                     self.event["HOP"].append("Reject hopping: no solution to find rescale factor")
                     x = 1.
                 elif (self.vel_reject == "reverse"):
-                    # 'vel_rescale' == velocity or momentum
-                    # TODO : how about minus one (-1) as scaling constant when 'vel_rescale' is energy
+                    # x = - 1 when 'vel_rescale' is 'energy', otherwise x = - b / a
                     self.event["HOP"].append("Reject hopping: velocity is reversed along coupling direction")
                     x = - b / a
+                # Recover old running state
                 self.l_hop = False
                 self.force_hop = False
                 self.rstate = self.rstate_old
                 bo_list[0] = self.rstate
             else:
-                if (b < 0.):
-                    x = 0.5 * (- b - np.sqrt(det)) / a
+                if (self.vel_rescale == "energy"):
+                    x = np.sqrt(1. - pot_diff / self.mol.ekin_qm)
                 else:
-                    x = 0.5 * (- b + np.sqrt(det)) / a
+                    if (b < 0.):
+                        x = 0.5 * (- b - np.sqrt(det)) / a
+                    else:
+                        x = 0.5 * (- b + np.sqrt(det)) / a
 
             # Rescale velocities for QM atoms
             if (self.vel_rescale == "energy"):
-                x = 1. - pot_diff / self.mol.ekin_qm
-                self.mol.vel[0:self.mol.nat_qm] *= np.sqrt(x)
+                self.mol.vel[0:self.mol.nat_qm] *= x
 
             elif (self.vel_rescale == "velocity"):
                 self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm]
