@@ -1,8 +1,7 @@
 from __future__ import division
 from build.el_propagator_xf import el_run
 from mqc.mqc import MQC
-from fileio import touch_file, write_md_output, write_final_xyz, write_aux_movie, typewriter
-from misc import eps, au_to_K, call_name
+from misc import eps, au_to_K, au_to_A, call_name, typewriter
 import random, os, shutil, textwrap
 import numpy as np
 
@@ -143,19 +142,19 @@ class SHXF(MQC):
 
         unixmd_dir = os.path.join(base_dir, "md")
         if (os.path.exists(unixmd_dir)):
-            shutil.rmtree(unixmd_dir)
+            shutil.move(unixmd_dir, unixmd_dir + "_old_" + str(os.getpid()))
         os.makedirs(unixmd_dir)
 
         QMlog_dir = os.path.join(base_dir, "QMlog")
         if (os.path.exists(QMlog_dir)):
-            shutil.rmtree(QMlog_dir)
+            shutil.move(QMlog_dir, QMlog_dir + "_old_" + str(os.getpid()))
         if (save_QMlog):
             os.makedirs(QMlog_dir)
 
         if (self.mol.qmmm and mm != None):
             MMlog_dir = os.path.join(base_dir, "MMlog")
             if (os.path.exists(MMlog_dir)):
-                shutil.rmtree(MMlog_dir)
+                shutil.move(MMlog_dir, MMlog_dir + "_old_" + str(os.getpid()))
             if (save_MMlog):
                 os.makedirs(MMlog_dir)
 
@@ -171,7 +170,7 @@ class SHXF(MQC):
         bo_list = [self.rstate]
         qm.calc_coupling = True
 
-        touch_file(self.mol, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=True, XF_chk=True)
+        self.touch_file(unixmd_dir)
         self.print_init(qm, mm, debug)
 
         # Initialize decoherence variables
@@ -185,9 +184,9 @@ class SHXF(MQC):
         if (not self.mol.l_nacme):
             self.mol.get_nacme()
 
-        self.hop_prob(unixmd_dir, istep=-1)
+        self.hop_prob(istep=-1)
         self.hop_check(bo_list)
-        self.evaluate_hop(bo_list, unixmd_dir, istep=-1)
+        self.evaluate_hop(bo_list, istep=-1)
         if (qm.re_calc and self.l_hop):
             qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=-1, calc_force_only=True)
             if (self.mol.qmmm and mm != None):
@@ -199,12 +198,8 @@ class SHXF(MQC):
         self.check_coherence()
         self.aux_propagator()
         self.get_phase()
-        self.print_deco(unixmd_dir, istep=-1)
 
-        write_md_output(self.mol, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
-        for ist in range(self.mol.nst):
-            if (self.l_coh[ist]):
-                write_aux_movie(self.aux, unixmd_dir, ist, istep=-1) 
+        self.write_md_output(unixmd_dir, istep=-1)
         self.print_step(debug, istep=-1)
 
         # Main MD loop
@@ -228,9 +223,9 @@ class SHXF(MQC):
 
             el_run(self)
 
-            self.hop_prob(unixmd_dir, istep=istep)
+            self.hop_prob(istep=istep)
             self.hop_check(bo_list)
-            self.evaluate_hop(bo_list, unixmd_dir, istep=istep)
+            self.evaluate_hop(bo_list, istep=istep)
             if (qm.re_calc and self.l_hop):
                 qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=istep, calc_force_only=True)
                 if (self.mol.qmmm and mm != None):
@@ -245,16 +240,11 @@ class SHXF(MQC):
             self.check_coherence()
             self.aux_propagator()
             self.get_phase()
-            self.print_deco(unixmd_dir, istep=istep)
 
-            write_md_output(self.mol, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
-            for ist in range(self.mol.nst):
-                if (self.l_coh[ist]):
-                    write_aux_movie(self.aux, unixmd_dir, ist, istep=istep) 
+            self.write_md_output(unixmd_dir, istep=istep)
             self.print_step(debug, istep=istep)
-
             if (istep == self.nsteps - 1):
-                write_final_xyz(self.mol, unixmd_dir, istep=istep)
+                self.write_final_xyz(unixmd_dir, istep=istep)
 
         # Delete scratch directory
         if (not save_scr):
@@ -267,10 +257,9 @@ class SHXF(MQC):
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
 
-    def hop_prob(self, unixmd_dir, istep):
+    def hop_prob(self, istep):
         """ Routine to calculate hopping probabilities
 
-            :param string unixmd_dir: md directory
             :param integer istep: current MD step
         """
         # Reset surface hopping variables
@@ -305,10 +294,6 @@ class SHXF(MQC):
             self.prob /= psum
             self.acc_prob /= psum
 
-        # Write SHPROB file
-        tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(self.mol.nst)])
-        typewriter(tmp, unixmd_dir, "SHPROB")
-
     def hop_check(self, bo_list):
         """ Routine to check hopping occurs with random number
 
@@ -323,11 +308,10 @@ class SHXF(MQC):
                 self.rstate = ist
                 bo_list[0] = self.rstate
 
-    def evaluate_hop(self, bo_list, unixmd_dir, istep):
+    def evaluate_hop(self, bo_list, istep):
         """ Routine to evaluate hopping and velocity rescaling
 
             :param integer,list bo_list: list of BO states for BO calculation
-            :param string unixmd_dir: unixmd directory
             :param integer istep: current MD step
         """
         if (self.l_hop):
@@ -399,10 +383,6 @@ class SHXF(MQC):
                 self.event["HOP"].append(f"Force hop {self.rstate_old} -> {self.rstate}")
             else:
                 self.event["HOP"].append(f"Hopping {self.rstate_old} -> {self.rstate}")
-
-        # Write SHSTATE file
-        tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
-        typewriter(tmp, unixmd_dir, "SHSTATE")
 
     def calculate_force(self):
         """ Routine to calculate the forces
@@ -548,14 +528,63 @@ class SHXF(MQC):
             sigma = self.wsigma
             self.wsigma = self.aux.nat * [sigma]
 
-    def print_deco(self, unixmd_dir, istep):
-        """ Routine to print decoherence information
+    def write_md_output(self, unixmd_dir, istep):
+        """ Write output files
 
             :param string unixmd_dir: unixmd directory
             :param integer istep: current MD step
         """
+        # Write the common part
+        super().write_md_output(unixmd_dir, istep)
+
+        # Write hopping-related quantities
+        self.write_sh(unixmd_dir, istep)
+
+        # Write decoherence information
+        self.write_deco(unixmd_dir, istep)
+
+    def write_sh(self, unixmd_dir, istep):
+        """ Write hopping-related quantities into files
+
+            :param string unixmd_dir: unixmd directory
+            :param integer istep: current MD step
+        """
+        # Write SHSTATE file
+        tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
+        typewriter(tmp, unixmd_dir, "SHSTATE", "a")
+
+        # Write SHPROB file
+        tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(self.mol.nst)])
+        typewriter(tmp, unixmd_dir, "SHPROB", "a")
+
+    def write_deco(self, unixmd_dir, istep):
+        """ Write XF-based decoherence information
+
+            :param string unixmd_dir: unixmd directory
+            :param integer istep: current MD step
+        """
+        # Write time-derivative density matrix elements in DOTPOTD
         tmp = f'{istep + 1:9d}' + "".join([f'{self.dotpopd[ist]:15.8f}' for ist in range(self.mol.nst)])
-        typewriter(tmp, unixmd_dir, "DOTPOPD")
+        typewriter(tmp, unixmd_dir, "DOTPOPD", "a")
+
+        # Write auxiliary trajectories
+        for ist in range(self.mol.nst):
+            if (self.l_coh[ist]):
+                self.write_aux_movie(unixmd_dir, ist, istep=istep)
+
+    def write_aux_movie(self, unixmd_dir, ist, istep):
+        """ Write auxiliary trajecoty movie file
+
+            :param string unixmd_dir: unixmd directory
+            :param integer ist: current adiabatic state
+            :param integer istep: current MD step
+        """
+        # Write auxiliary trajectory movie files
+        tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
+            "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
+            "".join([f'{self.aux.pos[ist, iat, isp] * au_to_A:15.8f}' for isp in range(self.aux.nsp)]) + \
+            "".join([f"{self.aux.vel[ist, iat, isp]:15.8f}" for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
+        typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz", "a")
 
     def print_init(self, qm, mm, debug):
         """ Routine to print the initial information of dynamics
