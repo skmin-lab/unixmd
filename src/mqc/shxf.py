@@ -84,16 +84,13 @@ class SHXF(MQC):
         if not (self.vel_reject in ["keep", "reverse"]): 
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_reject'! {self.vel_reject}")
 
-        # Change method for velocity adjustment with respect to QM method
+        # Check error for incompatible cases
         if (self.mol.l_nacme): 
             # No analytical nonadiabatic couplings exist
-            self.vel_rescale = "energy"
-            self.vel_reject = "keep"
-        else:
-            # analytical nonadiabatic couplings exist
-            # TODO : see line number 383
-            if (self.vel_rescale == "energy" and self.vel_reject == "reverse"): 
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Simple rescaling is not compatible with reverse rescaling method! {self.vel_rescale} and {self.vel_reject}")
+            if (self.vel_rescale in ["velocity", "momentum"]): 
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'energy' rescaling for 'vel_rescale'! {self.vel_rescale}")
+            if (self.vel_reject == "reverse"):
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'keep' rescaling for 'vel_reject'! {self.vel_reject}")
 
         # Initialize XF related variables
         self.force_hop = False
