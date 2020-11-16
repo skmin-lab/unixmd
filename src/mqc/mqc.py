@@ -7,6 +7,7 @@ class MQC(object):
     """ Class for nuclear/electronic propagator used in MQC dynamics
 
         :param object molecule: molecule object
+        :param object thermostat: thermostat type
         :param integer istate: initial adiabatic state
         :param double dt: time interval
         :param integer nsteps: nuclear step
@@ -19,10 +20,16 @@ class MQC(object):
         :type coefficient: double, list or complex, list
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
-    def __init__(self, molecule, istate, dt, nsteps, nesteps, \
+    def __init__(self, molecule, thermostat, istate, dt, nsteps, nesteps, \
         propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
+
+        # Initialize Molecule object
+        self.mol = molecule
+        
+        # Initialize Thermostat object
+        self.thermo = thermostat
 
         # Initialize input values
         self.istate = istate
@@ -38,7 +45,7 @@ class MQC(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid unit for time step! {unit_dt}")
 
         # Check number of state and initial state
-        if (self.istate >= molecule.nst): 
+        if (self.istate >= self.mol.nst): 
             raise ValueError (f"( {self.md_type}.{call_name()} ) Index for initial state must be smaller than number of states! {self.istate}")
 
         # None for BOMD case
@@ -53,36 +60,34 @@ class MQC(object):
 
         self.l_adjnac = l_adjnac
 
-        self.rforce = np.zeros((molecule.nat, molecule.nsp))
+        self.rforce = np.zeros((self.mol.nat, self.mol.nsp))
 
         # Initialize coefficients and densities
-        molecule.get_coefficient(coefficient, self.istate)
+        self.mol.get_coefficient(coefficient, self.istate)
 
-    def cl_update_position(self, molecule):
+    def cl_update_position(self):
         """ Routine to update nuclear positions
 
-            :param object molecule: molecule object
         """
-        self.calculate_force(molecule)
+        self.calculate_force()
 
-        molecule.vel += 0.5 * self.dt * self.rforce / np.column_stack([molecule.mass] * molecule.nsp)
-        molecule.pos += self.dt * molecule.vel
+        self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.nsp)
+        self.mol.pos += self.dt * self.mol.vel
 
-    def cl_update_velocity(self, molecule):
+    def cl_update_velocity(self):
         """ Routine to update nuclear velocities
 
-            :param object molecule: molecule object
         """
-        self.calculate_force(molecule)
+        self.calculate_force()
 
-        molecule.vel += 0.5 * self.dt * self.rforce / np.column_stack([molecule.mass] * molecule.nsp)
-        molecule.update_kinetic()
+        self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.nsp)
+        self.mol.update_kinetic()
 
-#    def calculate_temperature(self, molecule):
+#    def calculate_temperature(self):
 #        """ Routine to calculate current temperature
 #        """
 #        pass
-#        #self.temperature = molecule.ekin * 2 / float(molecule.dof) * au_to_K
+#        #self.temperature = self.mol.ekin * 2 / float(self.mol.dof) * au_to_K
 
     def calculate_force(self):
         """ Routine to calculate the forces
@@ -94,17 +99,15 @@ class MQC(object):
         """
         pass
 
-    def print_init(self, molecule, qm, mm, thermostat, debug):
+    def print_init(self, qm, mm, debug):
         """ Routine to print the initial information of dynamics
 
-            :param object molecule: molecule object
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
-            :param object thermostat: thermostat type
             :param integer debug: verbosity level for standard output
         """
         # Print molecule information: coordinate, velocity
-        molecule.print_init(mm)
+        self.mol.print_init(mm)
 
         # Print dynamics information
         dynamics_info = textwrap.dedent(f"""\
@@ -114,7 +117,7 @@ class MQC(object):
           QM Program               = {qm.qm_prog:>16s}
           QM Method                = {qm.qm_method:>16s}
         """)
-        if (molecule.qmmm and mm != None):
+        if (self.mol.qmmm and mm != None):
             dynamics_info += textwrap.indent(textwrap.dedent(f"""\
               MM Program               = {mm.mm_prog:>16s}
               QMMM Scheme              = {mm.scheme:>16s}
@@ -157,15 +160,15 @@ class MQC(object):
                 dynamics_info += f"\n  Sigma                    = {self.wsigma:16.3f}\n"
             elif (isinstance(self.wsigma, list)):
                 dynamics_info += f"\n  Sigma (1:N)              =\n"
-                nlines = int(molecule.nat_qm / 6)
-                if (molecule.nat_qm % 6 != 0):
+                nlines = int(self.mol.nat_qm / 6)
+                if (self.mol.nat_qm % 6 != 0):
                     nlines += 1
                 wsigma_info = ""
                 for iline in range(nlines):
                     iline1 = iline * 6
                     iline2 = (iline + 1) * 6
-                    if (iline2 > molecule.nat_qm):
-                        iline2 = molecule.nat_qm
+                    if (iline2 > self.mol.nat_qm):
+                        iline2 = self.mol.nat_qm
                     wsigma_info += f"  {iline1 + 1:>3d}:{iline2:<3d};"
                     wsigma_info += "".join([f'{sigma:7.3f}' for sigma in self.wsigma[iline1:iline2]])
                     wsigma_info += "\n"
@@ -174,8 +177,8 @@ class MQC(object):
         print (dynamics_info, flush=True)
 
         # Print thermostat information
-        if (thermostat != None):
-            thermostat.print_init()
+        if (self.thermo != None):
+            self.thermo.print_init()
         else:
             thermostat_info = "  No Thermostat: Total energy is conserved!\n"
             print (thermostat_info, flush=True)

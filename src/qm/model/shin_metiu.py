@@ -2,16 +2,38 @@ from __future__ import division
 from qm.model.model import Model
 import os, shutil, re
 import numpy as np
+from math import erf
+from misc import eps
 
 class Shin_Metiu(Model):
-    """ Class for Shin-Metiu model BO calculation
+    """ Class for 1D Shin-Metiu model BO calculation in a real-space grid
 
         :param object molecule: molecule object
-        :param string qm_path: path for Shin-Metiu 1D charge transfer model BO calculation program
+        :param integer nx: the number of grid points
+        :param double xmin: lower bound of the 1D space
+        :param double xmax: upper bound of the 1D space
+        :param double L: the distance between two fixed nuclei
+        :param double Rc: the parameter of a moving nucleus
+        :param double Rl: the parameter of a fixed nucleus in the left side
+        :param double Rr: the parameter of a fixed nucleus in the right side
     """
-    def __init__(self, molecule, qm_path="./"):
+    def __init__(self, molecule, nx=401, xmin=-20.0, xmax=20.0, L=19.0, Rc=5.0, Rl=4.0, Rr=3.1):
         # Initialize model common variables
-        super(Shin_Metiu, self).__init__(qm_path)
+        super(Shin_Metiu, self).__init__(None)
+
+        # Set the grid
+        self.nx = nx
+        self.xmin = xmin
+        self.xmax = xmax
+
+        # Parameters in au
+        self.L = L + eps
+        self.Rc = Rc
+        self.Rl = Rl
+        self.Rr = Rr
+
+        self.dx = (self.xmax - self.xmin) / np.float(self.nx - 1)
+        self.H = np.zeros((self.nx, self.nx))
 
         # Set 'l_nacme' with respect to the computational method
         # Shin-Metiu model can produce NACs, so we do not need to get NACME
@@ -30,90 +52,83 @@ class Shin_Metiu(Model):
             :param integer istep: current MD step
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        super().get_data(base_dir, calc_force_only)
-        self.get_input(molecule)
-        self.run_QM(base_dir, istep, bo_list)
-        self.extract_QM(molecule, bo_list, calc_force_only)
-        self.move_dir(base_dir)
+        # Initialize Hamiltonian
+        self.H = 0.0
 
-    def get_input(self, molecule):
-        """ Generate input file for BO calculation: metiu.in 
+        # Add the kinetic-energy contribution (tridiagonal)
+        self.H += -0.5 * (np.diag([1.0] * (self.nx - 1), -1) + np.diag([-2.0] * self.nx, 0) + \
+            np.diag([1.0] * (self.nx - 1), 1)) / self.dx ** 2
+ 
+        x = molecule.pos[0, 0]
 
-            :param object molecule: molecule object
+        # Add the potential contribution (diagonal)
+        xes = [self.xmin + ix * self.dx for ix in range(self.nx)]
+        Vs = [self.get_V(x, xe) for xe in xes]
+        self.H += np.diag(Vs)
+
+        # Diagonalization
+        ws, unitary = np.linalg.eig(self.H)
+
+        # Sorting eigenvalues in the ascending order and the corresponding eigenvectors 
+        idx = np.argsort(ws)
+        ws = ws[idx]
+        unitary = unitary[:, idx]
+
+        # Slicing eigenvalues and eigenvectors up to the given number of states
+        ws = ws[0:molecule.nst]
+        unitary = unitary[:, 0:molecule.nst]
+
+        for ist in range(molecule.nst):
+            molecule.states[ist].energy = ws[ist]
+
+        # Extract adiabatic quantities
+        dVs = [self.get_dV(x, xe) for xe in xes]
+        dVijs = np.dot(np.transpose(unitary), np.dot(np.diag(dVs), unitary))
+
+        Fs = -np.diag(dVijs)
+        for ist in range(molecule.nst):
+            molecule.states[ist].force = Fs[ist]
+
+        for ist in range(molecule.nst):
+            for jst in range(ist + 1, molecule.nst):
+                molecule.nac[ist, jst, 0, 0] = dVijs[ist, jst] / (ws[jst] - ws[ist])
+                molecule.nac[jst, ist, 0, 0] = -molecule.nac[ist, jst, 0, 0]
+
+    def get_V(self, x, xe):
+        """ Calculate potential elements of the BO Hamiltonian
+
+            :param double x: the nuclear position
+            :param double xe: the electronic position
         """
-        # Make 'metiu.in' file
-        input_shin_metiu = ""
-        input_shin_metiu += f"metiu\n{molecule.pos[0, 0]:15.8f}\n{molecule.nst}"
+        RR = np.abs(x - xe)
 
-        # Write 'metiu.in' file
-        file_name = "metiu.in"
-        with open(file_name, "w") as f:
-            f.write(input_shin_metiu)
+        if (RR > eps):
+            V = -erf(RR / self.Rc) / RR
+        else:
+            V = -2.0 / (np.sqrt(np.pi) * self.Rc) 
 
-    def run_QM(self, base_dir, istep, bo_list):
-        """ Run Shin-Metiu BO calculation and save the output files to QMlog directory
+        V += -erf(np.abs(xe - 0.5 * self.L) / self.Rr) / np.abs(xe - 0.5 * self.L) - \
+            erf(np.abs(xe + 0.5 * self.L) / self.Rl) / np.abs(xe + 0.5 * self.L) + \
+            1.0 / np.abs(x - 0.5 * self.L) + 1.0 / np.abs(x + 0.5 * self.L)
 
-            :param string base_dir: base directory
-            :param integer istep: current MD step
-            :param integer,list bo_list: list of BO states for BO calculation
+        return V
+
+    def get_dV(self, x, xe):
+        """ Calculate del potential elements of the BO Hamiltonian
+
+            :param double x: the nuclear position
+            :param double xe: the electronic position
         """
-        # Run Shin-Metiu model
-        qm_command = os.path.join(self.qm_path, "metiu.x")
-        command = f"{qm_command} < metiu.in > metiu.log"
-        os.system(command)
-        # Copy the output file to 'QMlog' directory
-        tmp_dir = os.path.join(base_dir, "QMlog")
-        if (os.path.exists(tmp_dir)):
-            log_step = f"log.{istep + 1}.{bo_list[0]}"
-            shutil.copy("metiu.log", os.path.join(tmp_dir, log_step))
+        RR = np.abs(x - xe)
+ 
+        if (RR > eps):
+            dV = (x - xe) * erf(RR / self.Rc) / RR ** 3 - \
+                2.0 * (x - xe) * np.exp(- RR ** 2 / self.Rc ** 2) / np.sqrt(np.pi) / self.Rc / RR **2 
+        else:
+            dV = 0
 
-    def extract_QM(self, molecule, bo_list, calc_force_only):
-        """ Read the output files to get BO information
+        dV -= (np.abs(x - 0.5 * self.L) ** (-3.0)) * (x - 0.5 * self.L) + \
+            (np.abs(x + 0.5 * self.L) ** (-3.0)) * (x + 0.5 * self.L)
 
-            :param object molecule: molecule object
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param boolean calc_force_only: logical to decide whether calculate force only
-        """
-        # Energy
-        file_name = "ENERGY.DAT"
-        with open(file_name, "r") as f:
-            log_out = f.read()
-
-        if (not calc_force_only):
-            tmp_e = '([-]*\S+)'
-            energy = re.findall(tmp_e, log_out)
-            energy = np.array(energy)
-            energy = energy.astype(float)
-            for ist in range(molecule.nst):
-                molecule.states[ist].energy = energy[ist]
-
-        # Force
-        file_name = "FORCE.DAT"
-        with open(file_name, "r") as f:
-            log_out = f.read()
-
-        for ist in bo_list:
-            tmp_f = f'{ist + 1:d}\n\s*([-]*\S+E[-]*\S+)'
-            force = re.findall(tmp_f, log_out)
-            force = np.array(force[0])
-            force = force.astype(float)
-            force = force.reshape(molecule.nat, molecule.nsp, order='C')
-            molecule.states[ist].force = np.copy(force)
-
-        # NAC
-        file_name = "NAC.DAT"
-        with open(file_name, "r") as f:
-            log_out = f.read()
-
-        if (not calc_force_only and self.calc_coupling):
-            for ist in range(molecule.nst):
-                for jst in range(ist + 1, molecule.nst):
-                    tmp_c = f'{ist + 1:d} {jst + 1:d}\n\s*([-]*\S+)'
-                    nac = re.findall(tmp_c, log_out)
-                    nac = np.array(nac[0])
-                    nac = nac.astype(float)
-                    nac = nac.reshape(molecule.nat, molecule.nsp, order='C')
-                    molecule.nac[ist, jst] = nac
-                    molecule.nac[jst, ist] = - nac
-
+        return dV
 

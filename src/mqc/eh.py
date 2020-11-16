@@ -10,6 +10,7 @@ class Eh(MQC):
     """ Class for Ehrenfest dynamics
 
         :param object molecule: molecule object
+        :param object thermostat: thermostat type
         :param integer istate: initial adiabatic state
         :param double dt: time interval
         :param integer nsteps: nuclear step
@@ -22,21 +23,19 @@ class Eh(MQC):
         :type coefficient: double, list or complex, list
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
-    def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
+    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
         coefficient=None, unit_dt="fs"):
         # Initialize input values
-        super().__init__(molecule, istate, dt, nsteps, nesteps, \
+        super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
             propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
 
-    def run(self, molecule, qm, mm=None, thermostat=None, input_dir="./", \
+    def run(self, qm, mm=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
         """ Run MQC dynamics according to Ehrenfest dynamics
 
-            :param object molecule: molecule object
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
-            :param object thermostat: thermostat type
             :param string input_dir: location of input directory
             :param boolean save_QMlog: logical for saving QM calculation log
             :param boolean save_MMlog: logical for saving MM calculation log
@@ -58,74 +57,74 @@ class Eh(MQC):
         if (save_QMlog):
             os.makedirs(QMlog_dir)
 
-        if (molecule.qmmm and mm != None):
+        if (self.mol.qmmm and mm != None):
             MMlog_dir = os.path.join(base_dir, "MMlog")
             if (os.path.exists(MMlog_dir)):
                 shutil.rmtree(MMlog_dir)
             if (save_MMlog):
                 os.makedirs(MMlog_dir)
 
-        if ((molecule.qmmm and mm == None) or (not molecule.qmmm and mm != None)):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Both molecule.qmmm and mm object is necessary! {molecule.qmmm} and {mm}")
+        if ((self.mol.qmmm and mm == None) or (not self.mol.qmmm and mm != None)):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Both self.mol.qmmm and mm object is necessary! {self.mol.qmmm} and {mm}")
 
         # Check compatibility for QM and MM objects
-        if (molecule.qmmm and mm != None):
+        if (self.mol.qmmm and mm != None):
             self.check_qmmm(qm, mm)
 
-        if (molecule.l_nacme):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Ehrenfest dynamics needs NAC! {molecule.l_nacme}")
+        if (self.mol.l_nacme):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Ehrenfest dynamics needs NAC! {self.mol.l_nacme}")
 
         # Initialize UNI-xMD
         os.chdir(base_dir)
-        bo_list = [ist for ist in range(molecule.nst)]
+        bo_list = [ist for ist in range(self.mol.nst)]
         qm.calc_coupling = True
 
-        touch_file(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=False, XF_chk=False)
-        self.print_init(molecule, qm, mm, thermostat, debug)
+        touch_file(self.mol, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=False, XF_chk=False)
+        self.print_init(qm, mm, debug)
 
         # Calculate initial input geometry at t = 0.0 s
-        molecule.reset_bo(qm.calc_coupling)
-        qm.get_data(molecule, base_dir, bo_list, self.dt, istep=-1, calc_force_only=False)
-        if (molecule.qmmm and mm != None):
-            mm.get_data(molecule, base_dir, bo_list, istep=-1, calc_force_only=False)
-        if (not molecule.l_nacme):
-            molecule.get_nacme()
+        self.mol.reset_bo(qm.calc_coupling)
+        qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=-1, calc_force_only=False)
+        if (self.mol.qmmm and mm != None):
+            mm.get_data(self.mol, base_dir, bo_list, istep=-1, calc_force_only=False)
+        if (not self.mol.l_nacme):
+            self.mol.get_nacme()
 
-        self.update_energy(molecule)
+        self.update_energy()
 
-        write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
-        self.print_step(molecule, debug, istep=-1)
+        write_md_output(self.mol, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
+        self.print_step(debug, istep=-1)
 
         # Main MD loop
         for istep in range(self.nsteps):
 
-            self.cl_update_position(molecule)
+            self.cl_update_position()
 
-            molecule.backup_bo()
-            molecule.reset_bo(qm.calc_coupling)
-            qm.get_data(molecule, base_dir, bo_list, self.dt, istep=istep, calc_force_only=False)
-            if (molecule.qmmm and mm != None):
-                mm.get_data(molecule, base_dir, bo_list, istep=istep, calc_force_only=False)
+            self.mol.backup_bo()
+            self.mol.reset_bo(qm.calc_coupling)
+            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=istep, calc_force_only=False)
+            if (self.mol.qmmm and mm != None):
+                mm.get_data(self.mol, base_dir, bo_list, istep=istep, calc_force_only=False)
 
-            if (not molecule.l_nacme):
-                molecule.adjust_nac()
+            if (not self.mol.l_nacme):
+                self.mol.adjust_nac()
 
-            self.cl_update_velocity(molecule)
+            self.cl_update_velocity()
 
-            if (not molecule.l_nacme):
-                molecule.get_nacme()
+            if (not self.mol.l_nacme):
+                self.mol.get_nacme()
 
-            el_run(self, molecule)
+            el_run(self)
 
-            if (thermostat != None):
-                thermostat.run(molecule, self)
+            if (self.thermo != None):
+                self.thermo.run(self)
 
-            self.update_energy(molecule)
+            self.update_energy()
 
-            write_md_output(molecule, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
-            self.print_step(molecule, debug, istep=istep)
+            write_md_output(self.mol, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
+            self.print_step(debug, istep=istep)
             if (istep == self.nsteps - 1):
-                write_final_xyz(molecule, unixmd_dir, istep=istep)
+                write_final_xyz(self.mol, unixmd_dir, istep=istep)
 
         # Delete scratch directory
         if (not save_scr):
@@ -133,49 +132,43 @@ class Eh(MQC):
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
 
-            if (molecule.qmmm and mm != None):
+            if (self.mol.qmmm and mm != None):
                 tmp_dir = os.path.join(unixmd_dir, "scr_mm")
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
 
-    def calculate_force(self, molecule):
+    def calculate_force(self):
         """ Calculate the Ehrenfest force
-
-            :param object molecule: molecule object
         """
-        self.rforce = np.zeros((molecule.nat, molecule.nsp))
+        self.rforce = np.zeros((self.mol.nat, self.mol.nsp))
 
-        for ist, istate in enumerate(molecule.states):
-            self.rforce += istate.force * molecule.rho.real[ist, ist]
+        for ist, istate in enumerate(self.mol.states):
+            self.rforce += istate.force * self.mol.rho.real[ist, ist]
 
-        for ist in range(molecule.nst):
-            for jst in range(ist + 1, molecule.nst):
-                self.rforce += 2. * molecule.nac[ist, jst] * molecule.rho.real[ist, jst] \
-                    * (molecule.states[ist].energy - molecule.states[jst].energy)
+        for ist in range(self.mol.nst):
+            for jst in range(ist + 1, self.mol.nst):
+                self.rforce += 2. * self.mol.nac[ist, jst] * self.mol.rho.real[ist, jst] \
+                    * (self.mol.states[ist].energy - self.mol.states[jst].energy)
 
-    def update_energy(self, molecule):
+    def update_energy(self):
         """ Routine to update the energy of molecules in Ehrenfest dynamics
-
-            :param object molecule: molecule object
         """
         # Update kinetic energy
-        molecule.update_kinetic()
-        molecule.epot = 0.
-        for ist, istate in enumerate(molecule.states):
-            molecule.epot += molecule.rho.real[ist, ist] * molecule.states[ist].energy
-        molecule.etot = molecule.epot + molecule.ekin
+        self.mol.update_kinetic()
+        self.mol.epot = 0.
+        for ist, istate in enumerate(self.mol.states):
+            self.mol.epot += self.mol.rho.real[ist, ist] * self.mol.states[ist].energy
+        self.mol.etot = self.mol.epot + self.mol.ekin
 
-    def print_init(self, molecule, qm, mm, thermostat, debug):
+    def print_init(self, qm, mm, debug):
         """ Routine to print the initial information of dynamics
 
-            :param object molecule: molecule object
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
-            :param object thermostat: thermostat type
             :param integer debug: verbosity level for standard output
         """
         # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(molecule, qm, mm, thermostat, debug)
+        super().print_init(qm, mm, debug)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
@@ -192,27 +185,26 @@ class Eh(MQC):
         # Print DEBUG1 for each step
         if (debug >= 1):
             DEBUG1 = f" #DEBUG1{'STEP':>6s}"
-            for ist in range(molecule.nst):
+            for ist in range(self.mol.nst):
                 DEBUG1 += f"{'Potential_':>14s}{ist}(H)"
             dynamics_step_info += "\n" + DEBUG1
 
         print (dynamics_step_info, flush=True)
 
-    def print_step(self, molecule, debug, istep):
+    def print_step(self, debug, istep):
         """ Routine to print each steps infomation about dynamics
 
-            :param object molecule: molecule object
             :param integer debug: verbosity level for standard output
             :param integer istep: current MD step
         """
-        ctemp = molecule.ekin * 2. / float(molecule.dof) * au_to_K
+        ctemp = self.mol.ekin * 2. / float(self.mol.dof) * au_to_K
         norm = 0.
-        for ist in range(molecule.nst):
-            norm += molecule.rho.real[ist, ist]
+        for ist in range(self.mol.nst):
+            norm += self.mol.rho.real[ist, ist]
 
         # Print INFO for each step
         INFO = f" INFO{istep + 1:>9d} "
-        INFO += f"{molecule.ekin:14.8f}{molecule.epot:15.8f}{molecule.etot:15.8f}"
+        INFO += f"{self.mol.ekin:14.8f}{self.mol.epot:15.8f}{self.mol.etot:15.8f}"
         INFO += f"{ctemp:13.6f}"
         INFO += f"{norm:11.5f}"
         print (INFO, flush=True)
@@ -220,8 +212,8 @@ class Eh(MQC):
         # Print DEBUG1 for each step
         if (debug >= 1):
             DEBUG1 = f" DEBUG1{istep + 1:>7d}"
-            for ist in range(molecule.nst):
-                DEBUG1 += f"{molecule.states[ist].energy:17.8f} "
+            for ist in range(self.mol.nst):
+                DEBUG1 += f"{self.mol.states[ist].energy:17.8f} "
             print (DEBUG1, flush=True)
 
 
