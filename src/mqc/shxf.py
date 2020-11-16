@@ -336,13 +336,14 @@ class SHXF(MQC):
             :param integer istep: current MD step
         """
         if (self.l_hop):
-            if (self.mol.ekin_qm < eps):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {self.mol.ekin_qm}")
-
+            # Calculate potential difference between hopping states
             pot_diff = self.mol.states[self.rstate].energy - self.mol.states[self.rstate_old].energy
 
             # Solve quadratic equation for scaling factor of velocities
             if (self.vel_rescale == "energy"):
+                # Velocities cannot be adjusted when zero kinetic energy is given
+                if (self.mol.ekin_qm < eps):
+                    raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {self.mol.ekin_qm}")
                 a = 1.
                 b = 1.
                 c = 1.
