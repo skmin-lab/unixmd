@@ -50,7 +50,7 @@ trajectories will be transit to that state in stochastical behavior.
 +--------------------+------------------------------------------------+--------------+
 | ``vel_rescale``    | velocity rescaling method after successful hop | ``momentum`` |
 +--------------------+------------------------------------------------+--------------+
-| ``vel_reject``     | velocity rescaling method after frustrated hop | ``keep``     |
+| ``vel_reject``     | velocity rescaling method after frustrated hop | ``reverse``  |
 +--------------------+------------------------------------------------+--------------+
 | ``coefficient``    | initial BO coefficient                         | ``None``     |
 +--------------------+------------------------------------------------+--------------+

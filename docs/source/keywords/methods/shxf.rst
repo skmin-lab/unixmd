@@ -37,7 +37,7 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 +--------------------+------------------------------------------------------+--------------+
 | ``vel_rescale``    | velocity rescaling method after successful hop       | ``momentum`` |
 +--------------------+------------------------------------------------------+--------------+
-| ``vel_reject``     | velocity rescaling method after frustrated hop       | ``keep``     |
+| ``vel_reject``     | velocity rescaling method after frustrated hop       | ``reverse``  |
 +--------------------+------------------------------------------------------+--------------+
 | ``threshold``      | electronic density threshold for decoherence term    | ``0.01``     |
 +--------------------+------------------------------------------------------+--------------+
