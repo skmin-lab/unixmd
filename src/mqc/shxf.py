@@ -376,7 +376,6 @@ class SHXF(MQC):
                 # Set scaling constant with respect to 'vel_reject'
                 if (self.vel_reject == "keep"):
                     self.event["HOP"].append("Reject hopping: no solution to find rescale factor")
-                    x = 1.
                 elif (self.vel_reject == "reverse"):
                     # x = - 1 when 'vel_rescale' is 'energy', otherwise x = - b / a
                     self.event["HOP"].append("Reject hopping: velocity is reversed along coupling direction")
@@ -396,15 +395,16 @@ class SHXF(MQC):
                         x = 0.5 * (- b + np.sqrt(det)) / a
 
             # Rescale velocities for QM atoms
-            if (self.vel_rescale == "energy"):
-                self.mol.vel[0:self.mol.nat_qm] *= x
+            if (not self.vel_reject == "keep"):
+                if (self.vel_rescale == "energy"):
+                    self.mol.vel[0:self.mol.nat_qm] *= x
 
-            elif (self.vel_rescale == "velocity"):
-                self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm]
+                elif (self.vel_rescale == "velocity"):
+                    self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm]
 
-            elif (self.vel_rescale == "momentum"):
-                self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm] / \
-                    self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
+                elif (self.vel_rescale == "momentum"):
+                    self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm] / \
+                        self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
 
             # Update kinetic energy
             self.mol.update_kinetic()
