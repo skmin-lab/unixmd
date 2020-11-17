@@ -168,6 +168,7 @@ class MQC(object):
         # Print surface hopping variables
         if (self.md_type == "SH" or self.md_type == "SHXF"):
             dynamics_info += f"\n  Velocity Rescale in Hop  = {self.vel_rescale:>16s}\n"
+            dynamics_info += f"  Rescale when Hop Reject  = {self.vel_reject:>16s}\n"
 
         # Print XF variables
         if (self.md_type == "SHXF" or self.md_type == "EhXF"):
