@@ -40,6 +40,7 @@ class SH(MQC):
         self.acc_prob = np.zeros(self.mol.nst + 1)
 
         self.l_hop = False
+        self.l_reject = False
 
         self.vel_rescale = vel_rescale
         if not (self.vel_rescale in ["energy", "velocity", "momentum"]): 
@@ -256,15 +257,15 @@ class SH(MQC):
 
             if (self.mol.ekin_qm < pot_diff):
                 # Clasically forbidden hop due to lack of kinetic energy
-                l_reject = True
+                self.l_reject = True
             elif (det < 0.):
                 # Kinetic energy is enough, but there is no solution for scaling factor
-                l_reject = True
+                self.l_reject = True
             else:
                 # Kinetic energy is enough, and real solution for scaling factor exists
-                l_reject = False
+                self.l_reject = False
 
-            if (l_reject):
+            if (self.l_reject):
                 # Record event for frustrated hop
                 if (self.mol.ekin_qm < pot_diff):
                     self.event["HOP"].append(f"Reject hopping: smaller kinetic energy than potential energy difference between {self.rstate} and {self.rstate_old}")
@@ -289,7 +290,7 @@ class SH(MQC):
                         x = 0.5 * (- b + np.sqrt(det)) / a
 
             # Rescale velocities for QM atoms
-            if (not (self.vel_reject == "keep" and l_reject)):
+            if (not (self.vel_reject == "keep" and self.l_reject)):
                 if (self.vel_rescale == "energy"):
                     self.mol.vel[0:self.mol.nat_qm] *= x
 
