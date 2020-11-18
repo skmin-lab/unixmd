@@ -52,6 +52,8 @@ trajectories will be transit to that state in stochastical behavior.
 +--------------------+------------------------------------------------+--------------+
 | ``vel_reject``     | velocity rescaling method after frustrated hop | ``reverse``  |
 +--------------------+------------------------------------------------+--------------+
+| ``vel_augment``    | force hop occurs with simple rescaling         | ``False``    |
++--------------------+------------------------------------------------+--------------+
 | ``coefficient``    | initial BO coefficient                         | ``None``     |
 +--------------------+------------------------------------------------+--------------+
 | ``unit_dt``        | unit of time step (fs = femtosecond,           | ``fs``       |
