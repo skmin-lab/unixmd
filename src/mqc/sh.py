@@ -21,18 +21,18 @@ class SH(MQC):
         :param string vel_rescale: velocity rescaling method after successful hop
         :param string vel_reject: velocity rescaling method after frustrated hop
         :param coefficient: initial BO coefficient
-        :param string decoherence_method: simple decoherence correction schemes 
-        :param double c_edc: energy constant for rescaling coefficients
+        :param string deco_correction: simple decoherence correction schemes 
+        :param double edc_parameter: energy constant for rescaling coefficients
         :type coefficient: double, list or complex, list
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
-        vel_rescale="momentum", vel_reject="reverse", coefficient=None, decoherence_method="IDC", \
-        c_edc=0.1, unit_dt="fs"):
+        vel_rescale="momentum", vel_reject="reverse", coefficient=None, deco_correction="idc", \
+        edc_parameter=0.1, unit_dt="fs"):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            propagation, solver, l_pop_print, l_adjnac, coefficient, decoherence_method, c_edc, unit_dt)
+            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
 
         # Initialize SH variables
         self.rstate = istate
@@ -41,8 +41,6 @@ class SH(MQC):
         self.rand = 0.
         self.prob = np.zeros(self.mol.nst)
         self.acc_prob = np.zeros(self.mol.nst + 1)
-        self.decoherence_method = decoherence_method
-        self.c_edc = c_edc
 
         self.l_hop = False
         self.l_reject = False
@@ -54,6 +52,10 @@ class SH(MQC):
         self.vel_reject = vel_reject
         if not (self.vel_reject in ["keep", "reverse"]): 
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_reject'! {self.vel_reject}")
+        
+        # Initialize decoherence variables
+        self.deco_correction = deco_correction
+        self.edc_parameter = edc_parameter
 
         # Check error for incompatible cases
         if (self.mol.l_nacme): 
@@ -160,12 +162,18 @@ class SH(MQC):
             self.hop_prob(istep=istep)
             self.hop_check(bo_list)
             self.evaluate_hop(bo_list, istep=istep)
+            if (self.deco_correction == "idc"):
+                self.correct_deco_idc()
+            elif (self.deco_correction == "edc"):
+                self.correct_deco_edc()
+            else:
+                raise ValueError ("Other decoherence correction in SH is not implemented!")
+            
             if (qm.re_calc and self.l_hop):
                 qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=istep, calc_force_only=True)
                 if (self.mol.qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, istep=istep, calc_force_only=True)
 
-            self.decoherence_scheme()
 
             if (self.thermo != None):
                 self.thermo.run(self)
@@ -315,20 +323,53 @@ class SH(MQC):
         if (self.rstate != self.rstate_old):
             self.event["HOP"].append(f"Hopping {self.rstate_old} -> {self.rstate}")
 
-    def decoherence_scheme(self):
-        """ Routine to simple decoherence correction
+
+    def correct_deco_idc(self):
+        """ Routine to decoherence correction, instantaneous decoherence correction(IDC) scheme
         """
-        if (self.decoherence_method == "IDC" and self.l_hop == True):
-            if (self.propagation == "density"):
-#                self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex_)
-                self.mol.rho[:] = 0.
-                self.mol.rho.real[self.rstate, self.rstate] = 1.0 
-            elif (self.propagation == "coefficient"):
-                for ist in range(self.mol.nst):
-                    self.mol.states[ist].coef = 0. 
-                self.mol.states[self.rstate].coef = 1. + 0.j 
-        elif (self.decoherence_method == "EDC"):
-            raise ValueError (f"EDC is not yet implemented")
+        if (self.l_hop or self.l_reject):
+            if (self.propagation == "coefficient"):
+                for states in self.mol.states:
+                    states.coef = 0. + 0.j
+                self.mol.states[self.rstate].coef = 1. + 0.j
+
+            self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex_)
+            self.mol.rho.real[self.rstate, self.rstate] = 1.0
+
+    def correct_deco_edc(self):
+        """ Routine to decoherence correction, energy-based  decoherence correction(EDC) scheme
+        """
+        tau = np.array([[(1 + self.edc_parameter / self.mol.ekin) / np.abs(self.mol.states[ist].energy - self.mol.states[jst].energy) \
+            for ist in range(self.mol.nst)] for jst in range(self.mol.nst)])
+
+        if (self.propagation == "coefficient"):
+            # Calculate square sum of coefficients except running state
+            coeff_old_squaresum = 0
+            for ist in range(self.mol.nst):
+                if (ist == self.rstate):
+                    pass
+                else:
+                    coeff_old_squaresum += self.mol.states[ist].coef.conjugate() * self.mol.states[ist].coef
+            # Update coefficients
+            for ist in range(self.mol.nst):
+                if (ist == self.rstate):
+                    self.mol.states[ist].coef *= np.sqrt((1 - coeff_old_squaresum) / (self.mol.states[self.rstate].coef.conjugate() * self.mol.states[self.rstate].coef))
+                else:
+                    self.mol.states[ist].coef *= np.exp( - self.dt / tau[self.rstate, ist])
+
+        # Calculate diagonal sum of density matrix except running state
+        rho_old_trace = 1. - np.trace(self.mol.rho) + self.mol.rho[self.rstate, self.rstate]
+        for ist in range(self.mol.nst):
+            for jst in range(self.mol.nst):
+                if (ist == self.rstate and jst == self.rstate):
+                    # rho[self.rstate, self.rstate] need other updated diagonal elements
+                    pass
+                elif (ist == self.rstate or jst == self.rstate):
+                    self.mol.rho[ist, jst] *= np.exp( - self.dt / tau[ist, jst]) * np.sqrt((1 - rho_old_trace) / self.mol.rho[self.rstate, self.rstate])
+                else:
+                    self.mol.rho[ist, jst] *= np.exp( - self.dt * (tau[self.rstate, ist] + tau[self.rstate, jst]) / (tau[self.rstate, ist] * tau[self.rstate, jst]))
+        # Update rho[self.rstate, self.rstate] by subtracting other diagonal elements
+        self.mol.rho[self.rstate, self.rstate] = 1. - np.trace(self.mol.rho) + self.mol.rho[self.rstate, self.rstate]
 
     def calculate_force(self):
         """ Routine to calculate the forces

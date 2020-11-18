@@ -17,13 +17,11 @@ class MQC(object):
         :param boolean l_pop_print: logical to print BO population and coherence
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param coefficient: initial BO coefficient
-        :param string decoherence_method: simple decoherence correction schemes 
-        :param double c_edc: energy constant for rescaling coefficients
         :type coefficient: double, list or complex, list
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
     def __init__(self, molecule, thermostat, istate, dt, nsteps, nesteps, \
-        propagation, solver, l_pop_print, l_adjnac, coefficient, decoherence_method, c_edc, unit_dt):
+        propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
