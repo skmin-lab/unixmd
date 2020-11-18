@@ -35,6 +35,10 @@ class MQC(object):
         self.istate = istate
         self.nsteps = nsteps
         self.nesteps = nesteps
+        
+        # Initialize time step
+        self.istep = -1
+        self.fstep = -1
 
         # Decide unit of time step
         if (unit_dt == 'au'):
