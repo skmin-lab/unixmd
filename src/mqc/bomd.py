@@ -32,7 +32,6 @@ class BOMD(MQC):
             :param boolean save_scr: logical for saving scratch directory
             :param integer debug: verbosity level for standard output
         """
-        
         # Check compatibility of variables for QM and MM calculation
         if ((self.mol.qmmm and mm == None) or (not self.mol.qmmm and mm != None)):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Both self.mol.qmmm and mm object is necessary! {self.mol.qmmm} and {mm}")
