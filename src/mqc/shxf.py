@@ -49,7 +49,7 @@ class SHXF(MQC):
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param string vel_rescale: velocity rescaling method after successful hop
         :param string vel_reject: velocity rescaling method after frustrated hop
-        :param boolean vel_augment: velocity is simply rescaled for frustrated hop
+        :param boolean vel_augment: force hop occurs with simple rescaling
         :param double threshold: electronic density threshold for decoherence term calculation
         :param wsigma: width of nuclear wave packet of auxiliary trajectory
         :type wsigma: double or double,list

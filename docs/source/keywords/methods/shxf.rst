@@ -39,6 +39,8 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 +--------------------+------------------------------------------------------+--------------+
 | ``vel_reject``     | velocity rescaling method after frustrated hop       | ``reverse``  |
 +--------------------+------------------------------------------------------+--------------+
+| ``vel_augment``    | force hop occurs with simple rescaling               | ``False``    |
++--------------------+------------------------------------------------------+--------------+
 | ``threshold``      | electronic density threshold for decoherence term    | ``0.01``     |
 +--------------------+------------------------------------------------------+--------------+
 | ``wsigma``         | width of nuclear wave packet of auxiliary trajectory | ``None``     |
