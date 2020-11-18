@@ -15,8 +15,6 @@ Compile Cython
     
         $ python3 setup.py build_ext -b ./src/build
 
-  Set up unix-md/src/ as PYTHONPATH
-
 Test Run
 
   Shin-Metiu model and dftb+ ssr binary files are included in this package so that users can test UNI-xMD program. 
