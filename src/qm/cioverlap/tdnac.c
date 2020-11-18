@@ -385,10 +385,10 @@ static void CI_phase_order(int nst, int norb, int *norb_m, int nocc, int nvirt, 
         for(iorb = norb_m[0]; iorb < norb_m[1]; iorb++){
             for(aorb = norb_m[0]; aorb < norb_m[1]; aorb++){
                 // Assign CI coefficients at time t to new symmetric array
-                if(iorb < nocc && aorb >= (norb_m[1]-nocc)){
+                if(iorb < nocc && aorb >= nocc){
                     tmp_ci[iorb][aorb] = ci_coef_new[ist][iorb][aorb - nocc];
                 }
-                else if(iorb >= (norb_m[1]-nocc) && aorb < nocc){
+                else if(iorb >= nocc && aorb < nocc){
                     tmp_ci[iorb][aorb] = ci_coef_new[ist][aorb][iorb - nocc];
                 }
                 else{
@@ -415,7 +415,7 @@ static void CI_phase_order(int nst, int norb, int *norb_m, int nocc, int nvirt, 
 
         // Apply new phase correction for the CI coefficients; C = C'
         for(iorb = norb_m[0]; iorb < nocc; iorb++){
-            for(aorb = 0; aorb < (norb_m[1]-nocc); aorb++){
+            for(aorb = 0; aorb < (norb_m[1]-nocc)); aorb++){
                 ci_coef_new[ist][iorb][aorb] = tmp_ci_new[iorb][nocc + aorb];
             }
         }
