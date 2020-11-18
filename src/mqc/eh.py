@@ -1,7 +1,6 @@
 from __future__ import division
 from build.el_propagator import el_run
 from mqc.mqc import MQC
-from fileio import touch_file, write_md_output, write_final_xyz
 from misc import au_to_K, call_name
 import os, shutil, textwrap
 import numpy as np
@@ -48,19 +47,19 @@ class Eh(MQC):
 
         unixmd_dir = os.path.join(base_dir, "md")
         if (os.path.exists(unixmd_dir)):
-            shutil.rmtree(unixmd_dir)
+            shutil.move(unixmd_dir, unixmd_dir + "_old_" + str(os.getpid()))
         os.makedirs(unixmd_dir)
 
         QMlog_dir = os.path.join(base_dir, "QMlog")
         if (os.path.exists(QMlog_dir)):
-            shutil.rmtree(QMlog_dir)
+            shutil.move(QMlog_dir, QMlog_dir + "_old_" + str(os.getpid()))
         if (save_QMlog):
             os.makedirs(QMlog_dir)
 
         if (self.mol.qmmm and mm != None):
             MMlog_dir = os.path.join(base_dir, "MMlog")
             if (os.path.exists(MMlog_dir)):
-                shutil.rmtree(MMlog_dir)
+                shutil.move(MMlog_dir, MMlog_dir + "_old_" + str(os.getpid()))
             if (save_MMlog):
                 os.makedirs(MMlog_dir)
 
@@ -79,7 +78,7 @@ class Eh(MQC):
         bo_list = [ist for ist in range(self.mol.nst)]
         qm.calc_coupling = True
 
-        touch_file(self.mol, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, SH_chk=False, XF_chk=False)
+        self.touch_file(unixmd_dir)
         self.print_init(qm, mm, debug)
 
         # Calculate initial input geometry at t = 0.0 s
@@ -92,7 +91,7 @@ class Eh(MQC):
 
         self.update_energy()
 
-        write_md_output(self.mol, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=-1)
+        self.write_md_output(unixmd_dir, istep=-1)
         self.print_step(debug, istep=-1)
 
         # Main MD loop
@@ -121,10 +120,10 @@ class Eh(MQC):
 
             self.update_energy()
 
-            write_md_output(self.mol, qm.calc_coupling, self.propagation, self.l_pop_print, unixmd_dir, istep=istep)
+            self.write_md_output(unixmd_dir, istep=istep)
             self.print_step(debug, istep=istep)
             if (istep == self.nsteps - 1):
-                write_final_xyz(self.mol, unixmd_dir, istep=istep)
+                self.write_final_xyz(unixmd_dir, istep=istep)
 
         # Delete scratch directory
         if (not save_scr):

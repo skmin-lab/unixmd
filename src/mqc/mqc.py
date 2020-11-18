@@ -1,6 +1,6 @@
 from __future__ import division
-from misc import fs_to_au, call_name
-import textwrap
+from misc import fs_to_au, au_to_A, call_name, typewriter
+import textwrap, datetime
 import numpy as np
 
 class MQC(object):
@@ -108,6 +108,27 @@ class MQC(object):
             :param object mm: mm object containing MM calculation infomation
             :param integer debug: verbosity level for standard output
         """
+        # Print UNI-xMD version
+        cur_time = datetime.datetime.now()
+        cur_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
+        prog_info = textwrap.dedent(f"""\
+        {"-" * 68}
+
+        {"UNI-xMD version 20.1":>43s}
+
+        {"< Developers >":>40s}
+        {" " * 4}Seung Kyu Min,  In Seong Lee,  Jong-Kwon Ha,  Daeho Han,
+        {" " * 4}Kicheol Kim,  Tae In Kim,  Sung Wook Moon
+
+        {"-" * 68}
+
+        {" " * 4}Please cite UNI-xMD as follows:
+        {" " * 4}This is article
+
+        {" " * 4}UNI-xMD begins on {cur_time}
+        """)
+        print(prog_info, flush=True)
+
         # Print molecule information: coordinate, velocity
         self.mol.print_init(mm)
 
@@ -134,7 +155,7 @@ class MQC(object):
                 dynamics_info += f"  VDW Interaction          = {mm.vdw:>16s}\n"
             else:
                 dynamics_info += f"  VDW Interaction          = {'No':>16s}\n"
-                                 
+
         dynamics_info += textwrap.indent(textwrap.dedent(f"""\
 
           MQC Method               = {self.md_type:>16s}
@@ -149,6 +170,7 @@ class MQC(object):
         # Print surface hopping variables
         if (self.md_type == "SH" or self.md_type == "SHXF"):
             dynamics_info += f"\n  Velocity Rescale in Hop  = {self.vel_rescale:>16s}\n"
+            dynamics_info += f"  Rescale when Hop Reject  = {self.vel_reject:>16s}\n"
 
         # Print XF variables
         if (self.md_type == "SHXF" or self.md_type == "EhXF"):
@@ -184,6 +206,117 @@ class MQC(object):
         else:
             thermostat_info = "  No Thermostat: Total energy is conserved!\n"
             print (thermostat_info, flush=True)
+
+    def touch_file(self, unixmd_dir): 
+        """ Routine to write PyUNIxMD output files
+
+            :param string unixmd_dir: unixmd directory
+        """
+        # Energy information file header
+        tmp = f'{"#":5s}{"Step":9s}{"Kinetic(H)":15s}{"Potential(H)":15s}{"Total(H)":15s}' + \
+            "".join([f'E({ist})(H){"":8s}' for ist in range(self.mol.nst)])
+        typewriter(tmp, unixmd_dir, "MDENERGY", "w")
+
+        if (self.md_type != "BOMD"):
+            # BO coefficents, densities file header
+            if (self.propagation == "density"):
+                tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
+                typewriter(tmp, unixmd_dir, "BOPOP", "w")
+                tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
+                typewriter(tmp, unixmd_dir, "BOCOH", "w")
+            elif (self.propagation == "coefficient"):
+                tmp = f'{"#":5s} BO State Coefficients: state Re-Im; see the manual for detail orders'
+                typewriter(tmp, unixmd_dir, "BOCOEF", "w")
+                if (self.l_pop_print):
+                    tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
+                    typewriter(tmp, unixmd_dir, "BOPOP", "w")
+                    tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
+                    typewriter(tmp, unixmd_dir, "BOCOH", "w")
+            else:
+                raise ValueError (f"( {call_name()} ) Other propagator not implemented! {propagation}")
+
+            # NACME file header
+            tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
+            typewriter(tmp, unixmd_dir, "NACME", "w")
+
+        # file header for SH-based methods
+        if (self.md_type == "SH" or self.md_type == "SHXF"):
+            tmp = f'{"#":5s}{"Step":8s}{"Running State":10s}'
+            typewriter(tmp, unixmd_dir, "SHSTATE", "w")
+
+            tmp = f'{"#":5s}{"Step":12s}' + "".join([f'Prob({ist}){"":8s}' for ist in range(self.mol.nst)])
+            typewriter(tmp, unixmd_dir, "SHPROB", "w")
+
+        # file header for XF-based methods
+        if (self.md_type == "SHXF" or self.md_type == "EhXF"):
+            tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
+            typewriter(tmp, unixmd_dir, "DOTPOPD", "w")
+
+    def write_md_output(self, unixmd_dir, istep):
+        """ Write output files
+
+            :param string unixmd_dir: unixmd directory
+            :param integer istep: current MD step
+        """
+        # Write MOVIE.xyz file including positions and velocities
+        tmp = f'{self.mol.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
+            "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
+            "".join([f'{self.mol.pos[iat, isp] * au_to_A:15.8f}' for isp in range(self.mol.nsp)]) + \
+            "".join([f"{self.mol.vel[iat, isp]:15.8f}" for isp in range(self.mol.nsp)]) for iat in range(self.mol.nat)])
+        typewriter(tmp, unixmd_dir, "MOVIE.xyz", "a")
+
+        # Write MDENERGY file including several energy information
+        tmp = f'{istep + 1:9d}{self.mol.ekin:15.8f}{self.mol.epot:15.8f}{self.mol.etot:15.8f}' \
+            + "".join([f'{states.energy:15.8f}' for states in self.mol.states])
+        typewriter(tmp, unixmd_dir, "MDENERGY", "a")
+
+        if (self.md_type != "BOMD"):
+            # Write BOCOEF, BOPOP, BOCOH files
+            if (self.propagation == "density"):
+                tmp = f'{istep + 1:9d}' + "".join([f'{self.mol.rho.real[ist, ist]:15.8f}' for ist in range(self.mol.nst)])
+                typewriter(tmp, unixmd_dir, "BOPOP", "a")
+                tmp = f'{istep + 1:9d}' + "".join([f"{self.mol.rho.real[ist, jst]:15.8f}{self.mol.rho.imag[ist, jst]:15.8f}" \
+                    for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
+                typewriter(tmp, unixmd_dir, "BOCOH", "a")
+            elif (self.propagation == "coefficient"):
+                tmp = f'{istep + 1:9d}' + "".join([f'{states.coef.real:15.8f}{states.coef.imag:15.8f}' \
+                    for states in self.mol.states])
+                typewriter(tmp, unixmd_dir, "BOCOEF", "a")
+                if (self.l_pop_print):
+                    tmp = f'{istep + 1:9d}' + "".join([f'{self.mol.rho.real[ist, ist]:15.8f}' for ist in range(self.mol.nst)])
+                    typewriter(tmp, unixmd_dir, "BOPOP", "a")
+                    tmp = f'{istep + 1:9d}' + "".join([f"{self.mol.rho.real[ist, jst]:15.8f}{self.mol.rho.imag[ist, jst]:15.8f}" \
+                        for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
+                    typewriter(tmp, unixmd_dir, "BOCOH", "a")
+
+            # Write NACME file
+            tmp = f'{istep + 1:10d}' + "".join([f'{self.mol.nacme[ist, jst]:15.8f}' \
+                for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
+            typewriter(tmp, unixmd_dir, "NACME", "a")
+
+            # Write NACV file
+            if (not self.mol.l_nacme):
+                for ist in range(self.mol.nst):
+                    for jst in range(ist + 1, self.mol.nst):
+                        tmp = f'{self.mol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV' + \
+                            "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
+                            "".join([f'{self.mol.nac[ist, jst, iat, isp]:15.8f}' for isp in range(self.mol.nsp)]) for iat in range(self.mol.nat_qm)])
+                        typewriter(tmp, unixmd_dir, f"NACV_{ist}_{jst}", "a")
+
+    def write_final_xyz(self, unixmd_dir, istep):
+        """ Write final positions and velocities
+
+            :param string unixmd_dir: unixmd directory
+            :param integer istep: current MD step
+        """
+        # Write FINAL.xyz file including positions and velocities
+        tmp = f'{self.mol.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)'
+        for iat in range(self.mol.nat):
+            tmp += "\n" + f'{self.mol.symbols[iat]:5s}' + \
+                "".join([f'{self.mol.pos[iat, isp] * au_to_A:15.8f}' for isp in range(self.mol.nsp)]) \
+                + "".join([f"{self.mol.vel[iat, isp]:15.8f}" for isp in range(self.mol.nsp)])
+
+        typewriter(tmp, unixmd_dir, "FINAL.xyz", "w")
 
     def check_qmmm(self, qm, mm):
         """ Routine to check compatibility between QM and MM objects
