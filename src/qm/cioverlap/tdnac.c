@@ -3,13 +3,13 @@
 #include <math.h>
 
 // Routine to calculate overlap and permutation matrix in MO basis between two time steps
-static void calc_MO_over(int nbasis, int norb, int *norb_m, double **mo_overlap, double **permut_mat, double **ao_overlap, double **mo_coef_old, double **mo_coef_new);
+static void calc_MO_over(int nbasis, int norb, int orb_ini, int orb_final, double **mo_overlap, double **permut_mat, double **ao_overlap, double **mo_coef_old, double **mo_coef_new);
 
 // Routine to match phase of MO coefficients and orderings between two time steps
 static void MO_phase_order(int nbasis, int norb, double **mo_coef_new, double **permut_mat);
 
 // Routine to match phase of CI coefficients and orderings between two time steps
-static void CI_phase_order(int nst, int norb, int *norb_m, int nocc, int nvirt, double ***ci_coef_old, double ***ci_coef_new, double **permut_mat);
+static void CI_phase_order(int nst, int norb, int orb_ini, int orb_final, int nocc, int nvirt, double ***ci_coef_old, double ***ci_coef_new, double **permut_mat);
 
 // Routine to match phase for the states between two time steps
 static void state_phase(int nst, int nocc, int nvirt, double ***ci_coef_old, double ***ci_coef_new);
@@ -18,7 +18,7 @@ static void state_phase(int nst, int nocc, int nvirt, double ***ci_coef_old, dou
 static void norm_CI_coef(int nst, int nocc, int nvirt, double ***ci_coef);
 
 // Routine to calculate TDNAC term used in electronic propagation
-static void TD_NAC(int istep, int nst, int nbasis, int norb, int *norb_m, int nocc, int nvirt, double dt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new){
+static void TD_NAC(int istep, int nst, int nbasis, int norb, int orb_ini, int orb_final, int nocc, int nvirt, double dt, double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new){
 
     double **mo_overlap = malloc(norb * sizeof(double*));
     double **permut_mat = malloc(norb * sizeof(double*));
@@ -38,7 +38,7 @@ static void TD_NAC(int istep, int nst, int nbasis, int norb, int *norb_m, int no
         }
     }
 
-    calc_MO_over(nbasis, norb, norb_m, mo_overlap, permut_mat, ao_overlap, mo_coef_old, mo_coef_new);
+    calc_MO_over(nbasis, norb, orb_ini, orb_final, mo_overlap, permut_mat, ao_overlap, mo_coef_old, mo_coef_new);
 
     if(debug == 1){
         // Print mo_overlap
@@ -116,7 +116,7 @@ static void TD_NAC(int istep, int nst, int nbasis, int norb, int *norb_m, int no
         printf("\n");
     }
 
-    CI_phase_order(nst, norb, norb_m, nocc, nvirt, ci_coef_old, ci_coef_new, permut_mat);
+    CI_phase_order(nst, norb, orb_ini, orb_final, nocc, nvirt, ci_coef_old, ci_coef_new, permut_mat);
 
     if(debug == 1){
         // Print ci_coef_new
@@ -156,7 +156,7 @@ static void TD_NAC(int istep, int nst, int nbasis, int norb, int *norb_m, int no
             mo_overlap[iorb][jorb] = 0.0;
         }
     }
-    calc_MO_over(nbasis, norb, norb_m, mo_overlap, permut_mat, ao_overlap, mo_coef_old, mo_coef_new);
+    calc_MO_over(nbasis, norb, orb_ini, orb_final, mo_overlap, permut_mat, ao_overlap, mo_coef_old, mo_coef_new);
 
     if(debug == 1){
         // Print mo_overlap
@@ -190,8 +190,8 @@ static void TD_NAC(int istep, int nst, int nbasis, int norb, int *norb_m, int no
                 if(ist > jst){
 
                     // TDNAC between S_i and S_0 state
-                    for(iorb = norb_m[0]; iorb < nocc; iorb++){
-                        for(aorb = 0; aorb < (norb_m[1]-nocc); aorb++){
+                    for(iorb = orb_ini; iorb < nocc; iorb++){
+                        for(aorb = 0; aorb < (orb_final-nocc); aorb++){
                             nacme[ist][jst] += 0.5 * ci_coef_new[ist][iorb][aorb] * (mo_overlap[nocc + aorb][iorb] - mo_overlap[iorb][nocc + aorb]);
                         }
                     }
@@ -200,8 +200,8 @@ static void TD_NAC(int istep, int nst, int nbasis, int norb, int *norb_m, int no
                 else{
 
                     // TDNAC between S_0 and S_j state
-                    for(jorb = norb_m[0]; jorb < nocc; jorb++){
-                        for(borb = 0; borb < (norb_m[1]-nocc); borb++){
+                    for(jorb = orb_ini; jorb < nocc; jorb++){
+                        for(borb = 0; borb < (orb_final-nocc); borb++){
                             nacme[ist][jst] += 0.5 * ci_coef_new[jst][jorb][borb] * (mo_overlap[jorb][nocc + borb] - mo_overlap[nocc + borb][jorb]);
                         }
                     }
@@ -214,16 +214,16 @@ static void TD_NAC(int istep, int nst, int nbasis, int norb, int *norb_m, int no
                 // TDNAC between S_i and S_j state
 
                 // 1st term in Eq. 15
-                for(iorb = norb_m[0]; iorb < nocc; iorb++){
-                    for(aorb = 0; aorb < (norb_m[1]-nocc); aorb++){
+                for(iorb = orb_ini; iorb < nocc; iorb++){
+                    for(aorb = 0; aorb < (orb_final-nocc); aorb++){
                         nacme[ist][jst] += 0.5 * (ci_coef_old[ist][iorb][aorb] * ci_coef_new[jst][iorb][aorb] - ci_coef_old[jst][iorb][aorb] * ci_coef_new[ist][iorb][aorb]);
                     }
                 }
 
                 // 2nd term in Eq. 15
-                for(iorb = norb_m[0]; iorb < nocc; iorb++){
-                    for(aorb = 0; aorb < (norb_m[1]-nocc); aorb++){
-                        for(borb = 0; borb < (norb_m[1]-nocc); borb++){
+                for(iorb = orb_ini; iorb < nocc; iorb++){
+                    for(aorb = 0; aorb < (orb_final-nocc); aorb++){
+                        for(borb = 0; borb < (orb_final-nocc); borb++){
                             if(aorb != borb){
                                 nacme[ist][jst] += 0.5 * ci_coef_new[ist][iorb][aorb] * ci_coef_new[jst][iorb][borb] * (mo_overlap[nocc + aorb][nocc + borb] - mo_overlap[nocc + borb][nocc + aorb]);
                             }
@@ -232,9 +232,9 @@ static void TD_NAC(int istep, int nst, int nbasis, int norb, int *norb_m, int no
                 }
 
                 // 3rd term in Eq. 15
-                for(iorb = norb_m[0]; iorb < nocc; iorb++){
-                    for(aorb = 0; aorb < (norb_m[1]-nocc); aorb++){
-                        for(jorb = norb_m[0]; jorb < nocc; jorb++){
+                for(iorb = orb_ini; iorb < nocc; iorb++){
+                    for(aorb = 0; aorb < (orb_final-nocc); aorb++){
+                        for(jorb = orb_ini; jorb < nocc; jorb++){
                             if(iorb != jorb){
                                 // fac is permutation in 3rd term
                                 exponent = abs(jorb - iorb);
@@ -275,7 +275,7 @@ static void TD_NAC(int istep, int nst, int nbasis, int norb, int *norb_m, int no
 }
 
 // Routine to calculate overlap and permutation matrix in MO basis between two time steps
-static void calc_MO_over(int nbasis, int norb, int *norb_m, double **mo_overlap, double **permut_mat, double **ao_overlap, double **mo_coef_old, double **mo_coef_new){
+static void calc_MO_over(int nbasis, int norb, int orb_ini, int orb_final, double **mo_overlap, double **permut_mat, double **ao_overlap, double **mo_coef_old, double **mo_coef_new){
 
     double **tmp_sign = malloc(norb * sizeof(double*));
     int ibasis, jbasis, iorb, jorb;
@@ -288,8 +288,8 @@ static void calc_MO_over(int nbasis, int norb, int *norb_m, double **mo_overlap,
         }
     }
 
-    for(iorb = norb_m[0]; iorb < norb_m[1]; iorb++){
-        for(jorb = norb_m[0]; jorb < norb_m[1]; jorb++){
+    for(iorb = orb_ini; iorb < orb_final; iorb++){
+        for(jorb = orb_ini; jorb < orb_final; jorb++){
 
             // Calculate overlap in MO basis; S' = C * S * C^T
             for(ibasis = 0; ibasis < nbasis; ibasis++){
@@ -308,8 +308,8 @@ static void calc_MO_over(int nbasis, int norb, int *norb_m, double **mo_overlap,
         }
     }
 
-    for(iorb = norb_m[0]; iorb < norb_m[1]; iorb++){
-        for(jorb = norb_m[0]; jorb < norb_m[1]; jorb++){
+    for(iorb = orb_ini; iorb < orb_final; iorb++){
+        for(jorb = orb_ini; jorb < orb_final; jorb++){
             // Permutation matrix is obtained by rounding off the square of overlap matrix in MO basis
             permut_mat[iorb][jorb] = round(pow(mo_overlap[iorb][jorb], 2) * tmp_sign[iorb][jorb]);
         }
@@ -367,7 +367,7 @@ static void MO_phase_order(int nbasis, int norb, double **mo_coef_new, double **
 
 // Routine to match phase of CI coefficients and orderings between two time steps
 // TODO : Is this correct method to match phase (or order) for CI coefficients?
-static void CI_phase_order(int nst, int norb, int *norb_m, int nocc, int nvirt, double ***ci_coef_old, double ***ci_coef_new, double **permut_mat){
+static void CI_phase_order(int nst, int norb, int orb_ini, int orb_final, int nocc, int nvirt, double ***ci_coef_old, double ***ci_coef_new, double **permut_mat){
 
     double **tmp_ci = malloc(norb * sizeof(double*));
     double **tmp_ci_new = malloc(norb * sizeof(double*));
@@ -382,8 +382,8 @@ static void CI_phase_order(int nst, int norb, int *norb_m, int nocc, int nvirt, 
     // CI coefficients for S_0 are zero
     for(ist = 1; ist < nst; ist++){
 
-        for(iorb = norb_m[0]; iorb < norb_m[1]; iorb++){
-            for(aorb = norb_m[0]; aorb < norb_m[1]; aorb++){
+        for(iorb = orb_ini; iorb < orb_final; iorb++){
+            for(aorb = orb_ini; aorb < orb_final; aorb++){
                 // Assign CI coefficients at time t to new symmetric array
                 if(iorb < nocc && aorb >= nocc){
                     tmp_ci[iorb][aorb] = ci_coef_new[ist][iorb][aorb - nocc];
@@ -401,11 +401,11 @@ static void CI_phase_order(int nst, int norb, int *norb_m, int nocc, int nvirt, 
 
         // Decide the phase and ordering for CI coefficients using permutation matrix; C' = O * C * O
         // TODO : The phases for occupied and virtual orbitals are matched when permutation is diagonal matrix
-        for(jorb = norb_m[0]; jorb < norb_m[1]; jorb++){
-            for(borb = norb_m[0]; borb < norb_m[1]; borb++){
+        for(jorb = orb_ini; jorb < orb_final; jorb++){
+            for(borb = orb_ini; borb < orb_final; borb++){
 
-                for(iorb = norb_m[0]; iorb < norb_m[1]; iorb++){
-                    for(aorb = norb_m[0]; aorb < norb_m[1]; aorb++){
+                for(iorb = orb_ini; iorb < orb_final; iorb++){
+                    for(aorb = orb_ini; aorb < orb_final; aorb++){
                         tmp_ci_new[jorb][borb] += permut_mat[jorb][iorb] * tmp_ci[iorb][aorb] * permut_mat[aorb][borb];
                     }
                 }
@@ -414,8 +414,8 @@ static void CI_phase_order(int nst, int norb, int *norb_m, int nocc, int nvirt, 
         }
 
         // Apply new phase correction for the CI coefficients; C = C'
-        for(iorb = norb_m[0]; iorb < nocc; iorb++){
-            for(aorb = 0; aorb < (norb_m[1]-nocc)); aorb++){
+        for(iorb = orb_ini; iorb < nocc; iorb++){
+            for(aorb = 0; aorb < (orb_final-nocc)); aorb++){
                 ci_coef_new[ist][iorb][aorb] = tmp_ci_new[iorb][nocc + aorb];
             }
         }
