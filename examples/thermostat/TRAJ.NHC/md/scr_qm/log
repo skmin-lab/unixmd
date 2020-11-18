@@ -1,0 +1,101 @@
+|===============================================================================
+|
+|  DFTB+ release 20.1
+|
+|  Copyright (C) 2006 - 2020  DFTB+ developers group
+|
+|===============================================================================
+|
+|  When publishing results obtained with DFTB+, please cite the following
+|  reference:
+|
+|  * DFTB+, a software package for efficient approximate density functional
+|    theory based atomistic simulations, J. Chem. Phys. 152, 124101 (2020).
+|    [doi: 10.1063/1.5143190]
+|
+|  You should also cite additional publications crediting the parametrization
+|  data you use. Please consult the documentation of the SK-files for the
+|  references.
+|
+|===============================================================================
+
+Reading input file 'dftb_in.hsd'
+Parser version: 8
+
+--------------------------------------------------------------------------------
+Reading SK-files:
+Done.
+
+
+Processed input in HSD format written to 'dftb_pin.hsd'
+
+Starting initialization...
+--------------------------------------------------------------------------------
+MPI processes:               1
+BLACS orbital grid size:     1 x 1
+BLACS atom grid size:        1 x 1
+Chosen random seed:          984137363
+Mode:                        Static calculation
+Self consistent charges:     Yes
+SCC-tolerance:                 0.100000E-05
+Max. scc iterations:                    200
+Shell resolved Hubbard:      No
+Spin polarisation:           No
+Nr. of up electrons:            16.000000
+Nr. of down electrons:          16.000000
+Periodic boundaries:         Yes
+Electronic solver:           Relatively robust
+Mixer:                       Broyden mixer
+Mixing parameter:                  0.200000
+Maximal SCC-cycles:                     200
+Nr. of chrg. vec. in memory:              0
+Electronic temperature:        0.865016E-03 H      0.235383E-01 eV
+Initial charges:             Set automatically (system chrg:   0.000E+00)
+Included shells:            Si:  s, p
+K-points and weights:           1:  0.250000  0.250000  0.250000     0.250000
+                                2:  0.250000  0.250000  0.750000     0.250000
+                                3:  0.250000  0.750000  0.250000     0.250000
+                                4:  0.250000  0.750000  0.750000     0.250000
+ 
+K-points in absolute space:     1:  0.024377  0.024377  0.024377
+                                2:  0.024377  0.024377  0.073130
+                                3:  0.024377  0.073130  0.024377
+                                4:  0.024377  0.073130  0.073130
+ 
+Extra options:
+                             Mulliken analysis
+                             Force calculation
+Force type                   original
+                             Eigenvector printing
+
+--------------------------------------------------------------------------------
+
+***  Geometry step: 0
+
+ iSCC Total electronic   Diff electronic      SCC error    
+    1   -0.10372645E+02    0.00000000E+00    0.13521123E+00
+    2   -0.10372856E+02   -0.21096049E-03    0.86904711E-01
+    3   -0.10373011E+02   -0.15482758E-03    0.27787518E-02
+    4   -0.10373011E+02   -0.50733551E-07    0.66359821E-03
+    5   -0.10373011E+02   -0.24686031E-09    0.28214273E-03
+    6   -0.10373011E+02   -0.17160335E-08    0.38004760E-05
+    7   -0.10373011E+02   -0.20428104E-12    0.18645177E-05
+    8   -0.10373011E+02   -0.67501560E-13    0.40055494E-07
+>> Charges saved for restart in charges.bin
+ 
+Total Energy:                      -10.3604001949 H         -281.9208 eV
+Extrapolated to 0:                 -10.3604001949 H         -281.9208 eV
+Total Mermin free energy:          -10.3604001949 H         -281.9208 eV
+Force related energy:              -10.3604001949 H         -281.9208 eV
+Volume:                              0.107869E+04 au^3   0.159846E+03 A^3
+Pressure:                            0.637383E-04 au     0.187525E+10 Pa
+ 
+--------------------------------------------------------------------------------
+DFTB+ running times                          cpu [s]             wall clock [s]
+--------------------------------------------------------------------------------
+SCC                                    +     0.03  ( 67.9%)      0.03  ( 68.0%)
+  Diagonalisation                            0.02  ( 37.2%)      0.02  ( 36.2%)
+--------------------------------------------------------------------------------
+Missing                                +     0.02  ( 32.1%)      0.02  ( 32.0%)
+Total                                  =     0.05  (100.0%)      0.05  (100.0%)
+--------------------------------------------------------------------------------

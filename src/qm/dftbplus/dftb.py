@@ -2,7 +2,7 @@ from __future__ import division
 from build.cioverlap import *
 from qm.dftbplus.dftbplus import DFTBplus
 from qm.dftbplus.dftbpar import spin_w, spin_w_lc, onsite_uu, onsite_ud, max_l
-from misc import eV_to_au, call_name
+from misc import data, eV_to_au, call_name
 import os, shutil, re, textwrap
 import numpy as np
 
@@ -23,6 +23,7 @@ class DFTB(DFTBplus):
         :param double elec_temp: electronic temperature in Fermi-Dirac scheme
         :param string mixer: charge mixing method used in DFTB
         :param string ex_symmetry: symmetry of excited state in TDDFTB
+        :param integer,list k_point: number of k-point samplings
         :param boolean periodic: use periodicity in the calculations
         :param double,list cell_length: the lattice vectors of periodic unit cell
         :param string sk_path: path for slater-koster files
@@ -36,8 +37,8 @@ class DFTB(DFTBplus):
     def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=100, ocdftb=False, \
         lcdftb=False, lc_method="MatrixBased", sdftb=False, unpaired_elec=0., guess="h0", \
         guess_file="./charges.bin", elec_temp=0., mixer="Broyden", ex_symmetry="singlet", \
-        periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.,], sk_path="./", \
-        install_path="./", mpi=False, mpi_path="./", nthreads=1, version=20.1, e_window=-1):
+        k_point=[1, 1, 1], periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.,], \
+        sk_path="./", install_path="./", mpi=False, mpi_path="./", nthreads=1, version=20.1):
         # Initialize DFTB+ common variables
         super(DFTB, self).__init__(molecule, sk_path, install_path, nthreads, version)
 
@@ -72,6 +73,7 @@ class DFTB(DFTBplus):
 
         self.ex_symmetry = ex_symmetry
 
+        self.k_point = k_point
         self.periodic = periodic
         self.a_axis = np.copy(cell_length[0:3])
         self.b_axis = np.copy(cell_length[3:6])
@@ -98,19 +100,37 @@ class DFTB(DFTBplus):
         core_elec = 0.
         self.nbasis = 0
         self.check_atom = [0]
-        for iat in range(molecule.nat):
+        for iat in range(molecule.nat_qm):
+            # Check number of basis functions with respect to maximum angular momentum
             max_ang = max_l[molecule.symbols[iat]]
             if (max_ang == 's'):
                 self.nbasis += 1
             elif (max_ang == 'p'):
                 self.nbasis += 4
-                core_elec += 2.
+            elif (max_ang == 'd'):
+                self.nbasis += 9
+            else:
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) Not added to basis sets for f orbitals! {max_ang}")
             self.check_atom.append(self.nbasis)
+            # Check number of core electrons with respect to atomic number
+            sym_index = list(data.keys()).index(molecule.symbols[iat])
+            if (sym_index > 0 and sym_index <= 2):
+                core_elec += 0.
+            elif (sym_index > 2 and sym_index <= 10):
+                core_elec += 2.
+            elif (sym_index > 10 and sym_index <= 18):
+                core_elec += 10.
+            elif (sym_index > 18 and sym_index <= 36):
+                core_elec += 18.
+            elif (sym_index > 36 and sym_index <= 54):
+                core_elec += 36.
+            else:
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) Not added to core electrons for current element! {sym_index}")
 
         # Set new variable to decide the position of atoms in terms of basis functions
         self.check_basis = []
         for ibasis in range(self.nbasis):
-            for iat in range(molecule.nat):
+            for iat in range(molecule.nat_qm):
                 ind_a = self.check_atom[iat] + 1
                 ind_b = self.check_atom[iat + 1]
                 if (ibasis + 1 >= ind_a and ibasis + 1 <= ind_b):
@@ -346,11 +366,25 @@ class DFTB(DFTBplus):
         # TODO: for QM/MM, point_charge??
 
         if (self.periodic):
-            input_ham_periodic = textwrap.indent(textwrap.dedent(f"""\
-              KPointsAndWeights = {{
-                0.0 0.0 0.0 1.0
-              }}
-            """), "  ")
+            num_k_point = np.sum(self.k_point)
+            if (num_k_point == 3):
+                # gamma-point sampling
+                input_ham_periodic = textwrap.indent(textwrap.dedent(f"""\
+                  KPointsAndWeights = {{
+                    0.0 0.0 0.0 1.0
+                  }}
+                """), "  ")
+            else:
+                # K-point sampling
+                shift_vector = [0.5 if (ik % 2 == 0) else 0 for ik in self.k_point]
+                input_ham_periodic = textwrap.indent(textwrap.dedent(f"""\
+                  KPointsAndWeights = SupercellFolding{{
+                    {self.k_point[0]} 0.0 0.0
+                    0.0 {self.k_point[1]} 0.0
+                    0.0 0.0 {self.k_point[2]}
+                    {shift_vector[0]} {shift_vector[1]} {shift_vector[2]}
+                  }}
+                """), "  ")
             input_dftb += input_ham_periodic
 
         angular_momentum = ("\n" + " " * 10).join([f"  {itype} = '{max_l[f'{itype}']}'" for itype in self.atom_type])

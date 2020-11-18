@@ -1,5 +1,5 @@
 from functools import wraps
-import sys, time
+import sys, time, os
 
 # Atomic weight
 data = { "xx" : 1.00794, "H" : 1.00794, "He" : 4.00260, "Li" : 6.941, "Be" : 9.012187, "B" : 10.811,
@@ -61,4 +61,15 @@ def elapsed_time(func):
 def call_name():
     return sys._getframe(1).f_code.co_name
 
+def typewriter(string, dir_name, filename, mode):
+    """ Function to open/write any string in dir_name/filename
+
+        :param string string: text string for input file
+        :param string dir_name: directory of input file
+        :param string filename: filename of input file
+        :param string mode: fileopen mode
+    """
+    tmp_name = os.path.join(dir_name, filename)
+    with open(tmp_name, mode) as f:
+        f.write(string + "\n")
 

@@ -1,0 +1,109 @@
+Geometry = GenFormat {
+8 S
+Si
+1   1  -2.0917610000E-02  -1.4947810000E-02  -2.4480500000E-03
+2   1   1.3541031500E+00   1.3883463900E+00   1.3805244500E+00
+3   1   2.7291106000E+00   2.7299783700E+00  -3.1156630000E-02
+4   1   4.1015218000E+00   4.0824400600E+00   1.4096698900E+00
+5   1   2.6989215100E+00   2.1600540000E-02   2.7483501300E+00
+6   1   4.1095962900E+00   1.3228377000E+00   4.0051656500E+00
+7   1   3.5247870000E-02   2.6715172500E+00   2.7112441900E+00
+8   1   1.2736924400E+00   4.0795035100E+00   4.0599263900E+00
+0.00000000      0.00000000      0.00000000
+5.42709200      0.00000000      0.00000000
+0.00000000      5.42709200      0.00000000
+0.00000000      0.00000000      5.42709200
+}
+Hamiltonian = DFTB {
+  SCC = Yes
+  SCCTolerance = 1e-06
+  MaxSCCIterations = 200
+  Mixer = Broyden {
+    MixingParameter = 0.200000000000000
+    InverseJacobiWeight = 1.000000000000000E-002
+    MinimalWeight = 1.00000000000000
+    MaximalWeight = 100000.000000000
+    WeightFactor = 1.000000000000000E-002
+  }
+  ReadInitialCharges = No
+  KPointsAndWeights = SupercellFolding {
+2 0.0 0.0
+0.0 2 0.0
+0.0 0.0 2
+0.5 0.5 0.5
+  }
+  Charge = 0.0
+  Filling = Fermi {
+    Temperature [K] = 273.15
+    IndependentKFilling = No
+  }
+  MaxAngularMomentum = {
+    Si = 'p'
+  }
+  SlaterKosterFiles = Type2FileNames {
+    Prefix = '/home/tikim/21-UNIXMD-work/example/05-Si-thermostat/'
+    Separator = '-'
+    Suffix = '.skf'
+    LowerCaseTypeName = No
+  }
+  PolynomialRepulsive = {}
+  ShellResolvedSCC = No
+  OldSKInterpolation = No
+  RangeSeparated = None {}
+  InitialCharges = {}
+  EwaldParameter = 0.00000000000000
+  EwaldTolerance = 1.000000000000000E-009
+  HCorrection = None {}
+  SpinPolarisation = {}
+  ElectricField = {}
+  Solver = RelativelyRobust {}
+  OnSiteCorrection = {}
+  Dispersion = {}
+  Solvation = {}
+  Electrostatics = GammaFunctional {}
+  ThirdOrder = No
+  ThirdOrderFull = No
+  Differentiation = FiniteDiff {
+    Delta = 1.220703125000000E-004
+  }
+  ForceEvaluation = "Traditional"
+}
+Analysis = {
+  CalculateForces = Yes
+  WriteBandOut = Yes
+  WriteEigenvectors = Yes
+  MullikenAnalysis = Yes
+  ProjectStates = {}
+  AtomResolvedEnergies = No
+  EigenvectorsAsText = No
+}
+Options = {
+  WriteDetailedXml = Yes
+  WriteDetailedOut = Yes
+  TimingVerbosity = -1
+  WriteAutotestTag = No
+  WriteResultsTag = No
+  RestartFrequency = 20
+  RandomSeed = 0
+  WriteHS = No
+  WriteRealHS = No
+  MinimiseMemoryUsage = No
+  ShowFoldedCoords = No
+  WriteChargesAsText = No
+}
+ParserOptions = {
+  ParserVersion = 8
+  WriteHSDInput = Yes
+  StopAfterParsing = No
+  IgnoreUnprocessedNodes = No
+}
+Driver = {}
+ExcitedState = {}
+Reks = None {}
+Parallel = {
+  Groups = 1
+  UseOmpThreads = No
+  Blacs = BlockSize {
+32
+  }
+}

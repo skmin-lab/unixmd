@@ -31,6 +31,18 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 | SI-SA-REKS (SSR)  | o    | o  | o  | o   |
 +-------------------+------+----+----+-----+
 
+.. note:: To run DFTB+ interfacing script, the information about maximum angular momentum is
+   needed. In current version of UNI-xMD, the values for maximum angular momentum is included
+   in ``max_l`` dictionary variable of dftbpar.py file. The user can add or modify the key and
+   value to ``max_l``. The following example shows addition of new information about Si atom.
+
+.. code-block:: python
+
+   from qm.dftbplus.dftbpar import max_l
+
+   max_l["Si"] = "p" # add value of new atom
+   max_l["C"] = "s" # modify value of already existing atom
+
 (TD)DFTB
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -43,8 +55,9 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
    The other is ``read``, which reads charges.bin file generated from previous step.
    If ``guess_file`` exists, then charges.bin file is used as initial guess at t = 0.0 s.
 
-.. note:: For ``cell_length`` variable, it reads a list variable consisted of 9 elements,
-   which correspond to cell lattice vectors.
+.. note:: For ``cell_length`` variable, it reads a list variable consisted of 9 float elements,
+   which correspond to cell lattice vectors. Similarly ``k_point`` variable reads a list
+   consisted of 3 integer elements, which correspond to number of k points.
 
 +-------------------+------------------------------------------------+---------------------+
 | Keywords          | Work                                           | Default             |
@@ -74,6 +87,8 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 | ``mixer``         | charge mixing method used in DFTB              | ``Broyden``         |
 +-------------------+------------------------------------------------+---------------------+
 | ``ex_symmetry``   | symmetry of excited state in TD-DFTB           | ``singlet``         |
++-------------------+------------------------------------------------+---------------------+
+| ``k_point``       | number of k-point samplings                    | ``3 * [ 1 ]``       |
 +-------------------+------------------------------------------------+---------------------+
 | ``periodic``      | use periodicity in the calculations            | ``False``           |
 +-------------------+------------------------------------------------+---------------------+
