@@ -315,7 +315,7 @@ class SH(MQC):
 
         # Record hopping event
         if (self.rstate != self.rstate_old):
-            self.event["HOP"].append(f"Hopping {self.rstate_old} -> {self.rstate}")
+            self.event["HOP"].append(f"Accept hopping: hop {self.rstate_old} -> {self.rstate}")
 
     def calculate_force(self):
         """ Routine to calculate the forces
