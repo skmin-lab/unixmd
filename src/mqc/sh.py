@@ -236,12 +236,10 @@ class SH(MQC):
             pot_diff = self.mol.states[self.rstate].energy - self.mol.states[self.rstate_old].energy
 
             # Solve quadratic equation for scaling factor of velocities
-            if (self.vel_rescale == "energy"):
-                a = 1.
-                b = 1.
-                c = 1.
-                det = 1.
-            elif (self.vel_rescale == "velocity"):
+            a = 1.
+            b = 1.
+            det = 1.
+            if (self.vel_rescale == "velocity"):
                 a = np.sum(self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
                 b = 2. * np.sum(self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
                 c = 2. * pot_diff
