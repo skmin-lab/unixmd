@@ -20,14 +20,13 @@ class SH(MQC):
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param string vel_rescale: velocity rescaling method after successful hop
         :param string vel_reject: velocity rescaling method after frustrated hop
-        :param boolean vel_augment: force hop occurs with simple rescaling
         :param coefficient: initial BO coefficient
         :type coefficient: double, list or complex, list
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", \
-        vel_reject="reverse", vel_augment=False, coefficient=None, unit_dt="fs"):
+        vel_reject="reverse", coefficient=None, unit_dt="fs"):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
             propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
@@ -44,19 +43,17 @@ class SH(MQC):
         self.l_reject = False
 
         self.vel_rescale = vel_rescale
-        if not (self.vel_rescale in ["energy", "velocity", "momentum"]): 
+        if not (self.vel_rescale in ["energy", "velocity", "momentum", "augment"]): 
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
 
         self.vel_reject = vel_reject
         if not (self.vel_reject in ["keep", "reverse"]): 
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_reject'! {self.vel_reject}")
 
-        self.vel_augment = vel_augment
-
         # Check error for incompatible cases
         if (self.mol.l_nacme): 
             # No analytical nonadiabatic couplings exist
-            if (self.vel_rescale in ["velocity", "momentum"]): 
+            if (self.vel_rescale in ["velocity", "momentum", "augment"]): 
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'energy' rescaling for 'vel_rescale'! {self.vel_rescale}")
             if (self.vel_reject == "reverse"):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'keep' rescaling for 'vel_reject'! {self.vel_reject}")
@@ -240,9 +237,6 @@ class SH(MQC):
 
             # Solve quadratic equation for scaling factor of velocities
             if (self.vel_rescale == "energy"):
-                # Velocities cannot be adjusted when zero kinetic energy is given
-                if (self.mol.ekin_qm < eps):
-                    raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {self.mol.ekin_qm}")
                 a = 1.
                 b = 1.
                 c = 1.
@@ -257,19 +251,26 @@ class SH(MQC):
                 b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
                 c = 2. * pot_diff
                 det = b ** 2. - 4. * a * c
+            elif (self.vel_rescale == "augment"):
+                a = np.sum(1. / self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
+                b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
+                c = 2. * pot_diff
+                det = b ** 2. - 4. * a * c
 
-            if (self.mol.ekin_qm < pot_diff):
-                # Clasically forbidden hop due to lack of kinetic energy
+            # Default: hopping is allowed
+            self.l_reject = False
+
+            # Velocities cannot be adjusted when zero kinetic energy is given
+            if (self.vel_rescale == "energy" and self.mol.ekin_qm < eps):
                 self.l_reject = True
-            elif (det < 0.):
-                # Kinetic energy is enough, but there is no solution for scaling factor
-                if (self.vel_augment):
-                    # Velocities would be simply rescaled so that the force hop occurs
-                    self.l_reject = False
-                else:
-                    self.l_reject = True
-            else:
-                # Kinetic energy is enough, and real solution for scaling factor exists
+            # Clasically forbidden hop due to lack of kinetic energy
+            if (self.mol.ekin_qm < pot_diff):
+                self.l_reject = True
+            # Kinetic energy is enough, but there is no solution for scaling factor
+            if (det < 0.):
+                self.l_reject = True
+            # When kinetic energy is enough, velocities are always rescaled in 'augment' case
+            if (self.vel_rescale == "augment" and self.mol.ekin_qm > pot_diff):
                 self.l_reject = False
 
             if (self.l_reject):
@@ -288,8 +289,8 @@ class SH(MQC):
                 self.rstate = self.rstate_old
                 bo_list[0] = self.rstate
             else:
-                if (self.vel_rescale == "energy" or (det < 0. and self.vel_augment)):
-                    if (det < 0. and self.vel_augment):
+                if (self.vel_rescale == "energy" or (det < 0. and self.vel_rescale == "augment")):
+                    if (det < 0.):
                         self.event["HOP"].append("Accept hopping: no solution to find rescale factor, but velocity is simply rescaled")
                     x = np.sqrt(1. - pot_diff / self.mol.ekin_qm)
                 else:
@@ -300,7 +301,7 @@ class SH(MQC):
 
             # Rescale velocities for QM atoms
             if (not (self.vel_reject == "keep" and self.l_reject)):
-                if (self.vel_rescale == "energy" or (det < 0. and self.vel_augment)):
+                if (self.vel_rescale == "energy"):
                     self.mol.vel[0:self.mol.nat_qm] *= x
 
                 elif (self.vel_rescale == "velocity"):
@@ -309,6 +310,13 @@ class SH(MQC):
                 elif (self.vel_rescale == "momentum"):
                     self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm] / \
                         self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
+
+                elif (self.vel_rescale == "augment"):
+                    if (det > 0.):
+                        self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm] / \
+                            self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
+                    else:
+                        self.mol.vel[0:self.mol.nat_qm] *= x
 
             # Update kinetic energy
             self.mol.update_kinetic()
