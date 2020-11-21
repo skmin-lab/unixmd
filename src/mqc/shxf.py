@@ -4,6 +4,7 @@ from mqc.mqc import MQC
 from misc import eps, au_to_K, au_to_A, call_name, typewriter
 import random, os, shutil, textwrap
 import numpy as np
+import pickle
 
 class Auxiliary_Molecule(object):
     """ Class for auxiliary molecule that is used for the calculation of decoherence term
@@ -125,7 +126,7 @@ class SHXF(MQC):
         self.event = {"HOP": [], "DECO": []}
 
     def run(self, qm, mm=None, input_dir="./", \
-        save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
+        save_QMlog=False, save_MMlog=False, save_scr=True, restart=None, debug=0):
         """ Run MQC dynamics according to decoherence-induced surface hopping dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
@@ -136,74 +137,95 @@ class SHXF(MQC):
             :param boolean save_scr: logical for saving scratch directory
             :param integer debug: verbosity level for standard output
         """
-        # Set directory information
-        input_dir = os.path.expanduser(input_dir)
-        base_dir = os.path.join(os.getcwd(), input_dir)
-
-        unixmd_dir = os.path.join(base_dir, "md")
-        if (os.path.exists(unixmd_dir)):
-            shutil.move(unixmd_dir, unixmd_dir + "_old_" + str(os.getpid()))
-        os.makedirs(unixmd_dir)
-
-        QMlog_dir = os.path.join(base_dir, "QMlog")
-        if (os.path.exists(QMlog_dir)):
-            shutil.move(QMlog_dir, QMlog_dir + "_old_" + str(os.getpid()))
-        if (save_QMlog):
-            os.makedirs(QMlog_dir)
-
-        if (self.mol.qmmm and mm != None):
-            MMlog_dir = os.path.join(base_dir, "MMlog")
-            if (os.path.exists(MMlog_dir)):
-                shutil.move(MMlog_dir, MMlog_dir + "_old_" + str(os.getpid()))
-            if (save_MMlog):
-                os.makedirs(MMlog_dir)
-
+        # Check compatibility of variables for QM and MM calculation
         if ((self.mol.qmmm and mm == None) or (not self.mol.qmmm and mm != None)):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Both self.mol.qmmm and mm object is necessary! {self.mol.qmmm} and {mm}")
-
-        # Check compatibility for QM and MM objects
         if (self.mol.qmmm and mm != None):
             self.check_qmmm(qm, mm)
-
+        
+        # Set base directory
+        input_dir = os.path.expanduser(input_dir)
+        base_dir = os.path.join(os.getcwd(), input_dir)
+        unixmd_dir = os.path.join(base_dir, "md")
+        QMlog_dir = os.path.join(base_dir, "QMlog")
+        if (self.mol.qmmm and mm != None):
+            MMlog_dir = os.path.join(base_dir, "MMlog")
+        
         # Initialize UNI-xMD
-        os.chdir(base_dir)
         bo_list = [self.rstate]
         qm.calc_coupling = True
+       
+        # Check directories
+        if (restart == "append"):
+            if (not os.path.exists(unixmd_dir)):
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Directory to be appended for restart not found! {restart} and {unixmd_dir}")
+            if (not os.path.exists(unixmd_dir) and save_QMlog):
+                os.makedirs(QMlog_dir)
+            if (self.mol.qmmm and mm != None):
+                if (not os.path.exists(MMlog_dir) and save_MMlog):
+                    os.makedirs(MMlog_dir)
+        else:
+            if (os.path.exists(unixmd_dir)):
+                shutil.move(unixmd_dir, unixmd_dir + "_old_" + str(os.getpid()))
+            os.makedirs(unixmd_dir)
 
-        self.touch_file(unixmd_dir)
+            if (os.path.exists(QMlog_dir)):
+                shutil.move(QMlog_dir, QMlog_dir + "_old_" + str(os.getpid()))
+            if (save_QMlog):
+                os.makedirs(QMlog_dir)
+
+            if (self.mol.qmmm and mm != None):
+                if (os.path.exists(MMlog_dir)):
+                    shutil.move(MMlog_dir, MMlog_dir + "_old_" + str(os.getpid()))
+                if (save_MMlog):
+                    os.makedirs(MMlog_dir)
+            
+            self.touch_file(unixmd_dir)
+
+        os.chdir(base_dir)
         self.print_init(qm, mm, debug)
 
-        # Initialize decoherence variables
-        self.append_wsigma()
+        if (restart == None):
+            
+            # Initialize decoherence variables
+            self.append_wsigma()
 
-        # Calculate initial input geometry at t = 0.0 s
-        self.mol.reset_bo(qm.calc_coupling)
-        qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=-1, calc_force_only=False)
-        if (self.mol.qmmm and mm != None):
-            mm.get_data(self.mol, base_dir, bo_list, istep=-1, calc_force_only=False)
-        if (not self.mol.l_nacme):
-            self.mol.get_nacme()
-
-        self.hop_prob(istep=-1)
-        self.hop_check(bo_list)
-        self.evaluate_hop(bo_list, istep=-1)
-        if (qm.re_calc and self.l_hop):
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=-1, calc_force_only=True)
+            # Calculate initial input geometry at t = 0.0 s
+            self.istep = -1
+            self.mol.reset_bo(qm.calc_coupling)
+            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=self.istep, calc_force_only=False)
             if (self.mol.qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, istep=-1, calc_force_only=True)
+                mm.get_data(self.mol, base_dir, bo_list, istep=self.istep, calc_force_only=False)
+            if (not self.mol.l_nacme):
+                self.mol.get_nacme()
 
-        self.update_energy()
+            self.hop_prob(istep=self.istep)
+            self.hop_check(bo_list)
+            self.evaluate_hop(bo_list, istep=self.istep)
+            if (qm.re_calc and self.l_hop):
+                qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=self.istep, calc_force_only=True)
+                if (self.mol.qmmm and mm != None):
+                    mm.get_data(self.mol, base_dir, bo_list, istep=self.istep, calc_force_only=True)
 
-        self.check_decoherence()
-        self.check_coherence()
-        self.aux_propagator()
-        self.get_phase()
+            self.update_energy()
 
-        self.write_md_output(unixmd_dir, istep=-1)
-        self.print_step(debug, istep=-1)
+            self.check_decoherence()
+            self.check_coherence()
+            self.aux_propagator()
+            self.get_phase()
+
+        elif (restart == "write"):
+            self.istep = -1
+            self.write_md_output(unixmd_dir, istep=self.istep)
+            self.print_step(debug, istep=self.istep)
+
+        else:
+            self.istep = self.fstep
+        
+        self.istep += 1
 
         # Main MD loop
-        for istep in range(self.nsteps):
+        for istep in range(self.istep, self.nsteps):
 
             self.cl_update_position()
 
@@ -245,6 +267,11 @@ class SHXF(MQC):
             self.print_step(debug, istep=istep)
             if (istep == self.nsteps - 1):
                 self.write_final_xyz(unixmd_dir, istep=istep)
+
+            self.fstep = istep
+            restart_file = os.path.join(base_dir, "restart.bin")
+            with open(restart_file, 'wb') as f:
+                pickle.dump({'qm':qm, 'md':self}, f)
 
         # Delete scratch directory
         if (not save_scr):
