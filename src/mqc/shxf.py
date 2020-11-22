@@ -400,7 +400,7 @@ class SHXF(MQC):
                         self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
 
                 elif (self.vel_rescale == "augment"):
-                    if (det > 0.):
+                    if (det > 0. or self.mol.ekin_qm < pot_diff):
                         self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm] / \
                             self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
                     else:
