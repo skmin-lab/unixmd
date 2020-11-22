@@ -19,9 +19,10 @@ class MQC(object):
         :param coefficient: initial BO coefficient
         :type coefficient: double, list or complex, list
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
+        :param integer out_freq: frequency of printing output
     """
     def __init__(self, molecule, thermostat, istate, dt, nsteps, nesteps, \
-        propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt):
+        propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -61,6 +62,8 @@ class MQC(object):
         self.l_adjnac = l_adjnac
 
         self.rforce = np.zeros((self.mol.nat, self.mol.nsp))
+
+        self.out_freq = out_freq
 
         # Initialize coefficients and densities
         self.mol.get_coefficient(coefficient, self.istate)

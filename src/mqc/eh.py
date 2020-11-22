@@ -24,10 +24,10 @@ class Eh(MQC):
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
-        coefficient=None, unit_dt="fs"):
+        coefficient=None, unit_dt="fs", out_freq=1):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
+            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq)
 
     def run(self, qm, mm=None, input_dir="./", \
         save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
@@ -120,8 +120,9 @@ class Eh(MQC):
 
             self.update_energy()
 
-            self.write_md_output(unixmd_dir, istep=istep)
-            self.print_step(debug, istep=istep)
+            if (istep % self.out_freq == 0):
+                self.write_md_output(unixmd_dir, istep=istep)
+                self.print_step(debug, istep=istep)
             if (istep == self.nsteps - 1):
                 self.write_final_xyz(unixmd_dir, istep=istep)
 

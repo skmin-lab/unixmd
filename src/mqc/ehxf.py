@@ -47,10 +47,10 @@ class EhXF(MQC):
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
         threshold=0.01, wsigma=None, l_qmom_force=False, coefficient=None, \
-        l_state_wise=False, unit_dt="fs"):
+        l_state_wise=False, unit_dt="fs", out_freq=1):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
+            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq)
 
         # Initialize XF related variables
         self.l_coh = []
@@ -190,8 +190,10 @@ class EhXF(MQC):
             self.aux_propagator()
             self.get_phase()
 
-            self.write_md_output(unixmd_dir, istep=istep)
-            self.print_step(debug, istep=istep)
+            if (istep % self.out_freq == 0):
+                self.write_md_output(unixmd_dir, istep=istep)
+            if (istep % self.out_freq == 0 or len(self.event["DECO"]) > 0):
+                self.print_step(debug, istep=istep)
             if (istep == self.nsteps - 1):
                 self.write_final_xyz(unixmd_dir, istep=istep)
 
@@ -455,4 +457,3 @@ class EhXF(MQC):
                 for ievent in events:
                     print (f" {category}{istep + 1:>9d}  {ievent}", flush=True)
         self.event["DECO"] = []
-
