@@ -4,6 +4,7 @@ from mqc.mqc import MQC
 from misc import au_to_K, call_name
 import os, shutil, textwrap
 import numpy as np
+import pickle
 
 class Eh(MQC):
     """ Class for Ehrenfest dynamics
@@ -30,7 +31,7 @@ class Eh(MQC):
             propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
 
     def run(self, qm, mm=None, input_dir="./", \
-        save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
+        save_QMlog=False, save_MMlog=False, save_scr=True, restart=None, debug=0):
         """ Run MQC dynamics according to Ehrenfest dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
@@ -41,61 +42,83 @@ class Eh(MQC):
             :param boolean save_scr: logical for saving scratch directory
             :param integer debug: verbosity level for standard output
         """
+        # Check compatibility of variables for QM and MM calculation
+        if ((self.mol.qmmm and mm == None) or (not self.mol.qmmm and mm != None)):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Both self.mol.qmmm and mm object is necessary! {self.mol.qmmm} and {mm}")
+        if (self.mol.qmmm and mm != None):
+            self.check_qmmm(qm, mm)
+        if (self.mol.l_nacme):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Ehrenfest dynamics needs NACV! {self.mol.l_nacme}")
+
         # Set directory information
         input_dir = os.path.expanduser(input_dir)
         base_dir = os.path.join(os.getcwd(), input_dir)
-
         unixmd_dir = os.path.join(base_dir, "md")
-        if (os.path.exists(unixmd_dir)):
-            shutil.move(unixmd_dir, unixmd_dir + "_old_" + str(os.getpid()))
-        os.makedirs(unixmd_dir)
-
         QMlog_dir = os.path.join(base_dir, "QMlog")
-        if (os.path.exists(QMlog_dir)):
-            shutil.move(QMlog_dir, QMlog_dir + "_old_" + str(os.getpid()))
-        if (save_QMlog):
-            os.makedirs(QMlog_dir)
-
         if (self.mol.qmmm and mm != None):
             MMlog_dir = os.path.join(base_dir, "MMlog")
-            if (os.path.exists(MMlog_dir)):
-                shutil.move(MMlog_dir, MMlog_dir + "_old_" + str(os.getpid()))
-            if (save_MMlog):
-                os.makedirs(MMlog_dir)
-
-        if ((self.mol.qmmm and mm == None) or (not self.mol.qmmm and mm != None)):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Both self.mol.qmmm and mm object is necessary! {self.mol.qmmm} and {mm}")
-
-        # Check compatibility for QM and MM objects
-        if (self.mol.qmmm and mm != None):
-            self.check_qmmm(qm, mm)
-
-        if (self.mol.l_nacme):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Ehrenfest dynamics needs NAC! {self.mol.l_nacme}")
-
+        
         # Initialize UNI-xMD
-        os.chdir(base_dir)
         bo_list = [ist for ist in range(self.mol.nst)]
         qm.calc_coupling = True
+        
+        # Check and make directories
+        if (restart == "append"):
+            if (not os.path.exists(unixmd_dir)):
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Directory to be appended for restart not found! {restart} and {unixmd_dir}")
+            if (not os.path.exists(unixmd_dir) and save_QMlog):
+                os.makedirs(QMlog_dir)
+            if (self.mol.qmmm and mm != None):
+                if (not os.path.exists(MMlog_dir) and save_MMlog):
+                    os.makedirs(MMlog_dir)
+        else:
+            if (os.path.exists(unixmd_dir)):
+                shutil.move(unixmd_dir, unixmd_dir + "_old_" + str(os.getpid()))
+            os.makedirs(unixmd_dir)
 
-        self.touch_file(unixmd_dir)
+            if (os.path.exists(QMlog_dir)):
+                shutil.move(QMlog_dir, QMlog_dir + "_old_" + str(os.getpid()))
+            if (save_QMlog):
+                os.makedirs(QMlog_dir)
+
+            if (self.mol.qmmm and mm != None):
+                if (os.path.exists(MMlog_dir)):
+                    shutil.move(MMlog_dir, MMlog_dir + "_old_" + str(os.getpid()))
+                if (save_MMlog):
+                    os.makedirs(MMlog_dir)
+            
+            self.touch_file(unixmd_dir)
+
+        os.chdir(base_dir)
         self.print_init(qm, mm, debug)
 
-        # Calculate initial input geometry at t = 0.0 s
-        self.mol.reset_bo(qm.calc_coupling)
-        qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=-1, calc_force_only=False)
-        if (self.mol.qmmm and mm != None):
-            mm.get_data(self.mol, base_dir, bo_list, istep=-1, calc_force_only=False)
-        if (not self.mol.l_nacme):
+        if (restart == None):
+
+            # Calculate initial input geometry at t = 0.0 s
+            self.istep = -1
+            self.mol.reset_bo(qm.calc_coupling)
+            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=self.istep, calc_force_only=False)
+            if (self.mol.qmmm and mm != None):
+                mm.get_data(self.mol, base_dir, bo_list, istep=self.istep, calc_force_only=False)
             self.mol.get_nacme()
 
-        self.update_energy()
+            self.update_energy()
 
-        self.write_md_output(unixmd_dir, istep=-1)
-        self.print_step(debug, istep=-1)
+            self.write_md_output(unixmd_dir, istep=self.istep)
+            self.print_step(debug, istep=self.istep)
+
+        elif (restart == "write"):
+            self.istep = -1
+            self.write_md_output(unixmd_dir, istep=self.istep)
+            self.print_step(debug, istep=self.istep)
+        
+        else:
+            self.istep = self.fstep
+
+        self.istep += 1
 
         # Main MD loop
-        for istep in range(self.nsteps):
+        for istep in range(self.istep, self.nsteps):
 
             self.cl_update_position()
 
@@ -105,13 +128,11 @@ class Eh(MQC):
             if (self.mol.qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, istep=istep, calc_force_only=False)
 
-            if (not self.mol.l_nacme):
-                self.mol.adjust_nac()
+            self.mol.adjust_nac()
 
             self.cl_update_velocity()
 
-            if (not self.mol.l_nacme):
-                self.mol.get_nacme()
+            self.mol.get_nacme()
 
             el_run(self)
 
@@ -124,6 +145,11 @@ class Eh(MQC):
             self.print_step(debug, istep=istep)
             if (istep == self.nsteps - 1):
                 self.write_final_xyz(unixmd_dir, istep=istep)
+
+            self.fstep = istep
+            restart_file = os.path.join(base_dir, "RESTART.bin")
+            with open(restart_file, 'wb') as f:
+                pickle.dump({'qm':qm, 'md':self}, f)
 
         # Delete scratch directory
         if (not save_scr):
