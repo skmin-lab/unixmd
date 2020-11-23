@@ -107,7 +107,7 @@ class SH(MQC):
 
         if ((self.mol.qmmm and mm == None) or (not self.mol.qmmm and mm != None)):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Both self.mol.qmmm and mm object is necessary! {self.mol.qmmm} and {mm}")
-            
+
         # Check compatibility for QM and MM objects
         if (self.mol.qmmm and mm != None):
             self.check_qmmm(qm, mm)
