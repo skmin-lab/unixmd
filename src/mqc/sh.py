@@ -346,10 +346,10 @@ class SH(MQC):
         """ Routine to decoherence correction, energy-based decoherence correction(EDC) scheme
         """
         # If kinetic is 0, coefficient/density matrix are update into itself
-        if (self.mol.ekin < eps):
+        if (self.mol.ekin_qm < eps):
             return
 
-        tau = np.array([(1 + self.edc_parameter / self.mol.ekin) / np.abs(self.mol.states[ist].energy - self.mol.states[self.rstate].energy) \
+        tau = np.array([(1 + self.edc_parameter / self.mol.ekin_qm) / np.abs(self.mol.states[ist].energy - self.mol.states[self.rstate].energy) \
             for ist in range(self.mol.nst)])
 
         if (self.propagation == "coefficient"):
