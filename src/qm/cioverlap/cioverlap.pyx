@@ -13,7 +13,7 @@ def wf_overlap(theory, molecule, istep_py, dt_py):
         double ***ci_coef_old
         double ***ci_coef_new
         double dt
-        int istep, ist, nst, ibasis, jbasis, iorb, jorb, nbasis, norb, *norb_m, nocc, nvirt, ii
+        int istep, ist, nst, ibasis, jbasis, iorb, jorb, nbasis, norb, nocc, nvirt, ii
 
     # Assign size variables
     dt = dt_py
@@ -23,8 +23,8 @@ def wf_overlap(theory, molecule, istep_py, dt_py):
     norb = theory.norb
     nocc = theory.nocc
     nvirt = theory.nvirt
-    orb_ini = theory.orb_ini
-    orb_final = theory.orb_final
+    orb_ini = theory.orb_ini[0]
+    orb_final = theory.orb_final[0]
 
     # Allocate NACME variables
     nacme = <double**> PyMem_Malloc(nst * sizeof(double*))

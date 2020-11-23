@@ -38,7 +38,8 @@ class DFTB(DFTBplus):
         lcdftb=False, lc_method="MatrixBased", sdftb=False, unpaired_elec=0., guess="h0", \
         guess_file="./charges.bin", elec_temp=0., mixer="Broyden", ex_symmetry="singlet", \
         k_point=[1, 1, 1], periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.,], \
-        sk_path="./", install_path="./", mpi=False, mpi_path="./", nthreads=1, version=20.1):
+        sk_path="./", install_path="./", mpi=False, mpi_path="./", nthreads=1, version=20.1, \
+        e_window=-1):
         # Initialize DFTB+ common variables
         super(DFTB, self).__init__(molecule, sk_path, install_path, nthreads, version)
 
@@ -145,14 +146,14 @@ class DFTB(DFTBplus):
         self.nvirt = self.norb - self.nocc
     
         #replacing norb by a matrix containing the limits of the for loops. For energy window calculations loops will not go from 0 to nocc/nvirt or norb but from noccmin to nocc/0 to nvirtmax or noccmin to norb.
-        self.orb_ini = np.zeros(1)
-        self.orb_final = np.zeros(1)
-        self.orb_final = self.norb
+        self.orb_ini = np.zeros(1,dtype=int)
+        self.orb_final = np.zeros(1,dtype=int)
+        self.orb_final[0] = self.norb
 
         if (self.logwindow):
             # swapping of minimal and maximal values to replace them in reading of SPX.DAT by the minimal/maximal values.
-            self.orb_ini = self.norb
-            self.orb_final = 0.0
+            self.orb_ini[0] = self.norb
+            self.orb_final[0] = 0.0
 
         self.ao_overlap = np.zeros((self.nbasis, self.nbasis))
         self.mo_coef_old = np.zeros((self.norb, self.nbasis))
@@ -740,10 +741,10 @@ class DFTB(DFTBplus):
                         # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
                         field = line.split()
                         # determining new limits for for-loops
-                        if int(field[5]) > self.orb_final:
-                            self.orb_final = int(field[5])
-                        if int(field[3]) < (self.orb_ini-1):
-                            self.orb_ini = int(field[3])-1
+                        if int(field[5]) > self.orb_final[0]:
+                            self.orb_final[0] = int(field[5])
+                        if int(field[3]) < (self.orb_ini[0]-1):
+                            self.orb_ini[0] = int(field[3])-1
                         get_wij_ind_old[int(field[0]) - 1] = [int(field[3]), int(field[5])]
                     iline += 1
 
@@ -760,10 +761,10 @@ class DFTB(DFTBplus):
                 if (iline in range(5, 5 + ndim)):
                     # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
                     field = line.split()
-                    if int(field[5]) > self.orb_final:
-                        self.orb_final = int(field[5])
-                    if int(field[3]) < self.orb_ini:
-                        self.orb_ini = int(field[3])
+                    if int(field[5]) > self.orb_final[0]:
+                        self.orb_final[0] = int(field[5])
+                    if int(field[3]) < self.orb_ini[0]:
+                        self.orb_ini[0] = int(field[3])
                     get_wij_ind_new[int(field[0]) - 1] = [int(field[3]), int(field[5])]
                 iline += 1
 

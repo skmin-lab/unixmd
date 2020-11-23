@@ -415,7 +415,7 @@ static void CI_phase_order(int nst, int norb, int orb_ini, int orb_final, int no
 
         // Apply new phase correction for the CI coefficients; C = C'
         for(iorb = orb_ini; iorb < nocc; iorb++){
-            for(aorb = 0; aorb < (orb_final-nocc)); aorb++){
+            for(aorb = 0; aorb < (orb_final-nocc); aorb++){
                 ci_coef_new[ist][iorb][aorb] = tmp_ci_new[iorb][nocc + aorb];
             }
         }
