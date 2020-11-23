@@ -143,7 +143,7 @@ class SHXF(MQC):
         if (self.mol.qmmm and mm != None):
             self.check_qmmm(qm, mm)
         
-        # Set base directory
+        # Set directory information
         input_dir = os.path.expanduser(input_dir)
         base_dir = os.path.join(os.getcwd(), input_dir)
         unixmd_dir = os.path.join(base_dir, "md")
@@ -155,7 +155,7 @@ class SHXF(MQC):
         bo_list = [self.rstate]
         qm.calc_coupling = True
        
-        # Check directories
+        # Check and make directories
         if (restart == "append"):
             if (not os.path.exists(unixmd_dir)):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Directory to be appended for restart not found! {restart} and {unixmd_dir}")
@@ -214,6 +214,9 @@ class SHXF(MQC):
             self.aux_propagator()
             self.get_phase()
 
+            self.write_md_output(unixmd_dir, istep=self.istep)
+            self.print_step(debug, istep=self.istep)
+
         elif (restart == "write"):
             self.istep = -1
             self.write_md_output(unixmd_dir, istep=self.istep)
@@ -269,7 +272,7 @@ class SHXF(MQC):
                 self.write_final_xyz(unixmd_dir, istep=istep)
 
             self.fstep = istep
-            restart_file = os.path.join(base_dir, "restart.bin")
+            restart_file = os.path.join(base_dir, "RESTART.bin")
             with open(restart_file, 'wb') as f:
                 pickle.dump({'qm':qm, 'md':self}, f)
 
