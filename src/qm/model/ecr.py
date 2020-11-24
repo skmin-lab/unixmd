@@ -6,9 +6,9 @@ class ECR(Model):
     """ Class for extended coupling region with reflection (ECR) model BO calculation
 
         :param object molecule: molecule object
-        :param double A: parameter for extended coupling region with reflection 
-        :param double B: parameter for extended coupling region with reflection 
-        :param double C: parameter for extended coupling region with reflection 
+        :param double A: parameter for extended coupling region with reflection
+        :param double B: parameter for extended coupling region with reflection
+        :param double C: parameter for extended coupling region with reflection
     """
     def __init__(self, molecule, A=6E-4, B=0.1, C=0.9):
         # Initialize model common variables
@@ -19,12 +19,16 @@ class ECR(Model):
         self.B = B
         self.C = C
 
+        # Set 'l_nacme' with respect to the computational method
+        # ECR model can produce NACs, so we do not need to get NACME
         molecule.l_nacme = False
+
+        # ECR model can compute the gradient of several states simultaneously
         self.re_calc = False
 
     def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from simple avoided crossing model BO calculation
-            
+
             :param object molecule: molecule object
             :param string base_dir: base directory
             :param integer,list bo_list: list of BO states for BO calculation
@@ -65,12 +69,13 @@ class ECR(Model):
         unitary[0, 1] = - np.sin(theta)
         unitary[1, 1] = np.cos(theta)
 
-        # Extract adiabatic quantity
+        # Extract adiabatic quantities
         molecule.states[0].energy = 0.5 * (H[0, 0] + H[1, 1]) - 0.5 * sqa
         molecule.states[1].energy = 0.5 * (H[0, 0] + H[1, 1]) + 0.5 * sqa
 
-        molecule.states[0].force = np.dot(unitary[:, 1], np.matmul(dH, unitary[:, 1])) 
+        molecule.states[0].force = np.dot(unitary[:, 1], np.matmul(dH, unitary[:, 1]))
         molecule.states[1].force = np.dot(unitary[:, 0], np.matmul(dH, unitary[:, 0]))
 
         molecule.nac[0, 1, 0, 0] = np.dot(unitary[:, 0], np.matmul(dH, unitary[:, 1])) / sqa
-        molecule.nac[1, 0, 0, 0] = - np.copy(molecule.nac[0, 1, 0, 0])
+        molecule.nac[1, 0, 0, 0] = - molecule.nac[0, 1, 0, 0]
+
