@@ -378,9 +378,8 @@ class SH(MQC):
             rho_old_rstate = self.mol.rho[self.rstate, self.rstate]
             for ist in range(self.mol.nst):
                 if (ist == self.rstate):
-                    print(f"{ist} is rstate, pass")
                     continue
-                for jst in range(ist+1):
+                for jst in range(ist + 1):
 #                for jst in range(self.mol.nst):
 #                    if (ist == self.rstate and jst == self.rstate):
 #                        # rho[self.rstate, self.rstate] need other updated diagonal elements
@@ -400,7 +399,7 @@ class SH(MQC):
             # Update rho[self.rstate, ist] and rho[ist, self.rstate] by using rho[self.rstate, self.rstate]
             for ist in range(self.mol.nst):
                 if (ist == self.rstate):
-                    pass
+                    continue
                 else:
                     self.mol.rho[ist, self.rstate] *= np.exp( - self.dt / tau[ist]) * np.sqrt((1 - self.mol.rho[self.rstate, self.rstate]) / rho_old_rstate)
                     self.mol.rho[self.rstate, ist] = self.mol.rho[ist, self.rstate].conjugate()
