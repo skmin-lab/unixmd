@@ -21,8 +21,7 @@ class BOMD(MQC):
         super().__init__(molecule, thermostat, istate, dt, nsteps, None, None, None, \
             False, None, None, unit_dt, out_freq, verbosity)
 
-    def run(self, qm, mm=None, input_dir="./", \
-        save_QMlog=False, save_MMlog=False, save_scr=True):
+    def run(self, qm, mm=None, input_dir="./", save_QMlog=False, save_MMlog=False, save_scr=True):
         """ Run MQC dynamics according to BOMD
 
             :param object qm: qm object containing on-the-fly calculation infomation

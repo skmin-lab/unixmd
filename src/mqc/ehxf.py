@@ -91,8 +91,7 @@ class EhXF(MQC):
         # Initialize event to print
         self.event = {"DECO": []}
 
-    def run(self, qm, mm=None, input_dir="./", \
-        save_QMlog=False, save_MMlog=False, save_scr=True):
+    def run(self, qm, mm=None, input_dir="./", save_QMlog=False, save_MMlog=False, save_scr=True):
         """ Run MQC dynamics according to Ehrenfest-XF dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
@@ -378,7 +377,7 @@ class EhXF(MQC):
         typewriter(tmp, unixmd_dir, "DOTPOPD", "a")
 
         # Write auxiliary trajectories
-        if(self.verbosity >= 2):
+        if (self.verbosity >= 2):
             for ist in range(self.mol.nst):
                 if (self.l_coh[ist]):
                     self.write_aux_movie(unixmd_dir, ist, istep=istep)

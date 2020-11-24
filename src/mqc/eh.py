@@ -31,8 +31,7 @@ class Eh(MQC):
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
             propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity)
 
-    def run(self, qm, mm=None, input_dir="./", \
-        save_QMlog=False, save_MMlog=False, save_scr=True):
+    def run(self, qm, mm=None, input_dir="./", save_QMlog=False, save_MMlog=False, save_scr=True):
         """ Run MQC dynamics according to Ehrenfest dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation

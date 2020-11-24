@@ -63,8 +63,7 @@ class SH(MQC):
         # Initialize event to print
         self.event = {"HOP": []}
 
-    def run(self, qm, mm=None, input_dir="./", \
-        save_QMlog=False, save_MMlog=False, save_scr=True):
+    def run(self, qm, mm=None, input_dir="./", save_QMlog=False, save_MMlog=False, save_scr=True):
         """ Run MQC dynamics according to surface hopping dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
