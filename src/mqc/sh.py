@@ -23,13 +23,15 @@ class SH(MQC):
         :param coefficient: initial BO coefficient
         :type coefficient: double, list or complex, list
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
+        :param integer out_freq: frequency of printing output
+        :param integer verbosity: verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
-        vel_rescale="momentum", vel_reject="reverse", coefficient=None, unit_dt="fs"):
+        vel_rescale="momentum", vel_reject="reverse", coefficient=None, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
+            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity)
 
         # Initialize SH variables
         self.rstate = istate
@@ -61,8 +63,7 @@ class SH(MQC):
         # Initialize event to print
         self.event = {"HOP": []}
 
-    def run(self, qm, mm=None, input_dir="./", \
-        save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
+    def run(self, qm, mm=None, input_dir="./", save_QMlog=False, save_MMlog=False, save_scr=True):
         """ Run MQC dynamics according to surface hopping dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
@@ -71,7 +72,6 @@ class SH(MQC):
             :param boolean save_QMlog: logical for saving QM calculation log
             :param boolean save_MMlog: logical for saving MM calculation log
             :param boolean save_scr: logical for saving scratch directory
-            :param integer debug: verbosity level for standard output
         """
         # Set directory information
         input_dir = os.path.expanduser(input_dir)
@@ -108,7 +108,7 @@ class SH(MQC):
         qm.calc_coupling = True
 
         self.touch_file(unixmd_dir)
-        self.print_init(qm, mm, debug)
+        self.print_init(qm, mm)
 
         # Calculate initial input geometry at t = 0.0 s
         self.mol.reset_bo(qm.calc_coupling)
@@ -129,7 +129,7 @@ class SH(MQC):
         self.update_energy()
 
         self.write_md_output(unixmd_dir, istep=-1)
-        self.print_step(debug, istep=-1)
+        self.print_step(istep=-1)
 
         # Main MD loop
         for istep in range(self.nsteps):
@@ -165,8 +165,10 @@ class SH(MQC):
 
             self.update_energy()
 
-            self.write_md_output(unixmd_dir, istep=istep)
-            self.print_step(debug, istep=istep)
+            if ((istep + 1) % self.out_freq == 0):
+                self.write_md_output(unixmd_dir, istep=istep)
+            if ((istep + 1) % self.out_freq == 0 or len(self.event["HOP"]) > 0):
+                self.print_step(istep=istep)
             if (istep == self.nsteps - 1):
                 self.write_final_xyz(unixmd_dir, istep=istep)
 
@@ -347,15 +349,14 @@ class SH(MQC):
         tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(self.mol.nst)])
         typewriter(tmp, unixmd_dir, "SHPROB", "a")
 
-    def print_init(self, qm, mm, debug):
+    def print_init(self, qm, mm):
         """ Routine to print the initial information of dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
-            :param integer debug: verbosity level for standard output
         """
         # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm, debug)
+        super().print_init(qm, mm)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
@@ -370,23 +371,22 @@ class SH(MQC):
         dynamics_step_info += INIT
 
         # Print DEBUG1 for each step
-        if (debug >= 1):
+        if (self.verbosity >= 1):
             DEBUG1 = f" #DEBUG1{'STEP':>6s}"
             for ist in range(self.mol.nst):
                 DEBUG1 += f"{'Potential_':>14s}{ist}(H)"
             dynamics_step_info += "\n" + DEBUG1
 
         # Print DEBUG2 for each step
-        if (debug >= 2):
+        if (self.verbosity >= 2):
             DEBUG2 = f" #DEBUG2{'STEP':>6s}{'Acc. Hopping Prob.':>22s}"
             dynamics_step_info += "\n" + DEBUG2
 
         print (dynamics_step_info, flush=True)
 
-    def print_step(self, debug, istep):
+    def print_step(self, istep):
         """ Routine to print each steps infomation about dynamics
 
-            :param integer debug: verbosity level for standard output
             :param integer istep: current MD step
         """
         if (istep == -1):
@@ -409,17 +409,17 @@ class SH(MQC):
         print (INFO, flush=True)
 
         # Print DEBUG1 for each step
-        if (debug >= 1):
+        if (self.verbosity >= 1):
             DEBUG1 = f" DEBUG1{istep + 1:>7d}"
             for ist in range(self.mol.nst):
                 DEBUG1 += f"{self.mol.states[ist].energy:17.8f} "
             print (DEBUG1, flush=True)
 
         # Print DEBUG2 for each step
-        if (debug >= 2):
+        if (self.verbosity >= 2):
             DEBUG2 = f" DEBUG2{istep + 1:>7d}"
             for ist in range(self.mol.nst):
-                DEBUG2 += f"{self.acc_prob[ist]:12.5f}({self.rstate}->{ist})"
+                DEBUG2 += f"{self.acc_prob[ist]:12.5f} ({self.rstate}->{ist})"
             print (DEBUG2, flush=True)
 
         # Print event in surface hopping
