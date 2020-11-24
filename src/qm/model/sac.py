@@ -4,12 +4,12 @@ import numpy as np
 
 class SAC(Model):
     """ Class for simple avoided crossing (SAC) model BO calculation
-            
+
         :param object molecule: molecule object
-        :param double A: parameter for simple avoided crossing model 
-        :param double B: parameter for simple avoided crossing model 
-        :param double C: parameter for simple avoided crossing model 
-        :param double D: parameter for simple avoided crossing model 
+        :param double A: parameter for simple avoided crossing model
+        :param double B: parameter for simple avoided crossing model
+        :param double C: parameter for simple avoided crossing model
+        :param double D: parameter for simple avoided crossing model
     """
     def __init__(self, molecule, A=0.01, B=1.6, C=0.005, D=1.):
         # Initialize model common variables
@@ -21,12 +21,16 @@ class SAC(Model):
         self.C = C
         self.D = D
 
+        # Set 'l_nacme' with respect to the computational method
+        # SAC model can produce NACs, so we do not need to get NACME
         molecule.l_nacme = False
+
+        # SAC model can compute the gradient of several states simultaneously
         self.re_calc = False
 
     def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from simple avoided crossing model BO calculation
-            
+
             :param object molecule: molecule object
             :param string base_dir: base directory
             :param integer,list bo_list: list of BO states for BO calculation
@@ -34,7 +38,7 @@ class SAC(Model):
             :param integer istep: current MD step
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
-        # Initailize diabatic Hamiltonian
+        # Initialize diabatic Hamiltonian
         H = np.zeros((2, 2))
         dH = np.zeros((2, 2))
         unitary = np.zeros((2, 2))
@@ -64,7 +68,7 @@ class SAC(Model):
         unitary[0, 1] = - np.sin(theta)
         unitary[1, 1] = np.cos(theta)
 
-        # Extract adiabatic quantity
+        # Extract adiabatic quantities
         molecule.states[0].energy = 0.5 * (H[0, 0] + H[1, 1]) - 0.5 * sqa
         molecule.states[1].energy = 0.5 * (H[0, 0] + H[1, 1]) + 0.5 * sqa
 
@@ -72,4 +76,5 @@ class SAC(Model):
         molecule.states[1].force = np.dot(unitary[:, 0], np.matmul(dH, unitary[:, 0]))
 
         molecule.nac[0, 1, 0, 0] = np.dot(unitary[:, 0], np.matmul(dH, unitary[:, 1])) / sqa
-        molecule.nac[1, 0, 0, 0] = - np.copy(molecule.nac[0, 1, 0, 0])
+        molecule.nac[1, 0, 0, 0] = - molecule.nac[0, 1, 0, 0]
+

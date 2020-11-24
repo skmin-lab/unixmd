@@ -6,10 +6,10 @@ class DAG(Model):
     """ Class for double arch geometry (DAG) model BO calculation
 
         :param object molecule: molecule object
-        :param double A: parameter for double arch geometry 
-        :param double B: parameter for double arch geometry 
-        :param double C: parameter for double arch geometry 
-        :param double D: parameter for double arch geometry 
+        :param double A: parameter for double arch geometry
+        :param double B: parameter for double arch geometry
+        :param double C: parameter for double arch geometry
+        :param double D: parameter for double arch geometry
     """
     def __init__(self, molecule, A=6E-4, B=0.1, C=0.9, D=4.):
         # Initialize model common variables
@@ -21,7 +21,11 @@ class DAG(Model):
         self.C = C
         self.D = D
 
+        # Set 'l_nacme' with respect to the computational method
+        # DAG model can produce NACs, so we do not need to get NACME
         molecule.l_nacme = False
+
+        # DAG model can compute the gradient of several states simultaneously
         self.re_calc = False
 
     def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
@@ -47,7 +51,7 @@ class DAG(Model):
         if (abs(x) > self.D):
             H[1, 0] = np.sign(x) * self.B * np.exp(- np.sign(x) * self.C * (x - self.D)) \
                 - np.sign(x) * self.B * np.exp(- np.sign(x) * self.C * (x + self.D))
-        else: 
+        else:
             H[1, 0] = - self.B * np.exp(self.C * (x - self.D)) - self.B \
                 * (np.exp(- self.C * (x + self.D))) + 2. * self.B
         H[0, 1] = H[1, 0]
@@ -59,8 +63,8 @@ class DAG(Model):
             dH[1, 0] = - self.B * self.C * np.exp(- np.sign(x) * self.C * (x - self.D)) \
                 + self.B * self.C * np.exp(- np.sign(x) * self.C * (x + self.D))
         else:
-            dH[1, 0] =  -self.B * self.C * np.exp(self.C * (x - self.D)) \
-                + self.B * self.C * np.exp(-self.C * (x + self.D))
+            dH[1, 0] = - self.B * self.C * np.exp(self.C * (x - self.D)) \
+                + self.B * self.C * np.exp(- self.C * (x + self.D))
         dH[0, 1] = dH[1, 0]
 
         # Diagonalization
@@ -74,12 +78,13 @@ class DAG(Model):
         unitary[0, 1] = - np.sin(theta)
         unitary[1, 1] = np.cos(theta)
 
-        # Extract adiabatic quantity
+        # Extract adiabatic quantities
         molecule.states[0].energy = 0.5 * (H[0, 0] + H[1, 1]) - 0.5 * sqa
         molecule.states[1].energy = 0.5 * (H[0, 0] + H[1, 1]) + 0.5 * sqa
 
-        molecule.states[0].force = np.dot(unitary[:, 1], np.matmul(dH, unitary[:, 1])) 
+        molecule.states[0].force = np.dot(unitary[:, 1], np.matmul(dH, unitary[:, 1]))
         molecule.states[1].force = np.dot(unitary[:, 0], np.matmul(dH, unitary[:, 0]))
 
         molecule.nac[0, 1, 0, 0] = np.dot(unitary[:, 0], np.matmul(dH, unitary[:, 1])) / sqa
-        molecule.nac[1, 0, 0, 0] = - np.copy(molecule.nac[0, 1, 0, 0])
+        molecule.nac[1, 0, 0, 0] = - molecule.nac[0, 1, 0, 0]
+
