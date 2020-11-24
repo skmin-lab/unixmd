@@ -27,8 +27,8 @@ class SH(MQC):
         :param integer verbosity: verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
-        vel_rescale="momentum", vel_reject="reverse", coefficient=None, unit_dt="fs", out_freq=1, verbosity=0):
+        propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", \
+        vel_reject="reverse", coefficient=None, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
             propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity)
@@ -45,7 +45,7 @@ class SH(MQC):
         self.l_reject = False
 
         self.vel_rescale = vel_rescale
-        if not (self.vel_rescale in ["energy", "velocity", "momentum"]): 
+        if not (self.vel_rescale in ["energy", "velocity", "momentum", "augment"]): 
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
 
         self.vel_reject = vel_reject
@@ -55,7 +55,7 @@ class SH(MQC):
         # Check error for incompatible cases
         if (self.mol.l_nacme): 
             # No analytical nonadiabatic couplings exist
-            if (self.vel_rescale in ["velocity", "momentum"]): 
+            if (self.vel_rescale in ["velocity", "momentum", "augment"]): 
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'energy' rescaling for 'vel_rescale'! {self.vel_rescale}")
             if (self.vel_reject == "reverse"):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'keep' rescaling for 'vel_reject'! {self.vel_reject}")
@@ -238,15 +238,10 @@ class SH(MQC):
             pot_diff = self.mol.states[self.rstate].energy - self.mol.states[self.rstate_old].energy
 
             # Solve quadratic equation for scaling factor of velocities
-            if (self.vel_rescale == "energy"):
-                # Velocities cannot be adjusted when zero kinetic energy is given
-                if (self.mol.ekin_qm < eps):
-                    raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {self.mol.ekin_qm}")
-                a = 1.
-                b = 1.
-                c = 1.
-                det = 1.
-            elif (self.vel_rescale == "velocity"):
+            a = 1.
+            b = 1.
+            det = 1.
+            if (self.vel_rescale == "velocity"):
                 a = np.sum(self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
                 b = 2. * np.sum(self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
                 c = 2. * pot_diff
@@ -256,15 +251,26 @@ class SH(MQC):
                 b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
                 c = 2. * pot_diff
                 det = b ** 2. - 4. * a * c
+            elif (self.vel_rescale == "augment"):
+                a = np.sum(1. / self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
+                b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
+                c = 2. * pot_diff
+                det = b ** 2. - 4. * a * c
 
+            # Default: hopping is allowed
+            self.l_reject = False
+
+            # Velocities cannot be adjusted when zero kinetic energy is given
+            if (self.vel_rescale == "energy" and self.mol.ekin_qm < eps):
+                self.l_reject = True
+            # Clasically forbidden hop due to lack of kinetic energy
             if (self.mol.ekin_qm < pot_diff):
-                # Clasically forbidden hop due to lack of kinetic energy
                 self.l_reject = True
-            elif (det < 0.):
-                # Kinetic energy is enough, but there is no solution for scaling factor
+            # Kinetic energy is enough, but there is no solution for scaling factor
+            if (det < 0.):
                 self.l_reject = True
-            else:
-                # Kinetic energy is enough, and real solution for scaling factor exists
+            # When kinetic energy is enough, velocities are always rescaled in 'augment' case
+            if (self.vel_rescale == "augment" and self.mol.ekin_qm > pot_diff):
                 self.l_reject = False
 
             if (self.l_reject):
@@ -283,7 +289,9 @@ class SH(MQC):
                 self.rstate = self.rstate_old
                 bo_list[0] = self.rstate
             else:
-                if (self.vel_rescale == "energy"):
+                if (self.vel_rescale == "energy" or (det < 0. and self.vel_rescale == "augment")):
+                    if (det < 0.):
+                        self.event["HOP"].append("Accept hopping: no solution to find rescale factor, but velocity is simply rescaled")
                     x = np.sqrt(1. - pot_diff / self.mol.ekin_qm)
                 else:
                     if (b < 0.):
@@ -303,12 +311,19 @@ class SH(MQC):
                     self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm] / \
                         self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
 
+                elif (self.vel_rescale == "augment"):
+                    if (det > 0. or self.mol.ekin_qm < pot_diff):
+                        self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm] / \
+                            self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
+                    else:
+                        self.mol.vel[0:self.mol.nat_qm] *= x
+
             # Update kinetic energy
             self.mol.update_kinetic()
 
         # Record hopping event
         if (self.rstate != self.rstate_old):
-            self.event["HOP"].append(f"Hopping {self.rstate_old} -> {self.rstate}")
+            self.event["HOP"].append(f"Accept hopping: hop {self.rstate_old} -> {self.rstate}")
 
     def calculate_force(self):
         """ Routine to calculate the forces
