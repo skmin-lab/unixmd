@@ -191,9 +191,9 @@ class EhXF(MQC):
             self.aux_propagator()
             self.get_phase()
 
-            if (istep % self.out_freq == 0):
+            if ((istep + 1) % self.out_freq == 0):
                 self.write_md_output(unixmd_dir, istep=istep)
-            if (istep % self.out_freq == 0 or len(self.event["DECO"]) > 0):
+            if ((istep + 1) % self.out_freq == 0 or len(self.event["DECO"]) > 0):
                 self.print_step(istep=istep)
             if (istep == self.nsteps - 1):
                 self.write_final_xyz(unixmd_dir, istep=istep)

@@ -121,7 +121,7 @@ class Eh(MQC):
 
             self.update_energy()
 
-            if (istep % self.out_freq == 0):
+            if ((istep + 1) % self.out_freq == 0):
                 self.write_md_output(unixmd_dir, istep=istep)
                 self.print_step(istep=istep)
             if (istep == self.nsteps - 1):
@@ -214,5 +214,4 @@ class Eh(MQC):
             for ist in range(self.mol.nst):
                 DEBUG1 += f"{self.mol.states[ist].energy:17.8f} "
             print (DEBUG1, flush=True)
-
 
