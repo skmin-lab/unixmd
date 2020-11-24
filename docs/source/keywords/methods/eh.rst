@@ -38,4 +38,7 @@ where :math:`d_{ij}` is nonadiabatic couping between i-th and j-th adiabatic sta
 | ``unit_dt``        | unit of time step (fs = femtosecond,           | ``fs``      |
 |                    | au = atomic unit)                              |             |
 +--------------------+------------------------------------------------+-------------+
-
+| ``out_freq``       | frequency of printing output                   | ``1``       |
++--------------------+------------------------------------------------+-------------+
+| ``verbosity``      | verbosity of output                            | ``0``       | 
++--------------------+------------------------------------------------+-------------+
