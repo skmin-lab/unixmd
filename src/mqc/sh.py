@@ -348,33 +348,31 @@ class SH(MQC):
         """ Routine to decoherence correction, energy-based decoherence correction(EDC) scheme
         """
         # Save exp(-dt/tau) instead of tau itself
-        exp_tau = np.array([np.exp(- self.dt / ((1 + self.edc_parameter / self.mol.ekin_qm) / np.abs(self.mol.states[ist].energy - \
-            self.mol.states[self.rstate].energy))) for ist in range(self.mol.nst)])
+        exp_tau = np.array([1.0 if (ist == self.rstate) else np.exp(- self.dt / ((1 + self.edc_parameter / self.mol.ekin_qm) / \
+            np.abs(self.mol.states[ist].energy - self.mol.states[self.rstate].energy))) for ist in range(self.mol.nst)])
+        rho_update = 1.0 
 
         if (self.propagation == "coefficient"):
-            # Variable for update self.mol.states[self.rstate].coef 
-            coeff_squaresum = 0
             # Update coefficients
             for ist in range(self.mol.nst):
                 # self.mol.states[self.rstate] need other updated coefficients
                 if (ist != self.rstate):
                     self.mol.states[ist].coef *= exp_tau[ist]
-                    coeff_squaresum += self.mol.states[ist].coef.conjugate() * self.mol.states[ist].coef
+                    rho_update -= self.mol.states[ist].coef.conjugate() * self.mol.states[ist].coef
 
-            self.mol.states[self.rstate].coef *= np.sqrt((1 - coeff_squaresum) / self.mol.rho[self.rstate, self.rstate])
+            self.mol.states[self.rstate].coef *= np.sqrt(rho_update / self.mol.rho[self.rstate, self.rstate])
 
             # Get density matrix elements from coefficients
             for ist in range(self.mol.nst):
-                for jst in range(ist + 1):
+                for jst in range(ist, self.mol.nst):
                     self.mol.rho[ist, jst] = self.mol.states[ist].coef.conjugate() * self.mol.states[jst].coef
                     self.mol.rho[jst, ist] = self.mol.rho[ist, jst].conjugate()
 
         if (self.propagation == "density"):
             # save old running state element for update running state involved elements
             rho_old_rstate = self.mol.rho[self.rstate, self.rstate]
-            rho_update = 1.0 
             for ist in range(self.mol.nst):
-                for jst in range(ist + 1):
+                for jst in range(ist, self.mol.nst):
                     # Update density matrix. self.mol.rho[ist, rstate] suffers half-update because exp_tau[rstate] = 1
                     self.mol.rho[ist, jst] *= exp_tau[ist] * exp_tau[jst]
                     self.mol.rho[jst, ist] = self.mol.rho[ist, jst].conjugate()
@@ -385,8 +383,9 @@ class SH(MQC):
 
             # Update rho[self.rstate, ist] and rho[ist, self.rstate] by using rho_update and rho_old_rstate
             # rho[self.rstate, self.rstate] automatically update by double counting
-            self.mol.rho[:, self.rstate] *= np.sqrt(rho_update / rho_old_rstate)
-            self.mol.rho[self.rstate, :] *= np.sqrt(rho_update / rho_old_rstate)
+            for ist in range(self.mol.nst):
+                self.mol.rho[ist, self.rstate] *= np.sqrt(rho_update / rho_old_rstate)
+                self.mol.rho[self.rstate, ist] *= np.sqrt(rho_update / rho_old_rstate)
 
     def calculate_force(self):
         """ Routine to calculate the forces
