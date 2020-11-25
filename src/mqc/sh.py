@@ -73,6 +73,7 @@ class SH(MQC):
             :param boolean save_QMlog: logical for saving QM calculation log
             :param boolean save_MMlog: logical for saving MM calculation log
             :param boolean save_scr: logical for saving scratch directory
+            :param string restart: option for controlling dynamics restarting
         """
         # Initialize UNI-xMD
         base_dir, unixmd_dir, QMlog_dir, MMlog_dir =\
@@ -85,31 +86,33 @@ class SH(MQC):
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
             self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=self.istep, calc_force_only=False)
+            qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
             if (self.mol.qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, istep=self.istep, calc_force_only=False)
+                mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
             if (not self.mol.l_nacme):
                 self.mol.get_nacme()
 
-            self.hop_prob(istep=self.istep)
+            self.hop_prob(self.istep)
             self.hop_check(bo_list)
-            self.evaluate_hop(bo_list, istep=self.istep)
+            self.evaluate_hop(bo_list, self.istep)
             if (qm.re_calc and self.l_hop):
-                qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=self.istep, calc_force_only=True)
+                qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
                 if (self.mol.qmmm and mm != None):
-                    mm.get_data(self.mol, base_dir, bo_list, istep=self.istep, calc_force_only=True)
+                    mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=True)
 
             self.update_energy()
 
-            self.write_md_output(unixmd_dir, istep=self.istep)
-            self.print_step(istep=self.istep)
+            self.write_md_output(unixmd_dir, self.istep)
+            self.print_step(self.istep)
         
         elif (restart == "write"):
+            # Reset initial time step to t = 0.0 s
             self.istep = -1
-            self.write_md_output(unixmd_dir, istep=self.istep)
-            self.print_step(istep=self.istep)
+            self.write_md_output(unixmd_dir, self.istep)
+            self.print_step(self.istep)
 
         else:
+            # Set initial time step to last successful step of previous dynamics
             self.istep = self.fstep
 
         self.istep += 1
@@ -121,9 +124,9 @@ class SH(MQC):
 
             self.mol.backup_bo()
             self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=istep, calc_force_only=False)
+            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
             if (self.mol.qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, istep=istep, calc_force_only=False)
+                mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
             if (not self.mol.l_nacme):
                 self.mol.adjust_nac()
@@ -135,13 +138,13 @@ class SH(MQC):
 
             el_run(self)
 
-            self.hop_prob(istep=istep)
+            self.hop_prob(istep)
             self.hop_check(bo_list)
-            self.evaluate_hop(bo_list, istep=istep)
+            self.evaluate_hop(bo_list, istep)
             if (qm.re_calc and self.l_hop):
-                qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=istep, calc_force_only=True)
+                qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
                 if (self.mol.qmmm and mm != None):
-                    mm.get_data(self.mol, base_dir, bo_list, istep=istep, calc_force_only=True)
+                    mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
 
             if (self.thermo != None):
                 self.thermo.run(self)
@@ -149,11 +152,11 @@ class SH(MQC):
             self.update_energy()
 
             if ((istep + 1) % self.out_freq == 0):
-                self.write_md_output(unixmd_dir, istep=istep)
+                self.write_md_output(unixmd_dir, istep)
             if ((istep + 1) % self.out_freq == 0 or len(self.event["HOP"]) > 0):
-                self.print_step(istep=istep)
+                self.print_step(istep)
             if (istep == self.nsteps - 1):
-                self.write_final_xyz(unixmd_dir, istep=istep)
+                self.write_final_xyz(unixmd_dir, istep)
 
             self.fstep = istep
             restart_file = os.path.join(base_dir, "RESTART.bin")

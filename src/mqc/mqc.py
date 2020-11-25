@@ -77,7 +77,7 @@ class MQC(object):
         self.mol.get_coefficient(coefficient, self.istate)
     
     def run_init(self, qm, mm, input_dir, save_QMlog, save_MMlog, save_scr, restart):
-        """ Common part for running MQC dynamics
+        """ Initialize MQC dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
@@ -85,6 +85,7 @@ class MQC(object):
             :param boolean save_QMlog: logical for saving QM calculation log
             :param boolean save_MMlog: logical for saving MM calculation log
             :param boolean save_scr: logical for saving scratch directory
+            :param string restart: option for controlling dynamics restarting
         """
         # Check compatibility of variables for QM and MM calculation
         if ((self.mol.qmmm and mm == None) or (not self.mol.qmmm and mm != None)):

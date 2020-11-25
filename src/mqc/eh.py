@@ -41,6 +41,7 @@ class Eh(MQC):
             :param boolean save_QMlog: logical for saving QM calculation log
             :param boolean save_MMlog: logical for saving MM calculation log
             :param boolean save_scr: logical for saving scratch directory
+            :param string restart: option for controlling dynamics restarting
         """
         # Check if NACVs are calculated for Ehrenfest dynamics
         if (self.mol.l_nacme):
@@ -57,22 +58,24 @@ class Eh(MQC):
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
             self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=self.istep, calc_force_only=False)
+            qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
             if (self.mol.qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, istep=self.istep, calc_force_only=False)
+                mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
             self.mol.get_nacme()
 
             self.update_energy()
 
-            self.write_md_output(unixmd_dir, istep=self.istep)
-            self.print_step(istep=self.istep)
+            self.write_md_output(unixmd_dir, self.istep)
+            self.print_step(self.istep)
 
         elif (restart == "write"):
+            # Reset initial time step to t = 0.0 s
             self.istep = -1
-            self.write_md_output(unixmd_dir, istep=self.istep)
-            self.print_step(istep=self.istep)
+            self.write_md_output(unixmd_dir, self.istep)
+            self.print_step(self.istep)
         
         else:
+            # Set initial time step to last successful step of previous dynamics
             self.istep = self.fstep
 
         self.istep += 1
@@ -84,9 +87,9 @@ class Eh(MQC):
 
             self.mol.backup_bo()
             self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=istep, calc_force_only=False)
+            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
             if (self.mol.qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, istep=istep, calc_force_only=False)
+                mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
             self.mol.adjust_nac()
 
@@ -102,10 +105,10 @@ class Eh(MQC):
             self.update_energy()
 
             if ((istep + 1) % self.out_freq == 0):
-                self.write_md_output(unixmd_dir, istep=istep)
-                self.print_step(istep=istep)
+                self.write_md_output(unixmd_dir, istep)
+                self.print_step(istep)
             if (istep == self.nsteps - 1):
-                self.write_final_xyz(unixmd_dir, istep=istep)
+                self.write_final_xyz(unixmd_dir, istep)
 
             self.fstep = istep
             restart_file = os.path.join(base_dir, "RESTART.bin")
