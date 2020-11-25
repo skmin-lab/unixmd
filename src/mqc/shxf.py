@@ -144,11 +144,11 @@ class SHXF(MQC):
             :param boolean save_scr: logical for saving scratch directory
         """
         # Initialize UNI-xMD
-        base_dir, unixmd_dir, QMlog_dir, MMlog_dir \
-             = self.run_init(qm, mm, input_dir, save_QMlog, save_MMlog, save_scr, restart)
+        base_dir, unixmd_dir, QMlog_dir, MMlog_dir =\
+             self.run_init(qm, mm, input_dir, save_QMlog, save_MMlog, save_scr, restart)
         bo_list = [self.rstate]
         qm.calc_coupling = True
-        self.print_init(qm, mm, debug)
+        self.print_init(qm, mm)
 
         if (restart == None):
             # Initialize decoherence variables
@@ -179,12 +179,12 @@ class SHXF(MQC):
             self.get_phase()
 
             self.write_md_output(unixmd_dir, istep=self.istep)
-            self.print_step(debug, istep=self.istep)
+            self.print_step(istep=self.istep)
 
         elif (restart == "write"):
             self.istep = -1
             self.write_md_output(unixmd_dir, istep=self.istep)
-            self.print_step(debug, istep=self.istep)
+            self.print_step(istep=self.istep)
 
         else:
             self.istep = self.fstep
