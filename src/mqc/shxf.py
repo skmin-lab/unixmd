@@ -48,7 +48,8 @@ class SHXF(MQC):
         :param string solver: propagation solver
         :param boolean l_pop_print: logical to print BO population and coherence
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
-        :param string vel_rescale: velocity rescaling method after hop
+        :param string vel_rescale: velocity rescaling method after successful hop
+        :param string vel_reject: velocity rescaling method after frustrated hop
         :param double threshold: electronic density threshold for decoherence term calculation
         :param wsigma: width of nuclear wave packet of auxiliary trajectory
         :type wsigma: double or double,list
@@ -56,13 +57,16 @@ class SHXF(MQC):
         :type coefficient: double, list or complex, list
         :param boolean l_state_wise: logical to use state-wise total energies for auxiliary trajectories
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
+        :param integer out_freq: frequency of printing output
+        :param integer verbosity: verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", \
-        threshold=0.01, wsigma=None, one_dim=False, coefficient=None, l_state_wise=False, unit_dt="fs"):
+        vel_reject="reverse", threshold=0.01, wsigma=None, one_dim=False, coefficient=None, \
+        l_state_wise=False, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
+            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity)
 
         # Initialize SH variables
         self.rstate = istate
@@ -73,23 +77,27 @@ class SHXF(MQC):
         self.acc_prob = np.zeros(self.mol.nst + 1)
 
         self.l_hop = False
-        self.force_hop = False
+        self.l_reject = False
 
         self.vel_rescale = vel_rescale
-        self.l_state_wise = l_state_wise
-
-        if (self.vel_rescale == "energy"):
-            pass
-        elif (self.vel_rescale == "velocity"):
-            if (self.mol.l_nacme): 
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Nonadiabatic coupling vectors are not available! l_nacme: {self.mol.l_nacme}")
-        elif (self.vel_rescale == "momentum"):
-            if (self.mol.l_nacme): 
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Nonadiabatic coupling vectors are not available! l_nacme: {self.mol.l_nacme}")
-        else:
+        if not (self.vel_rescale in ["energy", "velocity", "momentum", "augment"]): 
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
 
+        self.vel_reject = vel_reject
+        if not (self.vel_reject in ["keep", "reverse"]): 
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_reject'! {self.vel_reject}")
+
+        # Check error for incompatible cases
+        if (self.mol.l_nacme): 
+            # No analytical nonadiabatic couplings exist
+            if (self.vel_rescale in ["velocity", "momentum", "augment"]): 
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'energy' rescaling for 'vel_rescale'! {self.vel_rescale}")
+            if (self.vel_reject == "reverse"):
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'keep' rescaling for 'vel_reject'! {self.vel_reject}")
+
         # Initialize XF related variables
+        self.force_hop = False
+        self.l_state_wise = l_state_wise
         self.one_dim = one_dim
         self.l_coh = [False] * self.mol.nst
         self.l_first = [False] * self.mol.nst
@@ -134,7 +142,6 @@ class SHXF(MQC):
             :param boolean save_QMlog: logical for saving QM calculation log
             :param boolean save_MMlog: logical for saving MM calculation log
             :param boolean save_scr: logical for saving scratch directory
-            :param integer debug: verbosity level for standard output
         """
         # Initialize UNI-xMD
         base_dir, unixmd_dir, QMlog_dir, MMlog_dir \
@@ -223,8 +230,10 @@ class SHXF(MQC):
             self.aux_propagator()
             self.get_phase()
 
-            self.write_md_output(unixmd_dir, istep=istep)
-            self.print_step(debug, istep=istep)
+            if ((istep + 1) % self.out_freq == 0):
+                self.write_md_output(unixmd_dir, istep=istep)
+            if ((istep + 1) % self.out_freq == 0 or len(self.event["HOP"]) > 0 or len(self.event["DECO"]) > 0):
+                self.print_step(istep=istep)
             if (istep == self.nsteps - 1):
                 self.write_final_xyz(unixmd_dir, istep=istep)
 
@@ -302,74 +311,100 @@ class SHXF(MQC):
             :param integer istep: current MD step
         """
         if (self.l_hop):
+            # Calculate potential difference between hopping states
             pot_diff = self.mol.states[self.rstate].energy - self.mol.states[self.rstate_old].energy
+
+            # Solve quadratic equation for scaling factor of velocities
+            a = 1.
+            b = 1.
+            det = 1.
+            if (self.vel_rescale == "velocity"):
+                a = np.sum(self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
+                b = 2. * np.sum(self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
+                c = 2. * pot_diff
+                det = b ** 2. - 4. * a * c
+            elif (self.vel_rescale == "momentum"):
+                a = np.sum(1. / self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
+                b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
+                c = 2. * pot_diff
+                det = b ** 2. - 4. * a * c
+            elif (self.vel_rescale == "augment"):
+                a = np.sum(1. / self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
+                b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
+                c = 2. * pot_diff
+                det = b ** 2. - 4. * a * c
+
+            # Default: hopping is allowed
+            self.l_reject = False
+
+            # Velocities cannot be adjusted when zero kinetic energy is given
+            if (self.vel_rescale == "energy" and self.mol.ekin_qm < eps):
+                self.l_reject = True
+            # Clasically forbidden hop due to lack of kinetic energy
             if (self.mol.ekin_qm < pot_diff):
+                self.l_reject = True
+            # Kinetic energy is enough, but there is no solution for scaling factor
+            if (det < 0.):
+                self.l_reject = True
+            # When kinetic energy is enough, velocities are always rescaled in 'augment' case
+            if (self.vel_rescale == "augment" and self.mol.ekin_qm > pot_diff):
+                self.l_reject = False
+
+            if (self.l_reject):
+                # Record event for frustrated hop
+                if (self.mol.ekin_qm < pot_diff):
+                    self.event["HOP"].append(f"Reject hopping: smaller kinetic energy than potential energy difference between {self.rstate} and {self.rstate_old}")
+                # Set scaling constant with respect to 'vel_reject'
+                if (self.vel_reject == "keep"):
+                    self.event["HOP"].append("Reject hopping: no solution to find rescale factor, velocity is not changed")
+                elif (self.vel_reject == "reverse"):
+                    # x = - 1 when 'vel_rescale' is 'energy', otherwise x = - b / a
+                    self.event["HOP"].append("Reject hopping: no solution to find rescale factor, velocity is reversed along coupling direction")
+                    x = - b / a
+                # Recover old running state
                 self.l_hop = False
                 self.force_hop = False
-                self.event["HOP"].append(f"Reject hopping: smaller kinetic energy than potential energy difference between {self.rstate} and {self.rstate_old}")
                 self.rstate = self.rstate_old
                 bo_list[0] = self.rstate
             else:
-                if (self.mol.ekin_qm < eps):
-                    raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {self.mol.ekin_qm}")
+                if (self.vel_rescale == "energy" or (det < 0. and self.vel_rescale == "augment")):
+                    if (det < 0.):
+                        self.event["HOP"].append("Accept hopping: no solution to find rescale factor, but velocity is simply rescaled")
+                    x = np.sqrt(1. - pot_diff / self.mol.ekin_qm)
+                else:
+                    if (b < 0.):
+                        x = 0.5 * (- b - np.sqrt(det)) / a
+                    else:
+                        x = 0.5 * (- b + np.sqrt(det)) / a
 
+            # Rescale velocities for QM atoms
+            if (not (self.vel_reject == "keep" and self.l_reject)):
                 if (self.vel_rescale == "energy"):
-                    fac = 1. - pot_diff / self.mol.ekin_qm
-                    # Rescale velocities for QM atoms
-                    self.mol.vel[0:self.mol.nat_qm] *= np.sqrt(fac)
+                    self.mol.vel[0:self.mol.nat_qm] *= x
 
                 elif (self.vel_rescale == "velocity"):
-                    a = np.sum(self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
-                    b = 2. * np.sum(self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
-                    c = 2. * pot_diff
-                    det = b ** 2. - 4. * a * c
-
-                    if (det < 0.):
-                        self.l_hop = False
-                        self.force_hop = False
-                        self.rstate = self.rstate_old
-                        bo_list[0] = self.rstate
-                        self.event["HOP"].append("Reject hopping: no solution to find rescale factor")
-                    else:
-                        if (b < 0.):
-                            x = 0.5 * (- b - np.sqrt(det)) / a
-                        else:
-                            x = 0.5 * (- b + np.sqrt(det)) / a
-
-                        # Rescale velocities for QM atoms
-                        self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm]
+                    self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm]
 
                 elif (self.vel_rescale == "momentum"):
-                    a = np.sum(1. / self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
-                    b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
-                    c = 2. * pot_diff
-                    det = b ** 2. - 4. * a * c
+                    self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm] / \
+                        self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
 
-                    if (det < 0.):
-                        self.l_hop = False
-                        self.force_hop = False
-                        self.rstate = self.rstate_old
-                        bo_list[0] = self.rstate
-                        self.event["HOP"].append("Reject hopping: no solution to find rescale factor")
+                elif (self.vel_rescale == "augment"):
+                    if (det > 0. or self.mol.ekin_qm < pot_diff):
+                        self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm] / \
+                            self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
                     else:
-                        if (b < 0.):
-                            x = 0.5 * (- b - np.sqrt(det)) / a
-                        else:
-                            x = 0.5 * (- b + np.sqrt(det)) / a
+                        self.mol.vel[0:self.mol.nat_qm] *= x
 
-                        # Rescale velocities for QM atoms
-                        self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm] /\
-                            self.mol.mass[0:self.mol.nat_qm].reshape((-1,1))
+            # Update kinetic energy
+            self.mol.update_kinetic()
 
-                # Update kinetic energy
-                self.mol.update_kinetic()
-
-        # Record event
+        # Record hopping event
         if (self.rstate != self.rstate_old):
             if (self.force_hop):
-                self.event["HOP"].append(f"Force hop {self.rstate_old} -> {self.rstate}")
+                self.event["HOP"].append(f"Accept hopping: force hop {self.rstate_old} -> {self.rstate}")
             else:
-                self.event["HOP"].append(f"Hopping {self.rstate_old} -> {self.rstate}")
+                self.event["HOP"].append(f"Accept hopping: hop {self.rstate_old} -> {self.rstate}")
 
     def calculate_force(self):
         """ Routine to calculate the forces
@@ -555,9 +590,10 @@ class SHXF(MQC):
         typewriter(tmp, unixmd_dir, "DOTPOPD", "a")
 
         # Write auxiliary trajectories
-        for ist in range(self.mol.nst):
-            if (self.l_coh[ist]):
-                self.write_aux_movie(unixmd_dir, ist, istep=istep)
+        if (self.verbosity >= 2):
+            for ist in range(self.mol.nst):
+                if (self.l_coh[ist]):
+                    self.write_aux_movie(unixmd_dir, ist, istep=istep)
 
     def write_aux_movie(self, unixmd_dir, ist, istep):
         """ Write auxiliary trajecoty movie file
@@ -573,15 +609,14 @@ class SHXF(MQC):
             "".join([f"{self.aux.vel[ist, iat, isp]:15.8f}" for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
         typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz", "a")
 
-    def print_init(self, qm, mm, debug):
+    def print_init(self, qm, mm):
         """ Routine to print the initial information of dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
-            :param integer debug: verbosity level for standard output
         """
         # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm, debug)
+        super().print_init(qm, mm)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
@@ -596,23 +631,22 @@ class SHXF(MQC):
         dynamics_step_info += INIT
 
         # Print DEBUG1 for each step
-        if (debug >= 1):
+        if (self.verbosity >= 1):
             DEBUG1 = f" #DEBUG1{'STEP':>6s}"
             for ist in range(self.mol.nst):
                 DEBUG1 += f"{'Potential_':>14s}{ist}(H)"
             dynamics_step_info += "\n" + DEBUG1
 
         # Print DEBUG2 for each step
-        if (debug >= 2):
+        if (self.verbosity >= 2):
             DEBUG2 = f" #DEBUG2{'STEP':>6s}{'Acc. Hopping Prob.':>22s}"
             dynamics_step_info += "\n" + DEBUG2
 
         print (dynamics_step_info, flush=True)
 
-    def print_step(self, debug, istep):
+    def print_step(self, istep):
         """ Routine to print each steps infomation about dynamics
 
-            :param integer debug: verbosity level for standard output
             :param integer istep: current MD step
         """
         if (istep == -1):
@@ -635,17 +669,17 @@ class SHXF(MQC):
         print (INFO, flush=True)
 
         # Print DEBUG1 for each step
-        if (debug >= 1):
+        if (self.verbosity >= 1):
             DEBUG1 = f" DEBUG1{istep + 1:>7d}"
             for ist in range(self.mol.nst):
                 DEBUG1 += f"{self.mol.states[ist].energy:17.8f} "
             print (DEBUG1, flush=True)
 
         # Print DEBUG2 for each step
-        if (debug >= 2):
+        if (self.verbosity >= 2):
             DEBUG2 = f" DEBUG2{istep + 1:>7d}"
             for ist in range(self.mol.nst):
-                DEBUG2 += f"{self.acc_prob[ist]:12.5f}({self.rstate}->{ist})"
+                DEBUG2 += f"{self.acc_prob[ist]:12.5f} ({self.rstate}->{ist})"
             print (DEBUG2, flush=True)
 
         # Print event in SHXF

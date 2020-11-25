@@ -21,9 +21,11 @@ class MQC(object):
         :param coefficient: initial BO coefficient
         :type coefficient: double, list or complex, list
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
+        :param integer out_freq: frequency of printing output
+        :param integer verbosity: verbosity of output
     """
     def __init__(self, molecule, thermostat, istate, dt, nsteps, nesteps, \
-        propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt):
+        propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -67,6 +69,9 @@ class MQC(object):
         self.l_adjnac = l_adjnac
 
         self.rforce = np.zeros((self.mol.nat, self.mol.nsp))
+
+        self.out_freq = out_freq
+        self.verbosity = verbosity
 
         # Initialize coefficients and densities
         self.mol.get_coefficient(coefficient, self.istate)
@@ -161,12 +166,11 @@ class MQC(object):
         """
         pass
 
-    def print_init(self, qm, mm, debug):
+    def print_init(self, qm, mm):
         """ Routine to print the initial information of dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
-            :param integer debug: verbosity level for standard output
         """
         # Print UNI-xMD version
         cur_time = datetime.datetime.now()
@@ -230,6 +234,7 @@ class MQC(object):
         # Print surface hopping variables
         if (self.md_type == "SH" or self.md_type == "SHXF"):
             dynamics_info += f"\n  Velocity Rescale in Hop  = {self.vel_rescale:>16s}\n"
+            dynamics_info += f"  Rescale when Hop Reject  = {self.vel_reject:>16s}\n"
 
         # Print XF variables
         if (self.md_type == "SHXF" or self.md_type == "EhXF"):
@@ -354,7 +359,7 @@ class MQC(object):
             typewriter(tmp, unixmd_dir, "NACME", "a")
 
             # Write NACV file
-            if (not self.mol.l_nacme):
+            if (not self.mol.l_nacme and self.verbosity >= 2):
                 for ist in range(self.mol.nst):
                     for jst in range(ist + 1, self.mol.nst):
                         tmp = f'{self.mol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV' + \

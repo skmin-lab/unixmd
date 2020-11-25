@@ -2,30 +2,28 @@ from __future__ import division
 from qm.model.model import Model
 import numpy as np
 
-class SAC(Model):
-    """ Class for simple avoided crossing (SAC) model BO calculation
+class ECR(Model):
+    """ Class for extended coupling region with reflection (ECR) model BO calculation
 
         :param object molecule: molecule object
-        :param double A: parameter for simple avoided crossing model
-        :param double B: parameter for simple avoided crossing model
-        :param double C: parameter for simple avoided crossing model
-        :param double D: parameter for simple avoided crossing model
+        :param double A: parameter for extended coupling region with reflection
+        :param double B: parameter for extended coupling region with reflection
+        :param double C: parameter for extended coupling region with reflection
     """
-    def __init__(self, molecule, A=0.01, B=1.6, C=0.005, D=1.):
+    def __init__(self, molecule, A=6E-4, B=0.1, C=0.9):
         # Initialize model common variables
-        super(SAC, self).__init__(None)
+        super(ECR, self).__init__(None)
 
         # Define parameters
         self.A = A
         self.B = B
         self.C = C
-        self.D = D
 
         # Set 'l_nacme' with respect to the computational method
-        # SAC model can produce NACs, so we do not need to get NACME
+        # ECR model can produce NACs, so we do not need to get NACME
         molecule.l_nacme = False
 
-        # SAC model can compute the gradient of several states simultaneously
+        # ECR model can compute the gradient of several states simultaneously
         self.re_calc = False
 
     def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
@@ -46,15 +44,18 @@ class SAC(Model):
         x = molecule.pos[0]
 
         # Define Hamiltonian
-        H[0, 0] = np.sign(x) * self.A * (1. - np.exp(- self.B * abs(x)))
-        H[1, 1] = - H[0, 0]
-        H[1, 0] = self.C * np.exp(- self.D * x ** 2)
+        H[0, 0] = self.A
+        H[1, 1] = - self.A
+        if (x < 0):
+            H[1, 0] = self.B * np.exp(self.C * x)
+        else:
+            H[1, 0] = self.B * (2. - np.exp(- self.C * x))
         H[0, 1] = H[1, 0]
 
         # Define a derivative of Hamiltonian
-        dH[0, 0] = self.A * self.B * np.exp(- self.B * abs(x))
-        dH[1, 1] = - dH[0, 0]
-        dH[1, 0] = - 2. * self.D * self.C * x * np.exp(- self.D * x ** 2)
+        dH[0, 0] = 0.
+        dH[1, 1] = 0.
+        dH[1, 0] = self.B * self.C * np.exp(- self.C * abs(x))
         dH[0, 1] = dH[1, 0]
 
         # Diagonalization

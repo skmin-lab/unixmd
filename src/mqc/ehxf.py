@@ -44,14 +44,16 @@ class EhXF(MQC):
         :type coefficient: double, list or complex, list
         :param boolean l_state_wise: logical to use state-wise total energies for auxiliary trajectories
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
+        :param integer out_freq: frequency of printing output
+        :param integer verbosity: verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
         threshold=0.01, wsigma=None, l_qmom_force=False, coefficient=None, \
-        l_state_wise=False, unit_dt="fs"):
+        l_state_wise=False, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
+            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity)
 
         # Initialize XF related variables
         self.l_coh = []
@@ -90,8 +92,7 @@ class EhXF(MQC):
         # Initialize event to print
         self.event = {"DECO": []}
 
-    def run(self, qm, mm=None, input_dir="./", \
-        save_QMlog=False, save_MMlog=False, save_scr=True, restart=None, debug=0):
+    def run(self, qm, mm=None, input_dir="./", save_QMlog=False, save_MMlog=False, save_scr=True, restart=None):
         """ Run MQC dynamics according to Ehrenfest-XF dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
@@ -100,7 +101,6 @@ class EhXF(MQC):
             :param boolean save_QMlog: logical for saving QM calculation log
             :param boolean save_MMlog: logical for saving MM calculation log
             :param boolean save_scr: logical for saving scratch directory
-            :param integer debug: verbosity level for standard output
         """
         # Check compatibility of variables for QM and MM calculation
         if ((self.mol.qmmm and mm == None) or (not self.mol.qmmm and mm != None)):
@@ -214,8 +214,10 @@ class EhXF(MQC):
             self.aux_propagator()
             self.get_phase()
 
-            self.write_md_output(unixmd_dir, istep=istep)
-            self.print_step(debug, istep=istep)
+            if ((istep + 1) % self.out_freq == 0):
+                self.write_md_output(unixmd_dir, istep=istep)
+            if ((istep + 1) % self.out_freq == 0 or len(self.event["DECO"]) > 0):
+                self.print_step(istep=istep)
             if (istep == self.nsteps - 1):
                 self.write_final_xyz(unixmd_dir, istep=istep)
 
@@ -404,9 +406,10 @@ class EhXF(MQC):
         typewriter(tmp, unixmd_dir, "DOTPOPD", "a")
 
         # Write auxiliary trajectories
-        for ist in range(self.mol.nst):
-            if (self.l_coh[ist]):
-                self.write_aux_movie(unixmd_dir, ist, istep=istep)
+        if (self.verbosity >= 2):
+            for ist in range(self.mol.nst):
+                if (self.l_coh[ist]):
+                    self.write_aux_movie(unixmd_dir, ist, istep=istep)
 
     def write_aux_movie(self, unixmd_dir, ist, istep):
         """ Write auxiliary trajecoty movie file 
@@ -422,15 +425,14 @@ class EhXF(MQC):
             "".join([f"{self.aux.vel[ist, iat, isp]:15.8f}" for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
         typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz", "a")
 
-    def print_init(self, qm, mm, debug):
+    def print_init(self, qm, mm):
         """ Routine to print the initial information of dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
-            :param integer debug: verbosity level for standard output
         """
         # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm, debug)
+        super().print_init(qm, mm)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
@@ -445,7 +447,7 @@ class EhXF(MQC):
         dynamics_step_info += INIT
 
         # Print DEBUG1 for each step
-        if (debug >= 1):
+        if (self.verbosity >= 1):
             DEBUG1 = f" #DEBUG1{'STEP':>6s}"
             for ist in range(self.mol.nst):
                 DEBUG1 += f"{'Potential_':>14s}{ist}(H)"
@@ -453,10 +455,9 @@ class EhXF(MQC):
 
         print (dynamics_step_info, flush=True)
 
-    def print_step(self, debug, istep):
+    def print_step(self, istep):
         """ Routine to print each steps infomation about dynamics
 
-            :param integer debug: verbosity level for standard output
             :param integer istep: current MD step
         """
         ctemp = self.mol.ekin * 2. / float(self.mol.dof) * au_to_K
@@ -472,7 +473,7 @@ class EhXF(MQC):
         print (INFO, flush=True)
 
         # Print DEBUG1 for each step
-        if (debug >= 1):
+        if (self.verbosity >= 1):
             DEBUG1 = f" DEBUG1{istep + 1:>7d}"
             for ist in range(self.mol.nst):
                 DEBUG1 += f"{self.mol.states[ist].energy:17.8f} "
@@ -484,4 +485,3 @@ class EhXF(MQC):
                 for ievent in events:
                     print (f" {category}{istep + 1:>9d}  {ievent}", flush=True)
         self.event["DECO"] = []
-
