@@ -125,8 +125,7 @@ class SHXF(MQC):
         # Initialize event to print
         self.event = {"HOP": [], "DECO": []}
 
-    def run(self, qm, mm=None, input_dir="./", \
-        save_QMlog=False, save_MMlog=False, save_scr=True, restart=None, debug=0):
+    def run(self, qm, mm=None, input_dir="./", save_QMlog=False, save_MMlog=False, save_scr=True, restart=None):
         """ Run MQC dynamics according to decoherence-induced surface hopping dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
@@ -137,56 +136,14 @@ class SHXF(MQC):
             :param boolean save_scr: logical for saving scratch directory
             :param integer debug: verbosity level for standard output
         """
-        # Check compatibility of variables for QM and MM calculation
-        if ((self.mol.qmmm and mm == None) or (not self.mol.qmmm and mm != None)):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Both self.mol.qmmm and mm object is necessary! {self.mol.qmmm} and {mm}")
-        if (self.mol.qmmm and mm != None):
-            self.check_qmmm(qm, mm)
-        
-        # Set directory information
-        input_dir = os.path.expanduser(input_dir)
-        base_dir = os.path.join(os.getcwd(), input_dir)
-        unixmd_dir = os.path.join(base_dir, "md")
-        QMlog_dir = os.path.join(base_dir, "QMlog")
-        if (self.mol.qmmm and mm != None):
-            MMlog_dir = os.path.join(base_dir, "MMlog")
-        
         # Initialize UNI-xMD
+        base_dir, unixmd_dir, QMlog_dir, MMlog_dir \
+             = self.run_init(qm, mm, input_dir, save_QMlog, save_MMlog, save_scr, restart)
         bo_list = [self.rstate]
         qm.calc_coupling = True
-       
-        # Check and make directories
-        if (restart == "append"):
-            if (not os.path.exists(unixmd_dir)):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Directory to be appended for restart not found! {restart} and {unixmd_dir}")
-            if (not os.path.exists(unixmd_dir) and save_QMlog):
-                os.makedirs(QMlog_dir)
-            if (self.mol.qmmm and mm != None):
-                if (not os.path.exists(MMlog_dir) and save_MMlog):
-                    os.makedirs(MMlog_dir)
-        else:
-            if (os.path.exists(unixmd_dir)):
-                shutil.move(unixmd_dir, unixmd_dir + "_old_" + str(os.getpid()))
-            os.makedirs(unixmd_dir)
-
-            if (os.path.exists(QMlog_dir)):
-                shutil.move(QMlog_dir, QMlog_dir + "_old_" + str(os.getpid()))
-            if (save_QMlog):
-                os.makedirs(QMlog_dir)
-
-            if (self.mol.qmmm and mm != None):
-                if (os.path.exists(MMlog_dir)):
-                    shutil.move(MMlog_dir, MMlog_dir + "_old_" + str(os.getpid()))
-                if (save_MMlog):
-                    os.makedirs(MMlog_dir)
-            
-            self.touch_file(unixmd_dir)
-
-        os.chdir(base_dir)
         self.print_init(qm, mm, debug)
 
         if (restart == None):
-            
             # Initialize decoherence variables
             self.append_wsigma()
 
