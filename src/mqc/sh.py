@@ -28,7 +28,7 @@ class SH(MQC):
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
-        vel_rescale="momentum", vel_reject="reverse", coefficient=None, deco_correction="idc", \
+        vel_rescale="momentum", vel_reject="reverse", coefficient=None, deco_correction=None, \
         edc_parameter=0.1, unit_dt="fs"):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
@@ -57,7 +57,7 @@ class SH(MQC):
         self.deco_correction = deco_correction
         self.edc_parameter = edc_parameter
 
-        if not (deco_correction in ["idc", "edc"]): 
+        if not (deco_correction in [None, "idc", "edc"]): 
             raise ValueError (f"( {self.deco_correction}.{call_name()} ) Invalid 'deco_correction'! {self.deco_correction}")
 
         # Check error for incompatible cases

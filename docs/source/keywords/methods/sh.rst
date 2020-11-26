@@ -54,7 +54,7 @@ trajectories will be transit to that state in stochastical behavior.
 +--------------------+------------------------------------------------+--------------+
 | ``coefficient``    | initial BO coefficient                         | ``None``     |
 +--------------------+------------------------------------------------+--------------+
-| ``deco_correction``| simple decoherence correction schemes          | ``idc``      |
+| ``deco_correction``| simple decoherence correction schemes          | ``None``     |
 +--------------------+------------------------------------------------+--------------+
 | ``edc_parameter``  | energy constant for rescaling coefficients     | ``0.1``      |
 |                    | in edc                                         |              |
