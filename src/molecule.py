@@ -213,7 +213,10 @@ class Molecule(object):
     def get_nacme(self):
         """ Get NACME from nonadiabatic couplings
         """
-        self.nacme = np.sum(np.multiply(self.nac[0:self.nat_qm], self.vel[0:self.nat_qm]), axis = (2, 3))
+        for ist in range(self.nst):
+            for jst in range(ist + 1, self.nst):
+                self.nacme[ist, jst] = np.sum(self.nac[ist, jst, 0:self.nat_qm] * self.vel[0:self.nat_qm])
+                self.nacme[jst, ist] = - self.nacme[ist, jst]
 
     def update_kinetic(self):
         """ Get kinetic energy
