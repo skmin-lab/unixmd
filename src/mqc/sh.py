@@ -242,18 +242,24 @@ class SH(MQC):
             b = 1.
             det = 1.
             if (self.vel_rescale == "velocity"):
-                a = np.sum(self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
-                b = 2. * np.sum(self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
+                a = np.sum(self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, \
+                    self.rstate, 0:self.mol.nat_qm] ** 2., axis=1))
+                b = 2. * np.sum(self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, \
+                    self.rstate, 0:self.mol.nat_qm] * self.mol.vel, axis=1))
                 c = 2. * pot_diff
                 det = b ** 2. - 4. * a * c
             elif (self.vel_rescale == "momentum"):
-                a = np.sum(1. / self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
-                b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
+                a = np.sum(1. / self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, \
+                    self.rstate, 0:self.mol.nat_qm] ** 2., axis=1))
+                b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm] \
+                    * self.mol.vel[0:self.mol.nat_qm], axis=1))
                 c = 2. * pot_diff
                 det = b ** 2. - 4. * a * c
             elif (self.vel_rescale == "augment"):
-                a = np.sum(1. / self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
-                b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
+                a = np.sum(1. / self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, \
+                    self.rstate, 0:self.mol.nat_qm] ** 2., axis=1))
+                b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm] \
+                    * self.mol.vel[0:self.mol.nat_qm], axis=1))
                 c = 2. * pot_diff
                 det = b ** 2. - 4. * a * c
 
