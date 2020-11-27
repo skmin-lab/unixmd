@@ -4,6 +4,7 @@ from mqc.mqc import MQC
 from misc import eps, au_to_K, au_to_A, call_name, typewriter
 import os, shutil, textwrap
 import numpy as np
+import pickle
 
 class Auxiliary_Molecule(object):
     """ Class for auxiliary molecule that is used for the calculation of decoherence term
@@ -87,96 +88,78 @@ class EhXF(MQC):
 
         # Debug variables
         self.dotpopd = np.zeros(self.mol.nst)
-        
+
         # Initialize event to print
         self.event = {"DECO": []}
 
-    def run(self, qm, mm=None, input_dir="./", save_QMlog=False, save_MMlog=False, save_scr=True):
+    def run(self, qm, mm=None, input_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         """ Run MQC dynamics according to Ehrenfest-XF dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
             :param string input_dir: location of input directory
-            :param boolean save_QMlog: logical for saving QM calculation log
-            :param boolean save_MMlog: logical for saving MM calculation log
+            :param boolean save_qm_log: logical for saving QM calculation log
+            :param boolean save_mm_log: logical for saving MM calculation log
             :param boolean save_scr: logical for saving scratch directory
+            :param string restart: option for controlling dynamics restarting
         """
-        # Set directory information
-        input_dir = os.path.expanduser(input_dir)
-        base_dir = os.path.join(os.getcwd(), input_dir)
-
-        unixmd_dir = os.path.join(base_dir, "md")
-        if (os.path.exists(unixmd_dir)):
-            shutil.move(unixmd_dir, unixmd_dir + "_old_" + str(os.getpid()))
-        os.makedirs(unixmd_dir)
-
-        QMlog_dir = os.path.join(base_dir, "QMlog")
-        if (os.path.exists(QMlog_dir)):
-            shutil.move(QMlog_dir, QMlog_dir + "_old_" + str(os.getpid()))
-        if (save_QMlog):
-            os.makedirs(QMlog_dir)
-
-        if (self.mol.qmmm and mm != None):
-            MMlog_dir = os.path.join(base_dir, "MMlog")
-            if (os.path.exists(MMlog_dir)):
-                shutil.move(MMlog_dir, MMlog_dir + "_old_" + str(os.getpid()))
-            if (save_MMlog):
-                os.makedirs(MMlog_dir)
-
-        if ((self.mol.qmmm and mm == None) or (not self.mol.qmmm and mm != None)):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Both self.mol.qmmm and mm object is necessary! {self.mol.qmmm} and {mm}")
-
-        # Check compatibility for QM and MM objects
-        if (self.mol.qmmm and mm != None):
-            self.check_qmmm(qm, mm)
-
         # Initialize UNI-xMD
-        os.chdir(base_dir)
+        base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
+             self.run_init(qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
         bo_list = [ist for ist in range(self.mol.nst)]
         qm.calc_coupling = True
-
-        self.touch_file(unixmd_dir)
         self.print_init(qm, mm)
 
-        # Initialize decoherence variables
-        self.append_wsigma()
+        if (restart == None):
+            # Initialize decoherence variables
+            self.append_wsigma()
 
-        # Calculate initial input geometry at t = 0.0 s
-        self.mol.reset_bo(qm.calc_coupling)
-        qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=-1, calc_force_only=False)
-        if (self.mol.qmmm and mm != None):
-            mm.get_data(self.mol, base_dir, bo_list, istep=-1, calc_force_only=False)
-        if (not self.mol.l_nacme):
+            # Calculate initial input geometry at t = 0.0 s
+            self.istep = -1
+            self.mol.reset_bo(qm.calc_coupling)
+            qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
+            if (self.mol.qmmm and mm != None):
+                mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
             self.mol.get_nacme()
 
-        self.update_energy()
+            self.update_energy()
 
-        self.check_decoherence()
-        self.check_coherence()
-        self.aux_propagator()
-        self.get_phase()
+            self.check_decoherence()
+            self.check_coherence()
+            self.aux_propagator()
+            self.get_phase()
 
-        self.write_md_output(unixmd_dir, istep=-1)
-        self.print_step(istep=-1)
+            self.write_md_output(unixmd_dir, self.istep)
+            self.print_step(self.istep)
+
+        elif (restart == "write"):
+            # Reset initial time step to t = 0.0 s
+            self.istep = -1
+            self.write_md_output(unixmd_dir, self.istep)
+            self.print_step(self.istep)
+
+        elif (restart == "append"):
+            # Set initial time step to last successful step of previous dynamics
+            self.istep = self.fstep
+
+        self.istep += 1
 
         # Main MD loop
-        for istep in range(self.nsteps):
+        for istep in range(self.istep, self.nsteps):
 
             self.cl_update_position()
 
             self.mol.backup_bo()
             self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=istep, calc_force_only=False)
+            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
             if (self.mol.qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, istep=istep, calc_force_only=False)
+                mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
-            if (not self.mol.l_nacme):
-                self.mol.adjust_nac()
+            self.mol.adjust_nac()
 
             self.cl_update_velocity()
 
-            if (not self.mol.l_nacme):
-                self.mol.get_nacme()
+            self.mol.get_nacme()
 
             el_run(self)
 
@@ -191,11 +174,16 @@ class EhXF(MQC):
             self.get_phase()
 
             if ((istep + 1) % self.out_freq == 0):
-                self.write_md_output(unixmd_dir, istep=istep)
+                self.write_md_output(unixmd_dir, istep)
             if ((istep + 1) % self.out_freq == 0 or len(self.event["DECO"]) > 0):
-                self.print_step(istep=istep)
+                self.print_step(istep)
             if (istep == self.nsteps - 1):
-                self.write_final_xyz(unixmd_dir, istep=istep)
+                self.write_final_xyz(unixmd_dir, istep)
+
+            self.fstep = istep
+            restart_file = os.path.join(base_dir, "RESTART.bin")
+            with open(restart_file, 'wb') as f:
+                pickle.dump({'qm':qm, 'md':self}, f)
 
         # Delete scratch directory
         if (not save_scr):
@@ -301,7 +289,7 @@ class EhXF(MQC):
                     self.mol.states[ist].coef /= np.absolute(self.mol.states[ist].coef).real
                 else:
                     self.mol.states[ist].coef = 0. + 0.j
- 
+
     def aux_propagator(self):
         """ Routine to propagate auxiliary molecule
         """
@@ -330,7 +318,7 @@ class EhXF(MQC):
                     alpha = ekin_old + self.mol.states[ist].energy_old - self.mol.states[ist].energy
                 if (alpha < 0.):
                     alpha = 0.
-                
+
                 alpha /= self.mol.ekin_qm
                 self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] * np.sqrt(alpha)
 
@@ -354,7 +342,7 @@ class EhXF(MQC):
             sigma = self.wsigma
             self.wsigma = self.aux.nat * [sigma]
 
-    def write_md_output(self, unixmd_dir, istep): 
+    def write_md_output(self, unixmd_dir, istep):
         """ Write output files
 
             :param string unixmd_dir: unixmd directory
@@ -380,10 +368,10 @@ class EhXF(MQC):
         if (self.verbosity >= 2):
             for ist in range(self.mol.nst):
                 if (self.l_coh[ist]):
-                    self.write_aux_movie(unixmd_dir, ist, istep=istep)
+                    self.write_aux_movie(unixmd_dir, ist, istep)
 
     def write_aux_movie(self, unixmd_dir, ist, istep):
-        """ Write auxiliary trajecoty movie file 
+        """ Write auxiliary trajecoty movie file
 
             :param string unixmd_dir: unixmd directory
             :param integer ist: current adiabatic state
