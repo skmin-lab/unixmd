@@ -52,7 +52,7 @@ class SH(MQC):
         self.vel_reject = vel_reject
         if not (self.vel_reject in ["keep", "reverse"]): 
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_reject'! {self.vel_reject}")
-        
+
         # Initialize decoherence variables
         self.deco_correction = deco_correction
         self.edc_parameter = edc_parameter
@@ -136,7 +136,7 @@ class SH(MQC):
             if (self.l_hop or self.l_reject):
                 self.correct_deco_idc()
         elif (self.deco_correction == "edc"):
-        # If kinetic is 0, coefficient/density matrix are update into itself
+            # If kinetic is 0, coefficient/density matrix are update into itself
             if (self.mol.ekin_qm > eps):
                 self.correct_deco_edc()
 
@@ -178,8 +178,10 @@ class SH(MQC):
                 if (self.l_hop or self.l_reject):
                     self.correct_deco_idc()
             elif (self.deco_correction == "edc"):
-                self.correct_deco_edc()
-            
+                # If kinetic is 0, coefficient/density matrix are update into itself
+                if (self.mol.ekin_qm > eps):
+                    self.correct_deco_edc()
+
             if (qm.re_calc and self.l_hop):
                 qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=istep, calc_force_only=True)
                 if (self.mol.qmmm and mm != None):
