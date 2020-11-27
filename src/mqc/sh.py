@@ -22,6 +22,8 @@ class SH(MQC):
         :param string vel_rescale: velocity rescaling method after successful hop
         :param string vel_reject: velocity rescaling method after frustrated hop
         :param coefficient: initial BO coefficient
+        :param string deco_correction: simple decoherence correction schemes
+        :param double edc_parameter: energy constant for rescaling coefficients in edc
         :type coefficient: double, list or complex, list
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
         :param integer out_freq: frequency of printing output
@@ -29,7 +31,8 @@ class SH(MQC):
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", \
-        vel_reject="reverse", coefficient=None, unit_dt="fs", out_freq=1, verbosity=0):
+        vel_reject="reverse", coefficient=None, deco_correction=None, edc_parameter=0.1, \
+        unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
             propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity)
@@ -52,6 +55,13 @@ class SH(MQC):
         self.vel_reject = vel_reject
         if not (self.vel_reject in ["keep", "reverse"]): 
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_reject'! {self.vel_reject}")
+
+        # Initialize decoherence variables
+        self.deco_correction = deco_correction
+        self.edc_parameter = edc_parameter
+
+        if not (deco_correction in [None, "idc", "edc"]):
+            raise ValueError (f"( {self.deco_correction}.{call_name()} ) Invalid 'deco_correction'! {self.deco_correction}")
 
         # Check error for incompatible cases
         if (self.mol.l_nacme): 
@@ -95,6 +105,15 @@ class SH(MQC):
             self.hop_prob(self.istep)
             self.hop_check(bo_list)
             self.evaluate_hop(bo_list, self.istep)
+    
+            if (self.deco_correction == "idc"):
+                if (self.l_hop or self.l_reject):
+                    self.correct_deco_idc()
+            elif (self.deco_correction == "edc"):
+                # If kinetic is 0, coefficient/density matrix are update into itself
+                if (self.mol.ekin_qm > eps):
+                    self.correct_deco_edc()
+    
             if (qm.re_calc and self.l_hop):
                 qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
                 if (self.mol.qmmm and mm != None):
@@ -141,6 +160,15 @@ class SH(MQC):
             self.hop_prob(istep)
             self.hop_check(bo_list)
             self.evaluate_hop(bo_list, istep)
+
+            if (self.deco_correction == "idc"):
+                if (self.l_hop or self.l_reject):
+                    self.correct_deco_idc()
+            elif (self.deco_correction == "edc"):
+                # If kinetic is 0, coefficient/density matrix are update into itself
+                if (self.mol.ekin_qm > eps):
+                    self.correct_deco_edc()
+
             if (qm.re_calc and self.l_hop):
                 qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
                 if (self.mol.qmmm and mm != None):
@@ -315,6 +343,60 @@ class SH(MQC):
         # Record hopping event
         if (self.rstate != self.rstate_old):
             self.event["HOP"].append(f"Accept hopping: hop {self.rstate_old} -> {self.rstate}")
+
+    def correct_deco_idc(self):
+        """ Routine to decoherence correction, instantaneous decoherence correction(IDC) scheme
+        """
+        if (self.propagation == "coefficient"):
+            for states in self.mol.states:
+                states.coef = 0. + 0.j
+            self.mol.states[self.rstate].coef = 1. + 0.j
+
+        self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex_)
+        self.mol.rho[self.rstate, self.rstate] = 1. + 0.j
+
+    def correct_deco_edc(self):
+        """ Routine to decoherence correction, energy-based decoherence correction(EDC) scheme
+        """
+        # Save exp(-dt/tau) instead of tau itself
+        exp_tau = np.array([1. if (ist == self.rstate) else np.exp(- self.dt / ((1. + self.edc_parameter / self.mol.ekin_qm) / \
+            np.abs(self.mol.states[ist].energy - self.mol.states[self.rstate].energy))) for ist in range(self.mol.nst)])
+        rho_update = 1.
+
+        if (self.propagation == "coefficient"):
+            # Update coefficients
+            for ist in range(self.mol.nst):
+                # self.mol.states[self.rstate] need other updated coefficients
+                if (ist != self.rstate):
+                    self.mol.states[ist].coef *= exp_tau[ist]
+                    rho_update -= self.mol.states[ist].coef.conjugate() * self.mol.states[ist].coef
+
+            self.mol.states[self.rstate].coef *= np.sqrt(rho_update / self.mol.rho[self.rstate, self.rstate])
+
+            # Get density matrix elements from coefficients
+            for ist in range(self.mol.nst):
+                for jst in range(ist, self.mol.nst):
+                    self.mol.rho[ist, jst] = self.mol.states[ist].coef.conjugate() * self.mol.states[jst].coef
+                    self.mol.rho[jst, ist] = self.mol.rho[ist, jst].conjugate()
+
+        if (self.propagation == "density"):
+            # save old running state element for update running state involved elements
+            rho_old_rstate = self.mol.rho[self.rstate, self.rstate]
+            for ist in range(self.mol.nst):
+                for jst in range(ist, self.mol.nst):
+                    # Update density matrix. self.mol.rho[ist, rstate] suffers half-update because exp_tau[rstate] = 1
+                    self.mol.rho[ist, jst] *= exp_tau[ist] * exp_tau[jst]
+                    self.mol.rho[jst, ist] = self.mol.rho[ist, jst].conjugate()
+
+                if (ist != self.rstate):
+                    # Update rho[self.rstate, self.rstate] by subtracting other diagonal elements
+                    rho_update -= self.mol.rho[ist, ist]
+
+            # Update rho[self.rstate, ist] and rho[ist, self.rstate] by using rho_update and rho_old_rstate
+            # rho[self.rstate, self.rstate] automatically update by double counting
+            for ist in range(self.mol.nst):
+                self.mol.rho[ist, self.rstate] *= np.sqrt(rho_update / rho_old_rstate)
+                self.mol.rho[self.rstate, ist] *= np.sqrt(rho_update / rho_old_rstate)
 
     def calculate_force(self):
         """ Routine to calculate the forces
