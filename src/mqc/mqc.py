@@ -76,14 +76,14 @@ class MQC(object):
         # Initialize coefficients and densities
         self.mol.get_coefficient(coefficient, self.istate)
     
-    def run_init(self, qm, mm, input_dir, save_QMlog, save_MMlog, save_scr, restart):
+    def run_init(self, qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart):
         """ Initialize MQC dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
             :param string input_dir: location of input directory
-            :param boolean save_QMlog: logical for saving QM calculation log
-            :param boolean save_MMlog: logical for saving MM calculation log
+            :param boolean save_qm_log: logical for saving QM calculation log
+            :param boolean save_mm_log: logical for saving MM calculation log
             :param boolean save_scr: logical for saving scratch directory
             :param string restart: option for controlling dynamics restarting
         """
@@ -97,41 +97,41 @@ class MQC(object):
         input_dir = os.path.expanduser(input_dir)
         base_dir = os.path.join(os.getcwd(), input_dir)
         unixmd_dir = os.path.join(base_dir, "md")
-        QMlog_dir = os.path.join(base_dir, "QMlog")
-        MMlog_dir = None
+        qm_log_dir = os.path.join(base_dir, "qm_log")
+        mm_log_dir = None
         if (self.mol.qmmm and mm != None):
-            MMlog_dir = os.path.join(base_dir, "MMlog")
+            mm_log_dir = os.path.join(base_dir, "mm_log")
         
         # Check and make directories
         if (restart == "append"):
             if (not os.path.exists(unixmd_dir)):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Directory to be appended for restart not found! {restart} and {unixmd_dir}")
-            if (not os.path.exists(unixmd_dir) and save_QMlog):
-                os.makedirs(QMlog_dir)
+            if (not os.path.exists(unixmd_dir) and save_qm_log):
+                os.makedirs(qm_log_dir)
             if (self.mol.qmmm and mm != None):
-                if (not os.path.exists(MMlog_dir) and save_MMlog):
-                    os.makedirs(MMlog_dir)
+                if (not os.path.exists(mm_log_dir) and save_mm_log):
+                    os.makedirs(mm_log_dir)
         else:
             if (os.path.exists(unixmd_dir)):
                 shutil.move(unixmd_dir, unixmd_dir + "_old_" + str(os.getpid()))
             os.makedirs(unixmd_dir)
 
-            if (os.path.exists(QMlog_dir)):
-                shutil.move(QMlog_dir, QMlog_dir + "_old_" + str(os.getpid()))
-            if (save_QMlog):
-                os.makedirs(QMlog_dir)
+            if (os.path.exists(qm_log_dir)):
+                shutil.move(qm_log_dir, qm_log_dir + "_old_" + str(os.getpid()))
+            if (save_qm_log):
+                os.makedirs(qm_log_dir)
 
             if (self.mol.qmmm and mm != None):
-                if (os.path.exists(MMlog_dir)):
-                    shutil.move(MMlog_dir, MMlog_dir + "_old_" + str(os.getpid()))
-                if (save_MMlog):
-                    os.makedirs(MMlog_dir)
+                if (os.path.exists(mm_log_dir)):
+                    shutil.move(mm_log_dir, mm_log_dir + "_old_" + str(os.getpid()))
+                if (save_mm_log):
+                    os.makedirs(mm_log_dir)
             
             self.touch_file(unixmd_dir)
 
         os.chdir(base_dir)
 
-        return base_dir, unixmd_dir, QMlog_dir, MMlog_dir
+        return base_dir, unixmd_dir, qm_log_dir, mm_log_dir
 
     def cl_update_position(self):
         """ Routine to update nuclear positions
