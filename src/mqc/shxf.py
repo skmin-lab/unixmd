@@ -29,7 +29,7 @@ class Auxiliary_Molecule(object):
             self.symbols = molecule.symbols
 
             self.mass = np.copy(molecule.mass)
-        
+
         self.pos = np.zeros((molecule.nst, self.nat, self.nsp))
         self.vel = np.zeros((molecule.nst, self.nat, self.nsp))
         self.vel_old = np.copy(self.vel)
@@ -80,17 +80,17 @@ class SHXF(MQC):
         self.l_reject = False
 
         self.vel_rescale = vel_rescale
-        if not (self.vel_rescale in ["energy", "velocity", "momentum", "augment"]): 
+        if not (self.vel_rescale in ["energy", "velocity", "momentum", "augment"]):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
 
         self.vel_reject = vel_reject
-        if not (self.vel_reject in ["keep", "reverse"]): 
+        if not (self.vel_reject in ["keep", "reverse"]):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_reject'! {self.vel_reject}")
 
         # Check error for incompatible cases
-        if (self.mol.l_nacme): 
+        if (self.mol.l_nacme):
             # No analytical nonadiabatic couplings exist
-            if (self.vel_rescale in ["velocity", "momentum", "augment"]): 
+            if (self.vel_rescale in ["velocity", "momentum", "augment"]):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'energy' rescaling for 'vel_rescale'! {self.vel_rescale}")
             if (self.vel_reject == "reverse"):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'keep' rescaling for 'vel_reject'! {self.vel_reject}")
@@ -191,7 +191,7 @@ class SHXF(MQC):
         elif (restart == "append"):
             # Set initial time step to last successful step of previous dynamics
             self.istep = self.fstep
-        
+
         self.istep += 1
 
         # Main MD loop
@@ -288,7 +288,7 @@ class SHXF(MQC):
                 accum += self.prob[ist]
             self.acc_prob[ist + 1] = accum
         psum = self.acc_prob[self.mol.nst]
- 
+
         if (psum > 1.):
             self.prob /= psum
             self.acc_prob /= psum
@@ -484,7 +484,7 @@ class SHXF(MQC):
                     self.mol.states[ist].coef /= np.absolute(self.mol.states[ist].coef).real
                 else:
                     self.mol.states[ist].coef = 0. + 0.j
- 
+
     def aux_propagator(self):
         """ Routine to propagate auxiliary molecule
         """
@@ -531,7 +531,7 @@ class SHXF(MQC):
                     self.aux.vel[ist] = np.sqrt(alpha)
                 else:
                     alpha /= self.mol.ekin_qm
-                    self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] * np.sqrt(alpha) 
+                    self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] * np.sqrt(alpha)
 
     def get_phase(self):
         """ Routine to calculate phase term

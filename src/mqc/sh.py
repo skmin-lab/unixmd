@@ -5,7 +5,7 @@ from misc import eps, au_to_K, call_name, typewriter
 import random, os, shutil, textwrap
 import numpy as np
 import pickle
- 
+
 class SH(MQC):
     """ Class for surface hopping dynamics
 
@@ -49,11 +49,11 @@ class SH(MQC):
         self.l_reject = False
 
         self.vel_rescale = vel_rescale
-        if not (self.vel_rescale in ["energy", "velocity", "momentum", "augment"]): 
+        if not (self.vel_rescale in ["energy", "velocity", "momentum", "augment"]):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
 
         self.vel_reject = vel_reject
-        if not (self.vel_reject in ["keep", "reverse"]): 
+        if not (self.vel_reject in ["keep", "reverse"]):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_reject'! {self.vel_reject}")
 
         # Initialize decoherence variables
@@ -64,9 +64,9 @@ class SH(MQC):
             raise ValueError (f"( {self.deco_correction}.{call_name()} ) Invalid 'deco_correction'! {self.deco_correction}")
 
         # Check error for incompatible cases
-        if (self.mol.l_nacme): 
+        if (self.mol.l_nacme):
             # No analytical nonadiabatic couplings exist
-            if (self.vel_rescale in ["velocity", "momentum", "augment"]): 
+            if (self.vel_rescale in ["velocity", "momentum", "augment"]):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'energy' rescaling for 'vel_rescale'! {self.vel_rescale}")
             if (self.vel_reject == "reverse"):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'keep' rescaling for 'vel_reject'! {self.vel_reject}")
@@ -91,7 +91,7 @@ class SH(MQC):
         bo_list = [self.rstate]
         qm.calc_coupling = True
         self.print_init(qm, mm)
-        
+
         if (restart == None):
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
@@ -105,7 +105,7 @@ class SH(MQC):
             self.hop_prob(self.istep)
             self.hop_check(bo_list)
             self.evaluate_hop(bo_list, self.istep)
-    
+
             if (self.deco_correction == "idc"):
                 if (self.l_hop or self.l_reject):
                     self.correct_deco_idc()
@@ -113,7 +113,7 @@ class SH(MQC):
                 # If kinetic is 0, coefficient/density matrix are update into itself
                 if (self.mol.ekin_qm > eps):
                     self.correct_deco_edc()
-    
+
             if (qm.re_calc and self.l_hop):
                 qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
                 if (self.mol.qmmm and mm != None):
@@ -123,7 +123,7 @@ class SH(MQC):
 
             self.write_md_output(unixmd_dir, self.istep)
             self.print_step(self.istep)
-        
+
         elif (restart == "write"):
             # Reset initial time step to t = 0.0 s
             self.istep = -1
@@ -227,7 +227,7 @@ class SH(MQC):
                 accum += self.prob[ist]
             self.acc_prob[ist + 1] = accum
         psum = self.acc_prob[self.mol.nst]
- 
+
         if (psum > 1.):
             self.prob /= psum
             self.acc_prob /= psum

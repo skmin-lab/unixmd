@@ -50,7 +50,7 @@ class BOMD(MQC):
             self.update_energy()
             self.write_md_output(unixmd_dir, self.istep)
             self.print_step(self.istep)
-        
+
         elif (restart == "write"):
             # Reset initial time step to t = 0.0 s
             self.istep = -1
@@ -60,7 +60,7 @@ class BOMD(MQC):
         elif (restart == "append"):
             # Set initial time step to last successful step of previous dynamics
             self.istep = self.fstep
-        
+
         self.istep += 1
 
         # Main MD loop
@@ -85,7 +85,7 @@ class BOMD(MQC):
                 self.print_step(istep)
             if (istep == self.nsteps - 1):
                 self.write_final_xyz(unixmd_dir, istep)
-            
+
             self.fstep = istep
             restart_file = os.path.join(base_dir, "RESTART.bin")
             with open(restart_file, 'wb') as f:

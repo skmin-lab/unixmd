@@ -31,7 +31,7 @@ class MQC(object):
 
         # Initialize Molecule object
         self.mol = molecule
-        
+
         # Initialize Thermostat object
         self.thermo = thermostat
 
@@ -39,7 +39,7 @@ class MQC(object):
         self.istate = istate
         self.nsteps = nsteps
         self.nesteps = nesteps
-        
+
         # Initialize time step
         self.istep = -1
         self.fstep = -1
@@ -53,15 +53,15 @@ class MQC(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid unit for time step! {unit_dt}")
 
         # Check number of state and initial state
-        if (self.istate >= self.mol.nst): 
+        if (self.istate >= self.mol.nst):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Index for initial state must be smaller than number of states! {self.istate}")
 
         # None for BOMD case
         self.propagation = propagation
-        if not (self.propagation in [None, "coefficient", "density"]): 
+        if not (self.propagation in [None, "coefficient", "density"]):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'propagation'! {self.propagation}")
         self.solver = solver
-        if not (self.solver in [None, "rk4"]): 
+        if not (self.solver in [None, "rk4"]):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'solver'! {self.solver}")
 
         self.l_pop_print = l_pop_print
@@ -75,7 +75,7 @@ class MQC(object):
 
         # Initialize coefficients and densities
         self.mol.get_coefficient(coefficient, self.istate)
-    
+
     def run_init(self, qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart):
         """ Initialize MQC dynamics
 
@@ -88,9 +88,9 @@ class MQC(object):
             :param string restart: option for controlling dynamics restarting
         """
         # Check whether the restart option is right
-        if not (restart in [None, "write", "append"]): 
+        if not (restart in [None, "write", "append"]):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'restart'! {restart}")
-        
+
         # Check if NACVs are calculated for Ehrenfest dynamics
         if (self.md_type in ["Eh", "EhXF"] and self.mol.l_nacme):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Ehrenfest dynamics needs NACV! {self.mol.l_nacme}")
@@ -100,7 +100,7 @@ class MQC(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Both self.mol.qmmm and mm object is necessary! {self.mol.qmmm} and {mm}")
         if (self.mol.qmmm and mm != None):
             self.check_qmmm(qm, mm)
-        
+
         # Set directory information
         input_dir = os.path.expanduser(input_dir)
         base_dir = os.path.join(os.getcwd(), input_dir)
@@ -109,7 +109,7 @@ class MQC(object):
         mm_log_dir = None
         if (self.mol.qmmm and mm != None):
             mm_log_dir = os.path.join(base_dir, "mm_log")
-        
+
         # Check and make directories
         if (restart == "append"):
             if (not os.path.exists(unixmd_dir)):
@@ -134,7 +134,7 @@ class MQC(object):
                     shutil.move(mm_log_dir, mm_log_dir + "_old_" + str(os.getpid()))
                 if (save_mm_log):
                     os.makedirs(mm_log_dir)
-            
+
             self.touch_file(unixmd_dir)
 
         os.chdir(base_dir)
@@ -280,7 +280,7 @@ class MQC(object):
             thermostat_info = "  No Thermostat: Total energy is conserved!\n"
             print (thermostat_info, flush=True)
 
-    def touch_file(self, unixmd_dir): 
+    def touch_file(self, unixmd_dir):
         """ Routine to write PyUNIxMD output files
 
             :param string unixmd_dir: unixmd directory

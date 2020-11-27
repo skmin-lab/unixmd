@@ -18,7 +18,7 @@ class Auxiliary_Molecule(object):
         self.symbols = molecule.symbols
 
         self.mass = np.copy(molecule.mass)
-        
+
         self.pos = np.zeros((molecule.nst, self.nat, self.nsp))
         self.vel = np.zeros((molecule.nst, self.nat, self.nsp))
         self.vel_old = np.copy(self.vel)
@@ -88,7 +88,7 @@ class EhXF(MQC):
 
         # Debug variables
         self.dotpopd = np.zeros(self.mol.nst)
-        
+
         # Initialize event to print
         self.event = {"DECO": []}
 
@@ -109,7 +109,7 @@ class EhXF(MQC):
         bo_list = [ist for ist in range(self.mol.nst)]
         qm.calc_coupling = True
         self.print_init(qm, mm)
-        
+
         if (restart == None):
             # Initialize decoherence variables
             self.append_wsigma()
@@ -137,7 +137,7 @@ class EhXF(MQC):
             self.istep = -1
             self.write_md_output(unixmd_dir, self.istep)
             self.print_step(self.istep)
-        
+
         elif (restart == "append"):
             # Set initial time step to last successful step of previous dynamics
             self.istep = self.fstep
@@ -289,7 +289,7 @@ class EhXF(MQC):
                     self.mol.states[ist].coef /= np.absolute(self.mol.states[ist].coef).real
                 else:
                     self.mol.states[ist].coef = 0. + 0.j
- 
+
     def aux_propagator(self):
         """ Routine to propagate auxiliary molecule
         """
@@ -318,7 +318,7 @@ class EhXF(MQC):
                     alpha = ekin_old + self.mol.states[ist].energy_old - self.mol.states[ist].energy
                 if (alpha < 0.):
                     alpha = 0.
-                
+
                 alpha /= self.mol.ekin_qm
                 self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] * np.sqrt(alpha)
 
@@ -342,7 +342,7 @@ class EhXF(MQC):
             sigma = self.wsigma
             self.wsigma = self.aux.nat * [sigma]
 
-    def write_md_output(self, unixmd_dir, istep): 
+    def write_md_output(self, unixmd_dir, istep):
         """ Write output files
 
             :param string unixmd_dir: unixmd directory
@@ -371,7 +371,7 @@ class EhXF(MQC):
                     self.write_aux_movie(unixmd_dir, ist, istep)
 
     def write_aux_movie(self, unixmd_dir, ist, istep):
-        """ Write auxiliary trajecoty movie file 
+        """ Write auxiliary trajecoty movie file
 
             :param string unixmd_dir: unixmd directory
             :param integer ist: current adiabatic state

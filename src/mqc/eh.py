@@ -69,7 +69,7 @@ class Eh(MQC):
             self.istep = -1
             self.write_md_output(unixmd_dir, self.istep)
             self.print_step(self.istep)
-        
+
         elif (restart == "append"):
             # Set initial time step to last successful step of previous dynamics
             self.istep = self.fstep
