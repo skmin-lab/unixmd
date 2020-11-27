@@ -87,6 +87,10 @@ class MQC(object):
             :param boolean save_scr: logical for saving scratch directory
             :param string restart: option for controlling dynamics restarting
         """
+        # Check if NACVs are calculated for Ehrenfest dynamics
+        if (self.md_type in ["Eh", "EhXF"] and self.mol.l_nacme):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Ehrenfest dynamics needs NACV! {self.mol.l_nacme}")
+
         # Check compatibility of variables for QM and MM calculation
         if ((self.mol.qmmm and mm == None) or (not self.mol.qmmm and mm != None)):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Both self.mol.qmmm and mm object is necessary! {self.mol.qmmm} and {mm}")

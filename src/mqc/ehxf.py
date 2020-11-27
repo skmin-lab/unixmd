@@ -103,10 +103,6 @@ class EhXF(MQC):
             :param boolean save_scr: logical for saving scratch directory
             :param string restart: option for controlling dynamics restarting
         """
-        # Check if NACVs are calculated for Ehrenfest dynamics
-        if (self.mol.l_nacme):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Ehrenfest dynamics needs NACV! {self.mol.l_nacme}")
-        
         # Initialize UNI-xMD
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
              self.run_init(qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
