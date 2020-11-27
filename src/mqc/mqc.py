@@ -87,6 +87,10 @@ class MQC(object):
             :param boolean save_scr: logical for saving scratch directory
             :param string restart: option for controlling dynamics restarting
         """
+        # Check whether the restart option is right
+        if not (restart in [None, "write", "append"]): 
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'restart'! {restart}")
+        
         # Check if NACVs are calculated for Ehrenfest dynamics
         if (self.md_type in ["Eh", "EhXF"] and self.mol.l_nacme):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Ehrenfest dynamics needs NACV! {self.mol.l_nacme}")

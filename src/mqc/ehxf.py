@@ -138,7 +138,7 @@ class EhXF(MQC):
             self.write_md_output(unixmd_dir, self.istep)
             self.print_step(self.istep)
         
-        else:
+        elif (restart == "append"):
             # Set initial time step to last successful step of previous dynamics
             self.istep = self.fstep
 
