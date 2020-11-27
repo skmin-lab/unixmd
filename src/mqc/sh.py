@@ -21,7 +21,7 @@ class SH(MQC):
         :param string vel_rescale: velocity rescaling method after successful hop
         :param string vel_reject: velocity rescaling method after frustrated hop
         :param coefficient: initial BO coefficient
-        :param string deco_correction: simple decoherence correction schemes 
+        :param string deco_correction: simple decoherence correction schemes
         :param double edc_parameter: energy constant for rescaling coefficients in edc
         :type coefficient: double, list or complex, list
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
@@ -57,7 +57,7 @@ class SH(MQC):
         self.deco_correction = deco_correction
         self.edc_parameter = edc_parameter
 
-        if not (deco_correction in [None, "idc", "edc"]): 
+        if not (deco_correction in [None, "idc", "edc"]):
             raise ValueError (f"( {self.deco_correction}.{call_name()} ) Invalid 'deco_correction'! {self.deco_correction}")
 
         # Check error for incompatible cases
@@ -342,15 +342,15 @@ class SH(MQC):
             self.mol.states[self.rstate].coef = 1. + 0.j
 
         self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex_)
-        self.mol.rho[self.rstate, self.rstate] = 1.0 + 0.0j
+        self.mol.rho[self.rstate, self.rstate] = 1. + 0.j
 
     def correct_deco_edc(self):
         """ Routine to decoherence correction, energy-based decoherence correction(EDC) scheme
         """
         # Save exp(-dt/tau) instead of tau itself
-        exp_tau = np.array([1.0 if (ist == self.rstate) else np.exp(- self.dt / ((1 + self.edc_parameter / self.mol.ekin_qm) / \
+        exp_tau = np.array([1. if (ist == self.rstate) else np.exp(- self.dt / ((1. + self.edc_parameter / self.mol.ekin_qm) / \
             np.abs(self.mol.states[ist].energy - self.mol.states[self.rstate].energy))) for ist in range(self.mol.nst)])
-        rho_update = 1.0 
+        rho_update = 1.
 
         if (self.propagation == "coefficient"):
             # Update coefficients
