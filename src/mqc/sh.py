@@ -25,14 +25,16 @@ class SH(MQC):
         :param double edc_parameter: energy constant for rescaling coefficients in edc
         :type coefficient: double, list or complex, list
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
+        :param integer out_freq: frequency of printing output
+        :param integer verbosity: verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
-        vel_rescale="momentum", vel_reject="reverse", coefficient=None, deco_correction=None, \
-        edc_parameter=0.1, unit_dt="fs"):
+        propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", \
+        vel_reject="reverse", coefficient=None, deco_correction=None, edc_parameter=0.1, \
+        unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
+            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity)
 
         # Initialize SH variables
         self.rstate = istate
@@ -46,7 +48,7 @@ class SH(MQC):
         self.l_reject = False
 
         self.vel_rescale = vel_rescale
-        if not (self.vel_rescale in ["energy", "velocity", "momentum"]): 
+        if not (self.vel_rescale in ["energy", "velocity", "momentum", "augment"]): 
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
 
         self.vel_reject = vel_reject
@@ -63,7 +65,7 @@ class SH(MQC):
         # Check error for incompatible cases
         if (self.mol.l_nacme): 
             # No analytical nonadiabatic couplings exist
-            if (self.vel_rescale in ["velocity", "momentum"]): 
+            if (self.vel_rescale in ["velocity", "momentum", "augment"]): 
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'energy' rescaling for 'vel_rescale'! {self.vel_rescale}")
             if (self.vel_reject == "reverse"):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'keep' rescaling for 'vel_reject'! {self.vel_reject}")
@@ -71,8 +73,7 @@ class SH(MQC):
         # Initialize event to print
         self.event = {"HOP": []}
 
-    def run(self, qm, mm=None, input_dir="./", \
-        save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
+    def run(self, qm, mm=None, input_dir="./", save_QMlog=False, save_MMlog=False, save_scr=True):
         """ Run MQC dynamics according to surface hopping dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
@@ -81,7 +82,6 @@ class SH(MQC):
             :param boolean save_QMlog: logical for saving QM calculation log
             :param boolean save_MMlog: logical for saving MM calculation log
             :param boolean save_scr: logical for saving scratch directory
-            :param integer debug: verbosity level for standard output
         """
         # Set directory information
         input_dir = os.path.expanduser(input_dir)
@@ -118,7 +118,7 @@ class SH(MQC):
         qm.calc_coupling = True
 
         self.touch_file(unixmd_dir)
-        self.print_init(qm, mm, debug)
+        self.print_init(qm, mm)
 
         # Calculate initial input geometry at t = 0.0 s
         self.mol.reset_bo(qm.calc_coupling)
@@ -148,7 +148,7 @@ class SH(MQC):
         self.update_energy()
 
         self.write_md_output(unixmd_dir, istep=-1)
-        self.print_step(debug, istep=-1)
+        self.print_step(istep=-1)
 
         # Main MD loop
         for istep in range(self.nsteps):
@@ -192,8 +192,10 @@ class SH(MQC):
 
             self.update_energy()
 
-            self.write_md_output(unixmd_dir, istep=istep)
-            self.print_step(debug, istep=istep)
+            if ((istep + 1) % self.out_freq == 0):
+                self.write_md_output(unixmd_dir, istep=istep)
+            if ((istep + 1) % self.out_freq == 0 or len(self.event["HOP"]) > 0):
+                self.print_step(istep=istep)
             if (istep == self.nsteps - 1):
                 self.write_final_xyz(unixmd_dir, istep=istep)
 
@@ -263,15 +265,10 @@ class SH(MQC):
             pot_diff = self.mol.states[self.rstate].energy - self.mol.states[self.rstate_old].energy
 
             # Solve quadratic equation for scaling factor of velocities
-            if (self.vel_rescale == "energy"):
-                # Velocities cannot be adjusted when zero kinetic energy is given
-                if (self.mol.ekin_qm < eps):
-                    raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {self.mol.ekin_qm}")
-                a = 1.
-                b = 1.
-                c = 1.
-                det = 1.
-            elif (self.vel_rescale == "velocity"):
+            a = 1.
+            b = 1.
+            det = 1.
+            if (self.vel_rescale == "velocity"):
                 a = np.sum(self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
                 b = 2. * np.sum(self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
                 c = 2. * pot_diff
@@ -281,15 +278,26 @@ class SH(MQC):
                 b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
                 c = 2. * pot_diff
                 det = b ** 2. - 4. * a * c
+            elif (self.vel_rescale == "augment"):
+                a = np.sum(1. / self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
+                b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
+                c = 2. * pot_diff
+                det = b ** 2. - 4. * a * c
 
+            # Default: hopping is allowed
+            self.l_reject = False
+
+            # Velocities cannot be adjusted when zero kinetic energy is given
+            if (self.vel_rescale == "energy" and self.mol.ekin_qm < eps):
+                self.l_reject = True
+            # Clasically forbidden hop due to lack of kinetic energy
             if (self.mol.ekin_qm < pot_diff):
-                # Clasically forbidden hop due to lack of kinetic energy
                 self.l_reject = True
-            elif (det < 0.):
-                # Kinetic energy is enough, but there is no solution for scaling factor
+            # Kinetic energy is enough, but there is no solution for scaling factor
+            if (det < 0.):
                 self.l_reject = True
-            else:
-                # Kinetic energy is enough, and real solution for scaling factor exists
+            # When kinetic energy is enough, velocities are always rescaled in 'augment' case
+            if (self.vel_rescale == "augment" and self.mol.ekin_qm > pot_diff):
                 self.l_reject = False
 
             if (self.l_reject):
@@ -308,7 +316,9 @@ class SH(MQC):
                 self.rstate = self.rstate_old
                 bo_list[0] = self.rstate
             else:
-                if (self.vel_rescale == "energy"):
+                if (self.vel_rescale == "energy" or (det < 0. and self.vel_rescale == "augment")):
+                    if (det < 0.):
+                        self.event["HOP"].append("Accept hopping: no solution to find rescale factor, but velocity is simply rescaled")
                     x = np.sqrt(1. - pot_diff / self.mol.ekin_qm)
                 else:
                     if (b < 0.):
@@ -328,12 +338,19 @@ class SH(MQC):
                     self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm] / \
                         self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
 
+                elif (self.vel_rescale == "augment"):
+                    if (det > 0. or self.mol.ekin_qm < pot_diff):
+                        self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm] / \
+                            self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
+                    else:
+                        self.mol.vel[0:self.mol.nat_qm] *= x
+
             # Update kinetic energy
             self.mol.update_kinetic()
 
         # Record hopping event
         if (self.rstate != self.rstate_old):
-            self.event["HOP"].append(f"Hopping {self.rstate_old} -> {self.rstate}")
+            self.event["HOP"].append(f"Accept hopping: hop {self.rstate_old} -> {self.rstate}")
 
     def correct_deco_idc(self):
         """ Routine to decoherence correction, instantaneous decoherence correction(IDC) scheme
@@ -428,15 +445,14 @@ class SH(MQC):
         tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(self.mol.nst)])
         typewriter(tmp, unixmd_dir, "SHPROB", "a")
 
-    def print_init(self, qm, mm, debug):
+    def print_init(self, qm, mm):
         """ Routine to print the initial information of dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
-            :param integer debug: verbosity level for standard output
         """
         # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm, debug)
+        super().print_init(qm, mm)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
@@ -451,23 +467,22 @@ class SH(MQC):
         dynamics_step_info += INIT
 
         # Print DEBUG1 for each step
-        if (debug >= 1):
+        if (self.verbosity >= 1):
             DEBUG1 = f" #DEBUG1{'STEP':>6s}"
             for ist in range(self.mol.nst):
                 DEBUG1 += f"{'Potential_':>14s}{ist}(H)"
             dynamics_step_info += "\n" + DEBUG1
 
         # Print DEBUG2 for each step
-        if (debug >= 2):
+        if (self.verbosity >= 2):
             DEBUG2 = f" #DEBUG2{'STEP':>6s}{'Acc. Hopping Prob.':>22s}"
             dynamics_step_info += "\n" + DEBUG2
 
         print (dynamics_step_info, flush=True)
 
-    def print_step(self, debug, istep):
+    def print_step(self, istep):
         """ Routine to print each steps infomation about dynamics
 
-            :param integer debug: verbosity level for standard output
             :param integer istep: current MD step
         """
         if (istep == -1):
@@ -490,17 +505,17 @@ class SH(MQC):
         print (INFO, flush=True)
 
         # Print DEBUG1 for each step
-        if (debug >= 1):
+        if (self.verbosity >= 1):
             DEBUG1 = f" DEBUG1{istep + 1:>7d}"
             for ist in range(self.mol.nst):
                 DEBUG1 += f"{self.mol.states[ist].energy:17.8f} "
             print (DEBUG1, flush=True)
 
         # Print DEBUG2 for each step
-        if (debug >= 2):
+        if (self.verbosity >= 2):
             DEBUG2 = f" DEBUG2{istep + 1:>7d}"
             for ist in range(self.mol.nst):
-                DEBUG2 += f"{self.acc_prob[ist]:12.5f}({self.rstate}->{ist})"
+                DEBUG2 += f"{self.acc_prob[ist]:12.5f} ({self.rstate}->{ist})"
             print (DEBUG2, flush=True)
 
         # Print event in surface hopping
