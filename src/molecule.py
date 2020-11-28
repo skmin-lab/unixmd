@@ -100,8 +100,8 @@ class Molecule(object):
         self.socme_old = np.zeros((self.nst, self.nst), dtype=np.complex_)
 
         # Initialize other properties
-        self.nac = np.zeros((self.nst, self.nst, self.nat, self.nsp))
-        self.nac_old = np.zeros((self.nst, self.nst, self.nat, self.nsp))
+        self.nac = np.zeros((self.nst, self.nst, self.nat_qm, self.nsp))
+        self.nac_old = np.zeros((self.nst, self.nst, self.nat_qm, self.nsp))
         self.rho = np.zeros((self.nst, self.nst), dtype=np.complex_)
 
         self.ekin = 0.
@@ -215,7 +215,7 @@ class Molecule(object):
         """
         for ist in range(self.nst):
             for jst in range(ist + 1, self.nst):
-                self.nacme[ist, jst] = np.sum(self.nac[ist, jst, 0:self.nat_qm] * self.vel[0:self.nat_qm])
+                self.nacme[ist, jst] = np.sum(self.nac[ist, jst] * self.vel[0:self.nat_qm])
                 self.nacme[jst, ist] = - self.nacme[ist, jst]
 
     def update_kinetic(self):
@@ -242,7 +242,7 @@ class Molecule(object):
             if (self.l_nacme):
                 self.nacme = np.zeros((self.nst, self.nst))
             else:
-                self.nac = np.zeros((self.nst, self.nst, self.nat, self.nsp))
+                self.nac = np.zeros((self.nst, self.nst, self.nat_qm, self.nsp))
 
     def backup_bo(self):
         """ Backup BO energies and nonadiabatic couplings
