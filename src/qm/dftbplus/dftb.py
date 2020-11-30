@@ -764,7 +764,7 @@ class DFTB(DFTBplus):
                     if int(field[5]) > self.orb_final[0]:
                         self.orb_final[0] = int(field[5])
                     if int(field[3]) < self.orb_ini[0]:
-                        self.orb_ini[0] = int(field[3])
+                        self.orb_ini[0] = int(field[3]) - 1
                     get_wij_ind_new[int(field[0]) - 1] = [int(field[3]), int(field[5])]
                 iline += 1
 
