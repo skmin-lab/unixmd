@@ -15,9 +15,9 @@ class Auxiliary_Molecule(object):
         # Initialize auxiliary molecule
         self.nat = molecule.nat_qm
         self.nsp = molecule.nsp
-        self.symbols = molecule.symbols
+        self.symbols = np.copy(molecule.symbols[0:molecule.nat_qm])
 
-        self.mass = np.copy(molecule.mass)
+        self.mass = np.copy(molecule.mass[0:molecule.nat_qm])
 
         self.pos = np.zeros((molecule.nst, self.nat, self.nsp))
         self.vel = np.zeros((molecule.nst, self.nat, self.nsp))
@@ -47,7 +47,7 @@ class EhXF(MQC):
         :param integer out_freq: frequency of printing output
         :param integer verbosity: verbosity of output
     """
-    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
+    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
         threshold=0.01, wsigma=None, l_qmom_force=False, coefficient=None, \
         l_state_wise=False, unit_dt="fs", out_freq=1, verbosity=0):

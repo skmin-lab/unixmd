@@ -158,11 +158,14 @@ determined from the ``state_interactions`` argument.
 +------------------------+------------------------------------------------+---------------------+
 | ``tuning``             | scaling factor for atomic spin constants       | ``None``            |
 +------------------------+------------------------------------------------+---------------------+
-| ``cpreks_grad_alg``    | algorithms used in CP-REKS equations           | ``1``               |
+| ``cpreks_grad_alg``    | algorithms used in CP-REKS equations           | ``pcg``             |
 +------------------------+------------------------------------------------+---------------------+
 | ``cpreks_grad_tol``    | gradient tolerance for CP-REKS equations       | ``1E-8``            |
 +------------------------+------------------------------------------------+---------------------+
 | ``save_memory``        | save memory in cache used in CP-REKS equations | ``False``           |
++------------------------+------------------------------------------------+---------------------+
+| ``embedding``          | charge embedding options; electrostatic,       | ``None``            |
+|                        | mechanical                                     |                     |
 +------------------------+------------------------------------------------+---------------------+
 | ``periodic``           | use periodicity in the calculations            | ``False``           |
 +------------------------+------------------------------------------------+---------------------+
