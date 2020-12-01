@@ -129,8 +129,7 @@ class SHXF(MQC):
 
         # Debug variables
         self.dotpopd = np.zeros(self.mol.nst)
-        if (self.verbosity >= 2):
-            self.qmd = np.zeros((self.aux.nat, self.aux.nsp))
+        self.qmom = np.zeros((self.aux.nat, self.aux.nsp))
 
         # Initialize event to print
         self.event = {"HOP": [], "DECO": []}
@@ -599,7 +598,7 @@ class SHXF(MQC):
             # Write quantum momenta
             tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum(au)' + \
                 "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
-                "".join([f'{self.qmd[iat, isp]:15.8f}' for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
+                "".join([f'{self.qmom[iat, isp]:15.8f}' for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
             typewriter(tmp, unixmd_dir, f"QMOM", "a")
 
             # Write auxiliary variables

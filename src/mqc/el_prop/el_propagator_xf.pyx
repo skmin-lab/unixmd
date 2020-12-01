@@ -7,9 +7,9 @@ cimport numpy as np
 cdef extern from "rk4_xf.c":
     void rk4(int nat, int nsp, int nst, int nesteps, double dt, char *propagation, \
         bint *l_coh, double *mass, double *energy, double *energy_old, double *wsigma, \
-        double **nacme, double **nacme_old, double **pos, double ***aux_pos, \
+        double **nacme, double **nacme_old, double **pos, double **qmom, double ***aux_pos, \
         double ***phase, double complex *coef, double complex **rho, int verbosity, \
-        double *dotpopd, double **qmd)
+        double *dotpopd)
 
 def el_run(md):
     cdef:
@@ -22,12 +22,12 @@ def el_run(md):
         double **nacme
         double **nacme_old
         double **pos
+        double **qmom
         double ***aux_pos
         double ***phase
         double complex *coef
         double complex **rho
         double *dotpopd
-        double **qmd
 
         bytes py_bytes
         int ist, jst, nst, nesteps, iat, aux_nat, aux_nsp, verbosity
@@ -70,10 +70,9 @@ def el_run(md):
     verbosity = md.verbosity
     dotpopd = <double*> PyMem_Malloc(nst * sizeof(double))
 
-    if (verbosity >= 2):
-        qmd = <double**> PyMem_Malloc(aux_nat * sizeof(double*))
-        for iat in range(aux_nat):
-            qmd[iat] = <double*> PyMem_Malloc(aux_nsp * sizeof(double))
+    qmom = <double**> PyMem_Malloc(aux_nat * sizeof(double*))
+    for iat in range(aux_nat):
+        qmom[iat] = <double*> PyMem_Malloc(aux_nsp * sizeof(double))
 
     # Assign variables from python to C
     for ist in range(nst):
@@ -124,7 +123,7 @@ def el_run(md):
     # Propagate electrons depending on the solver
     if (md.solver == "rk4"):
         rk4(aux_nat, aux_nsp, nst, nesteps, dt, propagation_c, l_coh, mass, energy, \
-            energy_old, wsigma, nacme, nacme_old, pos, aux_pos, phase, coef, rho, verbosity, dotpopd, qmd)
+            energy_old, wsigma, nacme, nacme_old, pos, qmom, aux_pos, phase, coef, rho, verbosity, dotpopd)
 
     # Assign variables from C to python
     if (md.propagation == "coefficient"):
@@ -155,7 +154,7 @@ def el_run(md):
     if (verbosity >= 2):
         for iat in range(aux_nat):
             for isp in range(aux_nsp):
-                md.qmd[iat, isp] = qmd[iat][isp]
+                md.qmom[iat, isp] = qmom[iat][isp]
 
     # Deallocate variables
     for ist in range(nst):
@@ -169,6 +168,7 @@ def el_run(md):
 
     for iat in range(aux_nat):
         PyMem_Free(pos[iat])
+        PyMem_Free(qmom[iat])
 
     for ist in range(nst):
         PyMem_Free(aux_pos[ist])
@@ -183,13 +183,10 @@ def el_run(md):
     PyMem_Free(nacme)
     PyMem_Free(nacme_old)
     PyMem_Free(pos)
+    PyMem_Free(qmom)
 
     PyMem_Free(aux_pos)
     PyMem_Free(phase) 
 
     PyMem_Free(dotpopd)
-    if (verbosity >= 2):
-        for iat in range(aux_nat):
-            PyMem_Free(qmd[iat])
-        PyMem_Free(qmd)
 

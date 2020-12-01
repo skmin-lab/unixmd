@@ -5,9 +5,8 @@
 
 // Routine to calculate cdot contribution originated from XF term
 static void xf_cdot(int nat, int nsp, int nst, int *l_coh, double *mass, double *wsigma,
-    double **pos, double ***aux_pos, double ***phase, double complex *c, double complex *xfcdot){
+    double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *c, double complex *xfcdot){
 
-    double **qmom = malloc(nat * sizeof(double*));
     double **dec = malloc(nst * sizeof(double*));
     double *rho = malloc(nst * sizeof(double));
 
@@ -15,7 +14,6 @@ static void xf_cdot(int nat, int nsp, int nst, int *l_coh, double *mass, double 
 
     // Initialize variables related to decoherence
     for(iat = 0; iat < nat; iat++){
-        qmom[iat] = malloc(nsp * sizeof(double));
         for(isp = 0; isp < nsp; isp++){
             qmom[iat][isp] = 0.0;
         }
@@ -72,56 +70,34 @@ static void xf_cdot(int nat, int nsp, int nst, int *l_coh, double *mass, double 
     }
 
     // Deallocate temporary arrays
-    for(iat = 0; iat < nat; iat++){
-        free(qmom[iat]);
-    }
     for(ist = 0; ist < nst; ist++){
         free(dec[ist]);
     }
 
-    free(qmom);
     free(dec);
     free(rho);
 
 }
 
 // Routine to print xf debug info 
-static void xf_print_coef(int nat, int nsp, int nst, int verbosity, int *l_coh, double *mass, double *wsigma,
-    double **pos, double ***aux_pos, double complex *coef, double complex *xfcdot, double *dotpopd, double **qmd){
-    int iat, isp, ist;
+static void xf_print_coef(int nst, double complex *coef, double complex *xfcdot, double *dotpopd){
+    int ist;
     
     for(ist = 0; ist < nst; ist++){
         dotpopd[ist] = 2.0 * creal(xfcdot[ist] * conj(coef[ist]));
-    }
-
-    if (verbosity >= 2){
-        for(ist = 0; ist < nst; ist++){
-
-            if(l_coh[ist] == 1){
-                for(iat = 0; iat < nat; iat++){
-                    for(isp = 0; isp < nsp; isp++){
-                        qmd[iat][isp] += 0.5 * creal(conj(coef[ist]) * coef[ist]) * (pos[iat][isp] - aux_pos[ist][iat][isp])
-                            / pow(wsigma[iat], 2.0) / mass[iat];
-                    }
-                }
-            }
-
-        }
     }
 }
 
 // Routine to calculate rhodot contribution originated from XF term
 static void xf_rhodot(int nat, int nsp, int nst, int *l_coh, double *mass, double *wsigma,
-    double **pos, double ***aux_pos, double ***phase, double complex **rho, double complex **xfrhodot){
+    double **pos, double **qmom, double ***aux_pos, double ***phase, double complex **rho, double complex **xfrhodot){
 
-    double **qmom = malloc(nat * sizeof(double*));
     double **dec = malloc(nst * sizeof(double*));
 
     int ist, jst, kst, iat, isp;
 
     // Initialize variables related to decoherence
     for(iat = 0; iat < nat; iat++){
-        qmom[iat] = malloc(nsp * sizeof(double));
         for(isp = 0; isp < nsp; isp++){
             qmom[iat][isp] = 0.0;
         }
@@ -182,40 +158,20 @@ static void xf_rhodot(int nat, int nsp, int nst, int *l_coh, double *mass, doubl
     }
 
     // Deallocate temporary arrays
-    for(iat = 0; iat < nat; iat++){
-        free(qmom[iat]);
-    }
     for(ist = 0; ist < nst; ist++){
         free(dec[ist]);
     }
 
-    free(qmom);
     free(dec);
 
 }
 
 // Routine to print xf debug info 
-static void xf_print_rho(int nat, int nsp, int nst, int verbosity, int *l_coh, double *mass, double *wsigma,
-    double **pos, double ***aux_pos, double complex **rho, double complex **xfrhodot, double *dotpopd, double **qmd){
+static void xf_print_rho(int nst, double complex **xfrhodot, double *dotpopd){
     int iat, isp, ist;
     
     for(ist = 0; ist < nst; ist++){
         dotpopd[ist] = creal(xfrhodot[ist][ist]);
-    }
-
-    if (verbosity >= 2){
-        for(ist = 0; ist < nst; ist++){
-
-            if(l_coh[ist] == 1){
-                for(iat = 0; iat < nat; iat++){
-                    for(isp = 0; isp < nsp; isp++){
-                        qmd[iat][isp] += 0.5 * creal(rho[ist][ist]) * (pos[iat][isp] - aux_pos[ist][iat][isp])
-                            / pow(wsigma[iat], 2.0) / mass[iat];
-                    }
-                }
-            }
-
-        }
     }
 }
 
