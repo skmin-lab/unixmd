@@ -168,7 +168,7 @@ static void xf_rhodot(int nat, int nsp, int nst, int *l_coh, double *mass, doubl
 
 // Routine to print xf debug info 
 static void xf_print_rho(int nst, double complex **xfrhodot, double *dotpopd){
-    int iat, isp, ist;
+    int ist;
     
     for(ist = 0; ist < nst; ist++){
         dotpopd[ist] = creal(xfrhodot[ist][ist]);

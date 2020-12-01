@@ -368,7 +368,7 @@ class EhXF(MQC):
         # Write auxiliary trajectories
         if (self.verbosity >= 2 and True in self.l_coh):
             # Write quantum momenta
-            tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum(au)' + \
+            tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum (au)' + \
                 "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
                 "".join([f'{self.qmom[iat, isp]:15.8f}' for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
             typewriter(tmp, unixmd_dir, f"QMOM", "a")
@@ -377,7 +377,7 @@ class EhXF(MQC):
             for ist in range(self.mol.nst):
                 if (self.l_coh[ist]):
                     # Write auxiliary phase
-                    tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum(au)' + \
+                    tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum (au)' + \
                         "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
                         "".join([f'{self.phase[ist, iat, isp]:15.8f}' for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
                     typewriter(tmp, unixmd_dir, f"AUX_PHASE_{ist}", "a")

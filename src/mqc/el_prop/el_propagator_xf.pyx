@@ -48,6 +48,7 @@ def el_run(md):
     nacme = <double**> PyMem_Malloc(nst * sizeof(double*))
     nacme_old = <double**> PyMem_Malloc(nst * sizeof(double*))
     pos = <double**> PyMem_Malloc(aux_nat * sizeof(double*))
+    qmom = <double**> PyMem_Malloc(aux_nat * sizeof(double*))
 
     aux_pos = <double***> PyMem_Malloc(nst * sizeof(double**))
     phase = <double***> PyMem_Malloc(nst * sizeof(double**))
@@ -58,6 +59,7 @@ def el_run(md):
 
     for iat in range(aux_nat):
         pos[iat] = <double*> PyMem_Malloc(aux_nsp * sizeof(double))
+        qmom[iat] = <double*> PyMem_Malloc(aux_nsp * sizeof(double))
 
     for ist in range(nst):
         aux_pos[ist] = <double**> PyMem_Malloc(aux_nat * sizeof(double*))
@@ -69,10 +71,6 @@ def el_run(md):
     # Debug related
     verbosity = md.verbosity
     dotpopd = <double*> PyMem_Malloc(nst * sizeof(double))
-
-    qmom = <double**> PyMem_Malloc(aux_nat * sizeof(double*))
-    for iat in range(aux_nat):
-        qmom[iat] = <double*> PyMem_Malloc(aux_nsp * sizeof(double))
 
     # Assign variables from python to C
     for ist in range(nst):
@@ -186,7 +184,7 @@ def el_run(md):
     PyMem_Free(qmom)
 
     PyMem_Free(aux_pos)
-    PyMem_Free(phase) 
+    PyMem_Free(phase)
 
     PyMem_Free(dotpopd)
 
