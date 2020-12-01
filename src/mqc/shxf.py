@@ -591,48 +591,32 @@ class SHXF(MQC):
             :param integer istep: current MD step
         """
         # Write time-derivative density matrix elements in DOTPOTD
-        tmp = f'{istep + 1:9d}' + "".join([f'{p:15.8f}' for p in self.dotpopd])
+        tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopd])
         typewriter(tmp, unixmd_dir, "DOTPOPD", "a")
 
         # Write auxiliary trajectories
         if (self.verbosity >= 2 and True in self.l_coh):
-            self.write_spatial_deriv(unixmd_dir, istep)
+            # Write quantum momenta
+            tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum(au)' + \
+                "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
+                "".join([f'{self.qmd[iat, isp]:15.8f}' for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
+            typewriter(tmp, unixmd_dir, f"QMOM", "a")
 
-    def write_spatial_deriv(self, unixmd_dir, istep):
-        """ Write decoherence variables from spatial derivative
+            # Write auxiliary variables
+            for ist in range(self.mol.nst):
+                if (self.l_coh[ist]):
+                    # Write auxiliary phase
+                    tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum(au)' + \
+                        "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
+                        "".join([f'{self.phase[ist, iat, isp]:15.8f}' for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
+                    typewriter(tmp, unixmd_dir, f"AUX_PHASE_{ist}", "a")
 
-            :param string unixmd_dir: unixmd directory
-            :param integer istep: current MD step
-        """
-        # Write quantum momenta
-        tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum(au)' + \
-            "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
-            "".join([f'{self.qmd[iat, isp]:15.8f}' for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
-        typewriter(tmp, unixmd_dir, f"QMOM.xyz", "a")
-
-        # Write auxiliary variables
-        for ist in range(self.mol.nst):
-            self.write_aux_var(unixmd_dir, ist, istep)
-
-    def write_aux_var(self, unixmd_dir, ist, istep):
-        """ Write auxiliary variables (position, derivative of phase)
-
-            :param string unixmd_dir: unixmd directory
-            :param integer ist: current adiabatic state
-            :param integer istep: current MD step
-        """
-        # Write auxiliary phase
-        tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum(au)' + \
-            "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
-            "".join([f'{self.phase[ist, iat, isp]:15.8f}' for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
-        typewriter(tmp, unixmd_dir, f"AUX_PHASE_{ist}.xyz", "a")
-
-        # Write auxiliary trajectory movie files
-        tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
-            "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
-            "".join([f'{self.aux.pos[ist, iat, isp] * au_to_A:15.8f}' for isp in range(self.aux.nsp)]) + \
-            "".join([f"{self.aux.vel[ist, iat, isp]:15.8f}" for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
-        typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz", "a")
+                    # Write auxiliary trajectory movie files
+                    tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
+                        "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
+                        "".join([f'{self.aux.pos[ist, iat, isp] * au_to_A:15.8f}' for isp in range(self.aux.nsp)]) + \
+                        "".join([f"{self.aux.vel[ist, iat, isp]:15.8f}" for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
+                    typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz", "a")
 
     def print_init(self, qm, mm):
         """ Routine to print the initial information of dynamics
