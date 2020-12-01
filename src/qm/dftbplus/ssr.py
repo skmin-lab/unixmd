@@ -25,6 +25,7 @@ class SSR(DFTBplus):
         :param string cpreks_grad_alg: algorithms used in CP-REKS equations
         :param double cpreks_grad_tol: gradient tolerance for CP-REKS equations
         :param boolean save_memory: save memory in cache used in CP-REKS equations
+        :param string embedding: charge embedding options; electrostatic, mechanical
         :param boolean periodic: use periodicity in the calculations
         :param double,list cell_length: the lattice vectors of periodic unit cell
         :param string sk_path: path for slater-koster files
@@ -35,7 +36,7 @@ class SSR(DFTBplus):
     def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=1000, ocdftb=False, \
         lcdftb=False, lc_method="MatrixBased", ssr22=False, ssr44=False, guess="h0", \
         guess_file="./eigenvec.bin", state_interactions=False, shift=0.3, tuning=None, \
-        cpreks_grad_alg="PCG", cpreks_grad_tol=1E-8, save_memory=False, embedding=None, \
+        cpreks_grad_alg="pcg", cpreks_grad_tol=1E-8, save_memory=False, embedding=None, \
         periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.], sk_path="./", \
         install_path="./", nthreads=1, version=20.1):
         # Initialize DFTB+ common variables
@@ -79,7 +80,6 @@ class SSR(DFTBplus):
         self.cpreks_grad_tol = cpreks_grad_tol
         self.save_memory = save_memory
 
-        # TODO : add argument explanation
         self.embedding = embedding
         if (self.embedding != None):
             if (not (self.embedding == "mechanical" or self.embedding == "electrostatic")):
@@ -325,10 +325,10 @@ class SSR(DFTBplus):
                 spin_tuning = "{}"
 
         # CP-REKS algorithm options
-        if (self.cpreks_grad_alg == "PCG"):
+        if (self.cpreks_grad_alg == "pcg"):
             cpreks_alg = "ConjugateGradient"
             preconditioner = "Yes"
-        elif (self.cpreks_grad_alg == "CG"):
+        elif (self.cpreks_grad_alg == "cg"):
             cpreks_alg = "ConjugateGradient"
             preconditioner = "No"
         elif (self.cpreks_grad_alg == "direct"):
@@ -516,27 +516,15 @@ class SSR(DFTBplus):
         # NAC
         if (self.nac == "Yes"):
             kst = 0
-            if (molecule.qmmm):
-                for ist in range(molecule.nst):
-                    for jst in range(ist + 1, molecule.nst):
-                        tmp_c = 'non-adiabatic coupling' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-                        nac = re.findall(tmp_c, log_out)
-                        nac = np.array(nac[kst])
-                        nac = nac.astype(float)
-                        nac = nac.reshape(molecule.nat_qm, 3, order='C')
-                        molecule.nac[ist, jst, 0:molecule.nat_qm] = nac
-                        molecule.nac[jst, ist, 0:molecule.nat_qm] = - nac
-                        kst += 1
-            else:
-                for ist in range(molecule.nst):
-                    for jst in range(ist + 1, molecule.nst):
-                        tmp_c = 'non-adiabatic coupling' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-                        nac = re.findall(tmp_c, log_out)
-                        nac = np.array(nac[kst])
-                        nac = nac.astype(float)
-                        nac = nac.reshape(molecule.nat_qm, 3, order='C')
-                        molecule.nac[ist, jst] = nac
-                        molecule.nac[jst, ist] = - nac
-                        kst += 1
+            for ist in range(molecule.nst):
+                for jst in range(ist + 1, molecule.nst):
+                    tmp_c = 'non-adiabatic coupling' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+                    nac = re.findall(tmp_c, log_out)
+                    nac = np.array(nac[kst])
+                    nac = nac.astype(float)
+                    nac = nac.reshape(molecule.nat_qm, 3, order='C')
+                    molecule.nac[ist, jst] = nac
+                    molecule.nac[jst, ist] = - nac
+                    kst += 1
 
 
