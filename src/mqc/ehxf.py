@@ -88,6 +88,7 @@ class EhXF(MQC):
 
         # Debug variables
         self.dotpopd = np.zeros(self.mol.nst)
+        self.qmom = np.zeros((self.aux.nat, self.aux.nsp))
 
         # Initialize event to print
         self.event = {"DECO": []}
@@ -361,28 +362,32 @@ class EhXF(MQC):
             :param integer istep: current MD step
         """
         # Write time-derivative density matrix elements in DOTPOTD
-        tmp = f'{istep + 1:9d}' + "".join([f'{self.dotpopd[ist]:15.8f}' for ist in range(self.mol.nst)])
+        tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopd])
         typewriter(tmp, unixmd_dir, "DOTPOPD", "a")
 
         # Write auxiliary trajectories
-        if (self.verbosity >= 2):
+        if (self.verbosity >= 2 and True in self.l_coh):
+            # Write quantum momenta
+            tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum(au)' + \
+                "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
+                "".join([f'{self.qmom[iat, isp]:15.8f}' for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
+            typewriter(tmp, unixmd_dir, f"QMOM", "a")
+
+            # Write auxiliary variables
             for ist in range(self.mol.nst):
                 if (self.l_coh[ist]):
-                    self.write_aux_movie(unixmd_dir, ist, istep)
+                    # Write auxiliary phase
+                    tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum(au)' + \
+                        "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
+                        "".join([f'{self.phase[ist, iat, isp]:15.8f}' for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
+                    typewriter(tmp, unixmd_dir, f"AUX_PHASE_{ist}", "a")
 
-    def write_aux_movie(self, unixmd_dir, ist, istep):
-        """ Write auxiliary trajecoty movie file
-
-            :param string unixmd_dir: unixmd directory
-            :param integer ist: current adiabatic state
-            :param integer istep: current MD step
-        """
-        # Write auxiliary trajectory movie files
-        tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
-            "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
-            "".join([f'{self.aux.pos[ist, iat, isp] * au_to_A:15.8f}' for isp in range(self.aux.nsp)]) + \
-            "".join([f"{self.aux.vel[ist, iat, isp]:15.8f}" for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
-        typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz", "a")
+                    # Write auxiliary trajectory movie files
+                    tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
+                        "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
+                        "".join([f'{self.aux.pos[ist, iat, isp] * au_to_A:15.8f}' for isp in range(self.aux.nsp)]) + \
+                        "".join([f"{self.aux.vel[ist, iat, isp]:15.8f}" for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
+                    typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz", "a")
 
     def print_init(self, qm, mm):
         """ Routine to print the initial information of dynamics
