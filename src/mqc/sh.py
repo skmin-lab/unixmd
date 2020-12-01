@@ -29,8 +29,8 @@ class SH(MQC):
         :param integer out_freq: frequency of printing output
         :param integer verbosity: verbosity of output
     """
-    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, vel_rescale="momentum", \
+    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
+        propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, vel_rescale="augment", \
         vel_reject="reverse", coefficient=None, deco_correction=None, edc_parameter=0.1, \
         unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
