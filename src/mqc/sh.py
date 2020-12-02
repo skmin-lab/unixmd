@@ -90,7 +90,7 @@ class SH(MQC):
              self.run_init(qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
         bo_list = [self.rstate]
         qm.calc_coupling = True
-        self.print_init(qm, mm)
+        self.print_init(qm, mm, restart)
 
         if (restart == None):
             # Calculate initial input geometry at t = 0.0 s
@@ -438,14 +438,14 @@ class SH(MQC):
         tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(self.mol.nst)])
         typewriter(tmp, unixmd_dir, "SHPROB", "a")
 
-    def print_init(self, qm, mm):
+    def print_init(self, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
         """
         # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm)
+        super().print_init(qm, mm, restart)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
