@@ -2,7 +2,7 @@ from __future__ import division
 from build.cioverlap import *
 from qm.dftbplus.dftbplus import DFTBplus
 from qm.dftbplus.dftbpar import spin_w, spin_w_lc, onsite_uu, onsite_ud, max_l
-from misc import data, eV_to_au, call_name
+from misc import data, eps, eV_to_au, call_name
 import os, shutil, re, textwrap
 import numpy as np
 
@@ -23,6 +23,7 @@ class DFTB(DFTBplus):
         :param double elec_temp: electronic temperature in Fermi-Dirac scheme
         :param string mixer: charge mixing method used in DFTB
         :param string ex_symmetry: symmetry of excited state in TDDFTB
+        :param double e_window: energy window for TDDFTB. Increases efficiency of NACME calculation.
         :param integer,list k_point: number of k-point samplings
         :param boolean periodic: use periodicity in the calculations
         :param double,list cell_length: the lattice vectors of periodic unit cell
@@ -32,14 +33,12 @@ class DFTB(DFTBplus):
         :param string mpi_path: path for MPI binary
         :param integer nthreads: number of threads in the calculations
         :param double version: version of DFTB+ program
-        :param double e_window: energy window for excited state calculation. Increases efficiency of NACME calculation.
     """
     def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=100, ocdftb=False, \
         lcdftb=False, lc_method="MatrixBased", sdftb=False, unpaired_elec=0., guess="h0", \
-        guess_file="./charges.bin", elec_temp=0., mixer="Broyden", ex_symmetry="singlet", \
+        guess_file="./charges.bin", elec_temp=0., mixer="Broyden", ex_symmetry="singlet", e_window=0., \
         k_point=[1, 1, 1], periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.,], \
-        sk_path="./", install_path="./", mpi=False, mpi_path="./", nthreads=1, version=20.1, \
-        e_window=-1):
+        sk_path="./", install_path="./", mpi=False, mpi_path="./", nthreads=1, version=20.1):
         # Initialize DFTB+ common variables
         super(DFTB, self).__init__(molecule, sk_path, install_path, nthreads, version)
 
@@ -65,14 +64,8 @@ class DFTB(DFTBplus):
         self.elec_temp = elec_temp
         self.mixer = mixer
 
-        self.e_window = e_window
-
-        if (self.e_window < 0.0):
-            self.logwindow = False
-        else:
-            self.logwindow = True
-
         self.ex_symmetry = ex_symmetry
+        self.e_window = e_window
 
         self.k_point = k_point
         self.periodic = periodic
@@ -140,20 +133,21 @@ class DFTB(DFTBplus):
         # Initialize NACME variables
         # There is no core orbitals in TDDFTB (fixed occupations)
         # nocc is number of occupied orbitals and nvirt is number of virtual orbitals
-
         self.norb = self.nbasis
         self.nocc = int(int(molecule.nelec - core_elec) / 2)
         self.nvirt = self.norb - self.nocc
     
-        #replacing norb by a matrix containing the limits of the for loops. For energy window calculations loops will not go from 0 to nocc/nvirt or norb but from noccmin to nocc/0 to nvirtmax or noccmin to norb.
-        self.orb_ini = np.zeros(1,dtype=int)
-        self.orb_final = np.zeros(1,dtype=int)
+        # Replace norb by arrays containing the limits of the for loops.
+        # For energy window calculations loops will not go from (0 to nocc/nvirt) or (0 to norb)
+        # but from (nocc_min to nocc/0 to nvirt_max) or (nocc_min to norb).
+        self.orb_ini = np.zeros(1, dtype=int)
+        self.orb_final = np.zeros(1, dtype=int)
         self.orb_final[0] = self.norb
 
-        if (self.logwindow):
-            # swapping of minimal and maximal values to replace them in reading of SPX.DAT by the minimal/maximal values.
+        if (self.e_window > eps):
+            # Swap minimal/maximal values to replace them in reading of SPX.DAT by the minimal/maximal values.
             self.orb_ini[0] = self.norb
-            self.orb_final[0] = 0.0
+            self.orb_final[0] = 0
 
         self.ao_overlap = np.zeros((self.nbasis, self.nbasis))
         self.mo_coef_old = np.zeros((self.norb, self.nbasis))
@@ -454,35 +448,19 @@ class DFTB(DFTBplus):
             else:
                 xpy = "No"
 
-            if (self.logwindow):
-                en_wind = "EnergyWindow = %f"%(self.e_window)
-
-                input_excited = textwrap.dedent(f"""\
-                ExcitedState = Casida{{
-                  NrOfExcitations = {num_ex}
-                  StateOfInterest = {rst}
-                  Symmetry = {self.ex_symmetry}
-                  WriteTransitions = Yes
-                  WriteSPTransitions = {xpy}
-                  WriteMulliken = Yes
-                  WriteXplusY = {xpy}
-                  {en_wind}
-                  ExcitedStateForces = {ex_force}
-                }}
-                """)
-            else:
-                input_excited = textwrap.dedent(f"""\
-                ExcitedState = Casida{{
-                  NrOfExcitations = {num_ex}
-                  StateOfInterest = {rst}
-                  Symmetry = {self.ex_symmetry}
-                  WriteTransitions = Yes
-                  WriteSPTransitions = {xpy}
-                  WriteMulliken = Yes
-                  WriteXplusY = {xpy}
-                  ExcitedStateForces = {ex_force}
-                }}
-                """)
+            input_excited = textwrap.dedent(f"""\
+            ExcitedState = Casida{{
+              NrOfExcitations = {num_ex}
+              StateOfInterest = {rst}
+              Symmetry = {self.ex_symmetry}
+              WriteTransitions = Yes
+              WriteSPTransitions = {xpy}
+              WriteMulliken = Yes
+              WriteXplusY = {xpy}
+              EnergyWindow [eV] = {self.e_window}
+              ExcitedStateForces = {ex_force}
+            }}
+            """)
 
             input_dftb += input_excited
 
@@ -721,9 +699,6 @@ class DFTB(DFTBplus):
                 self.mo_coef_new[iorb] = data
 #        np.savetxt("test-mo2", self.mo_coef_new, fmt=f"%12.6f")
 
-        # Dimension for CI coefficients
-        # nmat = self.nocc * self.nvirt
-
         # The CI coefficients are arranged in order of single-particle excitations
         # Read 'SPX.DAT.pre' file at time t
         if (istep == 0):
@@ -731,7 +706,7 @@ class DFTB(DFTBplus):
 
             with open(file_name_in, "r") as f_in:
                 lines = f_in.readlines()
-                # dimension of get_wij changes when number of excitations is reduced so nmat is not required.
+                # Dimension for CI coefficients (number of excitations)
                 ndim = int(lines[-2].strip().split()[0])
                 get_wij_ind_old = np.zeros((ndim, 2), dtype=np.int_)
                 iline = 0
@@ -740,11 +715,11 @@ class DFTB(DFTBplus):
                     if (iline in range(5, 5 + ndim)):
                         # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
                         field = line.split()
-                        # determining new limits for for-loops
-                        if int(field[5]) > self.orb_final[0]:
+                        # Determine new limits for for-loops
+                        if (int(field[5]) > self.orb_final[0]):
                             self.orb_final[0] = int(field[5])
-                        if int(field[3]) < (self.orb_ini[0]-1):
-                            self.orb_ini[0] = int(field[3])-1
+                        if (int(field[3]) < self.orb_ini[0] + 1):
+                            self.orb_ini[0] = int(field[3]) - 1
                         get_wij_ind_old[int(field[0]) - 1] = [int(field[3]), int(field[5])]
                     iline += 1
 
@@ -753,6 +728,7 @@ class DFTB(DFTBplus):
 
         with open(file_name_in, "r") as f_in:
             lines = f_in.readlines()
+            # Dimension for CI coefficients (number of excitations)
             ndim = int(lines[-2].strip().split()[0])
             get_wij_ind_new = np.zeros((ndim, 2), dtype=np.int_)
             iline = 0
@@ -761,9 +737,9 @@ class DFTB(DFTBplus):
                 if (iline in range(5, 5 + ndim)):
                     # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
                     field = line.split()
-                    if int(field[5]) > self.orb_final[0]:
+                    if (int(field[5]) > self.orb_final[0]):
                         self.orb_final[0] = int(field[5])
-                    if int(field[3]) < self.orb_ini[0]:
+                    if (int(field[3]) < self.orb_ini[0] + 1):
                         self.orb_ini[0] = int(field[3]) - 1
                     get_wij_ind_new[int(field[0]) - 1] = [int(field[3]), int(field[5])]
                 iline += 1
