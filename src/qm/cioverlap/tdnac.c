@@ -3,8 +3,8 @@
 #include <math.h>
 
 // Routine to calculate overlap and permutation matrix in MO basis between two time steps
-static void calc_MO_over(int nbasis, int norb, int *orb_ini, int *orb_final, double **mo_overlap,
-    double **permut_mat, double **ao_overlap, double **mo_coef_old, double **mo_coef_new);
+static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **permut_mat,
+    double **ao_overlap, double **mo_coef_old, double **mo_coef_new);
 
 // Routine to match phase of MO coefficients and orderings between two time steps
 static void MO_phase_order(int nbasis, int norb, double **mo_coef_new, double **permut_mat);
@@ -14,10 +14,11 @@ static void CI_phase_order(int nst, int norb, int nocc, int nvirt, int *orb_ini,
     double ***ci_coef_old, double ***ci_coef_new, double **permut_mat);
 
 // Routine to match phase for the states between two time steps
-static void state_phase(int nst, int nocc, int nvirt, double ***ci_coef_old, double ***ci_coef_new);
+static void state_phase(int nst, int nocc, int nvirt, int *orb_ini, int *orb_final,
+    double ***ci_coef_old, double ***ci_coef_new);
 
 // Routine to normalize CI coefficients
-static void norm_CI_coef(int nst, int nocc, int nvirt, double ***ci_coef);
+static void norm_CI_coef(int nst, int nocc, int nvirt, int *orb_ini, int *orb_final, double ***ci_coef);
 
 // Routine to calculate TDNAC term used in electronic propagation
 static void TD_NAC(int istep, int nst, int nbasis, int norb, int nocc, int nvirt, double dt,
@@ -43,7 +44,7 @@ static void TD_NAC(int istep, int nst, int nbasis, int norb, int nocc, int nvirt
         }
     }
 
-    calc_MO_over(nbasis, norb, orb_ini, orb_final, mo_overlap, permut_mat, ao_overlap, mo_coef_old, mo_coef_new);
+    calc_MO_over(nbasis, norb, mo_overlap, permut_mat, ao_overlap, mo_coef_old, mo_coef_new);
 
     if(debug == 1){
         // Print mo_overlap
@@ -135,7 +136,7 @@ static void TD_NAC(int istep, int nst, int nbasis, int norb, int nocc, int nvirt
         printf("\n");
     }
 
-    state_phase(nst, nocc, nvirt, ci_coef_old, ci_coef_new);
+    state_phase(nst, nocc, nvirt, orb_ini, orb_final, ci_coef_old, ci_coef_new);
 
     if(debug == 1){
         // Print ci_coef_new
@@ -150,9 +151,9 @@ static void TD_NAC(int istep, int nst, int nbasis, int norb, int nocc, int nvirt
     }
 
     if(istep == 0){
-        norm_CI_coef(nst, nocc, nvirt, ci_coef_old);
+        norm_CI_coef(nst, nocc, nvirt, orb_ini, orb_final, ci_coef_old);
     }
-    norm_CI_coef(nst, nocc, nvirt, ci_coef_new);
+    norm_CI_coef(nst, nocc, nvirt, orb_ini, orb_final, ci_coef_new);
 
     // Re-calculate mo_overlap with phase-corrected MO coefficients
     // Now, mo_overlap is anti-symmetric
@@ -161,7 +162,7 @@ static void TD_NAC(int istep, int nst, int nbasis, int norb, int nocc, int nvirt
             mo_overlap[iorb][jorb] = 0.0;
         }
     }
-    calc_MO_over(nbasis, norb, orb_ini, orb_final, mo_overlap, permut_mat, ao_overlap, mo_coef_old, mo_coef_new);
+    calc_MO_over(nbasis, norb, mo_overlap, permut_mat, ao_overlap, mo_coef_old, mo_coef_new);
 
     if(debug == 1){
         // Print mo_overlap
@@ -280,8 +281,8 @@ static void TD_NAC(int istep, int nst, int nbasis, int norb, int nocc, int nvirt
 }
 
 // Routine to calculate overlap and permutation matrix in MO basis between two time steps
-static void calc_MO_over(int nbasis, int norb, int *orb_ini, int *orb_final, double **mo_overlap,
-    double **permut_mat, double **ao_overlap, double **mo_coef_old, double **mo_coef_new){
+static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **permut_mat,
+    double **ao_overlap, double **mo_coef_old, double **mo_coef_new){
 
     double **tmp_sign = malloc(norb * sizeof(double*));
     int ibasis, jbasis, iorb, jorb;
@@ -294,8 +295,8 @@ static void calc_MO_over(int nbasis, int norb, int *orb_ini, int *orb_final, dou
         }
     }
 
-    for(iorb = orb_ini[0]; iorb < orb_final[0]; iorb++){
-        for(jorb = orb_ini[0]; jorb < orb_final[0]; jorb++){
+    for(iorb = 0; iorb < norb; iorb++){
+        for(jorb = 0; jorb < norb; jorb++){
 
             // Calculate overlap in MO basis; S' = C * S * C^T
             for(ibasis = 0; ibasis < nbasis; ibasis++){
@@ -314,8 +315,8 @@ static void calc_MO_over(int nbasis, int norb, int *orb_ini, int *orb_final, dou
         }
     }
 
-    for(iorb = orb_ini[0]; iorb < orb_final[0]; iorb++){
-        for(jorb = orb_ini[0]; jorb < orb_final[0]; jorb++){
+    for(iorb = 0; iorb < norb; iorb++){
+        for(jorb = 0; jorb < norb; jorb++){
             // Permutation matrix is obtained by rounding off the square of overlap matrix in MO basis
             permut_mat[iorb][jorb] = round(pow(mo_overlap[iorb][jorb], 2) * tmp_sign[iorb][jorb]);
         }
@@ -441,7 +442,8 @@ static void CI_phase_order(int nst, int norb, int nocc, int nvirt, int *orb_ini,
 }
 
 // Routine to match phase for the states between two time steps
-static void state_phase(int nst, int nocc, int nvirt, double ***ci_coef_old, double ***ci_coef_new){
+static void state_phase(int nst, int nocc, int nvirt, int *orb_ini, int *orb_final,
+    double ***ci_coef_old, double ***ci_coef_new){
 
     double val;
     int ist, iorb, aorb;
@@ -450,15 +452,15 @@ static void state_phase(int nst, int nocc, int nvirt, double ***ci_coef_old, dou
     for(ist = 1; ist < nst; ist++){
 
         val = 0.0;
-        for(iorb = 0; iorb < nocc; iorb++){
-            for(aorb = 0; aorb < nvirt; aorb++){
+        for(iorb = orb_ini[0]; iorb < nocc; iorb++){
+            for(aorb = 0; aorb < orb_final[0] - nocc; aorb++){
                 val += ci_coef_old[ist][iorb][aorb] * ci_coef_new[ist][iorb][aorb];
             }
         }
 
         if(val < 0.0){
-            for(iorb = 0; iorb < nocc; iorb++){
-                for(aorb = 0; aorb < nvirt; aorb++){
+            for(iorb = orb_ini[0]; iorb < nocc; iorb++){
+                for(aorb = 0; aorb < orb_final[0] - nocc; aorb++){
                     ci_coef_new[ist][iorb][aorb] *= -1.0;
                 }
             }
@@ -469,7 +471,7 @@ static void state_phase(int nst, int nocc, int nvirt, double ***ci_coef_old, dou
 }
 
 // Routine to normalize CI coefficients
-static void norm_CI_coef(int nst, int nocc, int nvirt, double ***ci_coef){
+static void norm_CI_coef(int nst, int nocc, int nvirt, int *orb_ini, int *orb_final, double ***ci_coef){
 
     double norm;
     int ist, iorb, aorb;
@@ -479,16 +481,16 @@ static void norm_CI_coef(int nst, int nocc, int nvirt, double ***ci_coef){
 
         // Calculate normalization value for CI coefficients
         norm = 0.0;
-        for(iorb = 0; iorb < nocc; iorb++){
-            for(aorb = 0; aorb < nvirt; aorb++){
+        for(iorb = orb_ini[0]; iorb < nocc; iorb++){
+            for(aorb = 0; aorb < orb_final[0] - nocc; aorb++){
                 norm += pow(ci_coef[ist][iorb][aorb], 2);
             }
         }
         norm = sqrt(norm);
 
         // Normalize the CI coefficients
-        for(iorb = 0; iorb < nocc; iorb++){
-            for(aorb = 0; aorb < nvirt; aorb++){
+        for(iorb = orb_ini[0]; iorb < nocc; iorb++){
+            for(aorb = 0; aorb < orb_final[0] - nocc; aorb++){
                 ci_coef[ist][iorb][aorb] /= norm;
             }
         }
