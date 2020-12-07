@@ -2,34 +2,36 @@ from __future__ import division
 from qm.model.model import Model
 import numpy as np
 
-class SAC(Model):
-    """ Class for simple avoided crossing (SAC) model BO calculation
+class DAC(Model):
+    """ Class for dual avoided crossing (DAC) model BO calculation
 
         :param object molecule: molecule object
-        :param double A: parameter for simple avoided crossing model
-        :param double B: parameter for simple avoided crossing model
-        :param double C: parameter for simple avoided crossing model
-        :param double D: parameter for simple avoided crossing model
+        :param double E0: parameter for dual avoided crossing model
+        :param double A: parameter for dual avoided crossing model
+        :param double B: parameter for dual avoided crossing model
+        :param double C: parameter for dual avoided crossing model
+        :param double D: parameter for dual avoided crossing model
     """
-    def __init__(self, molecule, A=0.01, B=1.6, C=0.005, D=1.):
+    def __init__(self, molecule, E0 = 0.05, A=0.1, B=0.28, C=0.015, D=0.06):
         # Initialize model common variables
-        super(SAC, self).__init__(None)
+        super(DAC, self).__init__(None)
 
         # Define parameters
+        self.E0 = E0
         self.A = A
         self.B = B
         self.C = C
         self.D = D
 
         # Set 'l_nacme' with respect to the computational method
-        # SAC model can produce NACs, so we do not need to get NACME
+        # DAC model can produce NACs, so we do not need to get NACME
         molecule.l_nacme = False
 
-        # SAC model can compute the gradient of several states simultaneously
+        # DAC model can compute the gradient of several states simultaneously
         self.re_calc = False
 
     def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
-        """ Extract energy, gradient and nonadiabatic couplings from simple avoided crossing model BO calculation
+        """ Extract energy, gradient and nonadiabatic couplings from dual avoided crossing model BO calculation
 
             :param object molecule: molecule object
             :param string base_dir: base directory
@@ -46,14 +48,14 @@ class SAC(Model):
         x = molecule.pos[0]
 
         # Define Hamiltonian
-        H[0, 0] = np.sign(x) * self.A * (1. - np.exp(- self.B * abs(x)))
-        H[1, 1] = - H[0, 0]
+        H[0, 0] = 0.
+        H[1, 1] = self.E0 - self.A * np.exp(- self.B * x ** 2)
         H[1, 0] = self.C * np.exp(- self.D * x ** 2)
         H[0, 1] = H[1, 0]
 
         # Define a derivative of Hamiltonian
-        dH[0, 0] = self.A * self.B * np.exp(- self.B * abs(x))
-        dH[1, 1] = - dH[0, 0]
+        dH[0, 0] = 0.
+        dH[1, 1] = self.A * self.B * 2. * x * np.exp(- self.B * x ** 2)
         dH[1, 0] = - 2. * self.D * self.C * x * np.exp(- self.D * x ** 2)
         dH[0, 1] = dH[1, 0]
 

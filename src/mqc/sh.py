@@ -4,7 +4,8 @@ from mqc.mqc import MQC
 from misc import eps, au_to_K, call_name, typewriter
 import random, os, shutil, textwrap
 import numpy as np
- 
+import pickle
+
 class SH(MQC):
     """ Class for surface hopping dynamics
 
@@ -21,15 +22,20 @@ class SH(MQC):
         :param string vel_rescale: velocity rescaling method after successful hop
         :param string vel_reject: velocity rescaling method after frustrated hop
         :param coefficient: initial BO coefficient
+        :param string deco_correction: simple decoherence correction schemes
+        :param double edc_parameter: energy constant for rescaling coefficients in edc
         :type coefficient: double, list or complex, list
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
+        :param integer out_freq: frequency of printing output
+        :param integer verbosity: verbosity of output
     """
-    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
-        vel_rescale="momentum", vel_reject="reverse", coefficient=None, unit_dt="fs"):
+    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
+        propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, vel_rescale="augment", \
+        vel_reject="reverse", coefficient=None, deco_correction=None, edc_parameter=0.1, \
+        unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
+            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity)
 
         # Initialize SH variables
         self.rstate = istate
@@ -43,17 +49,24 @@ class SH(MQC):
         self.l_reject = False
 
         self.vel_rescale = vel_rescale
-        if not (self.vel_rescale in ["energy", "velocity", "momentum"]): 
+        if not (self.vel_rescale in ["energy", "velocity", "momentum", "augment"]):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
 
         self.vel_reject = vel_reject
-        if not (self.vel_reject in ["keep", "reverse"]): 
+        if not (self.vel_reject in ["keep", "reverse"]):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_reject'! {self.vel_reject}")
 
+        # Initialize decoherence variables
+        self.deco_correction = deco_correction
+        self.edc_parameter = edc_parameter
+
+        if not (deco_correction in [None, "idc", "edc"]):
+            raise ValueError (f"( {self.deco_correction}.{call_name()} ) Invalid 'deco_correction'! {self.deco_correction}")
+
         # Check error for incompatible cases
-        if (self.mol.l_nacme): 
+        if (self.mol.l_nacme):
             # No analytical nonadiabatic couplings exist
-            if (self.vel_rescale in ["velocity", "momentum"]): 
+            if (self.vel_rescale in ["velocity", "momentum", "augment"]):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'energy' rescaling for 'vel_rescale'! {self.vel_rescale}")
             if (self.vel_reject == "reverse"):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'keep' rescaling for 'vel_reject'! {self.vel_reject}")
@@ -61,86 +74,78 @@ class SH(MQC):
         # Initialize event to print
         self.event = {"HOP": []}
 
-    def run(self, qm, mm=None, input_dir="./", \
-        save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
+    def run(self, qm, mm=None, input_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         """ Run MQC dynamics according to surface hopping dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
             :param string input_dir: location of input directory
-            :param boolean save_QMlog: logical for saving QM calculation log
-            :param boolean save_MMlog: logical for saving MM calculation log
+            :param boolean save_qm_log: logical for saving QM calculation log
+            :param boolean save_mm_log: logical for saving MM calculation log
             :param boolean save_scr: logical for saving scratch directory
-            :param integer debug: verbosity level for standard output
+            :param string restart: option for controlling dynamics restarting
         """
-        # Set directory information
-        input_dir = os.path.expanduser(input_dir)
-        base_dir = os.path.join(os.getcwd(), input_dir)
-
-        unixmd_dir = os.path.join(base_dir, "md")
-        if (os.path.exists(unixmd_dir)):
-            shutil.move(unixmd_dir, unixmd_dir + "_old_" + str(os.getpid()))
-        os.makedirs(unixmd_dir)
-
-        QMlog_dir = os.path.join(base_dir, "QMlog")
-        if (os.path.exists(QMlog_dir)):
-            shutil.move(QMlog_dir, QMlog_dir + "_old_" + str(os.getpid()))
-        if (save_QMlog):
-            os.makedirs(QMlog_dir)
-
-        if (self.mol.qmmm and mm != None):
-            MMlog_dir = os.path.join(base_dir, "MMlog")
-            if (os.path.exists(MMlog_dir)):
-                shutil.move(MMlog_dir, MMlog_dir + "_old_" + str(os.getpid()))
-            if (save_MMlog):
-                os.makedirs(MMlog_dir)
-
-        if ((self.mol.qmmm and mm == None) or (not self.mol.qmmm and mm != None)):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Both self.mol.qmmm and mm object is necessary! {self.mol.qmmm} and {mm}")
-
-        # Check compatibility for QM and MM objects
-        if (self.mol.qmmm and mm != None):
-            self.check_qmmm(qm, mm)
-
         # Initialize UNI-xMD
-        os.chdir(base_dir)
+        base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
+             self.run_init(qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
         bo_list = [self.rstate]
         qm.calc_coupling = True
+        self.print_init(qm, mm)
 
-        self.touch_file(unixmd_dir)
-        self.print_init(qm, mm, debug)
-
-        # Calculate initial input geometry at t = 0.0 s
-        self.mol.reset_bo(qm.calc_coupling)
-        qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=-1, calc_force_only=False)
-        if (self.mol.qmmm and mm != None):
-            mm.get_data(self.mol, base_dir, bo_list, istep=-1, calc_force_only=False)
-        if (not self.mol.l_nacme):
-            self.mol.get_nacme()
-
-        self.hop_prob(istep=-1)
-        self.hop_check(bo_list)
-        self.evaluate_hop(bo_list, istep=-1)
-        if (qm.re_calc and self.l_hop):
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=-1, calc_force_only=True)
+        if (restart == None):
+            # Calculate initial input geometry at t = 0.0 s
+            self.istep = -1
+            self.mol.reset_bo(qm.calc_coupling)
+            qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
             if (self.mol.qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, istep=-1, calc_force_only=True)
+                mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
+            if (not self.mol.l_nacme):
+                self.mol.get_nacme()
 
-        self.update_energy()
+            self.hop_prob(self.istep)
+            self.hop_check(bo_list)
+            self.evaluate_hop(bo_list, self.istep)
 
-        self.write_md_output(unixmd_dir, istep=-1)
-        self.print_step(debug, istep=-1)
+            if (self.deco_correction == "idc"):
+                if (self.l_hop or self.l_reject):
+                    self.correct_deco_idc()
+            elif (self.deco_correction == "edc"):
+                # If kinetic is 0, coefficient/density matrix are update into itself
+                if (self.mol.ekin_qm > eps):
+                    self.correct_deco_edc()
+
+            if (qm.re_calc and self.l_hop):
+                qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
+                if (self.mol.qmmm and mm != None):
+                    mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=True)
+
+            self.update_energy()
+
+            self.write_md_output(unixmd_dir, self.istep)
+            self.print_step(self.istep)
+
+        elif (restart == "write"):
+            # Reset initial time step to t = 0.0 s
+            self.istep = -1
+            self.write_md_output(unixmd_dir, self.istep)
+            self.print_step(self.istep)
+
+        elif (restart == "append"):
+            # Set initial time step to last successful step of previous dynamics
+            self.istep = self.fstep
+
+        self.istep += 1
 
         # Main MD loop
-        for istep in range(self.nsteps):
+        for istep in range(self.istep, self.nsteps):
 
             self.cl_update_position()
 
             self.mol.backup_bo()
             self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=istep, calc_force_only=False)
+            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
             if (self.mol.qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, istep=istep, calc_force_only=False)
+                mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
             if (not self.mol.l_nacme):
                 self.mol.adjust_nac()
@@ -152,23 +157,39 @@ class SH(MQC):
 
             el_run(self)
 
-            self.hop_prob(istep=istep)
+            self.hop_prob(istep)
             self.hop_check(bo_list)
-            self.evaluate_hop(bo_list, istep=istep)
+            self.evaluate_hop(bo_list, istep)
+
+            if (self.deco_correction == "idc"):
+                if (self.l_hop or self.l_reject):
+                    self.correct_deco_idc()
+            elif (self.deco_correction == "edc"):
+                # If kinetic is 0, coefficient/density matrix are update into itself
+                if (self.mol.ekin_qm > eps):
+                    self.correct_deco_edc()
+
             if (qm.re_calc and self.l_hop):
-                qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=istep, calc_force_only=True)
+                qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
                 if (self.mol.qmmm and mm != None):
-                    mm.get_data(self.mol, base_dir, bo_list, istep=istep, calc_force_only=True)
+                    mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
 
             if (self.thermo != None):
                 self.thermo.run(self)
 
             self.update_energy()
 
-            self.write_md_output(unixmd_dir, istep=istep)
-            self.print_step(debug, istep=istep)
+            if ((istep + 1) % self.out_freq == 0):
+                self.write_md_output(unixmd_dir, istep)
+            if ((istep + 1) % self.out_freq == 0 or len(self.event["HOP"]) > 0):
+                self.print_step(istep)
             if (istep == self.nsteps - 1):
-                self.write_final_xyz(unixmd_dir, istep=istep)
+                self.write_final_xyz(unixmd_dir, istep)
+
+            self.fstep = istep
+            restart_file = os.path.join(base_dir, "RESTART.bin")
+            with open(restart_file, 'wb') as f:
+                pickle.dump({'qm':qm, 'md':self}, f)
 
         # Delete scratch directory
         if (not save_scr):
@@ -206,7 +227,7 @@ class SH(MQC):
                 accum += self.prob[ist]
             self.acc_prob[ist + 1] = accum
         psum = self.acc_prob[self.mol.nst]
- 
+
         if (psum > 1.):
             self.prob /= psum
             self.acc_prob /= psum
@@ -236,33 +257,40 @@ class SH(MQC):
             pot_diff = self.mol.states[self.rstate].energy - self.mol.states[self.rstate_old].energy
 
             # Solve quadratic equation for scaling factor of velocities
-            if (self.vel_rescale == "energy"):
-                # Velocities cannot be adjusted when zero kinetic energy is given
-                if (self.mol.ekin_qm < eps):
-                    raise ValueError (f"( {self.md_type}.{call_name()} ) Too small kinetic energy! {self.mol.ekin_qm}")
-                a = 1.
-                b = 1.
-                c = 1.
-                det = 1.
-            elif (self.vel_rescale == "velocity"):
-                a = np.sum(self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
-                b = 2. * np.sum(self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
+            a = 1.
+            b = 1.
+            det = 1.
+            if (self.vel_rescale == "velocity"):
+                a = np.sum(self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
+                b = 2. * np.sum(self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] \
+                    * self.mol.vel[0:self.mol.nat_qm], axis=1))
                 c = 2. * pot_diff
                 det = b ** 2. - 4. * a * c
             elif (self.vel_rescale == "momentum"):
-                a = np.sum(1. / self.mol.mass * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
-                b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel, axis=1))
+                a = np.sum(1. / self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
+                b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel[0:self.mol.nat_qm], axis=1))
+                c = 2. * pot_diff
+                det = b ** 2. - 4. * a * c
+            elif (self.vel_rescale == "augment"):
+                a = np.sum(1. / self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
+                b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel[0:self.mol.nat_qm], axis=1))
                 c = 2. * pot_diff
                 det = b ** 2. - 4. * a * c
 
+            # Default: hopping is allowed
+            self.l_reject = False
+
+            # Velocities cannot be adjusted when zero kinetic energy is given
+            if (self.vel_rescale == "energy" and self.mol.ekin_qm < eps):
+                self.l_reject = True
+            # Clasically forbidden hop due to lack of kinetic energy
             if (self.mol.ekin_qm < pot_diff):
-                # Clasically forbidden hop due to lack of kinetic energy
                 self.l_reject = True
-            elif (det < 0.):
-                # Kinetic energy is enough, but there is no solution for scaling factor
+            # Kinetic energy is enough, but there is no solution for scaling factor
+            if (det < 0.):
                 self.l_reject = True
-            else:
-                # Kinetic energy is enough, and real solution for scaling factor exists
+            # When kinetic energy is enough, velocities are always rescaled in 'augment' case
+            if (self.vel_rescale == "augment" and self.mol.ekin_qm > pot_diff):
                 self.l_reject = False
 
             if (self.l_reject):
@@ -281,7 +309,9 @@ class SH(MQC):
                 self.rstate = self.rstate_old
                 bo_list[0] = self.rstate
             else:
-                if (self.vel_rescale == "energy"):
+                if (self.vel_rescale == "energy" or (det < 0. and self.vel_rescale == "augment")):
+                    if (det < 0.):
+                        self.event["HOP"].append("Accept hopping: no solution to find rescale factor, but velocity is simply rescaled")
                     x = np.sqrt(1. - pot_diff / self.mol.ekin_qm)
                 else:
                     if (b < 0.):
@@ -295,18 +325,79 @@ class SH(MQC):
                     self.mol.vel[0:self.mol.nat_qm] *= x
 
                 elif (self.vel_rescale == "velocity"):
-                    self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm]
+                    self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate]
 
                 elif (self.vel_rescale == "momentum"):
-                    self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate, 0:self.mol.nat_qm] / \
+                    self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate] / \
                         self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
+
+                elif (self.vel_rescale == "augment"):
+                    if (det > 0. or self.mol.ekin_qm < pot_diff):
+                        self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate] / \
+                            self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
+                    else:
+                        self.mol.vel[0:self.mol.nat_qm] *= x
 
             # Update kinetic energy
             self.mol.update_kinetic()
 
         # Record hopping event
         if (self.rstate != self.rstate_old):
-            self.event["HOP"].append(f"Hopping {self.rstate_old} -> {self.rstate}")
+            self.event["HOP"].append(f"Accept hopping: hop {self.rstate_old} -> {self.rstate}")
+
+    def correct_deco_idc(self):
+        """ Routine to decoherence correction, instantaneous decoherence correction(IDC) scheme
+        """
+        if (self.propagation == "coefficient"):
+            for states in self.mol.states:
+                states.coef = 0. + 0.j
+            self.mol.states[self.rstate].coef = 1. + 0.j
+
+        self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex_)
+        self.mol.rho[self.rstate, self.rstate] = 1. + 0.j
+
+    def correct_deco_edc(self):
+        """ Routine to decoherence correction, energy-based decoherence correction(EDC) scheme
+        """
+        # Save exp(-dt/tau) instead of tau itself
+        exp_tau = np.array([1. if (ist == self.rstate) else np.exp(- self.dt / ((1. + self.edc_parameter / self.mol.ekin_qm) / \
+            np.abs(self.mol.states[ist].energy - self.mol.states[self.rstate].energy))) for ist in range(self.mol.nst)])
+        rho_update = 1.
+
+        if (self.propagation == "coefficient"):
+            # Update coefficients
+            for ist in range(self.mol.nst):
+                # self.mol.states[self.rstate] need other updated coefficients
+                if (ist != self.rstate):
+                    self.mol.states[ist].coef *= exp_tau[ist]
+                    rho_update -= self.mol.states[ist].coef.conjugate() * self.mol.states[ist].coef
+
+            self.mol.states[self.rstate].coef *= np.sqrt(rho_update / self.mol.rho[self.rstate, self.rstate])
+
+            # Get density matrix elements from coefficients
+            for ist in range(self.mol.nst):
+                for jst in range(ist, self.mol.nst):
+                    self.mol.rho[ist, jst] = self.mol.states[ist].coef.conjugate() * self.mol.states[jst].coef
+                    self.mol.rho[jst, ist] = self.mol.rho[ist, jst].conjugate()
+
+        if (self.propagation == "density"):
+            # save old running state element for update running state involved elements
+            rho_old_rstate = self.mol.rho[self.rstate, self.rstate]
+            for ist in range(self.mol.nst):
+                for jst in range(ist, self.mol.nst):
+                    # Update density matrix. self.mol.rho[ist, rstate] suffers half-update because exp_tau[rstate] = 1
+                    self.mol.rho[ist, jst] *= exp_tau[ist] * exp_tau[jst]
+                    self.mol.rho[jst, ist] = self.mol.rho[ist, jst].conjugate()
+
+                if (ist != self.rstate):
+                    # Update rho[self.rstate, self.rstate] by subtracting other diagonal elements
+                    rho_update -= self.mol.rho[ist, ist]
+
+            # Update rho[self.rstate, ist] and rho[ist, self.rstate] by using rho_update and rho_old_rstate
+            # rho[self.rstate, self.rstate] automatically update by double counting
+            for ist in range(self.mol.nst):
+                self.mol.rho[ist, self.rstate] *= np.sqrt(rho_update / rho_old_rstate)
+                self.mol.rho[self.rstate, ist] *= np.sqrt(rho_update / rho_old_rstate)
 
     def calculate_force(self):
         """ Routine to calculate the forces
@@ -347,15 +438,14 @@ class SH(MQC):
         tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(self.mol.nst)])
         typewriter(tmp, unixmd_dir, "SHPROB", "a")
 
-    def print_init(self, qm, mm, debug):
+    def print_init(self, qm, mm):
         """ Routine to print the initial information of dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
-            :param integer debug: verbosity level for standard output
         """
         # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm, debug)
+        super().print_init(qm, mm)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
@@ -370,23 +460,22 @@ class SH(MQC):
         dynamics_step_info += INIT
 
         # Print DEBUG1 for each step
-        if (debug >= 1):
+        if (self.verbosity >= 1):
             DEBUG1 = f" #DEBUG1{'STEP':>6s}"
             for ist in range(self.mol.nst):
                 DEBUG1 += f"{'Potential_':>14s}{ist}(H)"
             dynamics_step_info += "\n" + DEBUG1
 
         # Print DEBUG2 for each step
-        if (debug >= 2):
+        if (self.verbosity >= 2):
             DEBUG2 = f" #DEBUG2{'STEP':>6s}{'Acc. Hopping Prob.':>22s}"
             dynamics_step_info += "\n" + DEBUG2
 
         print (dynamics_step_info, flush=True)
 
-    def print_step(self, debug, istep):
+    def print_step(self, istep):
         """ Routine to print each steps infomation about dynamics
 
-            :param integer debug: verbosity level for standard output
             :param integer istep: current MD step
         """
         if (istep == -1):
@@ -409,17 +498,17 @@ class SH(MQC):
         print (INFO, flush=True)
 
         # Print DEBUG1 for each step
-        if (debug >= 1):
+        if (self.verbosity >= 1):
             DEBUG1 = f" DEBUG1{istep + 1:>7d}"
             for ist in range(self.mol.nst):
                 DEBUG1 += f"{self.mol.states[ist].energy:17.8f} "
             print (DEBUG1, flush=True)
 
         # Print DEBUG2 for each step
-        if (debug >= 2):
+        if (self.verbosity >= 2):
             DEBUG2 = f" DEBUG2{istep + 1:>7d}"
             for ist in range(self.mol.nst):
-                DEBUG2 += f"{self.acc_prob[ist]:12.5f}({self.rstate}->{ist})"
+                DEBUG2 += f"{self.acc_prob[ist]:12.5f} ({self.rstate}->{ist})"
             print (DEBUG2, flush=True)
 
         # Print event in surface hopping

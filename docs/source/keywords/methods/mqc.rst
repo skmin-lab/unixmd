@@ -14,32 +14,28 @@ input file run.py. When user select their dynamics method, they have to make md 
 parameters such as number of steps are given as arguments. Besides, run methods includes overall dynamics condition
 as arguments.
 
-Arguments for a run method are listed below. The important point is that run method is included in each
+Arguments for ``run`` method are listed below. The important point is that ``run`` method is included in each
 md subclasses of ``MQC``, not ``MQC`` itself.
 
-+----------------+-------------------------------------------------+-----------+
-| Keywords       | Work                                            | Default   |
-+================+=================================================+===========+
-| ``molecule``   | molecule object                                 |           |
-+----------------+-------------------------------------------------+-----------+
-| ``qm``         | qm object containing on-the-fly                 |           |
-|                | calculation information                         |           |
-+----------------+-------------------------------------------------+-----------+
-| ``mm``         | mm object containing MM                         | ``None``  |
-|                | calculation information                         |           |
-+----------------+-------------------------------------------------+-----------+
-| ``thermostat`` | thermostat type                                 | ``None``  |
-+----------------+-------------------------------------------------+-----------+
-| ``input_dir``  | location of input directory                     | ``./``    |
-+----------------+-------------------------------------------------+-----------+
-| ``save_QMlog`` | logical for saving QM calculation log           | ``False`` |
-+----------------+-------------------------------------------------+-----------+
-| ``save_MMlog`` | logical for saving MM calculation log           | ``False`` |
-+----------------+-------------------------------------------------+-----------+
-| ``save_scr``   | logical for saving scratch directory            | ``True``  |
-+----------------+-------------------------------------------------+-----------+
-| ``debug``      | verbosity level for standard output             | ``0``     |
-+----------------+-------------------------------------------------+-----------+
++-----------------+-------------------------------------------------+-----------+
+| Keywords        | Work                                            | Default   |
++=================+=================================================+===========+
+| ``qm``          | qm object containing on-the-fly                 |           |
+|                 | calculation information                         |           |
++-----------------+-------------------------------------------------+-----------+
+| ``mm``          | mm object containing MM                         | ``None``  |
+|                 | calculation information                         |           |
++-----------------+-------------------------------------------------+-----------+
+| ``input_dir``   | location of input directory                     | ``./``    |
++-----------------+-------------------------------------------------+-----------+
+| ``save_qm_log`` | logical for saving QM calculation log           | ``False`` |
++-----------------+-------------------------------------------------+-----------+
+| ``save_mm_log`` | logical for saving MM calculation log           | ``False`` |
++-----------------+-------------------------------------------------+-----------+
+| ``save_scr``    | logical for saving scratch directory            | ``True``  |
++-----------------+-------------------------------------------------+-----------+
+| ``restart``     | option for controlling dynamics restarting      | ``None``  |
++-----------------+-------------------------------------------------+-----------+
 
 Further information of each individual md objects are listed in next section.
 
@@ -49,9 +45,10 @@ Further information of each individual md objects are listed in next section.
 
    import mqc
 
-   md = mqc.SH(molecule=mol, nsteps=1000, dt=0.125, istate=1, propagation="density")
+   md = mqc.SH(molecule=mol, thermostat=bathT, nsteps=1000, dt=0.125, istate=1, propagation="density")
 
-   md.run(molecule=mol, qm=qm, thermostat=bathT, input_dir="./TRAJ.sh", save_scr=True, save_QMlog=False)
+   md.run(qm=qm, input_dir="./TRAJ.sh", save_scr=True, save_qm_log=False)
 
-   # qm and thermostat must be classified before md.run is called. They are omitted in this sample code.
+   # molecule, thermostat and qm objects must be made to instatiate md object and use run method in advance.
+   # Those lines are omitted in this sample code.
 

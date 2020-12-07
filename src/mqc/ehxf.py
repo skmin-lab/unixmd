@@ -4,6 +4,7 @@ from mqc.mqc import MQC
 from misc import eps, au_to_K, au_to_A, call_name, typewriter
 import os, shutil, textwrap
 import numpy as np
+import pickle
 
 class Auxiliary_Molecule(object):
     """ Class for auxiliary molecule that is used for the calculation of decoherence term
@@ -14,10 +15,10 @@ class Auxiliary_Molecule(object):
         # Initialize auxiliary molecule
         self.nat = molecule.nat_qm
         self.nsp = molecule.nsp
-        self.symbols = molecule.symbols
+        self.symbols = np.copy(molecule.symbols[0:molecule.nat_qm])
 
-        self.mass = np.copy(molecule.mass)
-        
+        self.mass = np.copy(molecule.mass[0:molecule.nat_qm])
+
         self.pos = np.zeros((molecule.nst, self.nat, self.nsp))
         self.vel = np.zeros((molecule.nst, self.nat, self.nsp))
         self.vel_old = np.copy(self.vel)
@@ -43,14 +44,16 @@ class EhXF(MQC):
         :type coefficient: double, list or complex, list
         :param boolean l_state_wise: logical to use state-wise total energies for auxiliary trajectories
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
+        :param integer out_freq: frequency of printing output
+        :param integer verbosity: verbosity of output
     """
-    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=10000, \
+    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
         threshold=0.01, wsigma=None, l_qmom_force=False, coefficient=None, \
-        l_state_wise=False, unit_dt="fs"):
+        l_state_wise=False, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt)
+            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity)
 
         # Initialize XF related variables
         self.l_coh = []
@@ -85,98 +88,79 @@ class EhXF(MQC):
 
         # Debug variables
         self.dotpopd = np.zeros(self.mol.nst)
-        
+        self.qmom = np.zeros((self.aux.nat, self.aux.nsp))
+
         # Initialize event to print
         self.event = {"DECO": []}
 
-    def run(self, qm, mm=None, input_dir="./", \
-        save_QMlog=False, save_MMlog=False, save_scr=True, debug=0):
+    def run(self, qm, mm=None, input_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         """ Run MQC dynamics according to Ehrenfest-XF dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
             :param string input_dir: location of input directory
-            :param boolean save_QMlog: logical for saving QM calculation log
-            :param boolean save_MMlog: logical for saving MM calculation log
+            :param boolean save_qm_log: logical for saving QM calculation log
+            :param boolean save_mm_log: logical for saving MM calculation log
             :param boolean save_scr: logical for saving scratch directory
-            :param integer debug: verbosity level for standard output
+            :param string restart: option for controlling dynamics restarting
         """
-        # Set directory information
-        input_dir = os.path.expanduser(input_dir)
-        base_dir = os.path.join(os.getcwd(), input_dir)
-
-        unixmd_dir = os.path.join(base_dir, "md")
-        if (os.path.exists(unixmd_dir)):
-            shutil.move(unixmd_dir, unixmd_dir + "_old_" + str(os.getpid()))
-        os.makedirs(unixmd_dir)
-
-        QMlog_dir = os.path.join(base_dir, "QMlog")
-        if (os.path.exists(QMlog_dir)):
-            shutil.move(QMlog_dir, QMlog_dir + "_old_" + str(os.getpid()))
-        if (save_QMlog):
-            os.makedirs(QMlog_dir)
-
-        if (self.mol.qmmm and mm != None):
-            MMlog_dir = os.path.join(base_dir, "MMlog")
-            if (os.path.exists(MMlog_dir)):
-                shutil.move(MMlog_dir, MMlog_dir + "_old_" + str(os.getpid()))
-            if (save_MMlog):
-                os.makedirs(MMlog_dir)
-
-        if ((self.mol.qmmm and mm == None) or (not self.mol.qmmm and mm != None)):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Both self.mol.qmmm and mm object is necessary! {self.mol.qmmm} and {mm}")
-
-        # Check compatibility for QM and MM objects
-        if (self.mol.qmmm and mm != None):
-            self.check_qmmm(qm, mm)
-
         # Initialize UNI-xMD
-        os.chdir(base_dir)
+        base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
+             self.run_init(qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
         bo_list = [ist for ist in range(self.mol.nst)]
         qm.calc_coupling = True
+        self.print_init(qm, mm)
 
-        self.touch_file(unixmd_dir)
-        self.print_init(qm, mm, debug)
+        if (restart == None):
+            # Initialize decoherence variables
+            self.append_wsigma()
 
-        # Initialize decoherence variables
-        self.append_wsigma()
-
-        # Calculate initial input geometry at t = 0.0 s
-        self.mol.reset_bo(qm.calc_coupling)
-        qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=-1, calc_force_only=False)
-        if (self.mol.qmmm and mm != None):
-            mm.get_data(self.mol, base_dir, bo_list, istep=-1, calc_force_only=False)
-        if (not self.mol.l_nacme):
+            # Calculate initial input geometry at t = 0.0 s
+            self.istep = -1
+            self.mol.reset_bo(qm.calc_coupling)
+            qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
+            if (self.mol.qmmm and mm != None):
+                mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
             self.mol.get_nacme()
 
-        self.update_energy()
+            self.update_energy()
 
-        self.check_decoherence()
-        self.check_coherence()
-        self.aux_propagator()
-        self.get_phase()
+            self.check_decoherence()
+            self.check_coherence()
+            self.aux_propagator()
+            self.get_phase()
 
-        self.write_md_output(unixmd_dir, istep=-1)
-        self.print_step(debug, istep=-1)
+            self.write_md_output(unixmd_dir, self.istep)
+            self.print_step(self.istep)
+
+        elif (restart == "write"):
+            # Reset initial time step to t = 0.0 s
+            self.istep = -1
+            self.write_md_output(unixmd_dir, self.istep)
+            self.print_step(self.istep)
+
+        elif (restart == "append"):
+            # Set initial time step to last successful step of previous dynamics
+            self.istep = self.fstep
+
+        self.istep += 1
 
         # Main MD loop
-        for istep in range(self.nsteps):
+        for istep in range(self.istep, self.nsteps):
 
             self.cl_update_position()
 
             self.mol.backup_bo()
             self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep=istep, calc_force_only=False)
+            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
             if (self.mol.qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, istep=istep, calc_force_only=False)
+                mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
-            if (not self.mol.l_nacme):
-                self.mol.adjust_nac()
+            self.mol.adjust_nac()
 
             self.cl_update_velocity()
 
-            if (not self.mol.l_nacme):
-                self.mol.get_nacme()
+            self.mol.get_nacme()
 
             el_run(self)
 
@@ -190,10 +174,17 @@ class EhXF(MQC):
             self.aux_propagator()
             self.get_phase()
 
-            self.write_md_output(unixmd_dir, istep=istep)
-            self.print_step(debug, istep=istep)
+            if ((istep + 1) % self.out_freq == 0):
+                self.write_md_output(unixmd_dir, istep)
+            if ((istep + 1) % self.out_freq == 0 or len(self.event["DECO"]) > 0):
+                self.print_step(istep)
             if (istep == self.nsteps - 1):
-                self.write_final_xyz(unixmd_dir, istep=istep)
+                self.write_final_xyz(unixmd_dir, istep)
+
+            self.fstep = istep
+            restart_file = os.path.join(base_dir, "RESTART.bin")
+            with open(restart_file, 'wb') as f:
+                pickle.dump({'qm':qm, 'md':self}, f)
 
         # Delete scratch directory
         if (not save_scr):
@@ -299,7 +290,7 @@ class EhXF(MQC):
                     self.mol.states[ist].coef /= np.absolute(self.mol.states[ist].coef).real
                 else:
                     self.mol.states[ist].coef = 0. + 0.j
- 
+
     def aux_propagator(self):
         """ Routine to propagate auxiliary molecule
         """
@@ -328,7 +319,7 @@ class EhXF(MQC):
                     alpha = ekin_old + self.mol.states[ist].energy_old - self.mol.states[ist].energy
                 if (alpha < 0.):
                     alpha = 0.
-                
+
                 alpha /= self.mol.ekin_qm
                 self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] * np.sqrt(alpha)
 
@@ -352,7 +343,7 @@ class EhXF(MQC):
             sigma = self.wsigma
             self.wsigma = self.aux.nat * [sigma]
 
-    def write_md_output(self, unixmd_dir, istep): 
+    def write_md_output(self, unixmd_dir, istep):
         """ Write output files
 
             :param string unixmd_dir: unixmd directory
@@ -371,37 +362,41 @@ class EhXF(MQC):
             :param integer istep: current MD step
         """
         # Write time-derivative density matrix elements in DOTPOTD
-        tmp = f'{istep + 1:9d}' + "".join([f'{self.dotpopd[ist]:15.8f}' for ist in range(self.mol.nst)])
+        tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopd])
         typewriter(tmp, unixmd_dir, "DOTPOPD", "a")
 
         # Write auxiliary trajectories
-        for ist in range(self.mol.nst):
-            if (self.l_coh[ist]):
-                self.write_aux_movie(unixmd_dir, ist, istep=istep)
+        if (self.verbosity >= 2 and True in self.l_coh):
+            # Write quantum momenta
+            tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum (au)' + \
+                "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
+                "".join([f'{self.qmom[iat, isp]:15.8f}' for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
+            typewriter(tmp, unixmd_dir, f"QMOM", "a")
 
-    def write_aux_movie(self, unixmd_dir, ist, istep):
-        """ Write auxiliary trajecoty movie file 
+            # Write auxiliary variables
+            for ist in range(self.mol.nst):
+                if (self.l_coh[ist]):
+                    # Write auxiliary phase
+                    tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum (au)' + \
+                        "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
+                        "".join([f'{self.phase[ist, iat, isp]:15.8f}' for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
+                    typewriter(tmp, unixmd_dir, f"AUX_PHASE_{ist}", "a")
 
-            :param string unixmd_dir: unixmd directory
-            :param integer ist: current adiabatic state
-            :param integer istep: current MD step
-        """
-        # Write auxiliary trajectory movie files
-        tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
-            "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
-            "".join([f'{self.aux.pos[ist, iat, isp] * au_to_A:15.8f}' for isp in range(self.aux.nsp)]) + \
-            "".join([f"{self.aux.vel[ist, iat, isp]:15.8f}" for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
-        typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz", "a")
+                    # Write auxiliary trajectory movie files
+                    tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
+                        "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
+                        "".join([f'{self.aux.pos[ist, iat, isp] * au_to_A:15.8f}' for isp in range(self.aux.nsp)]) + \
+                        "".join([f"{self.aux.vel[ist, iat, isp]:15.8f}" for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
+                    typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz", "a")
 
-    def print_init(self, qm, mm, debug):
+    def print_init(self, qm, mm):
         """ Routine to print the initial information of dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
-            :param integer debug: verbosity level for standard output
         """
         # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm, debug)
+        super().print_init(qm, mm)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
@@ -416,7 +411,7 @@ class EhXF(MQC):
         dynamics_step_info += INIT
 
         # Print DEBUG1 for each step
-        if (debug >= 1):
+        if (self.verbosity >= 1):
             DEBUG1 = f" #DEBUG1{'STEP':>6s}"
             for ist in range(self.mol.nst):
                 DEBUG1 += f"{'Potential_':>14s}{ist}(H)"
@@ -424,10 +419,9 @@ class EhXF(MQC):
 
         print (dynamics_step_info, flush=True)
 
-    def print_step(self, debug, istep):
+    def print_step(self, istep):
         """ Routine to print each steps infomation about dynamics
 
-            :param integer debug: verbosity level for standard output
             :param integer istep: current MD step
         """
         ctemp = self.mol.ekin * 2. / float(self.mol.dof) * au_to_K
@@ -443,7 +437,7 @@ class EhXF(MQC):
         print (INFO, flush=True)
 
         # Print DEBUG1 for each step
-        if (debug >= 1):
+        if (self.verbosity >= 1):
             DEBUG1 = f" DEBUG1{istep + 1:>7d}"
             for ist in range(self.mol.nst):
                 DEBUG1 += f"{self.mol.states[ist].energy:17.8f} "
@@ -455,4 +449,3 @@ class EhXF(MQC):
                 for ievent in events:
                     print (f" {category}{istep + 1:>9d}  {ievent}", flush=True)
         self.event["DECO"] = []
-

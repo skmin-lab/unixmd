@@ -1,6 +1,5 @@
 from __future__ import division
 from qm.model.model import Model
-import os, shutil, re
 import numpy as np
 from math import erf
 from misc import eps
@@ -53,11 +52,11 @@ class Shin_Metiu(Model):
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
         # Initialize Hamiltonian
-        self.H = 0.0
+        self.H = 0.
 
         # Add the kinetic-energy contribution (tridiagonal)
-        self.H += -0.5 * (np.diag([1.0] * (self.nx - 1), -1) + np.diag([-2.0] * self.nx, 0) + \
-            np.diag([1.0] * (self.nx - 1), 1)) / self.dx ** 2
+        self.H += - 0.5 * (np.diag([1.] * (self.nx - 1), - 1) + np.diag([- 2.] * self.nx, 0) + \
+            np.diag([1.] * (self.nx - 1), 1)) / self.dx ** 2
  
         x = molecule.pos[0, 0]
 
@@ -69,7 +68,7 @@ class Shin_Metiu(Model):
         # Diagonalization
         ws, unitary = np.linalg.eig(self.H)
 
-        # Sorting eigenvalues in the ascending order and the corresponding eigenvectors 
+        # Sorting eigenvalues in the ascending order and the corresponding eigenvectors
         idx = np.argsort(ws)
         ws = ws[idx]
         unitary = unitary[:, idx]
@@ -85,14 +84,14 @@ class Shin_Metiu(Model):
         dVs = [self.get_dV(x, xe) for xe in xes]
         dVijs = np.dot(np.transpose(unitary), np.dot(np.diag(dVs), unitary))
 
-        Fs = -np.diag(dVijs)
+        Fs = - np.diag(dVijs)
         for ist in range(molecule.nst):
             molecule.states[ist].force = Fs[ist]
 
         for ist in range(molecule.nst):
             for jst in range(ist + 1, molecule.nst):
                 molecule.nac[ist, jst, 0, 0] = dVijs[ist, jst] / (ws[jst] - ws[ist])
-                molecule.nac[jst, ist, 0, 0] = -molecule.nac[ist, jst, 0, 0]
+                molecule.nac[jst, ist, 0, 0] = - molecule.nac[ist, jst, 0, 0]
 
     def get_V(self, x, xe):
         """ Calculate potential elements of the BO Hamiltonian
@@ -103,13 +102,13 @@ class Shin_Metiu(Model):
         RR = np.abs(x - xe)
 
         if (RR > eps):
-            V = -erf(RR / self.Rc) / RR
+            V = - erf(RR / self.Rc) / RR
         else:
-            V = -2.0 / (np.sqrt(np.pi) * self.Rc) 
+            V = - 2. / (np.sqrt(np.pi) * self.Rc)
 
-        V += -erf(np.abs(xe - 0.5 * self.L) / self.Rr) / np.abs(xe - 0.5 * self.L) - \
+        V += - erf(np.abs(xe - 0.5 * self.L) / self.Rr) / np.abs(xe - 0.5 * self.L) - \
             erf(np.abs(xe + 0.5 * self.L) / self.Rl) / np.abs(xe + 0.5 * self.L) + \
-            1.0 / np.abs(x - 0.5 * self.L) + 1.0 / np.abs(x + 0.5 * self.L)
+            1. / np.abs(x - 0.5 * self.L) + 1. / np.abs(x + 0.5 * self.L)
 
         return V
 
@@ -123,12 +122,12 @@ class Shin_Metiu(Model):
  
         if (RR > eps):
             dV = (x - xe) * erf(RR / self.Rc) / RR ** 3 - \
-                2.0 * (x - xe) * np.exp(- RR ** 2 / self.Rc ** 2) / np.sqrt(np.pi) / self.Rc / RR **2 
+                2. * (x - xe) * np.exp(- RR ** 2 / self.Rc ** 2) / np.sqrt(np.pi) / self.Rc / RR ** 2
         else:
-            dV = 0
+            dV = 0.
 
-        dV -= (np.abs(x - 0.5 * self.L) ** (-3.0)) * (x - 0.5 * self.L) + \
-            (np.abs(x + 0.5 * self.L) ** (-3.0)) * (x + 0.5 * self.L)
+        dV -= (np.abs(x - 0.5 * self.L) ** (- 3)) * (x - 0.5 * self.L) + \
+            (np.abs(x + 0.5 * self.L) ** (- 3)) * (x + 0.5 * self.L)
 
         return dV
 

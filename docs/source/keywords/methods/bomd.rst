@@ -36,6 +36,10 @@ package or a customized Hamiltonian, and nuclear propagation is done by the Velo
 +----------------+------------------------------------------------+------------+
 | Keywords       | Work                                           | Default    |
 +================+================================================+============+
+| ``molecule``   | molecular object                               |            |
++----------------+------------------------------------------------+------------+
+| ``thermostat`` | thermostat type                                | ``None``   |
++----------------+------------------------------------------------+------------+
 | ``istate``     | initial state                                  | ``0`` (GS) |
 +----------------+------------------------------------------------+------------+
 | ``dt``         | time interval (fs)                             | ``0.5``    |
@@ -45,4 +49,7 @@ package or a customized Hamiltonian, and nuclear propagation is done by the Velo
 | ``unit_dt``    | unit of time step (fs = femtosecond,           | ``fs``     |
 |                | au = atomic unit)                              |            |
 +----------------+------------------------------------------------+------------+
-
+| ``out_freq``   | frequency of printing output                   | ``1``      |
++----------------+------------------------------------------------+------------+
+| ``verbosity``  | verbosity of output                            | ``0``      | 
++----------------+------------------------------------------------+------------+
