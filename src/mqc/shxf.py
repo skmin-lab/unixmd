@@ -150,7 +150,7 @@ class SHXF(MQC):
              self.run_init(qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
         bo_list = [self.rstate]
         qm.calc_coupling = True
-        self.print_init(qm, mm)
+        self.print_init(qm, mm, restart)
 
         if (restart == None):
             # Initialize decoherence variables
@@ -618,14 +618,14 @@ class SHXF(MQC):
                         "".join([f"{self.aux.vel[ist, iat, isp]:15.8f}" for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
                     typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz", "a")
 
-    def print_init(self, qm, mm):
+    def print_init(self, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
         """
         # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm)
+        super().print_init(qm, mm, restart)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\

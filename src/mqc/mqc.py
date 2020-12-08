@@ -175,7 +175,7 @@ class MQC(object):
         """
         pass
 
-    def print_init(self, qm, mm):
+    def print_init(self, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
@@ -200,7 +200,15 @@ class MQC(object):
 
         {" " * 4}UNI-xMD begins on {cur_time}
         """)
-        print(prog_info, flush=True)
+        print (prog_info, flush=True)
+
+        # Print restart info
+        if (restart != None):
+            restart_info = textwrap.indent(textwrap.dedent(f"""\
+            Dynamics is restarted from the last step of a previous dynamics.
+            Restart Mode: {restart}
+            """), "    ")
+            print (restart_info, flush=True)
 
         # Print molecule information: coordinate, velocity
         self.mol.print_init(mm)
@@ -257,15 +265,15 @@ class MQC(object):
                 dynamics_info += f"\n  Sigma                    = {self.wsigma:16.3f}\n"
             elif (isinstance(self.wsigma, list)):
                 dynamics_info += f"\n  Sigma (1:N)              =\n"
-                nlines = int(self.mol.nat_qm / 6)
-                if (self.mol.nat_qm % 6 != 0):
+                nlines = int(self.aux.nat / 6)
+                if (self.aux.nat % 6 != 0):
                     nlines += 1
                 wsigma_info = ""
                 for iline in range(nlines):
                     iline1 = iline * 6
                     iline2 = (iline + 1) * 6
-                    if (iline2 > self.mol.nat_qm):
-                        iline2 = self.mol.nat_qm
+                    if (iline2 > self.aux.nat):
+                        iline2 = self.aux.nat
                     wsigma_info += f"  {iline1 + 1:>3d}:{iline2:<3d};"
                     wsigma_info += "".join([f'{sigma:7.3f}' for sigma in self.wsigma[iline1:iline2]])
                     wsigma_info += "\n"

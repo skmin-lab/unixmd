@@ -38,7 +38,7 @@ class BOMD(MQC):
              self.run_init(qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
         bo_list = [self.istate]
         qm.calc_coupling = False
-        self.print_init(qm, mm)
+        self.print_init(qm, mm, restart)
 
         if (restart == None):
             # Calculate initial input geometry at t = 0.0 s
@@ -115,14 +115,14 @@ class BOMD(MQC):
         self.mol.epot = self.mol.states[self.istate].energy
         self.mol.etot = self.mol.epot + self.mol.ekin
 
-    def print_init(self, qm, mm):
+    def print_init(self, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
         """
         # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm)
+        super().print_init(qm, mm, restart)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
