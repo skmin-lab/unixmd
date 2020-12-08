@@ -204,13 +204,10 @@ class MQC(object):
 
         # Print restart info
         if(restart != None):
-            restart_info = textwrap.dedent(f"""\
-            {"-" * 68}
-            {"Restart Information":>43s}
-            {"-" * 68}
-              Dynamics is restarted from the last step of a previous dynamics.
-              Restart Mode             = {restart:>16s}
-            """)
+            restart_info = textwrap.indent(textwrap.dedent(f"""\
+            Dynamics is restarted from the last step of a previous dynamics.
+            Restart Mode: {restart}
+            """),"    ")
             print(restart_info, flush=True)
 
         # Print molecule information: coordinate, velocity
