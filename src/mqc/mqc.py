@@ -200,7 +200,7 @@ class MQC(object):
 
         {" " * 4}UNI-xMD begins on {cur_time}
         """)
-        print(prog_info, flush=True)
+        print (prog_info, flush=True)
 
         # Print restart info
         if(restart != None):
@@ -208,7 +208,7 @@ class MQC(object):
             Dynamics is restarted from the last step of a previous dynamics.
             Restart Mode: {restart}
             """), "    ")
-            print(restart_info, flush=True)
+            print (restart_info, flush=True)
 
         # Print molecule information: coordinate, velocity
         self.mol.print_init(mm)
