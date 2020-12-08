@@ -203,7 +203,7 @@ class MQC(object):
         print (prog_info, flush=True)
 
         # Print restart info
-        if(restart != None):
+        if (restart != None):
             restart_info = textwrap.indent(textwrap.dedent(f"""\
             Dynamics is restarted from the last step of a previous dynamics.
             Restart Mode: {restart}
