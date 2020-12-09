@@ -707,12 +707,12 @@ class DFTB(DFTBplus):
             with open(file_name_in, "r") as f_in:
                 lines = f_in.readlines()
                 # Dimension for CI coefficients (number of excitations)
-                ndim = int(lines[-2].strip().split()[0])
-                get_wij_ind_old = np.zeros((ndim, 2), dtype=np.int_)
+                ndim_old = int(lines[-2].strip().split()[0])
+                get_wij_ind_old = np.zeros((ndim_old, 2), dtype=np.int_)
                 iline = 0
                 for line in lines:
                     # Skip first five lines
-                    if (iline in range(5, 5 + ndim)):
+                    if (iline in range(5, 5 + ndim_old)):
                         # Column information: 1st = index, 4th = occ(i), 6th = virt(a)
                         field = line.split()
                         # Determine new limits for for-loops
@@ -755,11 +755,11 @@ class DFTB(DFTBplus):
                 for line in lines:
                     if (iline == 0):
                         field = line.split()
-                        assert (int(field[0]) == ndim)
+                        assert (int(field[0]) == ndim_old)
                         assert (int(field[1]) >= molecule.nst - 1)
                         # nxply is number of lines for each excited state in 'XplusY.dat'
-                        nxply = int(ndim / 6) + 1
-                        if (ndim % 6 != 0):
+                        nxply = int(ndim_old / 6) + 1
+                        if (ndim_old % 6 != 0):
                             nxply += 1
                     else:
                         field = line.split()
