@@ -13,7 +13,7 @@ class DAG(Model):
     """
     def __init__(self, molecule, A=6E-4, B=0.1, C=0.9, D=4.):
         # Initialize model common variables
-        super(ECR, self).__init__(None)
+        super(DAG, self).__init__(None)
 
         # Define parameters
         self.A = A
