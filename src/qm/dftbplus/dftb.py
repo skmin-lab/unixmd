@@ -82,9 +82,9 @@ class DFTB(DFTBplus):
         # Check excitation symmetry in TDDFTB
         # TODO : Currently, allows only singlet excited states with TDDFTB
 #        if (not (self.ex_symmetry == "singlet" or self.ex_symmetry == "triplet")):
-        if (not (self.ex_symmetry == "singlet")):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong symmetry for excited state! {self.ex_symmetry}")
-
+#        if (not (self.ex_symmetry == "singlet")):
+#            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong symmetry for excited state! {self.ex_symmetry}")
+#
         self.mpi = mpi
         self.mpi_path = mpi_path
 
@@ -180,14 +180,14 @@ class DFTB(DFTBplus):
         self.mo_coef_new = np.zeros((self.norb, self.nbasis, self.nspin))
         if self.sdftb:
             if self.nocc[0] > self.nocc[1]:
-                self.ci_coef_old = np.zeros((molecule.nst, self.nocc[0], self.nvirt[1]),self.nspin)
-                self.ci_coef_new = np.zeros((molecule.nst, self.nocc[0], self.nvirt[1]),self.nspin)
+                self.ci_coef_old = np.zeros((molecule.nst, self.nocc[0], self.nvirt[1],self.nspin))
+                self.ci_coef_new = np.zeros((molecule.nst, self.nocc[0], self.nvirt[1],self.nspin))
             else:
-                self.ci_coef_old = np.zeros((molecule.nst, self.nocc[1], self.nvirt[0]),self.nspin)
-                self.ci_coef_new = np.zeros((molecule.nst, self.nocc[1], self.nvirt[0]),self.nspin)
+                self.ci_coef_old = np.zeros((molecule.nst, self.nocc[1], self.nvirt[0],self.nspin))
+                self.ci_coef_new = np.zeros((molecule.nst, self.nocc[1], self.nvirt[0],self.nspin))
         else:
-            self.ci_coef_old = np.zeros((molecule.nst, self.nocc[0], self.nvirt[0]),self.nspin)
-            self.ci_coef_new = np.zeros((molecule.nst, self.nocc[0], self.nvirt[0]),self.nspin)
+            self.ci_coef_old = np.zeros((molecule.nst, self.nocc[0], self.nvirt[0],self.nspin))
+            self.ci_coef_new = np.zeros((molecule.nst, self.nocc[0], self.nvirt[0],self.nspin))
 
 
 
@@ -730,7 +730,7 @@ class DFTB(DFTBplus):
         if (istep == 0):
             file_name_in = "eigenvec.bin.pre"
 
-            self.mo_coef_old = np.zeros((self.norb, self.nbasis))
+            self.mo_coef_old = np.zeros((self.norb, self.nbasis, self.nspin))
             with open(file_name_in, "rb") as f_in:
                 dummy = np.fromfile(f_in, dtype=np.integer, count=1)
                 for iorb in range(self.nspin*self.norb):
@@ -826,12 +826,12 @@ class DFTB(DFTBplus):
 
             if self.sdftb:
                 if self.nocc[0] > self.nocc[1]:
-                    self.ci_coef_old = np.zeros((molecule.nst, self.nocc[0], self.nvirt[1]),self.nspin)
+                    self.ci_coef_old = np.zeros((molecule.nst, self.nocc[0], self.nvirt[1],self.nspin))
                 else:
-                    self.ci_coef_old = np.zeros((molecule.nst, self.nocc[1], self.nvirt[0]),self.nspin)
+                    self.ci_coef_old = np.zeros((molecule.nst, self.nocc[1], self.nvirt[0],self.nspin))
 
             else:
-                self.ci_coef_old = np.zeros((molecule.nst, self.nocc[0], self.nvirt[0]),self.nspin)
+                self.ci_coef_old = np.zeros((molecule.nst, self.nocc[0], self.nvirt[0],self.nspin))
 
             with open(file_name_in, "r") as f_in:
                 lines = f_in.readlines()
@@ -870,12 +870,12 @@ class DFTB(DFTBplus):
 
         if (self.sdftb):
             if self.nocc[0] > self.nocc[1]:
-                self.ci_coef_new = np.zeros((molecule.nst, self.nocc[0], self.nvirt[1]), self.nspin)
+                self.ci_coef_new = np.zeros((molecule.nst, self.nocc[0], self.nvirt[1], self.nspin))
             else:
-                self.ci_coef_new = np.zeros((molecule.nst, self.nocc[1], self.nvirt[0]), self.nspin)
+                self.ci_coef_new = np.zeros((molecule.nst, self.nocc[1], self.nvirt[0], self.nspin))
 
         else:
-            self.ci_coef_new = np.zeros((molecule.nst, self.nocc[0], self.nvirt[0]), self.nspin)
+            self.ci_coef_new = np.zeros((molecule.nst, self.nocc[0], self.nvirt[0], self.nspin))
         with open(file_name_in, "r") as f_in:
             lines = f_in.readlines()
             iline = 0
@@ -901,7 +901,7 @@ class DFTB(DFTBplus):
                         # Currently, elements for CI coefficients for S0 state are zero (not used values)
                         for element in field:
                             ind_occ = get_wij_ind_new[ind, 0] - 1
-                            spintype = get_wij_ind_old[ind, 2]
+                            spintype = get_wij_ind_new[ind, 2]
                             ind_virt = get_wij_ind_new[ind, 1] - self.nocc[spintype] - 1
                             self.ci_coef_new[ist + 1, ind_occ, ind_virt, spintype] = float(element)
                             ind += 1
