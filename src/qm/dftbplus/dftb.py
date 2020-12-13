@@ -869,7 +869,7 @@ class DFTB(DFTBplus):
         file_name_in = "XplusY.DAT"
 
         if (self.sdftb):
-            if self.nocc[0] > self.nocc[1]
+            if self.nocc[0] > self.nocc[1]:
                 self.ci_coef_new = np.zeros((molecule.nst, self.nocc[0], self.nvirt[1]), self.nspin)
             else:
                 self.ci_coef_new = np.zeros((molecule.nst, self.nocc[1], self.nvirt[0]), self.nspin)

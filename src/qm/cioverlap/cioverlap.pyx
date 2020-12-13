@@ -171,7 +171,7 @@ def wf_overlap(qm, molecule, istep_py, dt_py):
 
     for ist in range(nst):
         for iorb in range(nocc_max):
-            for ibasis range(nvirt_max):
+            for ibasis in range(nvirt_max):
                 PyMem_Free(ci_coef_old[ist][iorb][ibasis])
                 PyMem_Free(ci_coef_new[ist][iorb][ibasis])
 
