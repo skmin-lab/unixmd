@@ -1,4 +1,7 @@
 
+Columbus
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Columbus :cite:`Lischka2011` is one of famous open-source software for high-level *ab initio*
 quantum calculation. Similar with other softwares, it can do various types of fundamental quantum
 calculation. However, the major competitiveness of Columbus compared to other softwares is that
@@ -16,7 +19,7 @@ In the current version of UNI-xMD, only CASSCF method is available.
 +--------+------+----+----+-----+
 
 CASSCF
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""""""""""""
 
 .. note:: Our interface script is generated with 7.0 version of Columbus program.
    Here, you should refer to manual of Columbus program if you want to see detailed

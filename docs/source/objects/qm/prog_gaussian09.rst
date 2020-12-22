@@ -1,4 +1,7 @@
 
+Gaussian09
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Gaussian09 :cite:`Frisch2009` has been a standard program for electronic structure calculations of molecules.
 The only BOMD using the DFT option is available with Gaussian09 in the current version of UNI-xMD,
 because it doesn't explicitly provide with nonadiabatic coupling vectors.
@@ -12,7 +15,7 @@ because it doesn't explicitly provide with nonadiabatic coupling vectors.
 +---------+------+----+----+-----+
 
 (TD)DFT
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""""""""""""
 
 .. note:: Our interface script is generated with Revision A.02 version of Gaussian09 program.
    Please refer to the manual for the detailed lists for ``basis_set`` and ``functional`` variable.

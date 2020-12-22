@@ -1,4 +1,7 @@
 
+Tinker
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Tinker :cite:`Rackers2018` is a complete and general package for molecular mechanics and dynamics, with some special
 features for biopolymers. Tinker has the ability to use any of several common parameter sets, such
 as Amber (ff94, ff96, ff98, ff99, ff99SB), CHARMM (19, 22, 22/CMAP), Allinger MM (MM2-1991 and

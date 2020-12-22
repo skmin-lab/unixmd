@@ -1,4 +1,7 @@
 
+BOMD
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 The Born-Oppenheimer molecular dynamics (BOMD) is the most simplified form of mixed
 quantum-classical dynamics, considering only a *single* potential energy surface.
 Briefly, the molecular wave function is approximated to a product between an eigenfunction of the

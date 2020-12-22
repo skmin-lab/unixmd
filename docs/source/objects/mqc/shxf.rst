@@ -1,4 +1,7 @@
 
+DISH-XF
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Decoherence induced surface hopping based on exact factorization (DISH-XF) :cite:`Ha2018` method is included in UNI-xMD package.
 Electronic equation of motion in DISH-XF contains "decoherence term" which is derived from exact factorization,
 in addition to Eherenfest term, i.e.
@@ -16,10 +19,19 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
    equal to the number of atoms. The former use a uniform value for the width, while the latter
    uses atom-resolved sigma values for the width.
 
+
++--------------------+------------------------------------------------------+--------------+
+| Keywords           | description                                          | available options|
++====================+======================================================+==============+
+|   molecule         |   molecular object                                   |              |
++--------------------+------------------------------------------------------+--------------+
+
+
 +--------------------+------------------------------------------------------+--------------+
 | Keywords           | Work                                                 | Default      |
 +====================+======================================================+==============+
-| ``molecule``       | molecular object                                     |              |
+| ``molecule``       |  - molecular object                                  |              |
+|                    |  - abs                                               |    ab        |
 +--------------------+------------------------------------------------------+--------------+
 | ``thermostat``     | thermostat type                                      | ``None``     |
 +--------------------+------------------------------------------------------+--------------+

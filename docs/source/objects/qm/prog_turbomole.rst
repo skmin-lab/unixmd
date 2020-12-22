@@ -1,4 +1,7 @@
 
+TURBOMOLE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Turbomole :cite:`Ahlrichs1989` is quantum chemical program package, initially developed
 in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and at the Forschungszentrum Karlsruhe.
 (TD)DFT method is interfaced with current version of UNI-xMD.
@@ -12,7 +15,7 @@ in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and a
 +--------+------+----+----+-----+
 
 (TD)DFT
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""""""""""""
 
 .. note:: Our interface script is generated with 6.4 version of TM program.
    Here, you should refer to manual of TM program if you want to see detailed

@@ -1,9 +1,15 @@
+MM_calculator
+-------------------------------------------
 
 The propagation of molecular dynamics needs the information about potential enrgy surfaces.
 The object for MM calculator should be constructed in UNI-xMD to evaluate the energies
 and forces. UNI-xMD interfaces with followings in current version.
 
-- Tinker
+.. toctree::
+    :glob:
+    :maxdepth: 1
+
+    tinker
 
 Only one method supports with MM interface of UNI-xMD in current version.
 If you want to add other programs such as Gromacs, refer "Tinker" section.
@@ -22,4 +28,5 @@ Detailed explanation of **get_data** method is given in *modules* section.
 
 .. note:: For QM/MM calculation, you should define ``scheme`` variable.
    In addition, same ``embedding`` variable of MM object should be used when one generate a QM object.
+
 

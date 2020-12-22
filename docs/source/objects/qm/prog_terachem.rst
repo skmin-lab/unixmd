@@ -1,4 +1,7 @@
 
+TeraChem
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 TeraChem :cite:`Ufimtsev2008_1,Ufimtsev2009_1,Ufimtsev2009_2,Ufimtsev2008_2,Titov2013,Song2016` is general
 purpose quantum chemistry software designed to run on NVIDIA GPU
 architectures under a 64-bit Linux operating system. It includes many functionalities
@@ -24,7 +27,7 @@ current version of UNI-xMD.
 +-------------------+------+----+----+-----+
 
 SSR
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""""""""""""
 
 UNI-xMD automatically determines single-state REKS as BO interfaces for ground state BOMD.
 When we include the excited states, SA-REKS or SSR methods can be exploited and these are

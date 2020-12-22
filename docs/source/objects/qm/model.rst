@@ -1,4 +1,7 @@
 
+Model Systems
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 QM interface for a few model sytems are provided in UNI-xMD package.
 
 +------------+------+----+----+-----+
@@ -10,10 +13,10 @@ QM interface for a few model sytems are provided in UNI-xMD package.
 +------------+------+----+----+-----+
 
 simple avoided crossing (SAC) model
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""""""""""""
 
 Shin-Metiu model
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""""""""""""
 
 1D charge transfer model system proposed by Shin and Metiu :cite:`Shin1995` is implemented.
 

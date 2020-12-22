@@ -1,4 +1,7 @@
 
+Molpro
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Molpro :cite:`Werner2012` is a comprehensive system of ab initio programs for advanced molecular electronic structure
 calculations, designed and maintained by many authors. It comprises efficient and well parallelized
 programs for standard computational chemistry applications, such as DFT or many wave function based
@@ -14,7 +17,7 @@ methods. Among them, CASSCF method is interfaced with current version of UNI-xMD
 +--------+------+----+----+-----+
 
 CASSCF
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""""""""""""
 
 .. note:: Our interface script is generated with 2015.1 version of Molpro program.
    Here, you should refer to manual of Molpro program if you want to see detailed

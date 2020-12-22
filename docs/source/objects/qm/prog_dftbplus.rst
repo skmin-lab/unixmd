@@ -1,4 +1,7 @@
 
+DFTB+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 DFTB+ :cite:`Hourahine2020` is a fast and efficient versatile quantum mechanical simulation software package.
 Using DFTB+ you can carry out quantum mechanical simulations similar to density functional
 theory but in an approximate way, typically gaining around two orders of magnitude in
@@ -44,7 +47,7 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
    max_l["C"] = "s" # modify value of already existing atom
 
 (TD)DFTB
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""""""""""""
 
 .. note:: Our interface script is generated with 19.1/20.1 version of DFTB+ program.
    Here, you should refer to manual of DFTB+ program if you want to see detailed
@@ -108,7 +111,7 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 +-------------------+------------------------------------------------+---------------------+
 
 SSR
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""""""""""""
 
 UNI-xMD automatically determines single-state REKS as BO interfaces for ground state BOMD.
 When we include the excited states, SA-REKS or SSR methods can be exploited and these are

@@ -1,4 +1,7 @@
 
+Do It Yourself
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 If you want to interface other quantum chemistry programs, you can write your own interfacing scripts.
 
 In [UNIXMDHOME]/src/qm/diy/ directory, there are four template scripts containing essential components for interfacing.

@@ -1,9 +1,12 @@
 
+Thermostat
+-------------------------------------------
+
 A thermostat object should be provided to set temperature conditions of the dynamics (even in the
 case that no thermostating process is needed). The following are the options.
 
 Rescale1
--------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 :class:`Rescale1` thermostat rescales the velocities periodically during the dynamics.
 The target temperature and the number of MD steps between rescalings can be specified.
 
@@ -16,7 +19,7 @@ The target temperature and the number of MD steps between rescalings can be spec
 +-----------------+----------------------------------------------------+-----------+
 
 Rescale2
--------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 :class:`Rescale2` thermostat rescales the velocities when the difference between the current temperature
 at a specific time step and the target temperature is beyond a specified thereshold.
 The target temperature and the temperature difference threshold can be specified.
@@ -30,7 +33,7 @@ The target temperature and the temperature difference threshold can be specified
 +------------------+----------------------------------------------------+-----------+
 
 Berendsen
--------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 :class:`Berendsen` thermostat :cite:`Berendsen`  rescales the velocities by mimicking weak coupling with first-order kinetics
 to an external heat bath with given temperature.
 
@@ -48,7 +51,7 @@ to an external heat bath with given temperature.
 +------------------------+----------------------------------------------------+-----------+
 
 NHC
--------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 :class:`NHC` thermostat, which is Nosé-Hoover chain thermostat :cite:`NHC` , rescales the velocities by using frition factor, which comes from imaginary particles. 
 
 .. note:: Either ``coupling_strength`` or ``time_scale`` should be set and only ``coupling_strength`` or ``time_scale`` can be set. 
