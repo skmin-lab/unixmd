@@ -81,16 +81,11 @@ pygments_style = None
 #html_theme = 'alabaster'
 html_theme = 'sphinx_rtd_theme'
 
-def setup(app):
-    app.add_stylesheet("fix_rtd.css")
-
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-#html_theme_options = {
-#    'titles_only': True
-#}
+#html_theme_options = {}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
