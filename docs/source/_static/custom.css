@@ -1,0 +1,18 @@
+/* Extend width of the html page in rtd_theme */
+
+.wy-nav-content {
+/*  max-width: 2500px !important; */
+  max-width: none;
+}
+
+/* Table appearance */
+.wy-table-responsive table td, .wy-table-responsive table th {
+    /* !important prevents the common CSS stylesheets from
+       overriding this as on RTD they are loaded after this stylesheet */
+    white-space: normal !important;
+}
+ 
+.wy-table-responsive {
+    overflow: visible !important;
+}
+

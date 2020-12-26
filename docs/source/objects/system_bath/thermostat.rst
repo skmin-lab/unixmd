@@ -13,9 +13,11 @@ The target temperature and the number of MD steps between rescalings can be spec
 +-----------------+----------------------------------------------------+-----------+
 | Keywords        | Work                                               | Default   |
 +=================+====================================================+===========+
-| ``temperature`` | target temperature (K) of the thermostat           | ``300.0`` |
+| **temperature** | target temperature (K) of the thermostat           | *300.0*   |
+| *(double)*      |                                                    |           |
 +-----------------+----------------------------------------------------+-----------+
-| ``nrescale``    | the number of MD steps between rescalings          | ``20``    |
+| **nrescale**    | the number of MD steps between rescalings          | *20*      |
+| *(integer)*     |                                                    |           |
 +-----------------+----------------------------------------------------+-----------+
 
 Rescale2
@@ -27,9 +29,11 @@ The target temperature and the temperature difference threshold can be specified
 +------------------+----------------------------------------------------+-----------+
 | Keywords         | Work                                               | Default   |
 +==================+====================================================+===========+
-| ``temperature``  | target temperature (K) of the thermostat           | ``300.0`` |
+| **temperature**  | target temperature (K) of the thermostat           | *300.0*   |
+| *(double)*       |                                                    |           |
 +------------------+----------------------------------------------------+-----------+
-| ``dtemperature`` | threshold temperature difference (K)               | ``100.0`` |
+| **dtemperature** | threshold temperature difference (K)               | *100.0*   |
+| *(double)*       |                                                    |           |
 +------------------+----------------------------------------------------+-----------+
 
 Berendsen
@@ -37,42 +41,48 @@ Berendsen
 :class:`Berendsen` thermostat :cite:`Berendsen`  rescales the velocities by mimicking weak coupling with first-order kinetics
 to an external heat bath with given temperature.
 
-.. note:: Either ``coupling_parameter`` or ``coupling_strength`` should be set and only ``coupling_parameter`` or ``coupling_strength`` can be set.
+.. note:: Either **coupling_parameter** or **coupling_strength** should be set and only **coupling_parameter** or **coupling_strength** can be set.
 
 +------------------------+----------------------------------------------------+-----------+
 | Keywords               | Work                                               | Default   |
 +========================+====================================================+===========+
-| ``temperature``        | target temperature (K) of the thermostat           | ``300.0`` |
+| **temperature**        | target temperature (K) of the thermostat           | *300.0*   |
+| *(double)*             |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
-| ``coupling_parameter`` | the characteristic time (fs) to damp               | ``None``  |
-|                        | temperature toward target temperature              |           |
+| **coupling_parameter** | the characteristic time (fs) to damp               | *None*    |
+| *(double)*             | temperature toward target temperature              |           |
 +------------------------+----------------------------------------------------+-----------+
-| ``coupling_strength``  | dimensionless coupling strength for the thermostat | ``None``  |
+| **coupling_strength**  | dimensionless coupling strength for the thermostat | *None*    |
+| *(double)*             |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
 
 NHC
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 :class:`NHC` thermostat, which is Nosé-Hoover chain thermostat :cite:`NHC` , rescales the velocities by using frition factor, which comes from imaginary particles. 
 
-.. note:: Either ``coupling_strength`` or ``time_scale`` should be set and only ``coupling_strength`` or ``time_scale`` can be set. 
-   ``order`` should be ``3`` or ``5``.
+.. note:: Either **coupling_strength** or **time_scale** should be set and only **coupling_strength** or **time_scale** can be set. 
+   **order** should be **3** or **5**.
    
 +------------------------+----------------------------------------------------+-----------+
 | Keywords               | Work                                               | Default   |
 +========================+====================================================+===========+
-| ``temperature``        | target temperature (K) of the thermostat           | ``300.0`` |
+| **temperature**        | target temperature (K) of the thermostat           | *300.0*   |
+| *(double)*             |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
-| ``coupling_strength``  | the coupling strength (cm\ :sup:`-1`\) for the     | ``None``  |
-|                        | thermostat                                         |           |
+| **coupling_strength**  | the coupling strength (cm\ :sup:`-1`\) for the     | *None*    |
+| *(double)*             | thermostat                                         |           |
 +------------------------+----------------------------------------------------+-----------+
-| ``time_scale``         | the coupling time scale (fs)                       | ``None``  |
+| **time_scale**         | the coupling time scale (fs)                       | *None*    |
+| *(double)*             |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
-| ``chain_length``       | the number of imaginary particles in the thermostat| ``3``     |
-|                        | chain                                              |           |
+| **chain_length**       | the number of imaginary particles in the thermostat| *3*       |
+| *(integer)*            | chain                                              |           |
 +------------------------+----------------------------------------------------+-----------+
-| ``order``              | the order of the evolution operator                | ``3``     |
+| **order**              | the order of the evolution operator                | *3*       |
+| *(integer)*            |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
-| ``nsteps``             | NHC propagation step                               | ``1``     |
+| **nsteps**             | NHC propagation step                               | *1*       |
+| *(integer)*            |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
 
 **Ex.** Making thermostat objects
