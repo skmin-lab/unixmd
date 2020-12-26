@@ -36,8 +36,8 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 
 .. note:: To run DFTB+ interfacing script, the information about maximum angular momentum is
    needed. In current version of UNI-xMD, the values for maximum angular momentum is included
-   in ``max_l`` dictionary variable of dftbpar.py file. The user can add or modify the key and
-   value to ``max_l``. The following example shows addition of new information about Si atom.
+   in **max_l** dictionary variable of dftbpar.py file. The user can add or modify the key and
+   value to **max_l**. The following example shows addition of new information about Si atom.
 
 .. code-block:: python
 
@@ -51,135 +51,185 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 
 .. note:: Our interface script is generated with 19.1/20.1 version of DFTB+ program.
    Here, you should refer to manual of DFTB+ program if you want to see detailed
-   lists for ``lc_method``, ``mixer``, ``ex_symmetry`` variables.
+   lists for **lc_method**, **mixer**, **ex_symmetry** variables.
 
-.. note:: Currently, ``guess`` variable reads the following two strings.
-   One is ``h0``, which uses zedo charges as initial guess of SCC term for every time step.
-   The other is ``read``, which reads charges.bin file generated from previous step.
-   If ``guess_file`` exists, then charges.bin file is used as initial guess at t = 0.0 s.
+.. note:: Currently, **guess** variable reads the following two strings.
+   One is *'h0'*, which uses zedo charges as initial guess of SCC term for every time step.
+   The other is **read**, which reads charges.bin file generated from previous step.
+   If **guess_file** exists, then charges.bin file is used as initial guess at t = 0.0 s.
 
-.. note:: For ``cell_length`` variable, it reads a list variable consisted of 9 float elements,
-   which correspond to cell lattice vectors. Similarly ``k_point`` variable reads a list
+.. note:: For **cell_length** variable, it reads a list variable consisted of 9 float elements,
+   which correspond to cell lattice vectors. Similarly **k_point** variable reads a list
    consisted of 3 integer elements, which correspond to number of k points.
 
-+-------------------+------------------------------------------------+---------------------+
-| Keywords          | Work                                           | Default             |
-+===================+================================================+=====================+
-| ``scc``           | include self-consistent charge (SCC) scheme    | ``True``            |
-+-------------------+------------------------------------------------+---------------------+
-| ``scc_tol``       | energy convergence for SCC iterations          | ``1E-6``            |
-+-------------------+------------------------------------------------+---------------------+
-| ``scc_max_iter``  | maximum number of SCC iterations               | ``100``             |
-+-------------------+------------------------------------------------+---------------------+
-| ``ocdftb``        | include onsite correction to SCC term          | ``False``           |
-+-------------------+------------------------------------------------+---------------------+
-| ``lcdftb``        | include long-range corrected functional        | ``False``           |
-+-------------------+------------------------------------------------+---------------------+
-| ``lc_method``     | algorithms for LC-DFTB                         | ``MatrixBased``     |
-+-------------------+------------------------------------------------+---------------------+
-| ``sdftb``         | include spin-polarisation scheme               | ``False``           |
-+-------------------+------------------------------------------------+---------------------+
-| ``unpaired_elec`` | number of unpaired electrons                   | ``0.0``             |
-+-------------------+------------------------------------------------+---------------------+
-| ``guess``         | initial guess method for SCC scheme            | ``h0``              |
-+-------------------+------------------------------------------------+---------------------+
-| ``guess_file``    | initial guess file for charges                 | ``./charges.bin``   |
-+-------------------+------------------------------------------------+---------------------+
-| ``elec_temp``     | electronic temperature for Fermi-Dirac scheme  | ``0.0``             |
-+-------------------+------------------------------------------------+---------------------+
-| ``mixer``         | charge mixing method used in DFTB              | ``Broyden``         |
-+-------------------+------------------------------------------------+---------------------+
-| ``ex_symmetry``   | symmetry of excited state in TD-DFTB           | ``singlet``         |
-+-------------------+------------------------------------------------+---------------------+
-| ``k_point``       | number of k-point samplings                    | ``3 * [ 1 ]``       |
-+-------------------+------------------------------------------------+---------------------+
-| ``periodic``      | use periodicity in the calculations            | ``False``           |
-+-------------------+------------------------------------------------+---------------------+
-| ``cell_length``   | the lattice vectors of periodic unit cell      | ``9 * [ 0.0 ]``     |
-+-------------------+------------------------------------------------+---------------------+
-| ``sk_path``       | path for slater-koster files                   | ``./``              |
-+-------------------+------------------------------------------------+---------------------+
-| ``install_path``  | path for DFTB+ install directory               | ``./``              |
-+-------------------+------------------------------------------------+---------------------+
-| ``mpi``           | use MPI parallelization                        | ``False``           |
-+-------------------+------------------------------------------------+---------------------+
-| ``mpi_path``      | path for MPI binary                            | ``./``              |
-+-------------------+------------------------------------------------+---------------------+
-| ``nthreads``      | number of threads in the calculations          | ``1``               |
-+-------------------+------------------------------------------------+---------------------+
-| ``version``       | version of DFTB+ program                       | ``20.1``            |
-+-------------------+------------------------------------------------+---------------------+
++------------------------+------------------------------------------------+--------------------+
+| Keywords               | Work                                           | Default            |
++========================+================================================+====================+
+| **molecule**           | molecular object                               |                    |  
+| (:class:`Molecule`)    |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **scc**                | include self-consistent charge (SCC) scheme    | *True*             |
+| *(boolean)*            |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **scc_tol**            | energy convergence for SCC iterations          | *1E-6*             |
+| *(double)*             |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **scc_max_iter**       | maximum number of SCC iterations               | *100*              |
+| *(integer)*            |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **ocdftb**             | include onsite correction to SCC term          | *False*            |
+| *(boolean)*            |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **lcdftb**             | include long-range corrected functional        | *False*            |
+| *(boolean)*            |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **lc_method**          | algorithms for LC-DFTB                         | *'MatrixBased'*    |
+| *(string)*             |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **sdftb**              | include spin-polarisation scheme               | *False*            |
+| *(boolean)*            |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **unpaired_elec**      | number of unpaired electrons                   | *0.0*              |
+| *(double)*             |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **guess**              | initial guess method for SCC scheme            | *'h0'*             |
+| *(string)*             |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **guess_file**         | initial guess file for charges                 | *'./charges.bin'*  |
+| *(string)*             |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **elec_temp**          | electronic temperature for Fermi-Dirac scheme  | *0.0*              |
+| *(double)*             |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **mixer**              | charge mixing method used in DFTB              | *'Broyden'*        |
+| *(string)*             |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **ex_symmetry**        | symmetry of excited state in TD-DFTB           | *'singlet'*        |
+| *(string)*             |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **k_point**            | number of k-point samplings                    | *3 \* [ 1 ]*       |
+| *(integer)*            |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **periodic**           | use periodicity in the calculations            | *False*            |
+| *(string)*             |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **cell_length**        | the lattice vectors of periodic unit cell      | *9 \* [ 0.0 ]*     |
+| *(double)*             |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **sk_path**            | path for slater-koster files                   | *'./'*             |
+| *(string)*             |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **install_path**       | path for DFTB+ install directory               | *'./'*             |
+| *(string)*             |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **mpi**                | use MPI parallelization                        | *False*            |
+| *(string)*             |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **mpi_path**           | path for MPI binary                            | *'./'*             |
+| *(string)*             |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **nthreads**           | number of threads in the calculations          | *1*                |
+| *(integer)*            |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
+| **version**            | version of DFTB+ program                       | *20.1*             |
+| *(double)*             |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
 
 SSR
 """""""""""""""""""""""""""""""""""""
 
 UNI-xMD automatically determines single-state REKS as BO interfaces for ground state BOMD.
 When we include the excited states, SA-REKS or SSR methods can be exploited and these are
-determined from the ``state_interactions`` argument.
+determined from the **state_interactions** argument.
 
 .. note:: Our interface script is generated with 20.1 version of DFTB+ program.
    Here, you should refer to manual of DFTB+ program if you want to see detailed
-   lists for ``lc_method`` variable.
+   lists for **lc_method** variable.
 
-.. note:: Currently, ``ocdftb`` is not implemented in current version of DFTB+.
+.. note:: Currently, **ocdftb** is not implemented in current version of DFTB+.
 
-.. note:: Currently, ``guess`` variable reads the following two strings.
-   One is ``h0``, which uses zedo charges as initial guess of SCC term for every time step.
-   The other is ``read``, which reads charges.bin file generated from previous step.
-   If ``guess_file`` exists, then charges.bin file is used as initial guess at t = 0.0 s.
+.. note:: Currently, **guess** variable reads the following two strings.
+   One is *'h0'*, which uses zedo charges as initial guess of SCC term for every time step.
+   The other is **read**, which reads charges.bin file generated from previous step.
+   If **guess_file** exists, then charges.bin file is used as initial guess at t = 0.0 s.
 
-.. note:: For ``cell_length`` variable, it reads a list variable consisted of 9 elements,
-   which correspond to cell lattice vectors. Similarly ``tuning`` variable reads a list
+.. note:: For **cell_length** variable, it reads a list variable consisted of 9 elements,
+   which correspond to cell lattice vectors. Similarly **tuning** variable reads a list
    with as many as the number of atomic species.
 
 +------------------------+------------------------------------------------+---------------------+
 | Keywords               | Work                                           | Default             |
 +========================+================================================+=====================+
-| ``scc``                | include self-consistent charge (SCC) scheme    | ``True``            |
+| **molecule**           | molecular object                               |                     |  
+| (:class:`Molecule`)    |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``scc_tol``            | energy convergence for SCC iterations          | ``1E-6``            |
+| **scc**                | include self-consistent charge (SCC) scheme    | *True*              |
+| *(boolean)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``scc_max_iter``       | maximum number of SCC iterations               | ``1000``            |
+| **scc_tol**            | energy convergence for SCC iterations          | *1E-6*              |
+| *(double)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``ocdftb``             | include onsite correction to SCC term          | ``False``           |
+| **scc_max_iter**       | maximum number of SCC iterations               | *1000*              |
+| *(integer)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``lcdftb``             | include long-range corrected functional        | ``False``           |
+| **ocdftb**             | include onsite correction to SCC term          | *False*             |
+| *(boolean)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``lc_method``          | algorithms for LC-DFTB                         | ``MatrixBased``     |
+| **lcdftb**             | include long-range corrected functional        | *False*             |
+| *(boolean)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``ssr22``              | use REKS(2,2) calculation?                     | ``False``           |
+| **lc_method**          | algorithms for LC-DFTB                         | *'MatrixBased'*     |
+| *(string)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``ssr44``              | use REKS(4,4) calculation?                     | ``False``           |
+| **ssr22**              | use REKS(2,2) calculation?                     | *False*             |
+| *(boolean)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``guess``              | initial guess method for SCC scheme            | ``h0``              |
+| **ssr44**              | use REKS(4,4) calculation?                     | *False*             |
+| *(boolean)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``guess_file``         | initial guess file for eigenvectors            | ``./eigenvec.bin``  |
+| **guess**              | initial guess method for SCC scheme            | *'h0'*              |
+| *(string)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``state_interactions`` | include state-interaction terms to SA-REKS     | ``False``           |
+| **guess_file**         | initial guess file for eigenvectors            | *'./eigenvec.bin'*  |
+| *(string)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``shift``              | level shifting value in SCC iterations         | ``0.3``             |
+| **state_interactions** | include state-interaction terms to SA-REKS     | *False*             |
+| *(boolean)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``tuning``             | scaling factor for atomic spin constants       | ``None``            |
+| **shift**              | level shifting value in SCC iterations         | *0.3*               |
+| *(double)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``cpreks_grad_alg``    | algorithms used in CP-REKS equations           | ``pcg``             |
+| **tuning**             | scaling factor for atomic spin constants       | *None*              |
+| *(double)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``cpreks_grad_tol``    | gradient tolerance for CP-REKS equations       | ``1E-8``            |
+| **cpreks_grad_alg**    | algorithms used in CP-REKS equations           | *'pcg'*             |
+| *(string)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``save_memory``        | save memory in cache used in CP-REKS equations | ``False``           |
+| **cpreks_grad_tol**    | gradient tolerance for CP-REKS equations       | *1E-8*              |
+| *(double)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``embedding``          | charge embedding options; electrostatic,       | ``None``            |
-|                        | mechanical                                     |                     |
+| **save_memory**        | save memory in cache used in CP-REKS equations | *False*             |
+| *(boolean)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``periodic``           | use periodicity in the calculations            | ``False``           |
+| **embedding**          | charge embedding options; electrostatic,       | *None*              |
+| *(string)*             | mechanical                                     |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``cell_length``        | the lattice vectors of periodic unit cell      | ``9 * [ 0.0 ]``     |
+| **periodic**           | use periodicity in the calculations            | *False*             |
+| *(boolean)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``sk_path``            | path for slater-koster files                   | ``./``              |
+| **cell_length**        | the lattice vectors of periodic unit cell      | *9 \* [ 0.0 ]*      |
+| *(double)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``install_path``       | path for DFTB+ install directory               | ``./``              |
+| **sk_path**            | path for slater-koster files                   | *'./'*              |
+| *(string)*             | mechanical                                     |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``nthreads``           | number of threads in the calculations          | ``1``               |
+| **install_path**       | path for DFTB+ install directory               | *'./'*              |
+| *(string)*             | mechanical                                     |                     |
 +------------------------+------------------------------------------------+---------------------+
-| ``version``            | version of DFTB+ program                       | ``20.1``            |
+| **nthreads**           | number of threads in the calculations          | *1*                 |
+| *(integer)*            |                                                |                     |
++------------------------+------------------------------------------------+---------------------+
+| **version**            | version of DFTB+ program                       | *20.1*              |
+| *(double)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
 
