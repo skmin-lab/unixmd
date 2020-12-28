@@ -1,37 +1,37 @@
 from __future__ import division
-import numpy as np
+from build.el_propagator import el_run
 from mqc.mqc import MQC
 
-"""
-   coupled-trajectory mixed quantum-classical dynamics
-"""
 class CT(MQC):
-
-    def __init__(self, molecule, istate=1, dt=0.5, nsteps=1000, nesteps=10000, \
-        propagation="density", thermostat={"thermo":'none', "nrescale":0}, \
-        l_adjnac=True, l_deco=False ):
-
-        # Initialize input values
-        self.l_deco = l_deco
-
-        super().__init__(molecule, istate, dt, nsteps, nesteps, \
-            propagation, thermostat, l_adjnac)
-
-        pass     
-
+    """ Class for coupled-trajectory mixed quantum-classical dynamics
     """
-       Routine related to the SH works
-    """
-    def step(self):
-        pass
- 
-    """
-       Routine to calculate the forces
-    """
-    def calculate_force(self, states):
-        super().calculate_force()
+    def __init__(self)
         pass
 
+    def run(self):
+        pass
 
+    def calculate_qmom(self):
+        """ Routine to calculate quantum momentum
+        """
+        pass
 
+    def calculate_force(self):
+        """ Routine to calculate force
+        """
+        pass
 
+    def update_energy(self):
+        """ Routine to update the energy of molecules in surface hopping
+        """
+        pass
+
+    def print_init(self):
+        """ Routine to print the initial information of dynamics
+        """
+        pass
+
+    def print_step(self):
+        """ Routine to print each steps infomation about dynamics
+        """
+        pass
