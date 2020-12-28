@@ -22,7 +22,7 @@ def motion_analysis():
     args = parser.parse_args()
 
     # Indexing for numbering filename
-    index = len(str(args.ntrajs))
+    digit = len(str(args.ntrajs))
     # Include step 0 
     nsteps1 = args.nsteps + 1
     # Checking job running
@@ -30,76 +30,69 @@ def motion_analysis():
         raise ValueError ("No analysis done -- check input arguments")
 
     # bond length analysis
-    try:
-        bond(args.ntrajs, index, nsteps1, args.bond, args.l_mean)
-    except TypeError:
-        pass
+    if (args.bond != None):
+        if ((len(args.bond) == 2)):
+            bond(args.ntrajs, digit, nsteps1, args.bond, args.l_mean)
 
     # angle analysis
-    try:
-        angle(args.ntrajs, index, nsteps1, args.angles, args.l_mean)
-    except TypeError:
-        pass
+    if (args.angles != None):
+        if ((len(args.angles) == 3)):
+            angle(args.ntrajs, digit, nsteps1, args.angles, args.l_mean)
 
     # dih angle analysis
-    try:
+    if (args.dihedral != None):
         if (len(args.dihedral) == 4 or len(args.dihedral) == 6):
-            dihedral(args.ntrajs, index, nsteps1, args.dihedral, args.l_mean)
-        else:
-            raise ValueError (f"Invalid number of points! {len(args.dihedral)}")
-    except TypeError:
-        pass
+            dihedral(args.ntrajs, digit, nsteps1, args.dihedral, args.l_mean)
 
     
-def bond(ntrajs, index, nsteps, points, l_mean):
+def bond(ntrajs, digit, nsteps, atom_index, l_mean):
     """ Averaging bond length between two points
     """
     if (l_mean == True):
         f_write_mean = ""
         # header file for averaged trajectory analysis
-        header_mean = f"#    Averaged bond length between atom {points[0]} and {points[1]}"
+        header_mean = f"#    Averaged bond length between atom {atom_index[0]} and {atom_index[1]}"
         f_write_mean += header_mean
         # define empty array for summation
         mean_bond = np.zeros(nsteps)
 
     # natom index fix: input variable #(x) atom is reading as #(x+1) in python
-    points = np.array(points)
-    points -= 1
+    atom_index = np.array(atom_index)
+    atom_index -= 1
 
     # define variable for count trajectories except halted trajectories
     mtrajs = ntrajs
 
     for itraj in range(ntrajs):
-        path = os.path.join(f"./TRAJ_{itraj + 1:0{index}d}/md/", "MOVIE.xyz")
+        path = os.path.join(f"./TRAJ_{itraj + 1:0{digit}d}/md/", "MOVIE.xyz")
         # chacking line number
         iline = 0
 
         f_write = ""
         # header file for individual trajectory analysis
-        header = f"#    bond length between atom {points[0]} and {points[1]}"
+        header = f"#    bond length between atom {atom_index[0]} and {atom_index[1]}"
         f_write += header
 
-        bond = np.array([])
+        bond_array = np.array([])
         with open(path, 'r') as f:
-            lines = f.readline()
-        natoms = int(lines)
+            line = f.readline()
+        natoms = int(line)
 
         with open(path, 'r') as f:
              while (True):
-                 lines = f.readline()
-                 if not lines:
+                 line = f.readline()
+                 if not line:
                      break
                  # save xyz coordinates in every isteps
-                 if (iline % (natoms + 2) == points[0] + 2):
-                     point1 = lines.split()
-                 if (iline % (natoms + 2) == points[1] + 2):
-                     point2 = lines.split()
+                 if (iline % (natoms + 2) == atom_index[0] + 2):
+                     atom1 = np.array(line.split()[1:4], dtype=float)
+                 if (iline % (natoms + 2) == atom_index[1] + 2):
+                     atom2 = np.array(line.split()[1:4], dtype=float)
                  # every istep, calculate it
                  if (iline % (natoms + 2) == natoms + 1):
                      # calculate bond length after both point1/2 extracted
-                     bondlength = np.linalg.norm(np.array([point1[1], point1[2], point1[3]], dtype=float) \
-                         - np.array([point2[1], point2[2], point2[3]], dtype=float))
-                     bond = np.append(bond, [bondlength])
+                     bond = np.linalg.norm(atom1 - atom2)
+                     bond_array = np.append(bond_array, [bond])
                  iline += 1
        
         if (iline != (nsteps * (2 + natoms))):
@@ -107,13 +100,17 @@ def bond(ntrajs, index, nsteps, points, l_mean):
 
         if (l_mean == True):
             # sum over bond lengths between two points if trajectory has full steps
-            if (len(bond) == nsteps):
-                mean_bond += bond
+            if (len(bond_array) == nsteps):
+                mean_bond += bond_array
 
-        data = "".join(["\n" + f"{istep:8d}" + "".join(f"{bond[istep]:15.8f}") for istep in range(len(bond))])
-        f_write += data
+#        data = "".join(["\n" + f"{istep:8d}" + "".join(f"{bond[istep]:15.8f}") for istep in range(len(bond))])
+        istep = 0
+        for bond_dat in bond_array:
+            data = "".join(["\n" + f"{istep:8d}" + "".join(f"{bond_dat:15.8f}")])
+            f_write += data
+            istep += 1
 
-        path = os.path.join(f"./TRAJ_{itraj + 1:0{index}d}/md/", "BOND")
+        path = os.path.join(f"./TRAJ_{itraj + 1:0{digit}d}/md/", "BOND")
         typewriter(f_write, path)
     
     if (l_mean == True):
@@ -124,59 +121,56 @@ def bond(ntrajs, index, nsteps, points, l_mean):
         typewriter(f_write_mean, "AVG_BOND")
 
 
-def angle(ntrajs, index, nsteps, points, l_mean):
+def angle(ntrajs, digit, nsteps, atom_index, l_mean):
     """ Averaging angle between two points
     """
     if (l_mean == True):
         f_write_mean = ""
         # header file for averaged trajectory analysis
-        header_mean = f"#    Averaged angle between atom {points[0]}, {points[1]}, and {points[2]}"
+        header_mean = f"#    Averaged angle between atom {atom_index[0]}, {atom_index[1]}, and {atom_index[2]}"
         f_write_mean += header_mean
         # define empty array for summation
         mean_angle = np.zeros(nsteps)
 
     # natom index fix: input variable #(x) atom is reading as #(x+1) in python
-    points = np.array(points)
-    points -= 1
+    atom_index = np.array(atom_index)
+    atom_index -= 1
 
     # define variable for count trajectories except halted trajectories
     mtrajs = ntrajs
 
     for itraj in range(ntrajs):
-        path = os.path.join(f"./TRAJ_{itraj + 1:0{index}d}/md/", "MOVIE.xyz")
+        path = os.path.join(f"./TRAJ_{itraj + 1:0{digit}d}/md/", "MOVIE.xyz")
         # chacking line number
         iline = 0
 
         f_write = ""
         # header file for individual trajectory analysis
-        header = f"#    angle between atom {points[0]}, {points[1]}, and {points[2]}"
+        header = f"#    angle between atom {atom_index[0]} and {atom_index[1]}"
         f_write += header
 
         angle_array = np.array([])
         with open(path, 'r') as f:
-            lines = f.readline()
-        natoms = int(lines)
+            line = f.readline()
+        natoms = int(line)
 
         with open(path, 'r') as f:
              while (True):
-                 lines = f.readline()
-                 if not lines:
+                 line = f.readline()
+                 if not line:
                      break
-                 # save xyz coordinate in every steps
-                 if (iline % (2 + natoms) == points[0] + 2):
-                     tmp = lines.split()
-                     point1 = np.array([tmp[1], tmp[2], tmp[3]], dtype=float)
-                 if (iline % (2 + natoms) == points[1] + 2):
-                     tmp = lines.split()
-                     point2 = np.array([tmp[1], tmp[2], tmp[3]], dtype=float)
-                 if (iline % (2 + natoms) == points[2] + 2):
-                     tmp = lines.split()
-                     point3 = np.array([tmp[1], tmp[2], tmp[3]], dtype=float)
+                 # save xyz coordinates in every isteps
+                 if (iline % (natoms + 2) == atom_index[0] + 2):
+                     atom1 = np.array(line.split()[1:4], dtype=float)
+                 if (iline % (natoms + 2) == atom_index[1] + 2):
+                     atom2 = np.array(line.split()[1:4], dtype=float)
+                 if (iline % (natoms + 2) == atom_index[2] + 2):
+                     atom3 = np.array(line.split()[1:4], dtype=float)
                  # every istep, calculate it
                  if (iline % (natoms + 2) == natoms + 1):
-                     # calculate angle after point1/2/3 extracted, using two unit vector
-                     unit_vector1 = (point1 - point2) / np.linalg.norm(point1 - point2)
-                     unit_vector2 = (point3 - point2) / np.linalg.norm(point3 - point2)
+                     # calculate angle with vector calculation
+                     unit_vector1 = (atom1 - atom2) / np.linalg.norm(atom1 - atom2)
+                     unit_vector2 = (atom3 - atom2) / np.linalg.norm(atom3 - atom2)
                      dot_product = np.dot(unit_vector1, unit_vector2)
                      angle = np.degrees(np.arccos(dot_product))
                      angle_array = np.append(angle_array, [angle])
@@ -186,14 +180,17 @@ def angle(ntrajs, index, nsteps, points, l_mean):
             mtrajs -= 1
 
         if (l_mean == True):
-            # sum over angle between two points if trajectory has full steps
+            # sum over angles between three points if trajectory has full steps
             if (len(angle_array) == nsteps):
                 mean_angle += angle_array
 
-        data = "".join(["\n" + f"{istep:8d}" + "".join(f"{angle_array[istep]:15.8f}") for istep in range(len(angle_array))])
-        f_write += data
+        istep = 0
+        for angle_dat in angle_array:
+            data = "".join(["\n" + f"{istep:8d}" + "".join(f"{angle_dat:15.8f}")])
+            f_write += data
+            istep += 1
 
-        path = os.path.join(f"./TRAJ_{itraj + 1:0{index}d}/md/", "ANGLE")
+        path = os.path.join(f"./TRAJ_{itraj + 1:0{digit}d}/md/", "ANGEL")
         typewriter(f_write, path)
     
     if (l_mean == True):
@@ -204,40 +201,109 @@ def angle(ntrajs, index, nsteps, points, l_mean):
         typewriter(f_write_mean, "AVG_ANGLE")
 
 
-def dihedral(ntrajs, index, nsteps, points, l_mean):
+def dihedral(ntrajs, digit, nsteps, atom_index, l_mean):
     """ Averaging dihedral angle between two points
+    """
 
- lines for calculate dihedral angle
+    if (l_mean == True):
+        f_write_mean = ""
+        # header file for averaged trajectory analysis
+        if (len(atom_index) == 4):
+            header_mean = f"#    Averaged diherdral angle between atom {atom_index[0]}, {atom_index[1]}, {atom_index[2]}, and {atom_index[3]}"
+        elif (len(atom_index) == 6):
+            header_mean = f"#    Averaged diherdral angle between atom {atom_index[0]}, {atom_index[1]}, {atom_index[2]}, {atom_index[3]}, {atom_index[4]}, aind {atom_index[5]}"
+        f_write_mean += header_mean
+        # define empty array for summation
+        mean_dihedral = np.zeros(nsteps)
+
+    # natom index fix: input variable #(x) atom is reading as #(x+1) in python
+    atom_index = np.array(atom_index)
+    atom_index -= 1
+
+    # define variable for count trajectories except halted trajectories
+    mtrajs = ntrajs
+
+    for itraj in range(ntrajs):
+        path = os.path.join(f"./TRAJ_{itraj + 1:0{digit}d}/md/", "MOVIE.xyz")
+        # chacking line number
+        iline = 0
+
+        f_write = ""
+        # header file for individual trajectory analysis
+        if (len(atom_index) == 4):
+            header = f"#    Diherdral angle between atom {atom_index[0]}, {atom_index[1]}, {atom_index[2]}, and {atom_index[3]}"
+        elif (len(atom_index) == 6):
+            header = f"#    Diherdral angle between atom {atom_index[0]}, {atom_index[1]}, {atom_index[2]}, {atom_index[3]}, {atom_index[4]}, aind {atom_index[5]}"
+        f_write += header
+
+        dihedral_array = np.array([])
+        with open(path, 'r') as f:
+            line = f.readline()
+        natoms = int(line)
+
+        with open(path, 'r') as f:
+             while (True):
+                 line = f.readline()
+                 if not line:
+                     break
                  # save xyz coordinates in every isteps
-                 if (iline % (natoms + 2) == points[0] + 2):
-                     point1 = lines.split()
-                 if (iline % (natoms + 2) == points[1] + 2):
-                     point2 = lines.split()
-                 if (iline % (natoms + 2) == points[2] + 2):
-                     point3 = lines.split()
-                 if (iline % (natoms + 2) == points[3] + 2):
-                     point4 = lines.split()
-                 if (iline % (natoms + 2) == points[4] + 2):
-                     point5 = lines.split()
-                 if (iline % (natoms + 2) == points[5] + 2):
-                     point6 = lines.split()
+                 if (iline % (natoms + 2) == atom_index[0] + 2):
+                     atom1 = np.array(line.split()[1:4], dtype=float)
+                 if (iline % (natoms + 2) == atom_index[1] + 2):
+                     atom2 = np.array(line.split()[1:4], dtype=float)
+                 if (iline % (natoms + 2) == atom_index[2] + 2):
+                     atom3 = np.array(line.split()[1:4], dtype=float)
+                 if (iline % (natoms + 2) == atom_index[3] + 2):
+                     atom4 = np.array(line.split()[1:4], dtype=float)
+                 if (len(atom_index) == 6):
+                     if (iline % (natoms + 2) == atom_index[4] + 2):
+                         atom5 = np.array(line.split()[1:4], dtype=float)
+                     if (iline % (natoms + 2) == atom_index[5] + 2):
+                         atom6 = np.array(line.split()[1:4], dtype=float)
                  # every istep, calculate it
                  if (iline % (natoms + 2) == natoms + 1):
-                     vector1_1 = point1 - point2
-                     vector1_2 = point3 - point2
-
-                     vector2_1 = point4 - point5
-                     vector2_2 = point6 - point5
+                     vector1_1 = atom1 - atom2
+                     vector1_2 = atom3 - atom2
+                     if (len(atom_index) == 4):
+                         vector2_1 = atom2 - atom3
+                         vector2_2 = atom4 - atom3
+                     elif (len(atom_index) == 6):
+                         vector2_1 = atom4 - atom5
+                         vector2_2 = atom6 - atom5
 
                      #find equation of plane which contains vector 1/2
                      a1, b1, c1 = np.cross(vector1_1, vector1_2)
                      a2, b2, c2 = np.cross(vector2_1, vector2_2)
 
-                     dih_angle = np.degree(np.arccos(np.abs(a1 * a2 + b1 * b2 + c1 * c2) /  \ 
+                     dihedral_angle = np.degrees(np.arccos(np.abs(a1 * a2 + b1 * b2 + c1 * c2) /  \
                          (np.sqrt(a1 ** 2 + b1 ** 2 + c1 ** 2) * np.sqrt(a2 ** 2 + b2 ** 2 + c2 ** 2))))
-                     dih_array = np.append(dih_array, [dih_angle])
-"""
-    return 0
+                     dihedral_array = np.append(dihedral_array, [dihedral_angle])
+                 iline += 1
+       
+        if (iline != (nsteps * (2 + natoms))):
+            mtrajs -= 1
+
+        if (l_mean == True):
+            # sum over dihedral angles if trajectory has full steps
+            if (len(dihedral_array) == nsteps):
+                mean_dihedral += dihedral_array
+
+        istep = 0
+        for dihedral_dat in dihedral_array:
+            data = "".join(["\n" + f"{istep:8d}" + "".join(f"{dihedral_dat:15.8f}")])
+            f_write += data
+            istep += 1
+
+        path = os.path.join(f"./TRAJ_{itraj + 1:0{digit}d}/md/", "DIHEDRAL")
+        typewriter(f_write, path)
+    
+    if (l_mean == True):
+        # averaging array and print
+        mean_dihedral /= mtrajs
+        mean_data = "".join(["\n" + f"{istep:8d}" + "".join(f"{mean_dihedral[istep]:15.8f}") for istep in range(nsteps)])
+        f_write_mean += mean_data
+        typewriter(f_write_mean, "AVG_DIHEDRAL")
+
 
 def typewriter(string, file_name):
     """ Function to write a string in filename
