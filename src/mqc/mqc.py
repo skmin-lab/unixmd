@@ -25,7 +25,7 @@ class MQC(object):
         :param integer verbosity: verbosity of output
     """
     def __init__(self, molecule, thermostat, dt, nsteps, nesteps, propagation, \
-        solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity):
+        solver, l_pop_print, l_adjnac, unit_dt, out_freq, verbosity):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
