@@ -44,7 +44,7 @@ def motion_analysis():
         else:
             raise ValueError (f"Invalid dihedral points! {len(args.dihedral)}")
 
-def calculate_bondlength(ntrajs, digit, nsteps, atom_index, l_mean):
+def calculate_bondlength(ntrajs, digit, nimage, atom_index, l_mean):
     """ Averaging bond length between two points
     """
     if (l_mean):
@@ -53,7 +53,7 @@ def calculate_bondlength(ntrajs, digit, nsteps, atom_index, l_mean):
         header_mean = f"#    Averaged bond length between atom {atom_index[0]} and {atom_index[1]}"
         f_write_mean += header_mean
         # define empty array for summation
-        mean_bond = np.zeros(nsteps)
+        mean_bond = np.zeros(nimage)
 
     # define variable for count trajectories except halted trajectories
     mtrajs = ntrajs
@@ -67,7 +67,7 @@ def calculate_bondlength(ntrajs, digit, nsteps, atom_index, l_mean):
         # header file for individual trajectory analysis
         header = f"#    bond length between atom {atom_index[0]} and {atom_index[1]}"
         f_write += header
-        bond_array = []
+        bond_list = []
 
         with open(path, 'r') as f:
              line = f.readline()
@@ -85,19 +85,19 @@ def calculate_bondlength(ntrajs, digit, nsteps, atom_index, l_mean):
                  if (iline % (natoms + 2) == natoms):
                      # calculate bond length after both point1/2 extracted
                      bond = np.linalg.norm(atom1 - atom2)
-                     bond_array += [bond]
+                     bond_list += [bond]
                  iline += 1
 
-        if (iline != (nsteps * (2 + natoms) - 1)):
+        if (iline != (nimage * (2 + natoms) - 1)):
             mtrajs -= 1
 
         if (l_mean):
             # sum over bond lengths between two points if trajectory has full steps
-            if (len(bond_array) == nsteps):
-                mean_bond += np.array(bond_array)
+            if (len(bond_list) == nimage):
+                mean_bond += np.array(bond_list)
 
         # save data even if the trajectory is halted
-        data = "".join(["\n" + f"{istep:8d}" + "".join(f"{bond_dat:15.8f}") for istep, bond_dat in enumerate(bond_array)])
+        data = "".join(["\n" + f"{istep:8d}" + "".join(f"{bond_dat:15.8f}") for istep, bond_dat in enumerate(bond_list)])
         f_write += data
 
         path = os.path.join(f"./TRAJ_{itraj + 1:0{digit}d}/md/", "BOND")
@@ -107,11 +107,11 @@ def calculate_bondlength(ntrajs, digit, nsteps, atom_index, l_mean):
         # averaging array and print
 
         mean_bond /= mtrajs
-        mean_data = "".join(["\n" + f"{istep:8d}" + "".join(f"{mean_bond[istep]:15.8f}") for istep in range(nsteps)])
+        mean_data = "".join(["\n" + f"{istep:8d}" + "".join(f"{mean_bond[istep]:15.8f}") for istep in range(nimage)])
         f_write_mean += mean_data
         typewriter(f_write_mean, "AVG_BOND")
 
-def calculate_angle(ntrajs, digit, nsteps, atom_index, l_mean):
+def calculate_angle(ntrajs, digit, nimage, atom_index, l_mean):
     """ Averaging angle between two points
     """
     if (l_mean):
@@ -120,7 +120,7 @@ def calculate_angle(ntrajs, digit, nsteps, atom_index, l_mean):
         header_mean = f"#    Averaged angle between atom {atom_index[0]}, {atom_index[1]}, and {atom_index[2]}"
         f_write_mean += header_mean
         # define empty array for summation
-        mean_angle = np.zeros(nsteps)
+        mean_angle = np.zeros(nimage)
 
     # define variable for count trajectories except halted trajectories
     mtrajs = ntrajs
@@ -134,7 +134,7 @@ def calculate_angle(ntrajs, digit, nsteps, atom_index, l_mean):
         # header file for individual trajectory analysis
         header = f"#    angle between atom {atom_index[0]} and {atom_index[1]}"
         f_write += header
-        angle_array = []
+        angle_list = []
 
         with open(path, 'r') as f:
              line = f.readline()
@@ -157,19 +157,19 @@ def calculate_angle(ntrajs, digit, nsteps, atom_index, l_mean):
                      unit_vector2 = (atom3 - atom2) / np.linalg.norm(atom3 - atom2)
                      dot_product = np.dot(unit_vector1, unit_vector2)
                      angle = np.degrees(np.arccos(dot_product))
-                     angle_array += [angle]
+                     angle_list += [angle]
                  iline += 1
 
-        if (iline != (nsteps * (2 + natoms) - 1)):
+        if (iline != (nimage * (2 + natoms) - 1)):
             mtrajs -= 1
 
         if (l_mean):
             # sum over angles between three points if trajectory has full steps
-            if (len(angle_array) == nsteps):
-                mean_angle += np.array(angle_array)
+            if (len(angle_list) == nimage):
+                mean_angle += np.array(angle_list)
 
         # save data even if the trajectory is halted
-        data = "".join(["\n" + f"{istep:8d}" + "".join(f"{angle_dat:15.8f}") for istep, angle_dat in enumerate(angle_array)])
+        data = "".join(["\n" + f"{istep:8d}" + "".join(f"{angle_dat:15.8f}") for istep, angle_dat in enumerate(angle_list)])
         f_write += data
 
         path = os.path.join(f"./TRAJ_{itraj + 1:0{digit}d}/md/", "ANGLE")
@@ -178,11 +178,11 @@ def calculate_angle(ntrajs, digit, nsteps, atom_index, l_mean):
     if (l_mean):
         # averaging array and print
         mean_angle /= mtrajs
-        mean_data = "".join(["\n" + f"{istep:8d}" + "".join(f"{mean_angle[istep]:15.8f}") for istep in range(nsteps)])
+        mean_data = "".join(["\n" + f"{istep:8d}" + "".join(f"{mean_angle[istep]:15.8f}") for istep in range(nimage)])
         f_write_mean += mean_data
         typewriter(f_write_mean, "AVG_ANGLE")
 
-def calculate_dihedral(ntrajs, digit, nsteps, atom_index, l_mean):
+def calculate_dihedral(ntrajs, digit, nimage, atom_index, l_mean):
     """ Averaging dihedral angle between two points
     """
 
@@ -195,7 +195,7 @@ def calculate_dihedral(ntrajs, digit, nsteps, atom_index, l_mean):
             header_mean = f"#    Averaged diherdral angle between plane ({atom_index[0]}, {atom_index[1]}, {atom_index[2]}) and ({atom_index[3]}, {atom_index[4]}, {atom_index[5]})"
         f_write_mean += header_mean
         # define empty array for summation
-        mean_dihedral = np.zeros(nsteps)
+        mean_dihedral = np.zeros(nimage)
 
     # define variable for count trajectories except halted trajectories
     mtrajs = ntrajs
@@ -208,11 +208,11 @@ def calculate_dihedral(ntrajs, digit, nsteps, atom_index, l_mean):
         f_write = ""
         # header file for individual trajectory analysis
         if (len(atom_index) == 4):
-            header = f"#    Diherdral angle between plane ({atom_index[0]}, {atom_index[1]}, {atom_index[2]}) and ({atom_index[1]}, {atom_index[2]}, {atom_index[3]})"
+            header = f"#    Diherdral angle between plane ({atom_index[0]}, {atom_index[1]}, {atom_index[2]}) atoms and ({atom_index[1]}, {atom_index[2]}, {atom_index[3]}) atoms"
         elif (len(atom_index) == 6):
-            header = f"#    Diherdral angle between plane ({atom_index[0]}, {atom_index[1]}, {atom_index[2]}) and ({atom_index[3]}, {atom_index[4]}, {atom_index[5]})"
+            header = f"#    Diherdral angle between plane ({atom_index[0]}, {atom_index[1]}, {atom_index[2]}) atoms and ({atom_index[3]}, {atom_index[4]}, {atom_index[5]}) atoms"
         f_write += header
-        dihedral_array = []
+        dihedral_list = []
 
         with open(path, 'r') as f:
              line = f.readline()
@@ -254,20 +254,20 @@ def calculate_dihedral(ntrajs, digit, nsteps, atom_index, l_mean):
 
                      dot_product = np.dot(n1, n2)
                      dihedral_angle = np.degrees(np.arccos(dot_product))
-                     dihedral_array += [dihedral_angle]
+                     dihedral_list += [dihedral_angle]
 
                  iline += 1
 
-        if (iline != (nsteps * (2 + natoms) - 1)):
+        if (iline != (nimage * (2 + natoms) - 1)):
             mtrajs -= 1
 
         if (l_mean):
             # sum over dihedral angles if trajectory has full steps
-            if (len(dihedral_array) == nsteps):
-                mean_dihedral += np.array(dihedral_array)
+            if (len(dihedral_list) == nimage):
+                mean_dihedral += np.array(dihedral_list)
 
         # save data even if the trajectory is halted
-        data = "".join(["\n" + f"{istep:8d}" + "".join(f"{dihedral_dat:15.8f}") for istep, dihedral_dat in enumerate(dihedral_array)])
+        data = "".join(["\n" + f"{istep:8d}" + "".join(f"{dihedral_dat:15.8f}") for istep, dihedral_dat in enumerate(dihedral_list)])
         f_write += data
 
         path = os.path.join(f"./TRAJ_{itraj + 1:0{digit}d}/md/", "DIHEDRAL")
@@ -276,7 +276,7 @@ def calculate_dihedral(ntrajs, digit, nsteps, atom_index, l_mean):
     if (l_mean):
         # averaging array and print
         mean_dihedral /= mtrajs
-        mean_data = "".join(["\n" + f"{istep:8d}" + "".join(f"{mean_dihedral[istep]:15.8f}") for istep in range(nsteps)])
+        mean_data = "".join(["\n" + f"{istep:8d}" + "".join(f"{mean_dihedral[istep]:15.8f}") for istep in range(nimage)])
         f_write_mean += mean_data
         typewriter(f_write_mean, "AVG_DIHEDRAL")
 
