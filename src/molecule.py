@@ -32,15 +32,14 @@ class Molecule(object):
         :param double charge: total charge of the system
         :param boolean model: is the system a model system?
     """
-    def __init__(self, geometry, nsp=3, nstates=3, istate=0, coefficient=None, \
-        qmmm=False, natoms_mm=None, dof=None, unit_pos='A', unit_vel='au', charge=0., model=False):
+    def __init__(self, geometry, nsp=3, nstates=3, istate=0, qmmm=False, natoms_mm=None, dof=None, \
+        unit_pos='A', unit_vel='au', charge=0., model=False):
         # Save name of Molecule class
         self.mol_type = self.__class__.__name__
 
         # Initialize input values
         self.nsp = nsp
         self.nst = nstates
-        self.istate = istate
         self.model = model
 
         # Initialize geometry
@@ -111,9 +110,6 @@ class Molecule(object):
         self.etot = 0.
 
         self.l_nacme = False
-
-        # Initialize coefficients and densities
-        self.get_coefficient(coefficient, self.istate)
 
         # Initialize point charges for QM/MM calculations
         if (self.qmmm):

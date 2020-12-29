@@ -9,15 +9,15 @@ import pickle
 class CT(MQC):
     """ Class for coupled-trajectory mixed quantum-classical dynamics
     """
-    def __init__(self, molecules, thermostat=None, dt=0.5, nsteps=1000, nesteps=20, \
+    def __init__(self, molecules, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
-        unit_dt="fs", out_freq=1, verbosity=0):
+        coefficient=None, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         self.mols = []
         for molecule in molecules:
             # TODO: conduct the same work at each trajectories
-            super().__init__(molecule, thermostat, dt, nsteps, nesteps, \
-                propagation, solver, l_pop_print, l_adjnac, unit_dt, out_freq, verbosity)
+            super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
+                propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity)
             self.mols.append(self.mol)
         self.ntrajs = len(molecules)
 
@@ -45,6 +45,9 @@ class CT(MQC):
         else: 
             raise ValueError ("restart option is invalid in CTMQC yet.")
            
+        self.istep += 1
+
+        # Main MD loop
         for itraj in self.mols:
             self.calculate_qmom()
             for istep in range(self.istep, self.nsteps):

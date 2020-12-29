@@ -24,8 +24,8 @@ class MQC(object):
         :param integer out_freq: frequency of printing output
         :param integer verbosity: verbosity of output
     """
-    def __init__(self, molecule, thermostat, dt, nsteps, nesteps, propagation, \
-        solver, l_pop_print, l_adjnac, unit_dt, out_freq, verbosity):
+    def __init__(self, molecule, thermostat, istate, dt, nsteps, nesteps, \
+        propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -36,6 +36,7 @@ class MQC(object):
         self.thermo = thermostat
 
         # Initialize input values
+        self.istate = istate
         self.nsteps = nsteps
         self.nesteps = nesteps
 
@@ -52,7 +53,7 @@ class MQC(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid unit for time step! {unit_dt}")
 
         # Check number of state and initial state
-        if (self.mol.istate >= self.mol.nst):
+        if (self.istate >= self.mol.nst):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Index for initial state must be smaller than number of states! {self.istate}")
 
         # None for BOMD case
@@ -71,6 +72,9 @@ class MQC(object):
 
         self.out_freq = out_freq
         self.verbosity = verbosity
+
+        # Initialize coefficients and densities
+        self.mol.get_coefficient(coefficient, self.istate)
 
     def run_init(self, qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart):
         """ Initialize MQC dynamics
