@@ -31,20 +31,20 @@ def motion_analysis():
 
     # Bond length analysis
     if (args.bond != None):
-        bond(args.ntrajs, digit, nsteps1, args.bond, args.l_mean)
+        calculate_bondlength(args.ntrajs, digit, nsteps1, args.bond, args.l_mean)
 
     # Angle analysis
     if (args.angle != None):
-        angle(args.ntrajs, digit, nsteps1, args.angle, args.l_mean)
+        calculate_angle(args.ntrajs, digit, nsteps1, args.angle, args.l_mean)
 
     # Dihedral angle analysis
     if (args.dihedral != None):
         if (len(args.dihedral) == 4 or len(args.dihedral) == 6):
-            dihedral(args.ntrajs, digit, nsteps1, args.dihedral, args.l_mean)
+            calculate_dihedral(args.ntrajs, digit, nsteps1, args.dihedral, args.l_mean)
         else:
             raise ValueError (f"Invalid dihedral points! {len(args.dihedral)}")
 
-def bond(ntrajs, digit, nsteps, atom_index, l_mean):
+def calculate_bondlength(ntrajs, digit, nsteps, atom_index, l_mean):
     """ Averaging bond length between two points
     """
     if (l_mean):
@@ -111,7 +111,7 @@ def bond(ntrajs, digit, nsteps, atom_index, l_mean):
         f_write_mean += mean_data
         typewriter(f_write_mean, "AVG_BOND")
 
-def angle(ntrajs, digit, nsteps, atom_index, l_mean):
+def calculate_angle(ntrajs, digit, nsteps, atom_index, l_mean):
     """ Averaging angle between two points
     """
     if (l_mean):
@@ -182,7 +182,7 @@ def angle(ntrajs, digit, nsteps, atom_index, l_mean):
         f_write_mean += mean_data
         typewriter(f_write_mean, "AVG_ANGLE")
 
-def dihedral(ntrajs, digit, nsteps, atom_index, l_mean):
+def calculate_dihedral(ntrajs, digit, nsteps, atom_index, l_mean):
     """ Averaging dihedral angle between two points
     """
 
