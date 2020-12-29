@@ -9,17 +9,30 @@ import pickle
 class CT(MQC):
     """ Class for coupled-trajectory mixed quantum-classical dynamics
     """
-    def __init__(self, molecules, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
+    def __init__(self, molecules, thermostat=None, istates=None, dt=0.5, nsteps=1000, nesteps=20, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
-        coefficient=None, unit_dt="fs", out_freq=1, verbosity=0):
+        coefficients=None, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
-        self.mols = []
-        for molecule in molecules:
-            # TODO: conduct the same work at each trajectories
-            super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-                propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity)
-            self.mols.append(self.mol)
+        self.mols = molecules
         self.ntrajs = len(molecules)
+        self.istates = istates
+        if ((self.istates != None) and (self.ntrajs != len(self.istates))):
+            raise ValueError("Error: istates!")
+
+        # Initialize initial coefficient for first trajectory
+        if (coefficients == None):
+            coefficients = [None] * self.ntrajs
+            super().__init__(self.mols[0], thermostat, istates[0], dt, nsteps, nesteps, \
+                propagation, solver, l_pop_print, l_adjnac, coefficients, unit_dt, out_freq, verbosity)
+        else:
+            if (self.ntrajs != len(self.coefficients)):
+                raise ValueError("Error: coefficients!")
+            super().__init__(self.mols[0], thermostat, istates[0], dt, nsteps, nesteps, \
+                propagation, solver, l_pop_print, l_adjnac, coefficients[0], unit_dt, out_freq, verbosity)
+
+        # Initialize initial coefficient for other trajectories
+        for itraj in range(1, self.ntrajs):
+            self.mols[itraj].get_coefficient(self.coefficients[itraj], self.istates[itraj])
 
     def run(self, qm, mm=None, input_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         # Initialize UNI-xMD
