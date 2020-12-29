@@ -31,16 +31,18 @@ def motion_analysis():
 
     # Bond length analysis
     if (args.bond != None):
-            bond(args.ntrajs, digit, nsteps1, args.bond, args.l_mean)
+        bond(args.ntrajs, digit, nsteps1, args.bond, args.l_mean)
 
     # Angle analysis
     if (args.angle != None):
-            angle(args.ntrajs, digit, nsteps1, args.angle, args.l_mean)
+        angle(args.ntrajs, digit, nsteps1, args.angle, args.l_mean)
 
     # Dihedral angle analysis
     if (args.dihedral != None):
         if (len(args.dihedral) == 4 or len(args.dihedral) == 6):
             dihedral(args.ntrajs, digit, nsteps1, args.dihedral, args.l_mean)
+        else:
+            raise ValueError (f"Invalid dihedral points! {len(args.dihedral)}")
 
 def bond(ntrajs, digit, nsteps, atom_index, l_mean):
     """ Averaging bond length between two points
