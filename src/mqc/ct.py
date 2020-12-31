@@ -19,20 +19,19 @@ class CT(MQC):
         if ((self.istates != None) and (self.ntrajs != len(self.istates))):
             raise ValueError("Error: istates!")
 
-        # Initialize initial coefficient for first trajectory
         if (coefficients == None):
             coefficients = [None] * self.ntrajs
-            super().__init__(self.mols[0], thermostat, istates[0], dt, nsteps, nesteps, \
-                propagation, solver, l_pop_print, l_adjnac, coefficients, unit_dt, out_freq, verbosity)
         else:
             if (self.ntrajs != len(self.coefficients)):
                 raise ValueError("Error: coefficients!")
-            super().__init__(self.mols[0], thermostat, istates[0], dt, nsteps, nesteps, \
-                propagation, solver, l_pop_print, l_adjnac, coefficients[0], unit_dt, out_freq, verbosity)
+        
+        # Initialize input values and coefficient for first trajectory
+        super().__init__(self.mols[0], thermostat, istates[0], dt, nsteps, nesteps, \
+            propagation, solver, l_pop_print, l_adjnac, coefficients[0], unit_dt, out_freq, verbosity)
 
-        # Initialize initial coefficient for other trajectories
+        # Initialize coefficient for other trajectories
         for itraj in range(1, self.ntrajs):
-            self.mols[itraj].get_coefficient(self.coefficients[itraj], self.istates[itraj])
+            self.mols[itraj].get_coefficient(coefficients[itraj], self.istates[itraj])
 
     def run(self, qm, mm=None, input_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         # Initialize UNI-xMD
@@ -51,19 +50,22 @@ class CT(MQC):
                 # TODO: QM/MM
                 itraj.get_nacme()
 
-                self.update_energy()
+                self.update_energy(itraj)
+                
+                self.get_phase(itraj)
 
                 self.write_md_output(unixmd_dir, self.istep)
                 self.print_step(self.istep)
+
         else: 
             raise ValueError ("restart option is invalid in CTMQC yet.")
            
         self.istep += 1
 
         # Main MD loop
-        for itraj in self.mols:
+        for istep in range(self.istep, self.nsteps):
             self.calculate_qmom()
-            for istep in range(self.istep, self.nsteps):
+            for itraj in self.mols:
                 self.cl_update_position()
 
                 itraj.backup_bo()
@@ -84,7 +86,7 @@ class CT(MQC):
                 #if (self.thermo != None):
                 #    self.thermo.run(self)
 
-                self.update_energy()
+                self.update_energy(itraj)
 
                 if ((istep + 1) % self.out_freq == 0):
                     self.write_md_output(unixmd_dir, istep)
@@ -104,20 +106,33 @@ class CT(MQC):
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
 
-    def calculate_qmom(self):
-        """ Routine to calculate quantum momentum
-        """
-        pass
-
     def calculate_force(self):
         """ Routine to calculate force
         """
         pass
 
-    def update_energy(self):
+    def update_energy(self, trajectory):
         """ Routine to update the energy of molecules in CTMQC dynamics
         """
-        pass
+        # Update kinetic energy
+        trajectory.update_kinetic()
+        trajectory.epot = 0.
+        for ist, istate in enumerate(self.nst):
+            trajectory.epot += trajectory.rho.real[ist, ist] * trajectory.states[ist].energy
+        trajectory.etot = trajectory.epot + trajectory.ekin
+
+    def get_phase(self, trajectory):
+        """ Routine to calculate phase
+        """
+        for ist in range(self.nst):
+            print(ist)
+
+    def calculate_qmom(self):
+        """ Routine to calculate quantum momentum
+        """
+        for ist in range(self.nst):
+            for jst in range(self.nst):
+                print(ist, jst)
 
     def print_init(self):
         """ Routine to print the initial information of dynamics
