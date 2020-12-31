@@ -32,7 +32,7 @@ class Molecule(object):
         :param double charge: total charge of the system
         :param boolean model: is the system a model system?
     """
-    def __init__(self, geometry, nsp=3, nstates=3, istate=0, qmmm=False, natoms_mm=None, dof=None, \
+    def __init__(self, geometry, nsp=3, nstates=3, qmmm=False, natoms_mm=None, dof=None, \
         unit_pos='A', unit_vel='au', charge=0., model=False):
         # Save name of Molecule class
         self.mol_type = self.__class__.__name__
