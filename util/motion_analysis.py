@@ -42,7 +42,7 @@ def motion_analysis():
         if (len(args.dihedral) == 4 or len(args.dihedral) == 6):
             calculate_dihedral(args.ntrajs, digit, nsteps1, args.dihedral, args.l_mean)
         else:
-            raise ValueError (f"Invalid dihedral points! {len(args.dihedral)}")
+            raise ValueError (f"Invalid length of 'args.dihedral'! {len(args.dihedral)}")
 
 def calculate_bond_length(ntrajs, digit, nimages, atom_index, l_mean):
     """ Averaging bond length between two points
