@@ -132,7 +132,7 @@ def calculate_angle(ntrajs, digit, nimages, atom_index, l_mean):
 
         f_write = ""
         # header file for individual trajectory analysis
-        header = f"#    angle between atom {atom_index[0]} and {atom_index[1]}"
+        header = f"#    angle between atom {atom_index[0]}, {atom_index[1]}, and {atom_index[2]}"
         f_write += header
         angle_list = []
 
@@ -157,8 +157,14 @@ def calculate_angle(ntrajs, digit, nimages, atom_index, l_mean):
                      unit_vector2 = (atom3 - atom2) / np.linalg.norm(atom3 - atom2)
                      
                      cos = np.dot(unit_vector1, unit_vector2)
-                     sin = np.linalg.norm(np.cross(unit_vector1, unit_vector2))
+                     normal = np.cross(unit_vector1, unit_vector2)
+                     if (iline == natoms):
+                         standard = normal
+                     sin = np.linalg.norm(normal)
+                     if (np.dot(standard, normal) < 0):
+                         sin *= -1
                      angle = np.degrees(np.arctan2(sin,cos))
+
                      angle_list += [angle]
         
                  iline += 1
@@ -256,7 +262,12 @@ def calculate_dihedral(ntrajs, digit, nimages, atom_index, l_mean):
                      n2 /= np.linalg.norm(n2)
 
                      cos = np.dot(n1, n2)
-                     sin = np.linalg.norm(np.cross(n1, n2))
+                     normal = np.cross(n1, n2)
+                     if (iline == natoms):
+                         standard = normal
+                     sin = np.linalg.norm(normal)
+                     if (np.dot(standard, normal) < 0):
+                         sin *= -1
                      dihedral_angle = np.degrees(np.arctan2(sin,cos))
                      dihedral_list += [dihedral_angle]
 
