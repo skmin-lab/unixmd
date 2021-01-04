@@ -155,9 +155,12 @@ def calculate_angle(ntrajs, digit, nimages, atom_index, l_mean):
                      # calculate angle with vector calculation
                      unit_vector1 = (atom1 - atom2) / np.linalg.norm(atom1 - atom2)
                      unit_vector2 = (atom3 - atom2) / np.linalg.norm(atom3 - atom2)
-                     dot_product = np.dot(unit_vector1, unit_vector2)
-                     angle = np.degrees(np.arccos(dot_product))
+                     
+                     cos = np.dot(unit_vector1, unit_vector2)
+                     sin = np.linalg.norm(np.cross(unit_vector1, unit_vector2))
+                     angle = np.degrees(np.arctan2(sin,cos))
                      angle_list += [angle]
+        
                  iline += 1
 
         if (iline != (nimages * (2 + natoms) - 1)):
@@ -252,8 +255,9 @@ def calculate_dihedral(ntrajs, digit, nimages, atom_index, l_mean):
                      n2 = np.cross(vector2_1, vector2_2)
                      n2 /= np.linalg.norm(n2)
 
-                     dot_product = np.dot(n1, n2)
-                     dihedral_angle = np.degrees(np.arccos(dot_product))
+                     cos = np.dot(n1, n2)
+                     sin = np.linalg.norm(np.cross(n1, n2))
+                     dihedral_angle = np.degrees(np.arctan2(sin,cos))
                      dihedral_list += [dihedral_angle]
 
                  iline += 1
