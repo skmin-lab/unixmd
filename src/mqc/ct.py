@@ -14,7 +14,7 @@ class CT(MQC):
         coefficients=None, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         self.mols = molecules
-        self.ntrajs = len(molecules)
+        self.ntrajs = len(self.mols)
         self.istates = istates
         if ((self.istates != None) and (self.ntrajs != len(self.istates))):
             raise ValueError("Error: istates!")
@@ -33,6 +33,15 @@ class CT(MQC):
         for itraj in range(1, self.ntrajs):
             self.mols[itraj].get_coefficient(coefficients[itraj], self.istates[itraj])
 
+        # Initialize variables for CTMQC
+        self.nst = self.mols[0].nst
+        self.nat = self.mols[0].nat
+        self.nsp = self.mols[0].nsp
+        self.phase = np.zeros((self.ntrajs, self.nst, self.nat, self.nsp))
+
+        self.nstates_pair = int(self.nst * (self.nst - 1) / 2)
+        self.qmom = np.zeros((self.ntrajs, self.nstates_pair, self.nat, self.nsp))
+
     def run(self, qm, mm=None, input_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         # Initialize UNI-xMD
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
@@ -44,18 +53,18 @@ class CT(MQC):
         if (restart == None):
             # Calculate initial input geometry for all trajectories at t = 0.0 s
             self.istep = -1
-            for itraj in self.mols:
-                itraj.reset_bo(qm.calc_coupling)
-                qm.get_data(itraj, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
+            for itraj in range(self.ntrajs):
+                self.mols[itraj].reset_bo(qm.calc_coupling)
+                qm.get_data(self.mols[itraj], base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
                 # TODO: QM/MM
-                itraj.get_nacme()
+                self.mols[itraj].get_nacme()
 
                 self.update_energy(itraj)
                 
                 self.get_phase(itraj)
 
-                self.write_md_output(unixmd_dir, self.istep)
-                self.print_step(self.istep)
+                #self.write_md_output(unixmd_dir, self.istep)
+                #self.print_step(self.istep)
 
         else: 
             raise ValueError ("restart option is invalid in CTMQC yet.")
@@ -65,19 +74,19 @@ class CT(MQC):
         # Main MD loop
         for istep in range(self.istep, self.nsteps):
             self.calculate_qmom()
-            for itraj in self.mols:
-                self.cl_update_position()
+            for itraj in range(self.ntrajs):
+                self.cl_update_position(itraj)
 
-                itraj.backup_bo()
-                itraj.reset_bo(qm.calc_coupling)
-                qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
+                self.mols[itraj].backup_bo()
+                self.mols[itraj].reset_bo(qm.calc_coupling)
+                qm.get_data(self.mols[itraj], base_dir, bo_list, self.dt, istep, calc_force_only=False)
                 # TODO: QM/MM
 
-                itraj.adjust_nac()
+                self.mols[itraj].adjust_nac()
 
-                self.cl_update_velocity()
+                self.cl_update_velocity(itraj)
 
-                itraj.get_nacme()
+                self.mols[itraj].get_nacme()
 
                 # TODO: electronic propagation
                 # el_run(self)
@@ -88,11 +97,11 @@ class CT(MQC):
 
                 self.update_energy(itraj)
 
-                if ((istep + 1) % self.out_freq == 0):
-                    self.write_md_output(unixmd_dir, istep)
-                    self.print_step(istep)
-                if (istep == self.nsteps - 1):
-                    self.write_final_xyz(unixmd_dir, istep)
+                #if ((istep + 1) % self.out_freq == 0):
+                #    self.write_md_output(unixmd_dir, istep)
+                #    self.print_step(istep)
+                #if (istep == self.nsteps - 1):
+                #    self.write_final_xyz(unixmd_dir, istep)
 
                 # TODO: restart
                 #self.fstep = istep
@@ -106,26 +115,53 @@ class CT(MQC):
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
 
-    def calculate_force(self):
+    def cl_update_position(self, itrajectory):
+        """ Routine to update nuclear positions
+        """
+        self.calculate_force(itrajectory)
+        
+        self.mols[itrajectory].vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mols[itrajectory].mass] * self.nsp)
+        self.mols[itrajectory].pos += self.dt * self.mols[itrajectory].vel
+
+    def cl_update_velocity(self, itrajectory):
+        """ Routine to update nuclear velocities
+        """
+        self.calculate_force(itrajectory)
+
+        self.mols[itrajectory].vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mols[itrajectory].mass] * self.nsp)
+
+    def calculate_force(self, itrajectory):
         """ Routine to calculate force
         """
-        pass
+        self.rforce = np.zeros((self.nat, self.nsp))
 
-    def update_energy(self, trajectory):
+        for ist, istate in enumerate(self.mols[itrajectory].states):
+            self.rforce += istate.force * self.mols[itrajectory].rho.real[ist, ist]
+
+        for ist in range(self.nst):
+            for jst in range(ist + 1, self.nst):
+                self.rforce += 2. * self.mols[itrajectory].nac[ist, jst] * self.mols[itrajectory].rho.real[ist, jst] \
+                    * (self.mols[itrajectory].states[ist].energy - self.mols[itrajectory].states[jst].energy)
+
+    def update_energy(self, itrajectory):
         """ Routine to update the energy of molecules in CTMQC dynamics
         """
         # Update kinetic energy
-        trajectory.update_kinetic()
-        trajectory.epot = 0.
-        for ist, istate in enumerate(self.nst):
-            trajectory.epot += trajectory.rho.real[ist, ist] * trajectory.states[ist].energy
-        trajectory.etot = trajectory.epot + trajectory.ekin
+        self.mols[itrajectory].update_kinetic()
+        self.mols[itrajectory].epot = 0.
+        for ist, istate in enumerate(self.mols[itrajectory].states):
+            self.mols[itrajectory].epot += self.mols[itrajectory].rho.real[ist, ist] * istate.energy
+        self.mols[itrajectory].etot = self.mols[itrajectory].epot + self.mols[itrajectory].ekin
 
-    def get_phase(self, trajectory):
+    def get_phase(self, itrajectory):
         """ Routine to calculate phase
         """
+        rho_threshold = 0.01
         for ist in range(self.nst):
-            print(ist)
+            rho_l_real = self.mols[itrajectory].rho[ist, ist].real
+        #    if ((rho_l_real < rho_threshold) or (rho_l_real > (1.0 - rho_threshold))):
+        #        self.phase[itrajectory, ist] =
+                
 
     def calculate_qmom(self):
         """ Routine to calculate quantum momentum
