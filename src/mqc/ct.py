@@ -10,7 +10,7 @@ class CT(MQC):
     """ Class for coupled-trajectory mixed quantum-classical dynamics
     """
     def __init__(self, molecules, thermostat=None, istates=None, dt=0.5, nsteps=1000, nesteps=20, \
-        propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
+        threshold=0.01, propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
         coefficients=None, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         self.mols = molecules
@@ -37,10 +37,11 @@ class CT(MQC):
         self.nst = self.mols[0].nst
         self.nat = self.mols[0].nat
         self.nsp = self.mols[0].nsp
+        self.rho_threshold = threshold
         self.phase = np.zeros((self.ntrajs, self.nst, self.nat, self.nsp))
 
         self.nstates_pair = int(self.nst * (self.nst - 1) / 2)
-        self.qmom = np.zeros((self.ntrajs, self.nstates_pair, self.nat, self.nsp))
+        self.qmom = np.zeros((self.ntrajs, self.nat, self.nsp))
 
     def run(self, qm, mm=None, input_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         # Initialize UNI-xMD
@@ -134,14 +135,32 @@ class CT(MQC):
         """ Routine to calculate force
         """
         self.rforce = np.zeros((self.nat, self.nsp))
-
         for ist, istate in enumerate(self.mols[itrajectory].states):
+            # BO forces from Ehrenfest force
             self.rforce += istate.force * self.mols[itrajectory].rho.real[ist, ist]
 
+        # TODO: variable name
+        # Quantum momentum dot phase
+        qmom_dot_ph = np.zeros((self.nst))
+        xfforce = np.zeros((self.nat, self.nsp))
+        phase_diff = np.zeros((self.nst, self.nat, self.nsp))
         for ist in range(self.nst):
+            # 2 * P dot f / M_nu
+            qmom_dot_ph[ist] += np.sum(2. / self.mols[itrajectory].mass[0:self.nat] * \
+                np.sum(self.qmom[itrajectory] * self.phase[itrajectory, ist], axis=1))
             for jst in range(ist + 1, self.nst):
+                # Non-adiabatic forces from Ehrenfest force 
                 self.rforce += 2. * self.mols[itrajectory].nac[ist, jst] * self.mols[itrajectory].rho.real[ist, jst] \
                     * (self.mols[itrajectory].states[ist].energy - self.mols[itrajectory].states[jst].energy)
+
+                # phase_diff * rho_jj
+                phase_diff[ist] += self.mols[itrajectory].rho.real[jst, jst] * (self.phase[itrajectory, jst] - self.phase[itrajectory, ist])
+            
+            # Forces from exact factorization
+            xfforce += self.mols[itrajectory].rho.real[ist, ist] * qmom_dot_ph[ist] * phase_diff[ist]
+
+        # Finally, force is Ehrenfest force + CT force
+        self.rforce += xfforce
 
     def update_energy(self, itrajectory):
         """ Routine to update the energy of molecules in CTMQC dynamics
@@ -156,10 +175,9 @@ class CT(MQC):
     def get_phase(self, itrajectory):
         """ Routine to calculate phase
         """
-        rho_threshold = 0.01
         for ist in range(self.nst):
-            rho_l_real = self.mols[itrajectory].rho[ist, ist].real
-        #    if ((rho_l_real < rho_threshold) or (rho_l_real > (1.0 - rho_threshold))):
+            rho_ii = self.mols[itrajectory].rho[ist, ist].real
+        #    if ((rho_ii < self.rho_threshold) or (rho_ii > (1.0 - self.rho_threshold))):
         #        self.phase[itrajectory, ist] =
                 
 
