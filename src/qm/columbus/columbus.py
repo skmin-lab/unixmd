@@ -12,7 +12,7 @@ class Columbus(QM_calculator):
         :param string memory: allocatable memory in the calculations
         :param string qm_path: path for QM binary
         :param integer nthreads: number of threads in the calculations
-        :param double version: version of Columbus program
+        :param string version: version of Columbus program
     """
     def __init__(self, molecule, basis_set, memory, qm_path, nthreads, version):
         # Save name of QM calculator and its method
@@ -63,7 +63,7 @@ class Columbus(QM_calculator):
         else:
             raise ValueError (f"( {self.qm_method}.{call_name()} ) No basis set in colbasis.py! {self.basis_set}")
 
-        if (self.version != 7.0):
+        if (self.version != "7.0"):
             raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")
 
 

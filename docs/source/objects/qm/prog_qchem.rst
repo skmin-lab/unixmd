@@ -60,7 +60,7 @@ Q-Chem :cite:`qchem2015` is a comprehensive ab initio quantum chemistry software
 | **qm_path**           | path for QChem                                 | *'./'*       |
 | *(string)*            |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **version**           | QChem version                                  | *5.2*        |
-| *(double)*            |                                                |              |
+| **version**           | QChem version                                  | *'5.2'*      |
+| *(string)*            |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
 

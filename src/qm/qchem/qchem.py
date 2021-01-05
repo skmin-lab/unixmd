@@ -9,7 +9,7 @@ class QChem(QM_calculator):
         :param string memory: allocatable memory in the calculations
         :param string qm_path: path for QChem
         :param integer nthreads: number of threads in the calculations
-        :param double version: version of QChem program
+        :param string version: version of QChem program
     """
     def __init__(self, basis_set, memory, qm_path, nthreads, version):
         # Save name of QM calculator and its method
@@ -23,5 +23,5 @@ class QChem(QM_calculator):
         self.nthreads = nthreads
         self.version = version
 
-        if (self.version != 5.2):
+        if (self.version != "5.2"):
             raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")

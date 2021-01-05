@@ -131,8 +131,8 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 | **nthreads**           | number of threads in the calculations          | *1*                |
 | *(integer)*            |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
-| **version**            | version of DFTB+ program                       | *20.1*             |
-| *(double)*             |                                                |                    |
+| **version**            | version of DFTB+ program                       | *'20.1'*           |
+| *(string)*             |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
 
 SSR
@@ -229,7 +229,7 @@ determined from the **state_interactions** argument.
 | **nthreads**           | number of threads in the calculations          | *1*                 |
 | *(integer)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| **version**            | version of DFTB+ program                       | *20.1*              |
-| *(double)*             |                                                |                     |
+| **version**            | version of DFTB+ program                       | *'20.1'*            |
+| *(string)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
 

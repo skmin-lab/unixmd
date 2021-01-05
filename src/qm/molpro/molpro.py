@@ -9,7 +9,7 @@ class Molpro(QM_calculator):
         :param string memory: allocatable memory in the calculations
         :param string qm_path: path for QM binary
         :param integer nthreads: number of threads in the calculations
-        :param double version: version of Molpro program
+        :param string version: version of Molpro program
     """
     def __init__(self, basis_set, memory, qm_path, nthreads, version):
         # Save name of QM calculator and its method
@@ -23,7 +23,7 @@ class Molpro(QM_calculator):
         self.nthreads = nthreads
         self.version = version
 
-        if (self.version != 2015.1):
+        if (self.version != "2015.1"):
             raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")
 
 

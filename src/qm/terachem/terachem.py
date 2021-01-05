@@ -11,7 +11,7 @@ class TeraChem(QM_calculator):
         :param string qm_path: path for QM binary
         :param integer ngpus: number of GPUs
         :param string gpu_id: ID of used GPUs
-        :param double version: version of TeraChem program
+        :param string version: version of TeraChem program
     """
     def __init__(self, functional, basis_set, qm_path, ngpus, \
         gpu_id, precision, version):
@@ -29,7 +29,7 @@ class TeraChem(QM_calculator):
         self.precision = precision
         self.version = version
 
-        if (not (self.version == 1.99 or self.version == 1.93)):
+        if (not (self.version == "1.99" or self.version == "1.93")):
             raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")
 
 

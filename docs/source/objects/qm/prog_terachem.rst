@@ -100,7 +100,7 @@ determined from the **use_ssr_state** argument.
 | **gpu_id**              | ID of used GPUs                             | *1*         |
 | *(string)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **version**             | version of TeraChem program                 | *1.93*      |
-| *(double)*              |                                             |             |
+| **version**             | version of TeraChem program                 | *'1.93'*    |
+| *(string)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
 

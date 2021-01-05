@@ -82,7 +82,7 @@ CASSCF
 | **nthreads**         | number of threads in the calculations          | *1*            |
 | *(integer)*          |                                                |                |
 +----------------------+------------------------------------------------+----------------+
-| **version**          | version of Molpro program                      | *2015.1*       |
-| *(double)*           |                                                |                |
+| **version**          | version of Molpro program                      | *'2015.1'*     |
+| *(string)*           |                                                |                |
 +----------------------+------------------------------------------------+----------------+
 

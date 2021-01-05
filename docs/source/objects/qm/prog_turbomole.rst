@@ -55,7 +55,7 @@ in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and a
 | **nthreads**        | number of threads in the calculations     | *1*            |
 | *(integer)*         |                                           |                |
 +---------------------+-------------------------------------------+----------------+
-| **version**         | version of Turbomole program              | *6.4*          |
-| *(double)*          |                                           |                |
+| **version**         | version of Turbomole program              | *'6.4'*        |
+| *(string)*          |                                           |                |
 +---------------------+-------------------------------------------+----------------+
 
