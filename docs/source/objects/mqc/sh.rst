@@ -24,10 +24,10 @@ vector d. Using this coefficient we can structure hopping probability express as
 
 .. math::
 
-   P^{(I)}_{L{\rightarrow}K}[t,t+{\Delta}t] = {{2H[\rho^{(I)}_{LK}(t)\sum_vd^{(I)}_{LKv}\cdot\dot{R}^{(I)}_v(t)]
+   P^{(I)}_{L{\rightarrow}K}[t,t+{\Delta}t] = {{2\Re[\rho^{(I)}_{LK}(t)\sum_vd^{(I)}_{LKv}\cdot\dot{R}^{(I)}_v(t)]
    {\Delta}t}\over{\rho^{(I)}_{LL}(t)}}, \rho^{(I)}_{LK}=C^{(I)}_L{\cdot}C^{(I)}_K
 
-:math:`{H}` is Heaviside function and :math:`{\rho}` represents electronic density matrix. In this algorithm, hopping probability
+:math:`{\rho}` represents electronic density matrix. In this algorithm, hopping probability
 to running state to all other states are considered (including running state) and roll a random dice to select next
 running state. If coupling is strong enough to transit to other state, the probability will be increase, and the overall
 trajectories will be transit to that state in stochastical behavior.
