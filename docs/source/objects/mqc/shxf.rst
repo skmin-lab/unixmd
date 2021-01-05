@@ -79,3 +79,22 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **verbosity**              | verbosity of output                                  | *0*          | 
 | *(integer)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
+
+
+Detailed description of arguments
+""""""""""""""""""""""""""""""""""""
+- **argument 1** *(type)*
+  
+  Description of the argument, following options are available.
+   
+  + option 1: description of the option 1
+  + option 2: description of the option 2
+
+\
+
+- **argument 2** *(type)*
+  
+  Description of the argument, following options are available.
+   
+  + option 1: description of the option 1
+  + option 2: description of the option 2
