@@ -16,7 +16,8 @@ def motion_analysis():
     parser.add_argument('-a', '--angle', nargs=3, action='store', dest='angle', type=int, \
         help="angle between three atoms. second atom will be the centor atom")
     parser.add_argument('-d', '--dihedral', nargs="+", action='store', dest='dihedral', type=int, \
-        help="dihedral angle between four or six atoms. Angle between (1,2,3),(2,3,4) or (1,2,3)(4,5,6) plane will be calculated")
+        help="dihedral angle between four or six atoms. Angle between (1,2,3),(2,3,4) or (1,2,3)(4,5,6) plane will be calculated. \
+        dihedral axis will be atom2-atom3(four atom case) or atom3-atom4(six atom case)")
     parser.add_argument('-m', '--mean', action='store_true', dest='l_mean', \
         help="additional option for averaging motion")
     args = parser.parse_args()
@@ -42,7 +43,7 @@ def motion_analysis():
         if (len(args.dihedral) == 4 or len(args.dihedral) == 6):
             calculate_dihedral(args.ntrajs, digit, nsteps1, args.dihedral, args.l_mean)
         else:
-            raise ValueError (f"Invalid length of 'args.dihedral'! {len(args.dihedral)}")
+            raise ValueError (f"( motion_analysis ) Invalid length of 'args.dihedral'! {len(args.dihedral)}")
 
 def calculate_bond_length(ntrajs, digit, nimages, atom_index, l_mean):
     """ Averaging bond length between two points
@@ -157,12 +158,7 @@ def calculate_angle(ntrajs, digit, nimages, atom_index, l_mean):
                      unit_vector2 = (atom3 - atom2) / np.linalg.norm(atom3 - atom2)
 
                      cos = np.dot(unit_vector1, unit_vector2)
-                     normal = np.cross(unit_vector1, unit_vector2)
-                     if (iline == natoms):
-                         standard = normal
-                     sin = np.linalg.norm(normal)
-                     if (np.dot(standard, normal) < 0):
-                         sin *= -1
+                     sin = np.linalg.norm(np.cross(unit_vector1, unit_vector2))
                      angle = np.degrees(np.arctan2(sin,cos))
                      angle_list += [angle]
                  iline += 1
@@ -252,12 +248,19 @@ def calculate_dihedral(ntrajs, digit, nimages, atom_index, l_mean):
                      elif (len(atom_index) == 6):
                          vector2_1 = atom4 - atom5
                          vector2_2 = atom6 - atom5
+                         vector3 = atom4 - atom3
 
                      #find normal plane vector from contains vector 1/2
                      n1 = np.cross(vector1_1, vector1_2)
                      n1 /= np.linalg.norm(n1)
                      n2 = np.cross(vector2_1, vector2_2)
                      n2 /= np.linalg.norm(n2)
+
+                     if (len(atom_index) == 6):
+                         n1 = np.cross(n1, vector3)
+                         n1 /= np.linalg.norm(n1)
+                         n2 = np.cross(n2, vector3)
+                         n2 /= np.linalg.norm(n2)
 
                      cos = np.dot(n1, n2)
                      normal = np.cross(n1, n2)
@@ -268,6 +271,22 @@ def calculate_dihedral(ntrajs, digit, nimages, atom_index, l_mean):
                          sin *= -1
                      dihedral_angle = np.degrees(np.arctan2(sin,cos))
                      dihedral_list += [dihedral_angle]
+
+#                     b1 = atom1 - atom2
+#                     b2 = atom3 - atom2
+#                     b3 = atom4 - atom3
+#                     norm1 = np.cross(b1, b2)
+#                     norm1 /= np.linalg.norm(norm1)
+#                     norm2 = np.cross(b2, b3)
+#                     norm2 /= np.linalg.norm(norm2)
+#                     m = np.cross(norm1, b2/np.linalg.norm(b2))
+#                     x = np.dot(norm1, norm2)
+#                     y = np.dot(m, norm2)
+#                     dih = np.degrees(np.arctan2(y,x))
+#
+#                     print("-----")
+#                     print(f"code output: {dihedral_angle}, stack output: {dih}")
+
                  iline += 1
 
         if (iline != (nimages * (2 + natoms) - 1)):
