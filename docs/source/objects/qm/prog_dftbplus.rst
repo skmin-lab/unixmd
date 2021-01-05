@@ -108,13 +108,13 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 | *(string)*             |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
 | **k_point**            | number of k-point samplings                    | *3 \* [ 1 ]*       |
-| *(integer)*            |                                                |                    |
+| *(integer, list)*      |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
 | **periodic**           | use periodicity in the calculations            | *False*            |
 | *(string)*             |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
 | **cell_length**        | the lattice vectors of periodic unit cell      | *9 \* [ 0.0 ]*     |
-| *(double)*             |                                                |                    |
+| *(double, list)*       |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
 | **sk_path**            | path for slater-koster files                   | *'./'*             |
 | *(string)*             |                                                |                    |
@@ -218,7 +218,7 @@ determined from the **state_interactions** argument.
 | *(boolean)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
 | **cell_length**        | the lattice vectors of periodic unit cell      | *9 \* [ 0.0 ]*      |
-| *(double)*             |                                                |                     |
+| *(double, list)*       |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
 | **sk_path**            | path for slater-koster files                   | *'./'*              |
 | *(string)*             | mechanical                                     |                     |
