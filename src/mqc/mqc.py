@@ -143,7 +143,6 @@ class MQC(object):
 
     def cl_update_position(self):
         """ Routine to update nuclear positions
-
         """
         self.calculate_force()
 
@@ -152,7 +151,6 @@ class MQC(object):
 
     def cl_update_velocity(self):
         """ Routine to update nuclear velocities
-
         """
         self.calculate_force()
 
@@ -175,7 +173,7 @@ class MQC(object):
         """
         pass
 
-    def print_init(self, qm, mm, restart):
+    def print_init(self, molecule, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
@@ -211,7 +209,7 @@ class MQC(object):
             print (restart_info, flush=True)
 
         # Print molecule information: coordinate, velocity
-        self.mol.print_init(mm)
+        molecule.print_init(mm)
 
         # Print dynamics information
         dynamics_info = textwrap.dedent(f"""\
@@ -221,7 +219,7 @@ class MQC(object):
           QM Program               = {qm.qm_prog:>16s}
           QM Method                = {qm.qm_method:>16s}
         """)
-        if (self.mol.qmmm and mm != None):
+        if (molecule.qmmm and mm != None):
             dynamics_info += textwrap.indent(textwrap.dedent(f"""\
               MM Program               = {mm.mm_prog:>16s}
               QMMM Scheme              = {mm.scheme:>16s}
@@ -295,7 +293,7 @@ class MQC(object):
         """
         # Energy information file header
         tmp = f'{"#":5s}{"Step":9s}{"Kinetic(H)":15s}{"Potential(H)":15s}{"Total(H)":15s}' + \
-            "".join([f'E({ist})(H){"":8s}' for ist in range(self.mol.nst)])
+            "".join([f'E({ist})(H){"":8s}' for ist in range(molecule.nst)])
         typewriter(tmp, unixmd_dir, "MDENERGY", "w")
 
         if (self.md_type != "BOMD"):
@@ -325,7 +323,7 @@ class MQC(object):
             tmp = f'{"#":5s}{"Step":8s}{"Running State":10s}'
             typewriter(tmp, unixmd_dir, "SHSTATE", "w")
 
-            tmp = f'{"#":5s}{"Step":12s}' + "".join([f'Prob({ist}){"":8s}' for ist in range(self.mol.nst)])
+            tmp = f'{"#":5s}{"Step":12s}' + "".join([f'Prob({ist}){"":8s}' for ist in range(molecule.nst)])
             typewriter(tmp, unixmd_dir, "SHPROB", "w")
 
         # file header for XF-based methods
@@ -333,69 +331,69 @@ class MQC(object):
             tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
             typewriter(tmp, unixmd_dir, "DOTPOPD", "w")
 
-    def write_md_output(self, unixmd_dir, istep):
+    def write_md_output(self, molecule, unixmd_dir, istep):
         """ Write output files
 
             :param string unixmd_dir: unixmd directory
             :param integer istep: current MD step
         """
         # Write MOVIE.xyz file including positions and velocities
-        tmp = f'{self.mol.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
-            "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
-            "".join([f'{self.mol.pos[iat, isp] * au_to_A:15.8f}' for isp in range(self.mol.nsp)]) + \
-            "".join([f"{self.mol.vel[iat, isp]:15.8f}" for isp in range(self.mol.nsp)]) for iat in range(self.mol.nat)])
+        tmp = f'{molecule.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
+            "".join(["\n" + f'{molecule.symbols[iat]:5s}' + \
+            "".join([f'{molecule.pos[iat, isp] * au_to_A:15.8f}' for isp in range(molecule.nsp)]) + \
+            "".join([f"{molecule.vel[iat, isp]:15.8f}" for isp in range(molecule.nsp)]) for iat in range(molecule.nat)])
         typewriter(tmp, unixmd_dir, "MOVIE.xyz", "a")
 
         # Write MDENERGY file including several energy information
-        tmp = f'{istep + 1:9d}{self.mol.ekin:15.8f}{self.mol.epot:15.8f}{self.mol.etot:15.8f}' \
-            + "".join([f'{states.energy:15.8f}' for states in self.mol.states])
+        tmp = f'{istep + 1:9d}{molecule.ekin:15.8f}{molecule.epot:15.8f}{molecule.etot:15.8f}' \
+            + "".join([f'{states.energy:15.8f}' for states in molecule.states])
         typewriter(tmp, unixmd_dir, "MDENERGY", "a")
 
         if (self.md_type != "BOMD"):
             # Write BOCOEF, BOPOP, BOCOH files
             if (self.propagation == "density"):
-                tmp = f'{istep + 1:9d}' + "".join([f'{self.mol.rho.real[ist, ist]:15.8f}' for ist in range(self.mol.nst)])
+                tmp = f'{istep + 1:9d}' + "".join([f'{molecule.rho.real[ist, ist]:15.8f}' for ist in range(molecule.nst)])
                 typewriter(tmp, unixmd_dir, "BOPOP", "a")
-                tmp = f'{istep + 1:9d}' + "".join([f"{self.mol.rho.real[ist, jst]:15.8f}{self.mol.rho.imag[ist, jst]:15.8f}" \
-                    for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
+                tmp = f'{istep + 1:9d}' + "".join([f"{molecule.rho.real[ist, jst]:15.8f}{molecule.rho.imag[ist, jst]:15.8f}" \
+                    for ist in range(molecule.nst) for jst in range(ist + 1, molecule.nst)])
                 typewriter(tmp, unixmd_dir, "BOCOH", "a")
             elif (self.propagation == "coefficient"):
                 tmp = f'{istep + 1:9d}' + "".join([f'{states.coef.real:15.8f}{states.coef.imag:15.8f}' \
-                    for states in self.mol.states])
+                    for states in molecule.states])
                 typewriter(tmp, unixmd_dir, "BOCOEF", "a")
                 if (self.l_pop_print):
-                    tmp = f'{istep + 1:9d}' + "".join([f'{self.mol.rho.real[ist, ist]:15.8f}' for ist in range(self.mol.nst)])
+                    tmp = f'{istep + 1:9d}' + "".join([f'{molecule.rho.real[ist, ist]:15.8f}' for ist in range(molecule.nst)])
                     typewriter(tmp, unixmd_dir, "BOPOP", "a")
-                    tmp = f'{istep + 1:9d}' + "".join([f"{self.mol.rho.real[ist, jst]:15.8f}{self.mol.rho.imag[ist, jst]:15.8f}" \
-                        for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
+                    tmp = f'{istep + 1:9d}' + "".join([f"{molecule.rho.real[ist, jst]:15.8f}{molecule.rho.imag[ist, jst]:15.8f}" \
+                        for ist in range(molecule.nst) for jst in range(ist + 1, molecule.nst)])
                     typewriter(tmp, unixmd_dir, "BOCOH", "a")
 
             # Write NACME file
-            tmp = f'{istep + 1:10d}' + "".join([f'{self.mol.nacme[ist, jst]:15.8f}' \
-                for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
+            tmp = f'{istep + 1:10d}' + "".join([f'{molecule.nacme[ist, jst]:15.8f}' \
+                for ist in range(molecule.nst) for jst in range(ist + 1, molecule.nst)])
             typewriter(tmp, unixmd_dir, "NACME", "a")
 
             # Write NACV file
-            if (not self.mol.l_nacme and self.verbosity >= 2):
-                for ist in range(self.mol.nst):
-                    for jst in range(ist + 1, self.mol.nst):
-                        tmp = f'{self.mol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV' + \
-                            "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
-                            "".join([f'{self.mol.nac[ist, jst, iat, isp]:15.8f}' for isp in range(self.mol.nsp)]) for iat in range(self.mol.nat_qm)])
+            if (not molecule.l_nacme and self.verbosity >= 2):
+                for ist in range(molecule.nst):
+                    for jst in range(ist + 1, molecule.nst):
+                        tmp = f'{molecule.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV' + \
+                            "".join(["\n" + f'{molecule.symbols[iat]:5s}' + \
+                            "".join([f'{molecule.nac[ist, jst, iat, isp]:15.8f}' for isp in range(molecule.nsp)]) for iat in range(molecule.nat_qm)])
                         typewriter(tmp, unixmd_dir, f"NACV_{ist}_{jst}", "a")
 
-    def write_final_xyz(self, unixmd_dir, istep):
+    def write_final_xyz(self, molecule, unixmd_dir, istep):
         """ Write final positions and velocities
 
             :param string unixmd_dir: unixmd directory
             :param integer istep: current MD step
         """
         # Write FINAL.xyz file including positions and velocities
-        tmp = f'{self.mol.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)'
-        for iat in range(self.mol.nat):
-            tmp += "\n" + f'{self.mol.symbols[iat]:5s}' + \
-                "".join([f'{self.mol.pos[iat, isp] * au_to_A:15.8f}' for isp in range(self.mol.nsp)]) \
-                + "".join([f"{self.mol.vel[iat, isp]:15.8f}" for isp in range(self.mol.nsp)])
+        tmp = f'{molecule.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)'
+        for iat in range(molecule.nat):
+            tmp += "\n" + f'{molecule.symbols[iat]:5s}' + \
+                "".join([f'{molecule.pos[iat, isp] * au_to_A:15.8f}' for isp in range(molecule.nsp)]) \
+                + "".join([f"{molecule.vel[iat, isp]:15.8f}" for isp in range(molecule.nsp)])
 
         typewriter(tmp, unixmd_dir, "FINAL.xyz", "w")
 
