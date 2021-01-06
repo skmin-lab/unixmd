@@ -7,7 +7,7 @@ def motion_analysis():
     """ Python utility script for UNI-xMD output analysis
         In this script, UNI-xMD MOVIE.xyz output files are post-process into given geometry criterion
     """
-    parser = argparse.ArgumentParser(description="Python script for UNI-xMD motion analysis")
+    parser = argparse.ArgumentParser(description="Python script for pyUNI-xMD motion analysis")
     parser.add_argument('-n', '--ntrajs', action='store', dest='ntrajs', type=int, \
         help="Total number of trajectories.", required=True)
     parser.add_argument('-s', '--nsteps', action='store', dest='nsteps', type=int, \
@@ -17,8 +17,8 @@ def motion_analysis():
     parser.add_argument('-a', '--angle', nargs=3, action='store', dest='angle', type=int, \
         help="Angle between three atoms. second atom will be the centor atom.")
     parser.add_argument('-d', '--dihedral', nargs="+", action='store', dest='dihedral', type=int, \
-        help="Dihedral angle between four or six atoms. Angle between (1,2,3),(2,3,4) or (1,2,3)(4,5,6) plane will be calculated. \
-        dihedral axis will be atom2-atom3(four atom case) or atom3-atom4(six atom case).")
+        help="Dihedral angle between four or six atoms. Angle between (1,2,3),(2,3,4) or (1,2,3),(4,5,6) plane will be calculated. \
+        Dihedral axis will be atom2-atom3(four atom case) or atom3-atom4(six atom case).")
     parser.add_argument('-m', '--mean', action='store_true', dest='l_mean', \
         help="Additional option for averaging motion.")
     args = parser.parse_args()
@@ -44,7 +44,7 @@ def motion_analysis():
         if (len(args.dihedral) == 4 or len(args.dihedral) == 6):
             calculate_dihedral(args.ntrajs, digit, nsteps1, args.dihedral, args.l_mean)
         else:
-            raise ValueError (f"( {sys._getframe(1).f_code.co_name} ) Invalid length of 'args.dihedral'! {len(args.dihedral)}")
+            raise ValueError (f"( {sys._getframe().f_code.co_name} ) Invalid length of 'args.dihedral'! {len(args.dihedral)}")
 
 def calculate_bond_length(ntrajs, digit, nimages, atom_index, l_mean):
     """ Averaging bond length between two points
@@ -107,7 +107,6 @@ def calculate_bond_length(ntrajs, digit, nimages, atom_index, l_mean):
 
     if (l_mean):
         # averaging array and print
-
         mean_bond /= mtrajs
         mean_data = "".join(["\n" + f"{istep:8d}" + "".join(f"{mean_bond[istep]:15.8f}") for istep in range(nimages)])
         f_write_mean += mean_data
@@ -189,7 +188,6 @@ def calculate_angle(ntrajs, digit, nimages, atom_index, l_mean):
 def calculate_dihedral(ntrajs, digit, nimages, atom_index, l_mean):
     """ Averaging dihedral angle between two points
     """
-
     if (l_mean):
         f_write_mean = ""
         # header file for averaged trajectory analysis
@@ -258,9 +256,8 @@ def calculate_dihedral(ntrajs, digit, nimages, atom_index, l_mean):
                      m = np.cross(norm1, b2/np.linalg.norm(b2))
                      x = np.dot(norm1, norm2)
                      y = np.dot(m, norm2)
-                     dihedral_angle = - np.degrees(np.arctan2(y,x))
+                     dihedral_angle = np.degrees(np.arctan2(y, x))
                      dihedral_list += [dihedral_angle]
-
                  iline += 1
 
         if (iline != (nimages * (2 + natoms) - 1)):
