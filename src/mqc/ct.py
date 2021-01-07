@@ -1,5 +1,5 @@
 from __future__ import division
-from build.el_propagator import el_run
+from build.el_propagator_ct import el_run
 from mqc.mqc import MQC
 from misc import eps, au_to_K, call_name, typewriter
 import random, os, shutil, textwrap
@@ -38,15 +38,25 @@ class CT(MQC):
         self.nat = self.mols[0].nat
         self.nsp = self.mols[0].nsp
         self.rho_threshold = threshold
+        
         self.phase = np.zeros((self.ntrajs, self.nst, self.nat, self.nsp))
-
-        self.nstates_pair = int(self.nst * (self.nst - 1) / 2)
         self.qmom = np.zeros((self.ntrajs, self.nat, self.nsp))
+        # TODO: variable name
+        # qmom_dot_ph = qmom * phase / mass
+        self.qmom_dot_ph = np.zeros((self.ntrajs, self.nst))
 
     def run(self, qm, mm=None, input_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         # Initialize UNI-xMD
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
-             self.run_init(qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
+             self.run_init(self.mols[0], qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
+        unixmd_dirs = [''] * self.ntrajs
+        qm_log_dirs= [''] * self.ntrajs
+        for itraj in range(self.ntrajs):
+            unixmd_dirs[itraj] = f'{unixmd_dir}_{itraj}'
+            if (os.path.exists(unixmd_dirs[itraj])):
+                shutil.move(unixmd_dirs[itraj], unixmd_dirs[itraj] + "_old_" + str(os.getpid()))
+            os.makedirs(unixmd_dirs[itraj])
+
         bo_list = [ist for ist in range(self.mol.nst)]
         qm.calc_coupling = True
         self.print_init()
@@ -64,7 +74,7 @@ class CT(MQC):
                 
                 self.get_phase(itraj)
 
-                #self.write_md_output(unixmd_dir, self.istep)
+                self.write_md_output(self.mols[itraj], unixmd_dirs[itraj], self.istep)
                 #self.print_step(self.istep)
 
         else: 
@@ -90,7 +100,7 @@ class CT(MQC):
                 self.mols[itraj].get_nacme()
 
                 # TODO: electronic propagation
-                # el_run(self)
+                el_run(self, self.mols[itraj])
 
                 # TODO: thermostat
                 #if (self.thermo != None):
@@ -98,11 +108,11 @@ class CT(MQC):
 
                 self.update_energy(itraj)
 
-                #if ((istep + 1) % self.out_freq == 0):
-                #    self.write_md_output(unixmd_dir, istep)
-                #    self.print_step(istep)
-                #if (istep == self.nsteps - 1):
-                #    self.write_final_xyz(unixmd_dir, istep)
+                if ((istep + 1) % self.out_freq == 0):
+                    self.write_md_output(self.mols[itraj], unixmd_dirs[itraj], istep)
+                    self.print_step(self.mols[itraj], istep)
+                if (istep == self.nsteps - 1):
+                    self.write_final_xyz(self.mols[itraj], unixmd_dirs[itraj], istep)
 
                 # TODO: restart
                 #self.fstep = istep
@@ -135,29 +145,27 @@ class CT(MQC):
         """ Routine to calculate force
         """
         self.rforce = np.zeros((self.nat, self.nsp))
+        # 
         for ist, istate in enumerate(self.mols[itrajectory].states):
-            # BO forces from Ehrenfest force
             self.rforce += istate.force * self.mols[itrajectory].rho.real[ist, ist]
 
-        # TODO: variable name
-        # Quantum momentum dot phase
-        qmom_dot_ph = np.zeros((self.nst))
-        xfforce = np.zeros((self.nat, self.nsp))
-        phase_diff = np.zeros((self.nst, self.nat, self.nsp))
+        # Non-adiabatic forces from Ehrenfest force 
         for ist in range(self.nst):
-            # 2 * P dot f / M_nu
-            qmom_dot_ph[ist] += np.sum(2. / self.mols[itrajectory].mass[0:self.nat] * \
-                np.sum(self.qmom[itrajectory] * self.phase[itrajectory, ist], axis=1))
             for jst in range(ist + 1, self.nst):
-                # Non-adiabatic forces from Ehrenfest force 
                 self.rforce += 2. * self.mols[itrajectory].nac[ist, jst] * self.mols[itrajectory].rho.real[ist, jst] \
                     * (self.mols[itrajectory].states[ist].energy - self.mols[itrajectory].states[jst].energy)
 
+        # TODO: variable name
+        # Quantum momentum dot phase
+        phase_diff = np.zeros((self.nst, self.nat, self.nsp))
+        xfforce = np.zeros((self.nat, self.nsp))
+        for ist in range(self.nst):
+            for jst in range(ist + 1, self.nst):
                 # phase_diff * rho_jj
                 phase_diff[ist] += self.mols[itrajectory].rho.real[jst, jst] * (self.phase[itrajectory, jst] - self.phase[itrajectory, ist])
             
             # Forces from exact factorization
-            xfforce += self.mols[itrajectory].rho.real[ist, ist] * qmom_dot_ph[ist] * phase_diff[ist]
+            xfforce += self.mols[itrajectory].rho.real[ist, ist] * 2. * self.qmom_dot_ph[ist] * phase_diff[ist]
 
         # Finally, force is Ehrenfest force + CT force
         self.rforce += xfforce
@@ -176,7 +184,8 @@ class CT(MQC):
         """ Routine to calculate phase
         """
         for ist in range(self.nst):
-            rho_ii = self.mols[itrajectory].rho[ist, ist].real
+            pass
+        #    rho_ii = self.mols[itrajectory].rho[ist, ist].real
         #    if ((rho_ii < self.rho_threshold) or (rho_ii > (1.0 - self.rho_threshold))):
         #        self.phase[itrajectory, ist] =
                 
@@ -186,14 +195,22 @@ class CT(MQC):
         """
         for ist in range(self.nst):
             for jst in range(self.nst):
-                print(ist, jst)
+                pass
+        #        print(ist, jst)
+
+        # Calculate qmom * phase / mass
+        self.qmom_dot_ph = np.zeros((self.ntrajs, self.nst))
+        for itraj in range(self.ntrajs):
+            for ist in range(self.nst):
+                # P dot f / M
+                self.qmom_dot_ph[itraj, ist] += np.sum(1. / self.mols[itraj].mass[0:self.nat] * \
+                    np.sum(self.qmom[itraj] * self.phase[itraj, ist], axis=1))
 
     def print_init(self):
         """ Routine to print the initial information of dynamics
         """
-        pass
 
-    def print_step(self, istep):
+    def print_step(self, molecule, istep):
         """ Routine to print each steps infomation about dynamics
         """
         pass

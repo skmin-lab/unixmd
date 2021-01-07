@@ -76,7 +76,7 @@ class MQC(object):
         # Initialize coefficients and densities
         self.mol.get_coefficient(coefficient, self.istate)
 
-    def run_init(self, qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart):
+    def run_init(self, molecule, qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart):
         """ Initialize MQC dynamics
 
             :param object qm: qm object containing on-the-fly calculation infomation
@@ -92,13 +92,13 @@ class MQC(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'restart'! {restart}")
 
         # Check if NACVs are calculated for Ehrenfest dynamics
-        if (self.md_type in ["Eh", "EhXF"] and self.mol.l_nacme):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Ehrenfest dynamics needs NACV! {self.mol.l_nacme}")
+        if (self.md_type in ["Eh", "EhXF"] and molecule.l_nacme):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Ehrenfest dynamics needs NACV! {molecule.l_nacme}")
 
         # Check compatibility of variables for QM and MM calculation
-        if ((self.mol.qmmm and mm == None) or (not self.mol.qmmm and mm != None)):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Both self.mol.qmmm and mm object is necessary! {self.mol.qmmm} and {mm}")
-        if (self.mol.qmmm and mm != None):
+        if ((molecule.qmmm and mm == None) or (not molecule.qmmm and mm != None)):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Both molecule.qmmm and mm object is necessary! {molecule.qmmm} and {mm}")
+        if (molecule.qmmm and mm != None):
             self.check_qmmm(qm, mm)
 
         # Set directory information
@@ -107,7 +107,7 @@ class MQC(object):
         unixmd_dir = os.path.join(base_dir, "md")
         qm_log_dir = os.path.join(base_dir, "qm_log")
         mm_log_dir = None
-        if (self.mol.qmmm and mm != None):
+        if (molecule.qmmm and mm != None):
             mm_log_dir = os.path.join(base_dir, "mm_log")
 
         # Check and make directories
@@ -116,7 +116,7 @@ class MQC(object):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Directory to be appended for restart not found! {restart} and {unixmd_dir}")
             if (not os.path.exists(unixmd_dir) and save_qm_log):
                 os.makedirs(qm_log_dir)
-            if (self.mol.qmmm and mm != None):
+            if (molecule.qmmm and mm != None):
                 if (not os.path.exists(mm_log_dir) and save_mm_log):
                     os.makedirs(mm_log_dir)
         else:
@@ -129,13 +129,13 @@ class MQC(object):
             if (save_qm_log):
                 os.makedirs(qm_log_dir)
 
-            if (self.mol.qmmm and mm != None):
+            if (molecule.qmmm and mm != None):
                 if (os.path.exists(mm_log_dir)):
                     shutil.move(mm_log_dir, mm_log_dir + "_old_" + str(os.getpid()))
                 if (save_mm_log):
                     os.makedirs(mm_log_dir)
 
-            self.touch_file(unixmd_dir)
+            self.touch_file(molecule, unixmd_dir)
 
         os.chdir(base_dir)
 
@@ -286,7 +286,7 @@ class MQC(object):
             thermostat_info = "  No Thermostat: Total energy is conserved!\n"
             print (thermostat_info, flush=True)
 
-    def touch_file(self, unixmd_dir):
+    def touch_file(self, molecule, unixmd_dir):
         """ Routine to write PyUNIxMD output files
 
             :param string unixmd_dir: unixmd directory
