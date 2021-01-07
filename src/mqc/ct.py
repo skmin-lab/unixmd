@@ -184,10 +184,11 @@ class CT(MQC):
         """ Routine to calculate phase
         """
         for ist in range(self.nst):
-            pass
-        #    rho_ii = self.mols[itrajectory].rho[ist, ist].real
-        #    if ((rho_ii < self.rho_threshold) or (rho_ii > (1.0 - self.rho_threshold))):
-        #        self.phase[itrajectory, ist] =
+            rho_ii = self.mols[itrajectory].rho[ist, ist].real
+            if ((rho_ii < self.rho_threshold) or (rho_ii > (1. - self.rho_threshold))):
+                self.phase[itrajectory, ist] += self.mols[itrajectory].states[ist].force * self.dt
+            else:
+                self.phase[itrajectory, ist] += 0.
                 
 
     def calculate_qmom(self):
