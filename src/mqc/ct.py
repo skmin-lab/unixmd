@@ -100,7 +100,7 @@ class CT(MQC):
                 self.mols[itraj].get_nacme()
 
                 # TODO: electronic propagation
-                el_run(self, self.mols[itraj])
+                el_run(self, itraj)
 
                 # TODO: thermostat
                 #if (self.thermo != None):
@@ -165,7 +165,7 @@ class CT(MQC):
                 phase_diff[ist] += self.mols[itrajectory].rho.real[jst, jst] * (self.phase[itrajectory, jst] - self.phase[itrajectory, ist])
             
             # Forces from exact factorization
-            xfforce += self.mols[itrajectory].rho.real[ist, ist] * 2. * self.qmom_dot_ph[ist] * phase_diff[ist]
+            xfforce += self.mols[itrajectory].rho.real[ist, ist] * 2. * self.qmom_dot_ph[itrajectory, ist] * phase_diff[ist]
 
         # Finally, force is Ehrenfest force + CT force
         self.rforce += xfforce

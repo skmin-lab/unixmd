@@ -27,9 +27,9 @@ def el_run(md, itrajectory):
         double dt
 
     # Assign size variables
-    nst = self.mols[itrajectory].nst
+    nst = md.mols[itrajectory].nst
     nesteps, dt = md.nesteps, md.dt
-    nat, nsp = self.mols[itrajectory].nat, self.mols[itrajectory].nsp
+    nat, nsp = md.mols[itrajectory].nat, md.mols[itrajectory].nsp
 
     # Allocate variables
     energy = <double*> PyMem_Malloc(nst * sizeof(double))
@@ -45,27 +45,28 @@ def el_run(md, itrajectory):
         nacme[ist] = <double*> PyMem_Malloc(nst * sizeof(double))
         nacme_old[ist] = <double*> PyMem_Malloc(nst * sizeof(double))
 
+    for iat in range(nat):
+        qmom[iat] = <double*> PyMem_Malloc(nsp * sizeof(double))
+
     for ist in range(nst):
         phase[ist] = <double**> PyMem_Malloc(nat * sizeof(double*))
         for iat in range(nat):
             phase[ist][iat] = <double*> PyMem_Malloc(nsp * sizeof(double))
 
-    for iat in range(nat):
-        qmom = <double*> PyMem_Malloc(nsp * sizeof(double))
-
     # Assign variables from python to C
     for ist in range(nst):
-        energy[ist] = self.mols[itrajectory].states[ist].energy
-        energy_old[ist] = self.mols[itrajectory].states[ist].energy_old
+        energy[ist] = md.mols[itrajectory].states[ist].energy
+        energy_old[ist] = md.mols[itrajectory].states[ist].energy_old
 
     for ist in range(nst):
         for jst in range(nst):
-            nacme[ist][jst] = self.mols[itrajectory].nacme[ist, jst]
-            nacme_old[ist][jst] = self.mols[itrajectory].nacme_old[ist, jst]
+            nacme[ist][jst] = md.mols[itrajectory].nacme[ist, jst]
+            nacme_old[ist][jst] = md.mols[itrajectory].nacme_old[ist, jst]
 
     for ist in range(nst):
-        for iat in range(aux_nat):
-            phase[ist][iat] = <double*> PyMem_Malloc(aux_nsp * sizeof(double))
+        for iat in range(nat):
+            for isp in range(nsp):
+                phase[ist][iat][isp] = md.phase[itrajectory, ist, iat, isp]
 
     # Assign coef or rho with respect to propagation scheme
     if (md.propagation == "coefficient"):
@@ -73,7 +74,7 @@ def el_run(md, itrajectory):
         coef = <double complex*> PyMem_Malloc(nst * sizeof(double complex))
 
         for ist in range(nst):
-            coef[ist] = self.mols[itrajectory].states[ist].coef
+            coef[ist] = md.mols[itrajectory].states[ist].coef
 
     elif (md.propagation == "density"):
 
@@ -83,7 +84,7 @@ def el_run(md, itrajectory):
 
         for ist in range(nst):
             for jst in range(nst):
-                rho[ist][jst] = self.mols[itrajectory].rho[ist, jst]
+                rho[ist][jst] = md.mols[itrajectory].rho[ist, jst]
 
     py_bytes = md.propagation.encode()
     propagation_c = py_bytes
@@ -96,11 +97,11 @@ def el_run(md, itrajectory):
     if (md.propagation == "coefficient"):
 
         for ist in range(nst):
-            self.mols[itrajectory].states[ist].coef = coef[ist]
+            md.mols[itrajectory].states[ist].coef = coef[ist]
 
         for ist in range(nst):
             for jst in range(nst):
-                self.mols[itrajectory].rho[ist, jst] = np.conj(self.mols[itrajectory].states[ist].coef) * self.mols[itrajectory].states[jst].coef
+                md.mols[itrajectory].rho[ist, jst] = np.conj(md.mols[itrajectory].states[ist].coef) * md.mols[itrajectory].states[jst].coef
 
         PyMem_Free(coef)
 
@@ -108,7 +109,7 @@ def el_run(md, itrajectory):
 
         for ist in range(nst):
             for jst in range(nst):
-                self.mols[itrajectory].rho[ist, jst] = rho[ist][jst]
+                md.mols[itrajectory].rho[ist, jst] = rho[ist][jst]
 
         for ist in range(nst):
             PyMem_Free(rho[ist])
