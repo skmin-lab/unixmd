@@ -252,7 +252,7 @@ def calculate_dihedral(ntrajs, digit, nimages, atom_index, l_mean):
                     norm2 = np.cross(b2, b3)
                     norm2 /= np.linalg.norm(norm2)
 
-                    m = np.cross(norm1, b2/ np.linalg.norm(b2))
+                    m = np.cross(norm1, b2 / np.linalg.norm(b2))
                     x = np.dot(norm1, norm2)
                     y = np.dot(m, norm2)
                     dihedral_angle = np.degrees(np.arctan2(y, x))
