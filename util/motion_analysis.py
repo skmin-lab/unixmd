@@ -1,13 +1,12 @@
 import argparse
-import os
-import sys
+import os, sys
 import numpy as np
 
 def motion_analysis():
-    """ Python utility script for UNI-xMD output analysis
-        In this script, UNI-xMD MOVIE.xyz output files are post-process into given geometry criterion
+    """ Utility script for PyUNIxMD output analysis
+        In this script, PyUNIxMD MOVIE.xyz output files are post-process into given geometry criterion
     """
-    parser = argparse.ArgumentParser(description="Python script for pyUNI-xMD motion analysis")
+    parser = argparse.ArgumentParser(description="Utility script for PyUNIxMD motion analysis")
     parser.add_argument('-n', '--ntrajs', action='store', dest='ntrajs', type=int, \
         help="Total number of trajectories.", required=True)
     parser.add_argument('-s', '--nsteps', action='store', dest='nsteps', type=int, \
@@ -17,8 +16,8 @@ def motion_analysis():
     parser.add_argument('-a', '--angle', nargs=3, action='store', dest='angle', type=int, \
         help="Angle between three atoms. second atom will be the centor atom.")
     parser.add_argument('-d', '--dihedral', nargs="+", action='store', dest='dihedral', type=int, \
-        help="Dihedral angle between four or six atoms. Angle between (1,2,3),(2,3,4) or (1,2,3),(4,5,6) plane will be calculated. \
-        Dihedral axis will be atom2-atom3(four atom case) or atom3-atom4(six atom case).")
+        help="Dihedral angle between four or six atoms. In four atom case, angle between (1,2,3),(2,3,4) plane will be calculated and dihedreal axis will be atom2-atom3. \
+        In six atom case, angle between (1,2,3),(4,5,6) plane will be calculated and dihedral axis will be atom3-atom4.")
     parser.add_argument('-m', '--mean', action='store_true', dest='l_mean', \
         help="Additional option for averaging motion.")
     args = parser.parse_args()
@@ -29,7 +28,7 @@ def motion_analysis():
     nsteps1 = args.nsteps + 1
     # Checking job running
     if ((args.bond == None) and (args.angle == None) and (args.dihedral == None)):
-        raise ValueError ("No analysis done -- check input arguments")
+        raise ValueError (f"( {sys._getframe().f_code.co_name} ) No analysis done -- check input arguments")
 
     # Bond length analysis
     if (args.bond != None):
@@ -62,33 +61,33 @@ def calculate_bond_length(ntrajs, digit, nimages, atom_index, l_mean):
 
     for itraj in range(ntrajs):
         path = os.path.join(f"./TRAJ_{itraj + 1:0{digit}d}/md/", "MOVIE.xyz")
-        # chacking line number
+        # checking line number
         iline = 0
 
         f_write = ""
         # header file for individual trajectory analysis
-        header = f"#    bond length between atom {atom_index[0]} and {atom_index[1]}"
+        header = f"#    Bond length between atom {atom_index[0]} and {atom_index[1]}"
         f_write += header
         bond_list = []
 
         with open(path, 'r') as f:
-             line = f.readline()
-             natoms = int(line)
-             while (True):
-                 line = f.readline()
-                 if not line:
-                     break
-                 # save xyz coordinates in every isteps
-                 if (iline % (natoms + 2) == atom_index[0]):
-                     atom1 = np.array(line.split()[1:4], dtype=float)
-                 if (iline % (natoms + 2) == atom_index[1]):
-                     atom2 = np.array(line.split()[1:4], dtype=float)
-                 # every istep, calculate it
-                 if (iline % (natoms + 2) == natoms):
-                     # calculate bond length after both point1/2 extracted
-                     bond = np.linalg.norm(atom1 - atom2)
-                     bond_list += [bond]
-                 iline += 1
+            line = f.readline()
+            natoms = int(line)
+            while (True):
+                line = f.readline()
+                if (not line):
+                    break
+                # save xyz coordinates in every isteps
+                if (iline % (natoms + 2) == atom_index[0]):
+                    atom1 = np.array(line.split()[1:4], dtype=float)
+                elif (iline % (natoms + 2) == atom_index[1]):
+                    atom2 = np.array(line.split()[1:4], dtype=float)
+                # every istep, calculate it
+                if (iline % (natoms + 2) == natoms):
+                    # calculate bond length after both point1/2 extracted
+                    bond = np.linalg.norm(atom1 - atom2)
+                    bond_list += [bond]
+                iline += 1
 
         if (iline != (nimages * (2 + natoms) - 1)):
             mtrajs -= 1
@@ -128,40 +127,40 @@ def calculate_angle(ntrajs, digit, nimages, atom_index, l_mean):
 
     for itraj in range(ntrajs):
         path = os.path.join(f"./TRAJ_{itraj + 1:0{digit}d}/md/", "MOVIE.xyz")
-        # chacking line number
+        # checking line number
         iline = 0
 
         f_write = ""
         # header file for individual trajectory analysis
-        header = f"#    angle between atom {atom_index[0]}, {atom_index[1]}, and {atom_index[2]}"
+        header = f"#    Angle between atom {atom_index[0]}, {atom_index[1]}, and {atom_index[2]}"
         f_write += header
         angle_list = []
 
         with open(path, 'r') as f:
-             line = f.readline()
-             natoms = int(line)
-             while (True):
-                 line = f.readline()
-                 if not line:
-                     break
-                 # save xyz coordinates in every isteps
-                 if (iline % (natoms + 2) == atom_index[0]):
-                     atom1 = np.array(line.split()[1:4], dtype=float)
-                 if (iline % (natoms + 2) == atom_index[1]):
-                     atom2 = np.array(line.split()[1:4], dtype=float)
-                 if (iline % (natoms + 2) == atom_index[2]):
-                     atom3 = np.array(line.split()[1:4], dtype=float)
-                 # every istep, calculate it
-                 if (iline % (natoms + 2) == natoms):
-                     # calculate angle with vector calculation
-                     unit_vector1 = (atom1 - atom2) / np.linalg.norm(atom1 - atom2)
-                     unit_vector2 = (atom3 - atom2) / np.linalg.norm(atom3 - atom2)
+            line = f.readline()
+            natoms = int(line)
+            while (True):
+                line = f.readline()
+                if (not line):
+                    break
+                # save xyz coordinates in every isteps
+                if (iline % (natoms + 2) == atom_index[0]):
+                    atom1 = np.array(line.split()[1:4], dtype=float)
+                elif (iline % (natoms + 2) == atom_index[1]):
+                    atom2 = np.array(line.split()[1:4], dtype=float)
+                elif (iline % (natoms + 2) == atom_index[2]):
+                    atom3 = np.array(line.split()[1:4], dtype=float)
+                # every istep, calculate it
+                if (iline % (natoms + 2) == natoms):
+                    # calculate angle with vector calculation
+                    unit_vector1 = (atom1 - atom2) / np.linalg.norm(atom1 - atom2)
+                    unit_vector2 = (atom3 - atom2) / np.linalg.norm(atom3 - atom2)
 
-                     x = np.dot(unit_vector1, unit_vector2)
-                     y = np.linalg.norm(np.cross(unit_vector1, unit_vector2))
-                     angle = np.degrees(np.arctan2(y,x))
-                     angle_list += [angle]
-                 iline += 1
+                    x = np.dot(unit_vector1, unit_vector2)
+                    y = np.linalg.norm(np.cross(unit_vector1, unit_vector2))
+                    angle = np.degrees(np.arctan2(y, x))
+                    angle_list += [angle]
+                iline += 1
 
         if (iline != (nimages * (2 + natoms) - 1)):
             mtrajs -= 1
@@ -192,9 +191,9 @@ def calculate_dihedral(ntrajs, digit, nimages, atom_index, l_mean):
         f_write_mean = ""
         # header file for averaged trajectory analysis
         if (len(atom_index) == 4):
-            header_mean = f"#    Averaged diherdral angle between plane ({atom_index[0]}, {atom_index[1]}, {atom_index[2]}) and ({atom_index[1]}, {atom_index[2]}, {atom_index[3]})"
+            header_mean = f"#    Averaged diherdral angle between plane ({atom_index[0]}, {atom_index[1]}, {atom_index[2]}) atoms and ({atom_index[1]}, {atom_index[2]}, {atom_index[3]}) atoms"
         elif (len(atom_index) == 6):
-            header_mean = f"#    Averaged diherdral angle between plane ({atom_index[0]}, {atom_index[1]}, {atom_index[2]}) and ({atom_index[3]}, {atom_index[4]}, {atom_index[5]})"
+            header_mean = f"#    Averaged diherdral angle between plane ({atom_index[0]}, {atom_index[1]}, {atom_index[2]}) atoms and ({atom_index[3]}, {atom_index[4]}, {atom_index[5]}) atoms"
         f_write_mean += header_mean
         # define empty array for summation
         mean_dihedral = np.zeros(nimages)
@@ -204,7 +203,7 @@ def calculate_dihedral(ntrajs, digit, nimages, atom_index, l_mean):
 
     for itraj in range(ntrajs):
         path = os.path.join(f"./TRAJ_{itraj + 1:0{digit}d}/md/", "MOVIE.xyz")
-        # chacking line number
+        # checking line number
         iline = 0
 
         f_write = ""
@@ -217,48 +216,48 @@ def calculate_dihedral(ntrajs, digit, nimages, atom_index, l_mean):
         dihedral_list = []
 
         with open(path, 'r') as f:
-             line = f.readline()
-             natoms = int(line)
-             while (True):
-                 line = f.readline()
-                 if not line:
-                     break
-                 # save xyz coordinates in every isteps
-                 if (iline % (natoms + 2) == atom_index[0]):
-                     atom1 = np.array(line.split()[1:4], dtype=float)
-                 if (iline % (natoms + 2) == atom_index[1]):
-                     atom2 = np.array(line.split()[1:4], dtype=float)
-                 if (iline % (natoms + 2) == atom_index[2]):
-                     atom3 = np.array(line.split()[1:4], dtype=float)
-                 if (iline % (natoms + 2) == atom_index[3]):
-                     atom4 = np.array(line.split()[1:4], dtype=float)
-                 if (len(atom_index) == 6):
-                     if (iline % (natoms + 2) == atom_index[4]):
-                         atom5 = np.array(line.split()[1:4], dtype=float)
-                     if (iline % (natoms + 2) == atom_index[5]):
-                         atom6 = np.array(line.split()[1:4], dtype=float)
-                 # every istep, calculate it
-                 if (iline % (natoms + 2) == natoms):
-                     if (len(atom_index) == 4):
-                         b1 = atom2 - atom1
-                         b2 = atom3 - atom2
-                         b3 = atom4 - atom3
-                     if (len(atom_index) == 6):
-                         b1 = np.cross((atom2 - atom1), (atom3 - atom2))
-                         b2 = atom4 - atom3
-                         b3 = np.cross((atom4 - atom5), (atom6 - atom5))
+            line = f.readline()
+            natoms = int(line)
+            while (True):
+                line = f.readline()
+                if (not line):
+                    break
+                # save xyz coordinates in every isteps
+                if (iline % (natoms + 2) == atom_index[0]):
+                    atom1 = np.array(line.split()[1:4], dtype=float)
+                elif (iline % (natoms + 2) == atom_index[1]):
+                    atom2 = np.array(line.split()[1:4], dtype=float)
+                elif (iline % (natoms + 2) == atom_index[2]):
+                    atom3 = np.array(line.split()[1:4], dtype=float)
+                elif (iline % (natoms + 2) == atom_index[3]):
+                    atom4 = np.array(line.split()[1:4], dtype=float)
+                if (len(atom_index) == 6):
+                    if (iline % (natoms + 2) == atom_index[4]):
+                        atom5 = np.array(line.split()[1:4], dtype=float)
+                    elif (iline % (natoms + 2) == atom_index[5]):
+                        atom6 = np.array(line.split()[1:4], dtype=float)
+                # every istep, calculate it
+                if (iline % (natoms + 2) == natoms):
+                    if (len(atom_index) == 4):
+                        b1 = atom2 - atom1
+                        b2 = atom3 - atom2
+                        b3 = atom4 - atom3
+                    elif (len(atom_index) == 6):
+                        b1 = np.cross((atom3 - atom1), (atom3 - atom2))
+                        b2 = atom4 - atom3
+                        b3 = np.cross((atom4 - atom5), (atom4 - atom6))
 
-                     norm1 = np.cross(b1, b2)
-                     norm1 /= np.linalg.norm(norm1)
-                     norm2 = np.cross(b2, b3)
-                     norm2 /= np.linalg.norm(norm2)
+                    norm1 = np.cross(b1, b2)
+                    norm1 /= np.linalg.norm(norm1)
+                    norm2 = np.cross(b2, b3)
+                    norm2 /= np.linalg.norm(norm2)
 
-                     m = np.cross(norm1, b2/np.linalg.norm(b2))
-                     x = np.dot(norm1, norm2)
-                     y = np.dot(m, norm2)
-                     dihedral_angle = np.degrees(np.arctan2(y, x))
-                     dihedral_list += [dihedral_angle]
-                 iline += 1
+                    m = np.cross(norm1, b2/np.linalg.norm(b2))
+                    x = np.dot(norm1, norm2)
+                    y = np.dot(m, norm2)
+                    dihedral_angle = np.degrees(np.arctan2(y, x))
+                    dihedral_list += [dihedral_angle]
+                iline += 1
 
         if (iline != (nimages * (2 + natoms) - 1)):
             mtrajs -= 1
