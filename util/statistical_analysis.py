@@ -17,16 +17,16 @@ def statistical_analysis():
     args = parser.parse_args()
 
     # Indexing for numbering filename
-    index = len(str(args.ntrajs))
+    digit = len(str(args.ntrajs))
  
     # Include step 0 
     nsteps1 = args.nsteps + 1
 
-    averaged_running_state(args.ntrajs, index, nsteps1, args.nstates)
-    averaged_density_matrix(args.ntrajs, index, nsteps1, args.nstates)
-    averaged_nacme(args.ntrajs, index, nsteps1, args.nstates)
+    averaged_running_state(args.ntrajs, digit, nsteps1, args.nstates)
+    averaged_density_matrix(args.ntrajs, digit, nsteps1, args.nstates)
+    averaged_nacme(args.ntrajs, digit, nsteps1, args.nstates)
 
-def averaged_running_state(ntrajs, index, nsteps, nstates):
+def averaged_running_state(ntrajs, digit, nsteps, nstates):
     """ BO population analysis based on the running state of each trajectories
     """
     f_write = ""
@@ -40,7 +40,7 @@ def averaged_running_state(ntrajs, index, nsteps, nstates):
     mtrajs = ntrajs
 
     for itraj in range(ntrajs):
-        path = os.path.join(f"./TRAJ_{itraj + 1:0{index}d}/md/", "SHSTATE")
+        path = os.path.join(f"./TRAJ_{itraj + 1:0{digit}d}/md/", "SHSTATE")
 
         with open(path, 'r') as f:
             # Skip header and read rest
@@ -65,7 +65,7 @@ def averaged_running_state(ntrajs, index, nsteps, nstates):
 
     typewriter(f_write, "AVG_POPRUN")
 
-def averaged_density_matrix(ntrajs, index, nsteps, nstates):
+def averaged_density_matrix(ntrajs, digit, nsteps, nstates):
     """ Electronic coherence analysis and BO population analysis
         based on the density matrix of each trajectories
     """
@@ -87,7 +87,7 @@ def averaged_density_matrix(ntrajs, index, nsteps, nstates):
     mtrajs = ntrajs
 
     for itraj in range(ntrajs):
-        path = os.path.join(f"./TRAJ_{itraj + 1:0{index}d}/md/", "BOPOP")
+        path = os.path.join(f"./TRAJ_{itraj + 1:0{digit}d}/md/", "BOPOP")
 
         with open(path, 'r') as f:
             # Skip header and read rest
@@ -121,7 +121,7 @@ def averaged_density_matrix(ntrajs, index, nsteps, nstates):
     typewriter(f1_write, "AVG_COHRHO")
     typewriter(f2_write, "AVG_POPRHO")
 
-def averaged_nacme(ntrajs, index, nsteps, nstates):
+def averaged_nacme(ntrajs, digit, nsteps, nstates):
     """ averaged off-diagonal Non-adiabatic coupling matrix 
         Phase is ignored with absolute value 
     """
@@ -138,7 +138,7 @@ def averaged_nacme(ntrajs, index, nsteps, nstates):
     mtrajs = ntrajs
 
     for itraj in range(ntrajs):
-        path = os.path.join(f"./TRAJ_{itraj + 1:0{index}d}/md/", "NACME")
+        path = os.path.join(f"./TRAJ_{itraj + 1:0{digit}d}/md/", "NACME")
 
         with open(path, 'r') as f:
             # Skip header and read rest
