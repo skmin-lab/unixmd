@@ -191,9 +191,9 @@ def calculate_dihedral(ntrajs, digit, nimages, atom_index, l_mean):
         f_write_mean = ""
         # header file for averaged trajectory analysis
         if (len(atom_index) == 4):
-            header_mean = f"#    Averaged diherdral angle between plane ({atom_index[0]}, {atom_index[1]}, {atom_index[2]}) atoms and ({atom_index[1]}, {atom_index[2]}, {atom_index[3]}) atoms"
+            header_mean = f"#    Averaged dihedral angle between plane ({atom_index[0]}, {atom_index[1]}, {atom_index[2]}) atoms and ({atom_index[1]}, {atom_index[2]}, {atom_index[3]}) atoms"
         elif (len(atom_index) == 6):
-            header_mean = f"#    Averaged diherdral angle between plane ({atom_index[0]}, {atom_index[1]}, {atom_index[2]}) atoms and ({atom_index[3]}, {atom_index[4]}, {atom_index[5]}) atoms"
+            header_mean = f"#    Averaged dihedral angle between plane ({atom_index[0]}, {atom_index[1]}, {atom_index[2]}) atoms and ({atom_index[3]}, {atom_index[4]}, {atom_index[5]}) atoms"
         f_write_mean += header_mean
         # define empty array for summation
         mean_dihedral = np.zeros(nimages)
@@ -209,9 +209,9 @@ def calculate_dihedral(ntrajs, digit, nimages, atom_index, l_mean):
         f_write = ""
         # header file for individual trajectory analysis
         if (len(atom_index) == 4):
-            header = f"#    Diherdral angle between plane ({atom_index[0]}, {atom_index[1]}, {atom_index[2]}) atoms and ({atom_index[1]}, {atom_index[2]}, {atom_index[3]}) atoms"
+            header = f"#    Dihedral angle between plane ({atom_index[0]}, {atom_index[1]}, {atom_index[2]}) atoms and ({atom_index[1]}, {atom_index[2]}, {atom_index[3]}) atoms"
         elif (len(atom_index) == 6):
-            header = f"#    Diherdral angle between plane ({atom_index[0]}, {atom_index[1]}, {atom_index[2]}) atoms and ({atom_index[3]}, {atom_index[4]}, {atom_index[5]}) atoms"
+            header = f"#    Dihedral angle between plane ({atom_index[0]}, {atom_index[1]}, {atom_index[2]}) atoms and ({atom_index[3]}, {atom_index[4]}, {atom_index[5]}) atoms"
         f_write += header
         dihedral_list = []
 
