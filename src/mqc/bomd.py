@@ -66,6 +66,7 @@ class BOMD(MQC):
         # Main MD loop
         for istep in range(self.istep, self.nsteps):
 
+            self.calculate_force()
             self.cl_update_position()
 
             self.mol.reset_bo(qm.calc_coupling)
@@ -73,6 +74,7 @@ class BOMD(MQC):
             if (self.mol.qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
+            self.calculate_force()
             self.cl_update_velocity()
 
             if (self.thermo != None):

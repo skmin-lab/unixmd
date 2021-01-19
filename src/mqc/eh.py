@@ -45,7 +45,7 @@ class Eh(MQC):
         """
         # Initialize UNI-xMD
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
-             self.run_init(self.mol, qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
+             self.run_init(qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
         bo_list = [ist for ist in range(self.mol.nst)]
         qm.calc_coupling = True
         self.print_init(qm, mm, restart)
@@ -61,13 +61,13 @@ class Eh(MQC):
 
             self.update_energy()
 
-            self.write_md_output(self.mol, unixmd_dir, self.istep)
+            self.write_md_output(unixmd_dir, self.istep)
             self.print_step(self.istep)
 
         elif (restart == "write"):
             # Reset initial time step to t = 0.0 s
             self.istep = -1
-            self.write_md_output(self.mol, unixmd_dir, self.istep)
+            self.write_md_output(unixmd_dir, self.istep)
             self.print_step(self.istep)
 
         elif (restart == "append"):
@@ -78,7 +78,8 @@ class Eh(MQC):
 
         # Main MD loop
         for istep in range(self.istep, self.nsteps):
-
+            
+            self.calculate_force()
             self.cl_update_position()
 
             self.mol.backup_bo()
@@ -89,6 +90,7 @@ class Eh(MQC):
 
             self.mol.adjust_nac()
 
+            self.calculate_force()
             self.cl_update_velocity()
 
             self.mol.get_nacme()
@@ -101,10 +103,10 @@ class Eh(MQC):
             self.update_energy()
 
             if ((istep + 1) % self.out_freq == 0):
-                self.write_md_output(self.mol, unixmd_dir, istep)
+                self.write_md_output(unixmd_dir, istep)
                 self.print_step(istep)
             if (istep == self.nsteps - 1):
-                self.write_final_xyz(self.mol, unixmd_dir, istep)
+                self.write_final_xyz(unixmd_dir, istep)
 
             self.fstep = istep
             restart_file = os.path.join(base_dir, "RESTART.bin")

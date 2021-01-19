@@ -139,6 +139,7 @@ class SH(MQC):
         # Main MD loop
         for istep in range(self.istep, self.nsteps):
 
+            self.calculate_force()
             self.cl_update_position()
 
             self.mol.backup_bo()
@@ -150,6 +151,7 @@ class SH(MQC):
             if (not self.mol.l_nacme):
                 self.mol.adjust_nac()
 
+            self.calculate_force()
             self.cl_update_velocity()
 
             if (not self.mol.l_nacme):

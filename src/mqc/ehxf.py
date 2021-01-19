@@ -148,6 +148,7 @@ class EhXF(MQC):
         # Main MD loop
         for istep in range(self.istep, self.nsteps):
 
+            self.calculate_force()
             self.cl_update_position()
 
             self.mol.backup_bo()
@@ -158,6 +159,7 @@ class EhXF(MQC):
 
             self.mol.adjust_nac()
 
+            self.calculate_force()
             self.cl_update_velocity()
 
             self.mol.get_nacme()

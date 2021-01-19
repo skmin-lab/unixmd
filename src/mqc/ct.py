@@ -52,7 +52,7 @@ class CT(MQC):
     def run(self, qm, mm=None, input_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         # Initialize UNI-xMD
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
-             self.run_init(self.mols[0], qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
+             self.run_init(qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
         unixmd_dirs = [''] * self.ntrajs
         qm_log_dirs= [''] * self.ntrajs
         for itraj in range(self.ntrajs):
@@ -69,16 +69,20 @@ class CT(MQC):
             # Calculate initial input geometry for all trajectories at t = 0.0 s
             self.istep = -1
             for itraj in range(self.ntrajs):
-                self.mols[itraj].reset_bo(qm.calc_coupling)
-                qm.get_data(self.mols[itraj], base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
-                # TODO: QM/MM
-                self.mols[itraj].get_nacme()
+                self.mol = self.mols[itraj]
 
-                self.update_energy(itraj)
+                self.mol.reset_bo(qm.calc_coupling)
+                qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
+                # TODO: QM/MM
+                self.mol.get_nacme()
+
+                self.update_energy()
 
                 self.get_phase(itraj)
 
-                self.write_md_output(self.mols[itraj], unixmd_dirs[itraj], self.istep)
+                self.mols[itraj] = self.mol
+
+                self.write_md_output(unixmd_dirs[itraj], self.istep)
                 #self.print_step(self.istep)
 
         else: 
@@ -90,18 +94,22 @@ class CT(MQC):
         for istep in range(self.istep, self.nsteps):
             self.calculate_qmom()
             for itraj in range(self.ntrajs):
-                self.cl_update_position(itraj)
+                self.mol = self.mols[itraj]
+                
+                self.calculate_force(itraj)
+                self.cl_update_position()
 
-                self.mols[itraj].backup_bo()
-                self.mols[itraj].reset_bo(qm.calc_coupling)
-                qm.get_data(self.mols[itraj], base_dir, bo_list, self.dt, istep, calc_force_only=False)
+                self.mol.backup_bo()
+                self.mol.reset_bo(qm.calc_coupling)
+                qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
                 # TODO: QM/MM
 
-                self.mols[itraj].adjust_nac()
+                self.mol.adjust_nac()
 
-                self.cl_update_velocity(itraj)
+                self.calculate_force(itraj)
+                self.cl_update_velocity()
 
-                self.mols[itraj].get_nacme()
+                self.mol.get_nacme()
 
                 # TODO: electronic propagation
                 el_run(self, itraj)
@@ -110,13 +118,15 @@ class CT(MQC):
                 #if (self.thermo != None):
                 #    self.thermo.run(self)
 
-                self.update_energy(itraj)
+                self.update_energy()
+
+                self.mols[itraj] = self.mol
 
                 if ((istep + 1) % self.out_freq == 0):
-                    self.write_md_output(self.mols[itraj], unixmd_dirs[itraj], istep)
+                    self.write_md_output(unixmd_dirs[itraj], istep)
                     self.print_step(self.mols[itraj], istep)
                 if (istep == self.nsteps - 1):
-                    self.write_final_xyz(self.mols[itraj], unixmd_dirs[itraj], istep)
+                    self.write_final_xyz(unixmd_dirs[itraj], istep)
 
                 # TODO: restart
                 #self.fstep = istep
@@ -129,21 +139,6 @@ class CT(MQC):
             tmp_dir = os.path.join(unixmd_dir, "scr_qm")
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
-
-    def cl_update_position(self, itrajectory):
-        """ Routine to update nuclear positions
-        """
-        self.calculate_force(itrajectory)
-        
-        self.mols[itrajectory].vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mols[itrajectory].mass] * self.nsp)
-        self.mols[itrajectory].pos += self.dt * self.mols[itrajectory].vel
-
-    def cl_update_velocity(self, itrajectory):
-        """ Routine to update nuclear velocities
-        """
-        self.calculate_force(itrajectory)
-
-        self.mols[itrajectory].vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mols[itrajectory].mass] * self.nsp)
 
     def calculate_force(self, itrajectory):
         """ Routine to calculate force
@@ -174,15 +169,15 @@ class CT(MQC):
         # Finally, force is Ehrenfest force + CT force
         self.rforce += xfforce
 
-    def update_energy(self, itrajectory):
+    def update_energy(self):
         """ Routine to update the energy of molecules in CTMQC dynamics
         """
         # Update kinetic energy
-        self.mols[itrajectory].update_kinetic()
-        self.mols[itrajectory].epot = 0.
-        for ist, istate in enumerate(self.mols[itrajectory].states):
-            self.mols[itrajectory].epot += self.mols[itrajectory].rho.real[ist, ist] * istate.energy
-        self.mols[itrajectory].etot = self.mols[itrajectory].epot + self.mols[itrajectory].ekin
+        self.mol.update_kinetic()
+        self.mol.epot = 0.
+        for ist, istate in enumerate(self.mol.states):
+            self.mol.epot += self.mol.rho.real[ist, ist] * istate.energy
+        self.mol.etot = self.mol.epot + self.mol.ekin
 
     def get_phase(self, itrajectory):
         """ Routine to calculate phase
