@@ -24,7 +24,7 @@ class CT(MQC):
         else:
             if (self.ntrajs != len(self.coefficients)):
                 raise ValueError("Error: coefficients!")
-        
+
         # Initialize input values and coefficient for first trajectory
         super().__init__(self.mols[0], thermostat, istates[0], dt, nsteps, nesteps, \
             propagation, solver, l_pop_print, l_adjnac, coefficients[0], unit_dt, out_freq, verbosity)
@@ -38,12 +38,16 @@ class CT(MQC):
         self.nat = self.mols[0].nat
         self.nsp = self.mols[0].nsp
         self.rho_threshold = threshold
-        
+
         self.phase = np.zeros((self.ntrajs, self.nst, self.nat, self.nsp))
-        self.qmom = np.zeros((self.ntrajs, self.nat, self.nsp))
+        self.nst_pair = int(self.nst * (self.nst - 1) / 2)
+        self.qmom = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.nsp))
         # TODO: variable name
         # qmom_dot_ph = qmom * phase / mass
         self.qmom_dot_ph = np.zeros((self.ntrajs, self.nst))
+        self.gaussian = np.zeros((self.ntrajs, self.nst, self.nat, self.nsp))
+        self.slope = np.zeros((self.ntrajs, self.nat, self.nsp))
+        self.sigma = np.zeros((self.nst, self.nat, self.nsp))
 
     def run(self, qm, mm=None, input_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         # Initialize UNI-xMD
@@ -60,7 +64,7 @@ class CT(MQC):
         bo_list = [ist for ist in range(self.mol.nst)]
         qm.calc_coupling = True
         self.print_init()
-        
+
         if (restart == None):
             # Calculate initial input geometry for all trajectories at t = 0.0 s
             self.istep = -1
@@ -71,7 +75,7 @@ class CT(MQC):
                 self.mols[itraj].get_nacme()
 
                 self.update_energy(itraj)
-                
+
                 self.get_phase(itraj)
 
                 self.write_md_output(self.mols[itraj], unixmd_dirs[itraj], self.istep)
@@ -79,7 +83,7 @@ class CT(MQC):
 
         else: 
             raise ValueError ("restart option is invalid in CTMQC yet.")
-           
+
         self.istep += 1
 
         # Main MD loop
@@ -190,15 +194,88 @@ class CT(MQC):
             else:
                 self.phase[itrajectory, ist] += 0.
                 
-
     def calculate_qmom(self):
         """ Routine to calculate quantum momentum
         """
-        for ist in range(self.nst):
-            for jst in range(self.nst):
-                pass
-        #        print(ist, jst)
+        sigma_x = 2./(np.sqrt(2.) * self.ntrajs) # TODO
 
+        # _lk means state_pair dependency
+        # -------------------------------------------------------------------
+        # 1. Calculate sigma for each trajectory
+        smooth_factor = 2. #TODO
+        sigma_lk = np.ones((self.ntrajs)) * sigma_x # TODO: state-pair
+        for itraj in range(self.ntrajs):
+            nntraj = 0
+            R2_tmp = 0.
+            R_tmp = 0.
+            for jtraj in range(self.ntrajs):
+                pos_diff = self.mols[jtraj].pos - self.mols[itraj].pos
+                if (abs(pos_diff) <= smooth_factor):
+                    R_tmp += self.mols[jtraj].pos
+                    R2_tmp += np.dot(self.mols[jtraj].pos, self.mols[jtraj].pos)
+                    nntraj += 1
+            avg_R = R_tmp / nntraj
+            avg_R2 = R2_tmp / nntraj
+
+            sigma_lk[itraj] = np.sqrt((avg_R2 - avg_R ** 2) / np.sqrt(nntraj))
+            if (sigma_lk[itraj] <= 1.0E-8):
+                sigma_lk[itraj] = smooth_factor
+        
+        # -------------------------------------------------------------------
+        # 2. Calculate <R> for each trajectory
+        # (1) Calculate weight
+        smooth_weight = 2.
+        w_k = np.zeros((self.ntrajs, self.nst))
+        xa_lk = np.zeros((self.ntrajs)) # TODO: state-pair
+        for itraj in range(self.ntrajs):
+            rnorm = 0.
+            for jtraj in range(self.ntrajs):
+                pos_diff = self.mols[jtraj].pos - self.mols[itraj].pos
+                if (abs(pos_diff) <= sigma_lk[itraj] * smooth_weight):
+                    for ist in range(self.nst):
+                        w_k[itraj, ist] += gaussian1d(self.mols[jtraj].pos,\
+                            self.mols[jtraj].rho[ist, ist].real, sigma_x, self.mols[itraj].pos)
+                    rnorm += gaussian1d(self.mols[jtraj].pos, 1., sigma_x, self.mols[itraj].pos)
+            w_k[itraj] = w_k[itraj] / rnorm
+            if ((min(w_k[itraj]) <= self.rho_threshold) or (max(w_k[itraj]) >= 1. - self.rho_threshold)):
+                self.phase[itraj] = np.zeros((self.nst, self.nat, self.nsp))
+
+        rho = np.zeros((self.ntrajs, self.nst))
+        for itraj in range(self.ntrajs):
+            for ist in range(self.nst):
+                rho[itraj, ist] = self.mols[itraj].rho[ist, ist].real
+
+            if ((min(w_k[itraj]) <= self.rho_threshold) or (max(w_k[itraj]) >= 1. - self.rho_threshold)):
+                xa_lk[itraj] += (0.) * (rho[itraj, 0] + rho[itraj, 1])
+            else:
+                xa_lk[itraj] = 0.
+
+        # Calculate quantum momentum as linear function
+        # Calculate slope for each trajectory
+        T_lk = np.zeros((self.ntrajs))  #TODO: state-pair
+        for itraj in range(self.ntrajs):
+            for jtraj in range(self.ntrajs):
+                const_tmp = rho[itraj, 0] + rho[itraj, 1]
+                T_lk[itraj] += gaussian1d(self.mols[itraj].pos, const_tmp, sigma_lk[jtraj],\
+                    self.mols[jtraj].pos)
+
+        W_lk = np.zeros((self.ntrajs, self.ntrajs)) # TODO: state-pair
+        for itraj in range(self.ntrajs):
+            for jtraj in range(self.ntrajs):
+                const_tmp = rho[itraj, 0] + rho[itraj, 1]
+                W_lk[jtraj, itraj] += gaussian1d(self.mols[itraj].pos, const_tmp, sigma_lk[jtraj],\
+                    self.mols[jtraj].pos)
+            W_lk[itraj] /= T_lk[itraj] # FIXME 
+        
+        slope = np.zeros((self.ntrajs))
+        for itraj in range(self.ntrajs):
+            for jtraj in range(self.ntrajs):
+                slope[itraj] -= 0.5 * W_lk[jtraj, itraj] / sigma_lk[jtraj] ** 2 
+                
+        # Get quantum momentum center
+        for itraj in range(self.ntrajs):
+            pass
+        
         # Calculate qmom * phase / mass
         self.qmom_dot_ph = np.zeros((self.ntrajs, self.nst))
         for itraj in range(self.ntrajs):
@@ -210,8 +287,16 @@ class CT(MQC):
     def print_init(self):
         """ Routine to print the initial information of dynamics
         """
+        pass
 
     def print_step(self, molecule, istep):
         """ Routine to print each steps infomation about dynamics
         """
         pass
+
+def gaussian1d(x, const, sigma, x0):
+    if (sigma < 0.0):
+        return -1
+    else:
+        res = const / (sigma * np.sqrt(2. * np.pi)) * np.exp(- (x - x0) ** 2 / (2. * sigma ** 2))
+        return res 
