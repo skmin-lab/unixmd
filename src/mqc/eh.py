@@ -154,7 +154,7 @@ class Eh(MQC):
             :param object mm: mm object containing MM calculation infomation
         """
         # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(self.mol, qm, mm, restart)
+        super().print_init(qm, mm, restart)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
