@@ -81,6 +81,7 @@ class CT(MQC):
 
                 self.write_md_output(unixmd_dirs[itraj], self.istep)
                 #self.print_step(self.istep)
+            self.calculate_qmom()
 
         else: 
             raise ValueError ("restart option is invalid in CTMQC yet.")
@@ -89,7 +90,6 @@ class CT(MQC):
 
         # Main MD loop
         for istep in range(self.istep, self.nsteps):
-            self.calculate_qmom()
             for itraj in range(self.ntrajs):
                 self.mol = self.mols[itraj]
                 
@@ -129,6 +129,7 @@ class CT(MQC):
                 #restart_file = os.path.join(base_dir, "RESTART.bin")
                 #with open(restart_file, 'wb') as f:
                 #    pickle.dump({'qm':qm, 'md':self}, f)
+            self.calculate_qmom()
 
         # Delete scratch directory
         if (not save_scr):
