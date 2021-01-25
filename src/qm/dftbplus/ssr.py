@@ -25,7 +25,7 @@ class SSR(DFTBplus):
         :param string cpreks_grad_alg: algorithms used in CP-REKS equations
         :param double cpreks_grad_tol: gradient tolerance for CP-REKS equations
         :param boolean save_memory: save memory in cache used in CP-REKS equations
-        :param string embedding: charge embedding options; electrostatic, mechanical
+        :param string embedding: charge-charge embedding options
         :param boolean periodic: use periodicity in the calculations
         :param double,list cell_length: the lattice vectors of periodic unit cell
         :param string sk_path: path for slater-koster files
