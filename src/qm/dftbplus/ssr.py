@@ -10,7 +10,7 @@ class SSR(DFTBplus):
 
         :param object molecule: molecule object
         :param boolean scc: include self-consistent charge (SCC) scheme
-        :param double scc_tol: energy convergence for SCC iterations
+        :param double scc_tol: stopping criteria for the SCC iterations
         :param integer scc_max_iter: maximum number of SCC iterations
         :param boolean ocdftb: include onsite correction to SCC term
         :param boolean lcdftb: include long-range corrected functional
@@ -23,7 +23,7 @@ class SSR(DFTBplus):
         :param double shift: level shifting value in SCC iterations
         :param double,list tuning: scaling factor for atomic spin constants
         :param string cpreks_grad_alg: algorithms used in CP-REKS equations
-        :param double cpreks_grad_tol: gradient tolerance for CP-REKS equations
+        :param double cpreks_grad_tol: tolerance used in the conjugate-gradient based algorithms
         :param boolean save_memory: save memory in cache used in CP-REKS equations
         :param string embedding: charge-charge embedding options
         :param boolean periodic: use periodicity in the calculations

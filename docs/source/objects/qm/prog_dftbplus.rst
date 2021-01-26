@@ -151,7 +151,7 @@ determined from the **state_interactions** argument.
 | **scc**                | include self-consistent charge (SCC) scheme    | *True*              |
 | *(boolean)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| **scc_tol**            | energy convergence for SCC iterations          | *1E-6*              |
+| **scc_tol**            | Stopping criteria for the SCC iterations       | *1E-6*              |
 | *(double)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
 | **scc_max_iter**       | maximum number of SCC iterations               | *1000*              |
@@ -190,8 +190,8 @@ determined from the **state_interactions** argument.
 | **cpreks_grad_alg**    | algorithms used in CP-REKS equations           | *'pcg'*             |
 | *(string)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| **cpreks_grad_tol**    | gradient tolerance for CP-REKS equations       | *1E-8*              |
-| *(double)*             |                                                |                     |
+| **cpreks_grad_tol**    | tolerance used in the conjugate-gradient based | *1E-8*              |
+| *(double)*             | algorithm                                      |                     |
 +------------------------+------------------------------------------------+---------------------+
 | **save_memory**        | save memory in cache used in CP-REKS equations | *False*             |
 | *(boolean)*            |                                                |                     |
@@ -221,48 +221,41 @@ determined from the **state_interactions** argument.
 
 Detailed description of arguments
 ''''''''''''''''''''''''''''''''''''
-- **scc** *(boolean)*
+
+- **scc** *(boolean)* - Default: *True*
 
   Includes self-consistent charge (SCC) scheme. This is a mandatory argument to use SSR calculation.
-
-  + True: Uses a SCC-DFTB method.
-  + False: Uses a DFTB method.
+  If this sets to False, then the calculation will be died.
 
 \
 
-- **scc_tol** *(double)*
+- **scc_tol** *(double)* - Default: *1E-6*
 
-  Energy convergence for SCC iterations.
+  Stopping criteria for the SCC iterations.
 
 \
 
-- **scc_max_iter** *(integer)*
+- **scc_max_iter** *(integer)* - Default: *1000*
 
   Maximum number of SCC iterations.
 
 \
 
-- **ocdftb** *(boolean)*
+- **ocdftb** *(boolean)* - Default: *False*
 
-  Includes onsite-correction to SCC term in the DFTB method. This is currently experimental feature,
+  Includes onsite-correction (OC) to SCC term in the DFTB method. This is currently experimental feature,
   and not implemented in SSR calculation.
 
-  + True: Uses a OC-DFTB method.
-  + False: Uses a SCC-DFTB method.
-
 \
 
-- **lcdftb** *(boolean)*
+- **lcdftb** *(boolean)* - Default: *False*
 
-  Includes long-range corrected functional in the DFTB method. To deal with the excited states properly,
+  Includes long-range corrected (LC) functional in the DFTB method. To deal with the excited states properly,
   it is recommended to use LC-DFTB method for SSR calculation.
 
-  + True: Uses a LC-DFTB method.
-  + False: Uses a SCC-DFTB method.
-
 \
 
-- **lc_method** *(string)*
+- **lc_method** *(string)* - Default: *'MatrixBased'*
 
   Detailed algorithms used in LC-DFTB. These arguments are same with the original arguments used in DFTB+.
 
@@ -272,72 +265,63 @@ Detailed description of arguments
 
 \
 
-- **ssr22** *(boolean)*
+- **ssr22** *(boolean)* - Default: *False*
 
-  Uses SSR(2,2) calculation in the context of DFTB method. The detailed type of the REKS calculation is
-  determined the number of states and **state_interactions** argument. If the number of states is one,
+  Uses SSR(2,2) calculation in the context of DFTB method. When this sets to True, detailed type of the REKS calculation is
+  automatically determined from the number of states and **state_interactions** argument. If the number of states is one,
   the single-state REKS calculation is carried out. When the number of states is larger than one,
   the SA-REKS or SI-SA-REKS calculation is executed according to the **state_interactions** argument.
 
-  + True: Uses a DFTB/SSR(2,2) method.
-  + False: Do not use a DFTB/SSR(2,2) method.
-
 \
 
-- **ssr44** *(boolean)*
+- **ssr44** *(boolean)* - Default: *False*
 
-  Uses SSR(4,4) calculation in the context of DFTB method. The detailed type of the REKS calculation is
-  determined the number of states and **state_interactions** argument. If the number of states is one,
+  Uses SSR(4,4) calculation in the context of DFTB method. When this sets to True, detailed type of the REKS calculation is
+  automatically determined from the number of states and **state_interactions** argument. If the number of states is one,
   the single-state REKS calculation is carried out. When the number of states is larger than one,
   the SA-REKS or SI-SA-REKS calculation is executed according to the **state_interactions** argument.
   This is currently experimental feature and not implemented.
 
-  + True: Uses a DFTB/SSR(4,4) method.
-  + False: Do not use a DFTB/SSR(4,4) method.
-
 \
 
-- **guess** *(string)*
+- **guess** *(string)* - Default: *'h0'*
 
   Initial guess method for the SCC scheme. The 'read' option with DFTB/SSR method is supported in 20.2 version (or newer).
 
   + 'h0': Initial orbitals are generated from the diagonalization of non-SCC Hamiltonian.
-  + 'read': Reads *eigenvec.bin* file generated from previous step. If **guess_file** exists,
-then *eigenvec.bin* file is used as initial guess at t = 0.0 s.
+  + 'read': Reads "eigenvec.bin" file generated from previous step. If **guess_file** exists, then "eigenvec.bin" file is used as initial guess at t = 0.0 s.
 
 \
 
-- **guess_file** *(string)*
+- **guess_file** *(string)* - Default: *'./eigenvec.bin'*
 
   Initial guess file for eigenvectors. Is it vaild when **guess** is 'read' option.
 
 \
 
-- **state_interactions** *(boolean)*
+- **state_interactions** *(boolean)* - Default: *False*
 
-  Includes state-interaction terms to SA-REKS calculation. It is valid when the number of states is larger
+  Includes state-interaction terms to SA-REKS calculation. If this sets to True, the SI-SA-REKS states are calculated.
+  Otherwise, the SA-REKS states are obtained. It is valid when the number of states is larger
   than one. In general, it generates more reliable adiabatic states.
-
-  + True: Uses SI-SA-REKS states.
-  + False: Uses SA-REKS states.
 
 \
 
-- **shift** *(double)*
+- **shift** *(double)* - Default: *0.3*
 
   Level shifting value used in SCC iterations. It can be helpful to increase **Shift** when
   it is hard to converge the SCC iterations.
 
 \
 
-- **tuning** *(double, list)*
+- **tuning** *(double, list)* - Default: *None*
 
   Scaling factor for atomic spin constants. It must be used carefully.
   The list consists of the number of atomic species.
 
 \
 
-- **cpreks_grad_alg** *(string)*
+- **cpreks_grad_alg** *(string)* - Default: *'pcg'*
 
   Algorithms used in CP-REKS equations.
 
@@ -347,22 +331,22 @@ then *eigenvec.bin* file is used as initial guess at t = 0.0 s.
 
 \
 
-- **cpreks_grad_tol** *(double)*
+- **cpreks_grad_tol** *(double)* - Default: *1E-8*
 
-  Tolerance of the gradient used in CP-REKS equations. This is not used when **cpreks_grad_alg** is 'direct' option.
-
-\
-
-- **save_memory** *(boolean)*
-
-  Saves memory in cache used in CP-REKS equations.
-
-  + True: Some variables which needs large memory allocation are save in the memory. In general, this becomes faster option.
-  + False: Do not save in cache. This option is recommended for large systems.
+  Tolerance used in the conjugate-gradient based algorithm for solving the CP-REKS equations.
+  This is not used when **cpreks_grad_alg** is 'direct' option.
 
 \
 
-- **embedding** *(string)*
+- **save_memory** *(boolean)* - Default: *False*
+
+  Saves memory in cache used in CP-REKS equations. If this sets to True, some variables
+  which needs large memory allocation are save in the memory. In general, this becomes faster option.
+  If this sets to False, do not save in cache. This option is recommended for large systems.
+
+\
+
+- **embedding** *(string)* - Default: *None*
 
   Charge-charge embedding options used in QM/MM method. It is recommended option for the environments showing high polarity.
 
@@ -372,40 +356,38 @@ then *eigenvec.bin* file is used as initial guess at t = 0.0 s.
 
 \
 
-- **periodic** *(boolean)*
+- **periodic** *(boolean)* - Default: *False*
 
-  Uses a periodicity in the calculation. Only :math:`\Gamma`-point calculation is supported with DFTB/SSR method.
-
-  + True: Uses a periodicity in the calculation.
-  + False: Consider only cluster in the calculation.
+  Uses a periodicity in the calculation. Only :math:`\Gamma`-point sampling is supported with DFTB/SSR method when the periodicity is considered.
 
 \
 
-- **cell_length** *(double, list)*
+- **cell_length** *(double, list)* - Default: *9 \* [ 0.0 ]*
 
   Cell lattice vectors of the periodic unit cell. The list consists of nine elements, which correspond to the :math:`a`, :math:`b`, and :math:`c` vectors, respectively.
 
 \
 
-- **sk_path** *(string)*
+- **sk_path** *(string)* - Default: *'./'*
 
   Path for slaker-koster files.
 
 \
 
-- **install_path** *(string)*
+- **install_path** *(string)* - Default: *'./'*
 
-  Path for DFTB+ install directory. In general, it becomes '$DFTB/install/', not '$DFTB/install/bin/'.
+  Path for DFTB+ install directory. The `$DFTB` environment variable determines the directory where DFTB+ program is installed.
+  Thus, **install_path** must be '`$DFTB`/install/', not '`$DFTB`/install/bin/'.
 
 \
 
-- **nthreads** *(integer)*
+- **nthreads** *(integer)* - Default: *1*
 
   Number of threads in the calculation.
 
 \
 
-- **version** *(string)*
+- **version** *(string)* - Default: *'20.1'*
 
   Version of DFTB+ program. DFTB/SSR method is supported in 20.1 version (or newer).
 
