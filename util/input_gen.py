@@ -28,7 +28,7 @@ def input_gen():
     for itraj in range(args.ntrajs):
         os.mkdir(f"TRAJ_{itraj + 1:0{index}d}")
         shutil.copy(f"{args.running_script}", f"TRAJ_{itraj + 1:0{index}d}/run.py")
-        shutil.copy(f"{args.sample_dir}/sample_{itraj + 1:0{index}d}.xyz", "TRAJ_{itraj + 1:0{index}d}/geom.xyz")
+        shutil.copy(f"{args.sample_dir}/sample_{itraj + 1:0{index}d}.xyz", f"TRAJ_{itraj + 1:0{index}d}/geom.xyz")
 
 if (__name__ == "__main__"):
     input_gen()
