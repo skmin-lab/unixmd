@@ -35,32 +35,19 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 +-------------------+------+----+----+-----+
 
 .. note:: To run DFTB+ interfacing script, the information about maximum angular momentum is
-   needed. In current version of UNI-xMD, the values for maximum angular momentum is included
-   in **max_l** dictionary variable of dftbpar.py file. The user can add or modify the key and
-   value to **max_l**. The following example shows addition of new information about Si atom.
+   needed. In current version of PyUNIxMD, the values for maximum angular momentum are included
+   in **max_l** dictionary variable in '`$PYUNIXMD`/src/qm/dftb/dftbpar.py' file.
+   You can add or modify the **max_l** variable, see the following example.
 
 .. code-block:: python
 
    from qm.dftbplus.dftbpar import max_l
 
-   max_l["Si"] = "p" # add value of new atom
-   max_l["C"] = "s" # modify value of already existing atom
+   max_l["Si"] = "p" # add value of new Si atom
+   max_l["C"] = "s" # modify value of already existing C atom
 
 (TD)DFTB
 """""""""""""""""""""""""""""""""""""
-
-.. note:: Our interface script is generated with 19.1/20.1 version of DFTB+ program.
-   Here, you should refer to manual of DFTB+ program if you want to see detailed
-   lists for **lc_method**, **mixer**, **ex_symmetry** variables.
-
-.. note:: Currently, **guess** variable reads the following two strings.
-   One is *'h0'*, which uses zedo charges as initial guess of SCC term for every time step.
-   The other is **read**, which reads charges.bin file generated from previous step.
-   If **guess_file** exists, then charges.bin file is used as initial guess at t = 0.0 s.
-
-.. note:: For **cell_length** variable, it reads a list variable consisted of 9 float elements,
-   which correspond to cell lattice vectors. Similarly **k_point** variable reads a list
-   consisted of 3 integer elements, which correspond to number of k points.
 
 +------------------------+------------------------------------------------+--------------------+
 | Keywords               | Work                                           | Default            |
@@ -71,7 +58,7 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 | **scc**                | include self-consistent charge (SCC) scheme    | *True*             |
 | *(boolean)*            |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
-| **scc_tol**            | energy convergence for SCC iterations          | *1E-6*             |
+| **scc_tol**            | Stopping criteria for the SCC iterations       | *1E-6*             |
 | *(double)*             |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
 | **scc_max_iter**       | maximum number of SCC iterations               | *100*              |
@@ -111,7 +98,7 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 | *(integer, list)*      |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
 | **periodic**           | use periodicity in the calculations            | *False*            |
-| *(string)*             |                                                |                    |
+| *(boolean)*            |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
 | **cell_length**        | the lattice vectors of periodic unit cell      | *9 \* [ 0.0 ]*     |
 | *(double, list)*       |                                                |                    |
@@ -123,7 +110,7 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 | *(string)*             |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
 | **mpi**                | use MPI parallelization                        | *False*            |
-| *(string)*             |                                                |                    |
+| *(boolean)*            |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
 | **mpi_path**           | path for MPI binary                            | *'./'*             |
 | *(string)*             |                                                |                    |
@@ -134,6 +121,161 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
 | **version**            | version of DFTB+ program                       | *'20.1'*           |
 | *(string)*             |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
+
+Detailed description of arguments
+''''''''''''''''''''''''''''''''''''
+
+- **scc** *(boolean)* - Default: *True*
+
+  Includes self-consistent charge (SCC) scheme. If this sets to False, then the calculation will change to non-SCC DFTB.
+
+\
+
+- **scc_tol** *(double)* - Default: *1E-6*
+
+  Stopping criteria for the SCC iterations.
+
+\
+
+- **scc_max_iter** *(integer)* - Default: *100*
+
+  Maximum number of SCC iterations.
+
+\
+
+- **ocdftb** *(boolean)* - Default: *False*
+
+  Includes onsite-correction (OC) to SCC term in the DFTB method.
+
+\
+
+- **lcdftb** *(boolean)* - Default: *False*
+
+  Includes long-range corrected (LC) functional in the DFTB method.
+
+\
+
+- **lc_method** *(string)* - Default: *'MatrixBased'*
+
+  Detailed algorithms used in LC-DFTB. These arguments are same with the original arguments used in DFTB+.
+
+  + 'Thresholded': Screening according to estimated magnitude of terms.
+  + 'NeighbourBased': Uses a purely neighbour-list based algorithm.
+  + 'MatrixBased': Uses a matrix-matrix multiplication based algorithm.
+
+\
+
+- **sdftb** *(boolean)* - Default: *False*
+
+  Includes spin-polarisation scheme in the DFTB method. The atomic spin constants is given in '`$PYUNIXMD`/src/qm/dftb/dftbpar.py',
+  and the information about hydrogen, carbon, nitrogen, and oxygen atoms is currently included. If you
+  want to exploit spin-polarisation scheme with other species, then add the corresponding
+  spin constants to '`$PYUNIXMD`/src/qm/dftb/dftbpar.py' file in the source code.
+
+\
+
+- **unpaired_elec** *(double)* - Default: *0.0*
+
+  Number of unpaired electrons. For example, put two into **unpaired_elec** for calculation of triplet state.
+
+\
+
+- **guess** *(string)* - Default: *'h0'*
+
+  Initial guess method for the SCC scheme.
+
+  + 'h0': Initial charges of SCC term are set to zero for every time step.
+  + 'read': Reads "charges.bin" file generated from previous step. If **guess_file** exists, then "charges.bin" file is used as initial guess at t = 0.0 s.
+
+\
+
+- **guess_file** *(string)* - Default: *'./charges.bin'*
+
+  Initial guess file for charges. It is vaild when **guess** is 'read' option.
+
+\
+
+- **elec_temp** *(double)* - Default: *0.0*
+
+  Electronic temperature for Fermi-Dirac scheme. The unit is Kelvin.
+
+\
+
+- **mixer** *(string)* - Default: *'Broyden'*
+
+  Mixing method for charges used in DFTB. These arguments are same with the original arguments in used in DFTB+.
+  The detailed parameters used in each mixer are set to default values of the DFTB+ program.
+  If you want to know the detailed process of each mixer, see the manual of the DFTB+ program.
+
+  + 'Broyden': Use Broyden mixer.
+  + 'Anderson': Use Anderson mixer.
+  + 'DIIS': Use DIIS mixer.
+  + 'Simple': Use simple mixer.
+
+\
+
+- **ex_symmetry** *(string)* - Default: *'singlet'*
+
+  Symmetry of excited state used in TD-DFTB. These arguments are same with the original arguments in used in DFTB+.
+  Currently, 'triplet' and 'both' options are not added in our interfacing script.
+
+  + 'singlet': Calculate singlet excited state in Casida formalism.
+
+\
+
+- **k_point** *(integer, list)* - Default: *3 \* [ 1 ]*
+
+  Number of K-point samplings. The list consists of three elements.
+  If the default is used for the periodic cell, the :math:`\Gamma`-point sampling is used.
+
+\
+
+- **periodic** *(boolean)* - Default: *False*
+
+  Uses a periodicity in the calculation.
+
+\
+
+- **cell_length** *(double, list)* - Default: *9 \* [ 0.0 ]*
+
+  Cell lattice vectors of the periodic unit cell. The list consists of nine elements, which correspond to the :math:`a`, :math:`b`, and :math:`c` vectors, respectively.
+
+\
+
+- **sk_path** *(string)* - Default: *'./'*
+
+  Path for slaker-koster files.
+
+\
+
+- **install_path** *(string)* - Default: *'./'*
+
+  Path for DFTB+ install directory. The `$DFTB` environment variable determines the directory where DFTB+ program is installed.
+  Thus, **install_path** must be '`$DFTB`/install/', not '`$DFTB`/install/bin/'.
+
+\
+
+- **mpi** *(boolean)* - Default: *False*
+
+  Use MPI parallelization for large scale calculation.
+
+\
+
+- **mpi_path** *(string)* - Default: *'./'*
+
+  Path for MPI binary.
+
+\
+
+- **nthreads** *(integer)* - Default: *1*
+
+  Number of threads in the calculation.
+
+\
+
+- **version** *(string)* - Default: *'20.1'*
+
+  Version of DFTB+ program. (TD)DFTB method is supported in 19.1 version (or newer).
 
 SSR
 """""""""""""""""""""""""""""""""""""
@@ -218,7 +360,6 @@ determined from the **state_interactions** argument.
 | *(string)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
 
-
 Detailed description of arguments
 ''''''''''''''''''''''''''''''''''''
 
@@ -295,7 +436,7 @@ Detailed description of arguments
 
 - **guess_file** *(string)* - Default: *'./eigenvec.bin'*
 
-  Initial guess file for eigenvectors. Is it vaild when **guess** is 'read' option.
+  Initial guess file for eigenvectors. It is vaild when **guess** is 'read' option.
 
 \
 

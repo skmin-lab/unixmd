@@ -11,7 +11,7 @@ class DFTB(DFTBplus):
 
         :param object molecule: molecule object
         :param boolean scc: include self-consistent charge (SCC) scheme
-        :param double scc_tol: energy convergence for SCC iterations
+        :param double scc_tol: stopping criteria for the SCC iterations
         :param integer scc_max_iter: maximum number of SCC iterations
         :param boolean ocdftb: include onsite correction to SCC term
         :param boolean lcdftb: include long-range corrected functional
