@@ -5,7 +5,7 @@ DFTB+
 DFTB+ :cite:`Hourahine2020` is a fast and efficient versatile quantum mechanical simulation software package.
 Using DFTB+ you can carry out quantum mechanical simulations similar to density functional
 theory but in an approximate way, typically gaining around two orders of magnitude in
-speed. (TD)DFTB and SSR methods are interfaced with current version of UNI-xMD.
+speed. (TD)DFTB and SSR methods are interfaced with current version of PyUNIxMD.
 
 - (TD)DFTB is time-dependent density-functional tight-binding method. DFTB+ supports only
   analytical gradients, not nonadiabatic couplings. Instead, nonadiabatic coupling matrix
@@ -308,10 +308,10 @@ determined from the **state_interactions** argument.
 | **lc_method**          | algorithms for LC-DFTB                         | *'MatrixBased'*     |
 | *(string)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| **ssr22**              | use REKS(2,2) calculation?                     | *False*             |
+| **ssr22**              | use SSR(2,2) calculation?                      | *False*             |
 | *(boolean)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| **ssr44**              | use REKS(4,4) calculation?                     | *False*             |
+| **ssr44**              | use SSR(4,4) calculation?                      | *False*             |
 | *(boolean)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
 | **guess**              | initial guess method for SCC scheme            | *'h0'*              |

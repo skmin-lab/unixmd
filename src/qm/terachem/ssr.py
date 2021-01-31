@@ -13,25 +13,26 @@ class SSR(TeraChem):
         :param string precision: precision in the calculations
         :param double scf_rho_tol: wavefunction convergence for SCF iterations
         :param integer scf_max_iter: maximum number of SCF iterations
-        :param boolean ssr22: use REKS(2,2) calculation?
+        :param boolean ssr22: use SSR(2,2) calculation?
         :param string guess: initial guess for REKS SCF iterations
         :param string guess_file: initial guess file
         :param double reks_rho_tol: DIIS error for REKS SCF iterations
         :param integer reks_max_iter: maximum number of REKS SCF iterations
         :param double shift: level shifting value in REKS SCF iterations
-        :param boolean use_ssr_state: calculate SSR state, if not, treat SA-REKS
+        :param boolean state_interactions: include state-interaction terms to SA-REKS
         :param double cpreks_grad_tol: gradient tolerance for CP-REKS equations
         :param integer cpreks_max_iter: maximum number of CP-REKS iterations
         :param string qm_path: path for QM binary
         :param integer ngpus: number of GPUs
         :param string gpu_id: ID of used GPUs
-        :param double version: version of TeraChem program
+        :param string version: version of TeraChem program
     """
     def __init__(self, molecule, ngpus=1, gpu_id="1", precision="dynamic", \
         version=1.93, functional="hf", basis_set="sto-3g", scf_rho_tol=1E-2, \
         scf_max_iter=300, ssr22=True, guess="dft", guess_file="./c0", \
         reks_rho_tol=1E-6, reks_max_iter=1000, shift=0.3, use_ssr_state=True, \
         cpreks_grad_tol=1E-6, cpreks_max_iter=1000, qm_path="./"):
+        # TODO: ssr22, state_interactions, version must be checked
         # Initialize TeraChem common variables
         super(SSR, self).__init__(functional, basis_set, qm_path, ngpus, \
             gpu_id, precision, version)

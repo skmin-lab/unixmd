@@ -15,8 +15,8 @@ class SSR(DFTBplus):
         :param boolean ocdftb: include onsite correction to SCC term
         :param boolean lcdftb: include long-range corrected functional
         :param string lc_method: algorithms for LC-DFTB
-        :param boolean ssr22: use REKS(2,2) calculation?
-        :param boolean ssr44: use REKS(4,4) calculation?
+        :param boolean ssr22: use SSR(2,2) calculation?
+        :param boolean ssr44: use SSR(4,4) calculation?
         :param string guess: initial guess method for SCC scheme
         :param string guess_file: initial guess file for eigenvetors
         :param boolean state_interactions: include state-interaction terms to SA-REKS
