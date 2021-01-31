@@ -9,18 +9,6 @@ MM3-2000), OPLS (OPLS-UA, OPLS-AA), Merck Molecular Force (MMFF), Liam Dang's po
 AMOEBA (2004, 2009, 2013, 2017, 2018) polarizable atomic multipole force fields, AMOEBA+ that adds
 charge penetration effects, and HIPPO (Hydrogen-like Interatomic Polarizable POtential) force field.
 
-.. note:: Our interface script is generated with 8.7 version of Tinker program. Tinker can be
-   used for QM/MM calculation. UNI-xMD supports two types of QM/MM scheme. One is *'additive'*
-   scheme and the other is *'subtractive'* scheme, which are controlled by **scheme** variable.
-
-.. note:: Currently, **embedding** and **vdw** variables control the charge-charge interactions
-   and the van der Walls interactions, respectively. For **embedding** option, *'electrostatic'*
-   and *'mechanical'* are possible choices, while *'lennardjones'* becomes the only option for
-   **vdw** option.
-
-.. note:: For **cell_par** variable, it reads a list variable consisted of 6 elements,
-   which correspond to lengths and angles.
-
 +------------------------+------------------------------------------------+---------------------+
 | Keywords               | Work                                           | Default             |
 +========================+================================================+=====================+
@@ -40,7 +28,7 @@ charge penetration effects, and HIPPO (Hydrogen-like Interatomic Polarizable POt
 | *(boolean)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
 | **cell_par**           | cell lattice parameters (lengths and angles)   | *6 \* [ 0.0 ]*      |
-| *(double)*             |                                                |                     |
+| *(double, list)*       |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
 | **xyz_file**           | initial tinker.xyz file                        | *'./tinker.xyz'*    |
 | *(string)*             |                                                |                     |
@@ -54,7 +42,81 @@ charge penetration effects, and HIPPO (Hydrogen-like Interatomic Polarizable POt
 | **nthreads**           | number of threads in the calculations          | *1*                 |
 | *(integer)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| **version**            | version of Tinker program                      | *8.7*               |
-| *(double)*             |                                                |                     |
+| **version**            | version of Tinker program                      | *'8.7'*             |
+| *(string)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
+
+Detailed description of arguments
+''''''''''''''''''''''''''''''''''''
+
+- **scheme** *(string)* - Default: *None*
+
+  Type of QM/MM scheme. Current version of PyUNIxMD supports two types of QM/MM scheme.
+  One is subtractive scheme and the other is additive scheme. The detailed expressions for
+  these schemes are given in the literature. :cite:`Senn2009`
+
+  + 'additive': Total three calculations was carried out, which correspond to a QM calculation on the inner region, an MM calculation on the outer region, and an explicit QM-MM coupling term, respectively. In general, it is recommended to use the additive scheme for solution systems.
+  + 'subtractive': Total three calculations was carried out, which correspond to a QM calculation on the inner region, an MM calculation on the entire region, and an MM calculation on the inner region, respectively. In this scheme, no explicit QM-MM coupling terms are needed since they are implicitly included in three calculations. It is recommended to use the subtractive scheme for proteins.
+
+\
+
+- **embedding** *(string)* - Default: *None*
+
+  Type of charge-charge interactions between the inner and outer regions. Current version of PyUNIxMD supports two types of charge-charge embedding.
+  One is mechanical interaction and the other is electrostatic interaction.
+
+  + 'mechanical': The charge-charge interactions are treated at MM level. The energies are calculated from the interactions between point charges.
+  + 'electrostatic': The charge-charge interactions are treated at QM level. The point charges of the outer regions are added to the one-electron terms of the Hamiltonian in QM calculation. Hence, the polarization effect from the point charges are considered in this embedding.
+
+\
+
+- **vdw** *(string)* - Default: *None*
+
+  Type of van-der Walls interactions between the inner and outer regions. Current version of PyUNIxMD supports one type of van-der Walls interaction,
+  which is the Lennard-Jones interaction. The other types of van-der Walls interactions provided in the Tinker program are not currently interfaced with PyUNIxMD.
+
+  + 'lennardjones': The Lennard-Jones interactions are used for van-der Walls interactions.
+
+- **periodic** *(boolean)* - Default: *False*
+
+  Uses a periodicity in the calculation. Only :math:`\Gamma`-point sampling is supported with Tinker program when the periodicity is considered.
+
+\
+
+- **cell_par** *(double, list)* - Default: *6 \* [ 0.0 ]*
+
+  Cell lattice parameters of the periodic unit cell. The list consists of six elements and first three elements correspond to
+  the :math:`a`, :math:`b`, and :math:`c` lengths while the last three elements correspond to the :math:`\alpha`, :math:`\beta`,
+  and :math:`\gamma` angles, respectively.
+
+\
+
+- **xyz_file** *(string)* - Default: *'./tinker.xyz'*
+
+  Initial 'tinker.xyz' file with tinker xyz format. The 'tinker.xyz' file must include correct atom types and bonding information.
+
+\
+
+- **key_file** *(string)* - Default: *'./tinker.key'*
+
+  Initial 'tinker.key' file used in the calculations. The keywords of the Tinker program except **embedding**, **vdw**, and the periodicity can be included in this file.
+  For example, if you want to add some constraints to the systems, then the related keywords can be added to the 'tinker.key' file.
+
+\
+
+- **mm_path** *(string)* - Default: *'./'*
+
+  Path for Tinker binary. In our interfacing scripts, the testgrad (or testgrad.x) binary is used to calculate the energies and forces in MM level.
+
+\
+
+- **nthreads** *(integer)* - Default: *1*
+
+  Number of threads in the calculation. To use this option, you must check that your binarys of the Tinker program supports OpenMP parallelization.
+
+\
+
+- **version** *(string)* - Default: *'8.7'*
+
+  Version of Tinker program. Current interfacing scripts are generated with 8.7 version of the Tinker program.
 
