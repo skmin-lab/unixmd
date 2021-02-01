@@ -15,12 +15,6 @@ Q-Chem :cite:`qchem2015` is a comprehensive ab initio quantum chemistry software
 (TD)DFT
 """""""""""""""""""""""""""""""""""""
 
-.. note:: Our interface script is generated with 5.2 version of QChem program.
-   Here, you should refer to manual of QChem program if you want to see detailed
-   lists for **basis_set** and **functional** variables.
-
-
-
 +-----------------------+------------------------------------------------+--------------+
 | Keywords              | Work                                           | Default      |
 +=======================+================================================+==============+
@@ -64,3 +58,76 @@ Q-Chem :cite:`qchem2015` is a comprehensive ab initio quantum chemistry software
 | *(string)*            |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
 
+Detailed description of arguments
+''''''''''''''''''''''''''''''''''''
+
+- **basis_set** *(string)* - Default: *'sto-3g'*
+
+Sets the basis set to be used.
+
+\
+
+- **memory** *(string)* - Default : *'500m'*
+
+The available total memory
+
+\
+
+- **nthreads** *(integer)* - Default : *1*
+
+Number of threads in the calculation
+
+\
+
+- **functional** *(string)* - Default : *'blyp'*
+
+The exchange-correlation functional to be used
+
+\
+
+- **scf_max_iter** *(integer)* - Default : *50*
+
+Maximum number of iteration for SCF
+
+\
+
+- **scf_rho_tol** *(integer)* - Default : *6*
+
+SCF is considered converged when the wave function error is less that 10 :sup:`-scf_rho_tol`
+
+\
+
+- **cis_max_iter** *(integer)* - Default : *30*
+
+Maximum number of iteration for CIS
+
+\
+
+- **cis_en_tol** *(integer)* - Default : *6*
+
+CIS is considered converged when error is less that 10 :sup:`-cis_en_tol`
+
+\
+
+- **cpscf_max_iter** *(integer)* - Default : *30*
+
+Maximum number of iteration for CPSCF
+
+\
+
+- **cpscf_grad_tol** *(integer)* - Default : *6*
+
+CPSCF is considered converged when gradient error is less that 10 :sup:`-cpscf_grad_tol`
+
+\
+
+- **qm_path** *(string)* - Default : *'./'*
+
+Path for Q-Chem install directory. The environment varialbes for Q-Chem are assigned by executing `qcenv.sh` in Q-Chem install directory.
+Hence, You must set **qm_path** to `'$YOUR_QCHEM_DIR'` not `'$YOUR_QCHEM_DIR/bin'`
+
+\
+
+- **version** *(integer)* - Default : *'5.2'*
+
+Version of Q-Chem
