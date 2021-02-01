@@ -1,7 +1,4 @@
 
-TURBOMOLE
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 Turbomole :cite:`Ahlrichs1989` is quantum chemical program package, initially developed
 in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and at the Forschungszentrum Karlsruhe.
 (TD)DFT method is interfaced with current version of UNI-xMD.
@@ -15,47 +12,90 @@ in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and a
 +--------+------+----+----+-----+
 
 (TD)DFT
-"""""""""""""""""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. note:: Our interface script is generated with 6.4 version of TM program.
-   Here, you should refer to manual of TM program if you want to see detailed
-   lists for **basis_set**, **functional** variable.
++---------------------+-------------------------------------------+-------------+
+| Keywords            | Work                                      | Default     |
++=====================+===========================================+=============+
+| ``functional``      | xc functional information                 | ``b-lyp``   |
++---------------------+-------------------------------------------+-------------+
+| ``basis_set``       | basis set information                     | ``SV(P)``   |
++---------------------+-------------------------------------------+-------------+
+| ``memory``          | allocatable memory in the calculations    | ``50``      |
++---------------------+-------------------------------------------+-------------+
+| ``scf_max_iter``    | maximum number of SCF iterations          | ``50``      |
++---------------------+-------------------------------------------+-------------+
+| ``scf_en_tol``      | energy convergence for SCF iterations     | ``6``       |
++---------------------+-------------------------------------------+-------------+
+| ``cis_max_iter``    | maximum number of CIS iterations          | ``25``      |
++---------------------+-------------------------------------------+-------------+
+| ``cis_en_tol``      | energy convergence for CIS iterations     | ``6``       |
++---------------------+-------------------------------------------+-------------+
+| ``qm_path``         | path for QM program                       | ``./``      |
++---------------------+-------------------------------------------+-------------+
+| ``nthreads``        | number of threads in the calculations     | ``1``       |
++---------------------+-------------------------------------------+-------------+
+| ``version``         | version of Turbomole program              | ``6.4``     |
++---------------------+-------------------------------------------+-------------+
 
+- **functional** *(string)* - Default: *b-lyp*
 
-+---------------------+-------------------------------------------+----------------+
-| Keywords            | Work                                      | Default        |
-+=====================+===========================================+================+
-| **molecule**        | molecular object                          |                |  
-| (:class:`Molecule`) |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **functional**      | xc functional information                 | *'b-lyp'*      |
-| *(string)*          |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **basis_set**       | basis set information                     | *'SV(P)'*      |
-| *(string)*          |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **memory**          | allocatable memory in the calculations    | *50*           |
-| *(integer)*         |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **scf_max_iter**    | maximum number of SCF iterations          | *50*           |
-| *(integer)*         |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **scf_en_tol**      | energy convergence for SCF iterations     | *6*            |
-| *(integer)*         |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **cis_max_iter**    | maximum number of CIS iterations          | *25*           |
-| *(integer)*         |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **cis_en_tol**      | energy convergence for CIS iterations     | *6*            |
-| *(integer)*         |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **qm_path**         | path for QM program                       | *'./'*         |
-| *(string)*          |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **nthreads**        | number of threads in the calculations     | *1*            |
-| *(integer)*         |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **version**         | version of Turbomole program              | *'6.4'*        |
-| *(string)*          |                                           |                |
-+---------------------+-------------------------------------------+----------------+
+ Functional for DFT calculation. For the detailed list, check TM manual.
+
+\
+
+- **basis_set** *(string)* - Default: *SV(P)*
+
+ Basis set for calculation. For the detailed list, check TM manual.
+
+\
+
+- **memory** *(integer)* - Default: *50*
+
+ Total memory used for calculation. unit is 'm'
+
+\
+
+- **scf_max_iter* *(integer)* - Default: *50*
+
+ Maximum number of SCF iterations.
+
+\
+
+- **scf_en_tol** *(integer)* - Default: *6*
+
+ Energy convergence of SCF iterations.
+
+\
+
+- **cis_max_iter* *(integer)* - Default: *25*
+
+ Maximum number of CIS iterations.
+
+\
+
+- **cis_en_tol** *(integer)* - Default: *6*
+
+ Energy convergence of CIS iterations.
+
+\
+
+- **qm_path** *(string)* - Default: *./*
+
+ Path for QM binary. Path must be include binary file itself (ex. /opt/TURBOMOLE/define)
+
+\
+
+- **nthreads** *(integer)* - Default: *1*
+
+ Number of threads for calculation.
+
+\
+
+- **version** *(double)* - Default: *6.4*
+
+ Version of Turbomole program. Our interface script is generated with 6.4 version of TM program.
+ Here, you should refer to manual of TM program if you want to see detailed lists for **basis_set**, **functional** variable.
+
+\
 
