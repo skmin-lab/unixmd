@@ -64,6 +64,8 @@ Detailed description of arguments
 - **basis_set** *(string)* - Default: *'sto-3g'*
 
 Sets the basis set to be used.
+These arguments are same with the original arguments in used in Q-Chem.
+If you want to know the detailed list for basis sets, see the manual of the Q-Chem program.
 
 \
 
@@ -81,7 +83,9 @@ Number of threads in the calculation
 
 - **functional** *(string)* - Default : *'blyp'*
 
-The exchange-correlation functional to be used
+The exchange-correlation functional to be used.
+These arguments are same with the original arguments in used in Q-Chem.
+If you want to know the detailed list for basis sets, see the manual of the Q-Chem program.
 
 \
 
