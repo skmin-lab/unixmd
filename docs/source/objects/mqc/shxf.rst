@@ -102,8 +102,10 @@ Detailed description of the arguments
   
   The **propagation** argument determines the representation for the electronic state.
    
-    + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}\}`
-    + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}\}`
+  + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}\}`
+  + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}\}`
+
+\
 
 - **solver** *(string)* - Default: *'rk4'*
 
@@ -125,10 +127,10 @@ Detailed description of the arguments
   Determines the direction of the momentum to be adjusted after a hop to conserve the total energy.
   If there is not enough kinetic energy in this direction, the hop is rejected and the running state is switched back to the original state.
   
-    + *'energy'*: Simply rescale the nuclear velocities.
-    + *'momentum'*: Adjust the momentum in the direction of the NACV.
-    + *'augment'*: First, the hop is evaluated as the  *'momentum'*. 
-      If the kinetic energy is not enough, then the hop is evaluated again as the *'energy'*. 
+  + *'energy'*: Simply rescale the nuclear velocities.
+  + *'momentum'*: Adjust the momentum in the direction of the NACV.
+  + *'augment'*: First, the hop is evaluated as the  *'momentum'*. 
+    If the kinetic energy is not enough, then the hop is evaluated again as the *'energy'*. 
 
 \
    
@@ -136,8 +138,8 @@ Detailed description of the arguments
   
   Determines the momentum rescaling method when a hop is rejected.
   
-    + *'keep'*: Do nothing, keeps the nuclear velocities.
-    + *'reverse'*: Reverse the momentum along the NACV.
+  + *'keep'*: Do nothing, keeps the nuclear velocities.
+  + *'reverse'*: Reverse the momentum along the NACV.
 
 \
 
