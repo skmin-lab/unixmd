@@ -80,6 +80,8 @@ Detailed description of arguments
   + None: Do not use van-der Walls interactions in QM/MM method.
   + 'lennardjones': The Lennard-Jones interactions are used for van-der Walls interactions.
 
+\
+
 - **periodic** *(boolean)* - Default: *False*
 
   Uses a periodicity in the calculation. Only :math:`\Gamma`-point sampling is supported with Tinker program when the periodicity is considered.
