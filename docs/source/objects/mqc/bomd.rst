@@ -63,3 +63,47 @@ package or a customized Hamiltonian, and nuclear propagation is done by the Velo
 | **verbosity**          | verbosity of output                            | *0*        | 
 | *(integer)*            |                                                |            |
 +------------------------+------------------------------------------------+------------+
+
+
+Detailed description of the arguments
+""""""""""""""""""""""""""""""""""""""""""
+
+- **istate** *(integer)* - Default: *0* (Ground state)
+  
+  The initial state. The possible range of the argument is from *0* to ``molecule.nstate-1``.
+   
+\
+
+- **dt** *(double)* - Default: *0.5*
+
+  The time interval is used in dynamics.
+
+\
+
+- **nsteps** *(integer)* - Default: *1000*
+
+  The number of nuclei propagation steps is used in dynamics.
+
+\
+
+- **unit_dt** *(string)* - Default: *'fs'*
+
+  The time unit is used in dynamics.
+
+  + 'fs': femto second
+  
+  + 'au': atomic unit
+
+\
+
+- **out_freq** *(integer)* - Default: *1*
+
+  the output is printed at each **out_freq** steps.
+
+\
+
+- **verbosity** *(integer)* - Default: *0*
+
+  verbosity.
+
+\
