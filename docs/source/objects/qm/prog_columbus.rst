@@ -21,10 +21,6 @@ In the current version of UNI-xMD, only CASSCF method is available.
 CASSCF
 """""""""""""""""""""""""""""""""""""
 
-.. note:: Our interface script is generated with 7.0 version of Columbus program.
-   Here, you should refer to manual of Columbus program if you want to see detailed
-   lists for **basis_set** variable.
-
 +------------------------+-----------------------------------------------------+----------------+
 | Keywords               | Work                                                | Default        |
 +========================+=====================================================+================+
