@@ -1,6 +1,6 @@
 
-Columbus	
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^	
+Columbus
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Columbus :cite:`Lischka2011` is one of famous open-source software for high-level *ab initio*
 quantum calculation. Similar with other softwares, it can do various types of fundamental quantum
