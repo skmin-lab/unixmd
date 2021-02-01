@@ -10,32 +10,37 @@ MQC class. In the MQC class, there are functions for update classical properties
 
 Far more insights about treating MQC in terms of code structure, the overall modules are controlled in fundamental
 input file run.py. When user select their dynamics method, they have to make md object from the subclass of
-``MQC`` class such as ``SH`` (mqc.SH), and a run method (md.run) to run that md object. In the md object, basic dynamics
+:class:``MQC`` class such as :class:``SH`` (:class:'mqc.SH'), and a run method (''md.run'') to run that md object. In the md object, basic dynamics
 parameters such as number of steps are given as arguments. Besides, run methods includes overall dynamics condition
 as arguments.
 
 Arguments for ``run`` method are listed below. The important point is that ``run`` method is included in each
-md subclasses of ``MQC``, not ``MQC`` itself.
+md subclasses of :class:`MQC`, not :class:`MQC` itself.
 
-+-----------------+-------------------------------------------------+-----------+
-| Keywords        | Work                                            | Default   |
-+=================+=================================================+===========+
-| ``qm``          | qm object containing on-the-fly                 |           |
-|                 | calculation information                         |           |
-+-----------------+-------------------------------------------------+-----------+
-| ``mm``          | mm object containing MM                         | ``None``  |
-|                 | calculation information                         |           |
-+-----------------+-------------------------------------------------+-----------+
-| ``input_dir``   | location of input directory                     | ``./``    |
-+-----------------+-------------------------------------------------+-----------+
-| ``save_qm_log`` | logical for saving QM calculation log           | ``False`` |
-+-----------------+-------------------------------------------------+-----------+
-| ``save_mm_log`` | logical for saving MM calculation log           | ``False`` |
-+-----------------+-------------------------------------------------+-----------+
-| ``save_scr``    | logical for saving scratch directory            | ``True``  |
-+-----------------+-------------------------------------------------+-----------+
-| ``restart``     | option for controlling dynamics restarting      | ``None``  |
-+-----------------+-------------------------------------------------+-----------+
++-----------------------------+-------------------------------------------------+----------+
+| Keywords                    | Work                                            | Default  |
++=============================+=================================================+==========+
+| **qm**                      | qm object containing on-the-fly                 |          |
+| (:class:`QM_calculator`)    | calculation information                         |          |
++-----------------------------+-------------------------------------------------+----------+
+| **mm**                      | mm object containing MM                         | *None*   |
+| (:class:`MM_calculator`)    | calculation information                         |          |
++-----------------------------+-------------------------------------------------+----------+
+| **input_dir**               | location of input directory                     | *'./'*   |
+| *(string)*                  | calculation information                         |          |
++-----------------------------+-------------------------------------------------+----------+
+| **save_qm_log**             | logical for saving QM calculation log           | *False*  |
+| *(boolean)*                 | calculation information                         |          |
++-----------------------------+-------------------------------------------------+----------+
+| **save_mm_log**             | logical for saving MM calculation log           | *False*  |
+| *(boolean)*                 | calculation information                         |          |
++-----------------------------+-------------------------------------------------+----------+
+| **save_scr**                | logical for saving scratch directory            | *True*   |
+| *(boolean)*                 | calculation information                         |          |	
++-----------------------------+-------------------------------------------------+----------+	
+| **restart**                 | option for controlling dynamics restarting      | *None*   |	
+| *(string)*                  | calculation information                         |          |	
++-----------------------------+-------------------------------------------------+----------+
 
 Further information of each individual md objects are listed in next section.
 

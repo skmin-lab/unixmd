@@ -1,4 +1,7 @@
 
+Columbus	
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^	
+
 Columbus :cite:`Lischka2011` is one of famous open-source software for high-level *ab initio*
 quantum calculation. Similar with other softwares, it can do various types of fundamental quantum
 calculation. However, the major competitiveness of Columbus compared to other softwares is that
@@ -16,45 +19,63 @@ In the current version of UNI-xMD, only CASSCF method is available.
 +--------+------+----+----+-----+
 
 CASSCF
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""""""""""""
 
 .. note:: Our interface script is generated with 7.0 version of Columbus program.
    Here, you should refer to manual of Columbus program if you want to see detailed
-   lists for ``basis_set`` variable.
+   lists for **basis_set** variable.
 
-+--------------------+-----------------------------------------------------+--------------+
-| Keywords           | Work                                                | Default      |
-+====================+=====================================================+==============+
-| ``basis_set``      | basis set information                               | ``6-31g*``   |
-+--------------------+-----------------------------------------------------+--------------+
-| ``memory``         | allocatable memory in the calculations              | ``500``      |
-+--------------------+-----------------------------------------------------+--------------+
-| ``guess``          | initial guess for MCSCF method                      | ``hf``       |
-+--------------------+-----------------------------------------------------+--------------+
-| ``guess_file``     | initial guess file                                  | ``./mocoef`` |
-+--------------------+-----------------------------------------------------+--------------+
-| ``scf_en_tol``     | energy convergence for SCF iterations               | ``9``        |
-+--------------------+-----------------------------------------------------+--------------+
-| ``scf_max_iter``   | maximum number of SCF iterations                    | ``40``       |
-+--------------------+-----------------------------------------------------+--------------+
-| ``mcscf_en_tol``   | energy convergence for MCSCF iterations             | ``8``        |
-+--------------------+-----------------------------------------------------+--------------+
-| ``mcscf_max_iter`` | maximum number of MCSCF iterations                  | ``100``      |
-+--------------------+-----------------------------------------------------+--------------+
-| ``cpscf_grad_tol`` | gradient tolerance for CP-MCSCF equations           | ``6``        |
-+--------------------+-----------------------------------------------------+--------------+
-| ``cpscf_max_iter`` | maximum number of iterations for CP-MCSCF equations | ``100``      |
-+--------------------+-----------------------------------------------------+--------------+
-| ``active_elec``    | number of electrons in active space                 | ``2``        |
-+--------------------+-----------------------------------------------------+--------------+
-| ``active_orb``     | number of orbitals in active space                  | ``2``        |
-+--------------------+-----------------------------------------------------+--------------+
-| ``qm_path``        | path for QM binary                                  | ``./``       |
-+--------------------+-----------------------------------------------------+--------------+
-| ``nthreads``       | number of threads in the calculations               | ``1``        |
-+--------------------+-----------------------------------------------------+--------------+
-| ``version``        | version of Columbus program                         | ``7.0``      |
-+--------------------+-----------------------------------------------------+--------------+
++------------------------+-----------------------------------------------------+----------------+
+| Keywords               | Work                                                | Default        |
++========================+=====================================================+================+
+| **molecule**           | molecular object                                    |                |
+| (:class:`Molecule`)    |                                                     |                |
++------------------------+-----------------------------------------------------+----------------+
+| **basis_set**          | basis set information                               | *'6-31g\*'*    |
+| *(string)*             |                                                     |                |
++------------------------+-----------------------------------------------------+----------------+
+| **memory**             | allocatable memory in the calculations              | *'500'*        |
+| *(string)*             |                                                     |                |
++------------------------+-----------------------------------------------------+----------------+
+| **guess**              | initial guess for MCSCF method                      | *'hf'*         |
+| *(string)*             |                                                     |                |
++------------------------+-----------------------------------------------------+----------------+
+| **guess_file**         | initial guess file                                  | *'./mocoef'*   |
+| *(string)*             |                                                     |                |
++------------------------+-----------------------------------------------------+----------------+
+| **scf_en_tol**         | energy convergence for SCF iterations               | *9*            |
+| *(integer)*            |                                                     |                |
++------------------------+-----------------------------------------------------+----------------+
+| **scf_max_iter**       | maximum number of SCF iterations                    | *40*           |
+| *(integer)*            |                                                     |                |
++------------------------+-----------------------------------------------------+----------------+
+| **mcscf_en_tol**       | energy convergence for MCSCF iterations             | *8*            |
+| *(integer)*            |                                                     |                |
++------------------------+-----------------------------------------------------+----------------+
+| **mcscf_max_iter**     | maximum number of MCSCF iterations                  | *100*          |
+| *(integer)*            |                                                     |                |
++------------------------+-----------------------------------------------------+----------------+
+| **cpscf_grad_tol**     | gradient tolerance for CP-MCSCF equations           | *6*            |
+| *(integer)*            |                                                     |                |
++------------------------+-----------------------------------------------------+----------------+
+| **cpscf_max_iter**     | maximum number of iterations for CP-MCSCF equations | *100*          |
+| *(integer)*            |                                                     |                |
++------------------------+-----------------------------------------------------+----------------+
+| **active_elec**        | number of electrons in active space                 | *2*            |
+| *(integer)*            |                                                     |                |
++------------------------+-----------------------------------------------------+----------------+
+| **active_orb**         | number of orbitals in active space                  | *2*            |
+| *(integer)*            |                                                     |                |
++------------------------+-----------------------------------------------------+----------------+
+| **qm_path**            | path for QM binary                                  | *'./'*         |
+| *(string)*             |                                                     |                |
++------------------------+-----------------------------------------------------+----------------+
+| **nthreads**           | number of threads in the calculations               | *1*            |
+| *(integer)*            |                                                     |                |
++------------------------+-----------------------------------------------------+----------------+
+| **version**            | version of Molpro program                           | *'7.0'*        |
+| *(string)*             |                                                     |                |
++------------------------+-----------------------------------------------------+----------------+
 
 Detailed description of arguments
 ''''''''''''''''''''''''''''''''''''
