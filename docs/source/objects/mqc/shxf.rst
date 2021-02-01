@@ -22,79 +22,161 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 +----------------------------+------------------------------------------------------+--------------+
 | Keywords (type)            | Work                                                 | Default      |
 +============================+======================================================+==============+
-| **molecule**               | molecular object                                     |              |
+| **molecule**               | Molecular object                                     |              |
 | (:class:`Molecule`)        |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **thermostat**             | thermostat type                                      | *None*       |
+| **thermostat**             | Thermostat type                                      | *None*       |
 | (:class:`Thermostat`)      |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **istate**                 | initial state                                        | *0*          |
+| **istate**                 | Initial state                                        | *0*          |
 | *(integer)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **dt**                     | time interval (fs)                                   | *0.5*        |
+| **dt**                     | Time interval (fs)                                   | *0.5*        |
 | *(double)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **nsteps**                 | Total step of nuclear propagation                    | *1000*       |
 | *(integer)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **nesteps**                | Total step of electronic propagation                 | *10000*      |
+| **nesteps**                | Total step of electronic propagation                 | *20*         |
 | *(integer)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **propagation**            | propagation scheme                                   | *'density'*  |
+| **propagation**            | Propagation scheme                                   | *'density'*  |
 | *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **solver**                 | propagation solver                                   | *'rk4'*      |
+| **solver**                 | Propagation solver                                   | *'rk4'*      |
 | *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **l_pop_print**            | logical to print BO population and coherence         | *False*      |
+| **l_pop_print**            | Logical to print BO population and coherence         | *False*      |
 | *(boolean)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **l_adjnac**               | adjust nonadiabatic coupling                         | *True*       |
+| **l_adjnac**               | Adjust nonadiabatic coupling to align the phases     | *True*       |
 | *(boolean)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **vel_rescale**            | velocity rescaling method after successful hop       | *'momentum'* |
+| **vel_rescale**            | Velocity rescaling method after successful hop       | *'momentum'* |
 | *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **vel_reject**             | velocity rescaling method after frustrated hop       | *'reverse'*  |
+| **vel_reject**             | Velocity rescaling method after frustrated hop       | *'reverse'*  |
 | *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **threshold**              | electronic density threshold for decoherence term    | *0.01*       |
+| **threshold**              | Electronic density threshold for decoherence term    | *0.01*       |
 | *(double)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **wsigma**                 | width of nuclear wave packet of auxiliary trajectory | *None*       |
+| **wsigma**                 | Width of nuclear wave packet of auxiliary trajectory | *None*       |
 | *(double/(double, list))*  | for auxiliary trajectories                           |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **coefficient**            | initial BO coefficient                               | *None*       |
+| **coefficient**            | Initial BO coefficient                               | *None*       |
 | *(double/complex, list)*   | for auxiliary trajectories                           |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **l_state_wise**           | logical to use state-wise total energies             | *False*      |
+| **l_state_wise**           | Logical to use state-wise total energies             | *False*      |
 | *(boolean)*                | for auxiliary trajectories                           |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **unit_dt**                | unit of time step (fs = femtosecond,                 | *'fs'*       |
+| **unit_dt**                | Unit of time interval (fs = femtosecond,             | *'fs'*       |
 | *(string)*                 | au = atomic unit)                                    |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **out_freq**               | frequency of printing output                         | *1*          |
+| **out_freq**               | Frequency of printing output                         | *1*          |
 | *(integer)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **verbosity**              | verbosity of output                                  | *0*          | 
+| **verbosity**              | Verbosity of output                                  | *0*          | 
 | *(integer)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 
 
-Detailed description of arguments
-""""""""""""""""""""""""""""""""""""
-- **argument 1** *(type)*
+Detailed description of the arguments
+""""""""""""""""""""""""""""""""""""""""""
+
+- **istate** *(integer)* - Default: *0* (Ground state)
   
-  Description of the argument, following options are available.
+  Initial running state. The possible range of the argument is from *0* to ``molecule.nstate-1``.
    
-  + option 1: description of the option 1
-  + option 2: description of the option 2
+\
+
+- **nesteps** *(integer)* - Default: *20*
+  
+  Number of electronic time steps between one nuclear time step for the integration of the electronic equation of motion.
+  The electronic equation of motion is more sensitive to the time interval than the nuclear equation of motion since the electrons are much lighter than the nuclei.
+  Therefore, the nuclear time step is further divided and electronic equation of motion is integrated with smaller time step.
 
 \
 
-- **argument 2** *(type)*
+- **propagation** *(string)*- Default: *'density'*
   
-  Description of the argument, following options are available.
+  The **propagation** argument determines the representation for the electronic state.
    
-  + option 1: description of the option 1
-  + option 2: description of the option 2
+    + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}\}`
+    + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}\}`
+
+- **solver** *(string)* - Default: *'rk4'*
+
+  Numerical integration method for the electronic equation of motion.
+  Currently, only the RK4 algorithm (*'rk4'*) is available.
+
+\
+
+- **l_pop_print** *(boolean)* - Default: *'False'*
+  
+  Determine whether write output files for density matrix elements (BOPOP, BOCOH) or not.
+  If this option is set to *True*, then the BOPOP and BOCOH files are written during the dynamics.
+  This option is effective only if the argument **propagation** is set to *'coefficient'* or ignored otherwise.
+
+\
+
+- **vel_rescale** *(string)* - Default: *'momentum'*
+
+  Determines the direction of the momentum to be adjusted after a hop to conserve the total energy.
+  If there is not enough kinetic energy in this direction, the hop is rejected and the running state is switched back to the original state.
+  
+    + *'energy'*: Simply rescale the nuclear velocities.
+    + *'momentum'*: Adjust the momentum in the direction of the NACV.
+    + *'augment'*: First, the hop is evaluated as the  *'momentum'*. 
+      If the kinetic energy is not enough, then the hop is evaluated again as the *'energy'*. 
+
+\
+   
+- **vel_reject** *(string)* - Default: *'reverse'*
+  
+  Determines the momentum rescaling method when a hop is rejected.
+  
+    + *'keep'*: Do nothing, keeps the nuclear velocities.
+    + *'reverse'*: Reverse the momentum along the NACV.
+
+\
+
+- **threshold** *(double)* - Default: *0.01*
+
+  Defines the numerical threshold for the coherence. 
+  Specifically, if the populations of two or more states are larger than this value, the electronic state is 'coherent' and the decoherence term is calculated.
+
+\
+
+- **wsigma** *(double/(double, list))* - Default: *None*
+
+  Defines the width of the frozen gaussian wave packet on the auxiliary trajectories.
+  If a scalar value is given, all nuclei share the same width.
+  Or, if a list with the length of the number of the atoms is given, atom-wise width is used.
+  In this case, the order of the atoms is same as the order of the xyz format string when the molecule object is created (``molecule.symbols``).
+
+\
+
+
+- **coefficient** *(double/complex, list)* - Default: *None*
+
+  Defines the initial density matrix.
+  The elements can be either real or complex values.
+  If the argument is not given, the density matrix is initialized according to the initial running state.
+
+\
+
+- **l_state_wise** *(boolean)* - Default: *False*
+
+  Determines whether the total energies of the auxiliary trajectories are different or identical.
+  If this is set to *True*, auxiliary trajectories have differnt total energy, or they all have same total energy.
+
+\
+
+- **verbosity** *(integer)* - Default: *0*
+
+  Determines the verbosity of the output files and stream.
+
+  + **verbosity** :math:`\geq` 1: Prints potential energy of all BO states.
+  + **verbosity** :math:`\geq` 2: Prints accumulated hopping probabilities and writes the qauntum momentum (QMOM), 
+    phase terms (AUX_PHASE\_ *ist*), and atomic postions and velocities of the auxiliary trajectories (AUX_MOVIE\_ *ist*.xyz).
