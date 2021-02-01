@@ -57,3 +57,55 @@ because it doesn't explicitly provide with nonadiabatic coupling vectors.
 | *(string)*            |                                        |                   |
 +-----------------------+----------------------------------------+-------------------+
 
+Detailed description of the arguments
+""""""""""""""""""""""""""""""""""""""""""
+
+- **functional** *(string)* - Default: *'BLYP'*
+
+  Sets the level of DFT theory (exchange-correlation functional). These arguments are the same with the original arguments in used in Gaussian09. For the detailed list, see the manual of the Gaussian09 program.
+
+\
+
+- **basis_set** *(string)* - Default: *'sto-3g'*
+
+  Sets the basis set. These arguments are the same with the original arguments in used in Gaussian09. For the detailed list, see the manual of the Gaussian09 program.
+
+\
+
+- **memory** *(string)* - Default: *'1gb'*
+
+  Sets allocatable memory in the calculations.
+
+\
+
+- **guess** *(string)* - Default: *'Harris'*
+
+  Sets the initial guess method for the SCF iteration.
+
+  + 'Harris': Diagonalizes the Harris functional :cite:`Harris1985` for the initial guess. This is the default for all DFT calculations in Gaussian09.
+
+  + 'read': Reads the (previous) checkpoint file, of which the path is given by **guess_file**, for the initial guess. If the checkpoint file is not provided at the initial MD step, the 'Harris' method is used only once instead.
+
+\
+
+- **guess_file** *(string)* - Default: *'./g09.chk'*
+
+  Sets the path of the initial guess file.
+
+\
+
+- **G09_root_path** *(string)* - Default: *'/opt/gaussian'*
+
+  Sets the path for G09 root.
+
+\
+
+- **nthreads** *(string)* - Default: *'1'*
+
+  Sets the number of threads in the calculations.
+
+\
+
+- **version** *(string)* - Default: *'Revision A.02'*
+
+  Sets the version of Gaussian09 program.
