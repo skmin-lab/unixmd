@@ -45,67 +45,69 @@ Detailed description of the arguments
 
 - **geometry** *(string)* - Default: *None*
 
-The structure of **geometry** string is the following.
+  The structure of **geometry** string is the following.
 
-1. the number of atoms
+  1. the number of atoms
 
-2. comment line
+  2. comment line
 
-3. specification of the molecule (atomic symbol, positions, velocities)
+  3. specification of the molecule (atomic symbol, positions, velocities)
 
-When QMMM scheme is used (**qmmm** == True), information of MM atoms is followed by QM atoms.
+  When QMMM scheme is used (**qmmm** == True), information of MM atoms is followed by QM atoms.
+
+\
 
 - **nsp** *(integer)* - Default: *3*
 
-Sets the dimension of space where the dynamics occurs. 
+  Sets the dimension of space where the dynamics occurs. 
 
 \
 
 - **nstates** *(integer)* - Default: *3*
 
-Sets the number of BO states treated in the dynamics.
+  Sets the number of BO states treated in the dynamics.
 
 \
 
 - **qmmm** *(boolean)* - Default: *False*
 
-Determines whether QMMM scheme is used.
+  Determines whether QMMM scheme is used.
 
 \
 
 - **natoms_mm** *(integer)* - Default: *None*
 
-Sets the number of atoms in MM region when **qmmm** is True. 
+  Sets the number of atoms in MM region when **qmmm** is True. 
 
 \
 
 - **dof** *(integer)* - Default: *None*
 
-Sets the Degrees of freedom (if **model** is *False*, the molecular DoF is given.)
+  Sets the Degrees of freedom (if **model** is *False*, the molecular DoF is given.)
 
 \
 
 - **unit_pos** *(string)* - Default: *'A'*
 
-Defines the unit of position (A = angstrom, au = atomic unit)
+  Defines the unit of position (A = angstrom, au = atomic unit)
 
 \
 
 - **unit_vel** *(string)* - Default: *'au'*
 
-Defines the unit of velocity (au = atomic unit, A/ps, A/fs)
+  Defines the unit of velocity (au = atomic unit, A/ps, A/fs)
 
 \
 
 - **charge** *(integer)* - Default: *0*
 
-Sets the total charge of the system 
+  Sets the total charge of the system 
 
 \
 
 - **model** *(boolean)* - Default: *False*
 
-Determines whether the system is a model system or not. About model systems dealt with PyUNIxMD, see the Model Systems item in the QM_calculator section.
+  Determines whether the system is a model system or not. About model systems dealt with PyUNIxMD, see the Model Systems item in the QM_calculator section.
 
 \
 
