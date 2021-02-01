@@ -89,3 +89,96 @@ trajectories will be transit to that state in stochastical behavior.
 | **verbosity**              | verbosity of output                            | *0*            | 
 | *(integer)*                |                                                |                |
 +----------------------------+------------------------------------------------+----------------+
+
+
+Detailed description of the arguments
+""""""""""""""""""""""""""""""""""""""""""
+
+- **istate** *(integer)* - Default: *0* (Ground state)
+  
+  Initial running state. The possible range of the argument is from *0* to ``molecule.nstate-1``.
+   
+\
+
+- **nesteps** *(integer)* - Default: *20*
+  
+  Number of electronic time steps between one nuclear time step for the integration of the electronic equation of motion.
+  The electronic equation of motion is more sensitive to the time interval than the nuclear equation of motion since the electrons are much lighter than the nuclei.
+  Therefore, the nuclear time step is further divided and electronic equation of motion is integrated with smaller time step.
+
+\
+
+- **propagation** *(string)*- Default: *'density'*
+  
+  The **propagation** argument determines the representation for the electronic state.
+   
+  + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}\}`
+  + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}\}`
+
+\
+
+- **solver** *(string)* - Default: *'rk4'*
+
+  Numerical integration method for the electronic equation of motion.
+  Currently, only the RK4 algorithm (*'rk4'*) is available.
+
+\
+
+- **l_pop_print** *(boolean)* - Default: *'False'*
+  
+  Determine whether write output files for density matrix elements (BOPOP, BOCOH) or not.
+  If this option is set to *True*, then the BOPOP and BOCOH files are written during the dynamics.
+  This option is effective only if the argument **propagation** is set to *'coefficient'* or ignored otherwise.
+
+\
+
+- **vel_rescale** *(string)* - Default: *'momentum'*
+
+  Determines the direction of the momentum to be adjusted after a hop to conserve the total energy.
+  If there is not enough kinetic energy in this direction, the hop is rejected and the running state is switched back to the original state.
+  
+  + *'energy'*: Simply rescale the nuclear velocities.
+  + *'momentum'*: Adjust the momentum in the direction of the NACV.
+  + *'augment'*: First, the hop is evaluated as the  *'momentum'*. 
+    If the kinetic energy is not enough, then the hop is evaluated again as the *'energy'*. 
+
+\
+   
+- **vel_reject** *(string)* - Default: *'reverse'*
+  
+  Determines the momentum rescaling method when a hop is rejected.
+  
+  + *'keep'*: Do nothing, keeps the nuclear velocities.
+  + *'reverse'*: Reverse the momentum along the NACV.
+
+\
+
+- **coefficient** *(double/complex, list)* - Default: *None*
+
+  Defines the initial density matrix.
+  The elements can be either real or complex values.
+  If the argument is not given, the density matrix is initialized according to the initial running state.
+
+\
+
+- **deco_correction** *(string)* - Default: *None*
+
+  Determines the decoherence correction method.
+
+  + *'edc'*: Energy based decoherence correction (EDC) scheme of Granucci et al :cite:`Granucci2010`. 
+  + *'idc'*: Instantaneous decoherence correction scheme
+
+\
+
+- **edc_parameter** *(double)* - Default: *0.1*
+
+  Energy parameter in the EDC equation.
+
+\
+
+- **verbosity** *(integer)* - Default: *0*
+
+  Determines the verbosity of the output files and stream.
+
+  + **verbosity** :math:`\geq` 1: Prints potential energy of all BO states.
+  + **verbosity** :math:`\geq` 2: Prints accumulated hopping probabilities and writes the NACVs (NACV\_\ *ist*\_\ *jst*).
