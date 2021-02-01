@@ -20,6 +20,19 @@ The target temperature and the number of MD steps between rescalings can be spec
 | *(integer)*     |                                                    |           |
 +-----------------+----------------------------------------------------+-----------+
 
+Detailed description of arguments
+''''''''''''''''''''''''''''''''''''
+
+- **temperature** *(double)* - Default: *300.0*
+
+The target temperature (K) of the thermostat to be used.
+
+\
+
+- **nrescale** *(integer)* - Default: *20*
+
+The number of MD steps between rescalings, that is, the temperature is rescalied at each **nrescale** step.
+
 Rescale2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 :class:`Rescale2` thermostat rescales the velocities when the difference between the current temperature
@@ -35,6 +48,19 @@ The target temperature and the temperature difference threshold can be specified
 | **dtemperature** | threshold temperature difference (K)               | *100.0*   |
 | *(double)*       |                                                    |           |
 +------------------+----------------------------------------------------+-----------+
+
+Detailed description of arguments
+''''''''''''''''''''''''''''''''''''
+
+- **temperature** *(double)* - Default: *300.0*
+
+The target temperature (K) of the thermostat to be used.
+
+\
+
+- **dtemperature** *(double)* - Default: *100.0*
+
+The temperature is rescalied when temperature difference exceed **dtemperature**.
 
 Berendsen
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -56,9 +82,29 @@ to an external heat bath with given temperature.
 | *(double)*             |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
 
+Detailed description of arguments
+''''''''''''''''''''''''''''''''''''
+
+- **temperature** *(double)* - Default: *300.0*
+
+The target temperature (K) of the thermostat to be used.
+
+\
+
+- **coupling_parameter** *(double)* - Default: *None*
+
+Coupling paramter ,:math:`\tau`, is characteristic time to damp temperature toward targer temperature.
+It can be set directly as the characteristic length of time to damp temperature.
+
+\
+
+- **coupling_strength** *(double)* - Default: *None*
+
+Dimensionless coupling strength for the thermostat is given by :math:`dt/\tau`, where dt is the MD step :math:`\tau` is coupling parameter.
+
 NHC
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-:class:`NHC` thermostat, which is Nosé-Hoover chain thermostat :cite:`NHC` , rescales the velocities by using frition factor, which comes from imaginary particles. 
+:class:`NHC` thermostat, which is Nosé-Hoover chain thermostat :cite:`NHC` , rescales the velocities by using friction factor, which comes from imaginary particles. 
 
 .. note:: Either **coupling_strength** or **time_scale** should be set and only **coupling_strength** or **time_scale** can be set. 
    **order** should be *3* or *5*.
@@ -84,6 +130,46 @@ NHC
 | **nsteps**             | NHC propagation step                               | *1*       |
 | *(integer)*            |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
+
+Detailed description of arguments
+''''''''''''''''''''''''''''''''''''
+
+- **temperature** *(double)* - Default: *300.0*
+
+The target temperature (K) of the thermostat to be used.
+
+\
+
+- **coupling_strength** *(double)* - Default: *None*
+
+The coupling strength is used in thermostat.
+This indicate frequency of oscillation of the thermostating particles.
+This is typically related to the highest vibrational mode frequency of given system.
+
+\
+
+- **time_scale** *(double)* - Default: *None*
+
+The coupling time scale is used in thermostat. the unit is fs.
+When **time_scale** is given as :math: `t`, **coupling_strength** is :math: `1/t`.
+
+\
+
+- **chain_length** *(integer)* - Default: *3*
+
+The number of imaginary particles in the thermostat chain.
+
+\
+
+- **order** *(integer)* - Default: *3*
+
+The order of the evolution operator.
+
+\
+
+- **nsteps** *(integer)* - Default: *3*
+
+The propagation step in NHC thermostat. 
 
 **Ex.** Making thermostat objects
 
