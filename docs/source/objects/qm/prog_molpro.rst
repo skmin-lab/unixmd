@@ -23,10 +23,6 @@ CASSCF
    Here, you should refer to manual of Molpro program if you want to see detailed
    lists for **basis_set** variable.
 
-.. note:: Currently, **guess** variable reads the following two strings.
-   One is *'hf'*, which uses HF orbitlas as initial guess of CASSCF method for every time step.
-   The other is **read**, which reads wf.wfu file generated from previous step.
-   If **guess_file** exists, then wf.wfu file is used as initial guess at t = 0.0 s.
 
 +----------------------+------------------------------------------------+----------------+
 | Keywords             | Work                                           | Default        |
@@ -85,4 +81,31 @@ CASSCF
 | **version**          | version of Molpro program                      | *'2015.1'*     |
 | *(string)*           |                                                |                |
 +----------------------+------------------------------------------------+----------------+
+
+
+Detailed description of the arguments
+''''''''''''''''''''''''''''''''''''''''''
+
+
+- **guess** *(string)* - Default: *'hf'*
+
+  Determines the initial guess of the CASSCF orbitals at every time step.
+
+  + *'hf'*: Use HF orbitals as the initial guess.
+  + *'read'*: Use CASSCF orbitals of the previous time step as the initial guess. 
+    At the first time step, reads the file **guess_file** and use the orbitals in the file.
+    If the file does not exist, uses HF orbitals.
+
+\
+
+- **guess_file** *(string)* - Default: *'./wf.wfu'*
+   
+  The name of file containing orbitals for the initial guess of the CASSCF calculation.
+
+\
+
+- **qm_path** *(string)* - Default: *'./'*
+  
+  The directory containing the 'Molpro' executable. 
+  The PyUNIxMD search for the executable file *'molpro'* in this directory for QM calculations.
 
