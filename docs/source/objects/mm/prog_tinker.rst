@@ -64,7 +64,9 @@ Detailed description of arguments
 
   Type of charge-charge interactions between the inner and outer regions. Current version of PyUNIxMD supports two types of charge-charge embedding.
   One is mechanical interaction and the other is electrostatic interaction.
+  The **embedding** of the MM object must be same with the **embedding** defined in the QM object.
 
+  + None: Do not use charge-charge embedding in QM/MM method.
   + 'mechanical': The charge-charge interactions are treated at MM level. The energies are calculated from the interactions between point charges.
   + 'electrostatic': The charge-charge interactions are treated at QM level. The point charges of the outer regions are added to the one-electron terms of the Hamiltonian in QM calculation. Hence, the polarization effect from the point charges are considered in this embedding.
 
@@ -75,6 +77,7 @@ Detailed description of arguments
   Type of van-der Walls interactions between the inner and outer regions. Current version of PyUNIxMD supports one type of van-der Walls interaction,
   which is the Lennard-Jones interaction. The other types of van-der Walls interactions provided in the Tinker program are not currently interfaced with PyUNIxMD.
 
+  + None: Do not use van-der Walls interactions in QM/MM method.
   + 'lennardjones': The Lennard-Jones interactions are used for van-der Walls interactions.
 
 - **periodic** *(boolean)* - Default: *False*

@@ -94,6 +94,9 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of PyUNIxMD.
 | **ex_symmetry**        | symmetry of excited state in TD-DFTB           | *'singlet'*        |
 | *(string)*             |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
+| **e_window**           | energy window for TD-DFTB. Increases efficiency| *0.0*              |
+| *(double)*             | of NACME calculation                           |                    |
++------------------------+------------------------------------------------+--------------------+
 | **k_point**            | number of k-point samplings                    | *3 \* [ 1 ]*       |
 | *(integer, list)*      |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
@@ -220,6 +223,14 @@ Detailed description of arguments
   Currently, 'triplet' and 'both' options are not added in our interfacing script.
 
   + 'singlet': Calculate singlet excited state in Casida formalism.
+
+\
+
+- **e_window** *(double)* - Default: *0.0*
+
+  Energy window for TD-DFTB. It increases the efficiency of NACME evaluation. The value indicates
+  the energy range from the highest orbital among the related orbitals for excited states.
+  This option must be treated carefully.
 
 \
 
@@ -490,6 +501,7 @@ Detailed description of arguments
 - **embedding** *(string)* - Default: *None*
 
   Charge-charge embedding options used in QM/MM method. It is recommended option for the environments showing high polarity.
+  The **embedding** of the QM object must be same with the **embedding** defined in the MM object.
 
   + None: Do not use charge-charge embedding in QM/MM method.
   + 'mechanical': Uses a mechanical charge-charge embedding option. The interactions are treated as the energies between MM point charges.

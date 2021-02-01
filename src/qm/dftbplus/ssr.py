@@ -31,14 +31,14 @@ class SSR(DFTBplus):
         :param string sk_path: path for slater-koster files
         :param string install_path: path for DFTB+ install directory
         :param integer nthreads: number of threads in the calculations
-        :param double version: version of DFTB+ program
+        :param string version: version of DFTB+ program
     """
     def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=1000, ocdftb=False, \
         lcdftb=False, lc_method="MatrixBased", ssr22=False, ssr44=False, guess="h0", \
         guess_file="./eigenvec.bin", state_interactions=False, shift=0.3, tuning=None, \
         cpreks_grad_alg="pcg", cpreks_grad_tol=1E-8, save_memory=False, embedding=None, \
         periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.], sk_path="./", \
-        install_path="./", nthreads=1, version=20.1):
+        install_path="./", nthreads=1, version="20.1"):
         # Initialize DFTB+ common variables
         super(SSR, self).__init__(molecule, sk_path, install_path, nthreads, version)
 
@@ -388,9 +388,9 @@ class SSR(DFTBplus):
         input_dftb += input_reks
 
         # ParserOptions Block
-        if (self.version == 19.1):
+        if (self.version == "19.1"):
             raise ValueError (f"( {self.qm_prog}.{call_name()} ) SSR not implemented in this version! {self.version}")
-        elif (self.version == 20.1):
+        elif (self.version == "20.1"):
             parser_version = 8
 
         input_parseroptions = textwrap.dedent(f"""\

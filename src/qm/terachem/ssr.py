@@ -28,11 +28,10 @@ class SSR(TeraChem):
         :param string version: version of TeraChem program
     """
     def __init__(self, molecule, ngpus=1, gpu_id="1", precision="dynamic", \
-        version=1.93, functional="hf", basis_set="sto-3g", scf_rho_tol=1E-2, \
+        version="1.93", functional="hf", basis_set="sto-3g", scf_rho_tol=1E-2, \
         scf_max_iter=300, ssr22=True, guess="dft", guess_file="./c0", \
-        reks_rho_tol=1E-6, reks_max_iter=1000, shift=0.3, use_ssr_state=True, \
+        reks_rho_tol=1E-6, reks_max_iter=1000, shift=0.3, state_interactions=False, \
         cpreks_grad_tol=1E-6, cpreks_max_iter=1000, qm_path="./"):
-        # TODO: ssr22, state_interactions, version must be checked
         # Initialize TeraChem common variables
         super(SSR, self).__init__(functional, basis_set, qm_path, ngpus, \
             gpu_id, precision, version)
@@ -48,7 +47,7 @@ class SSR(TeraChem):
             self.reks_rho_tol = reks_rho_tol
             self.reks_max_iter = reks_max_iter
             self.shift = shift
-            self.use_ssr_state = use_ssr_state
+            self.state_interactions = state_interactions
 
             # Set initial guess for REKS SCF iterations
             self.guess = guess
@@ -173,7 +172,7 @@ class SSR(TeraChem):
             if (molecule.nst == 1):
                 sa_reks = 0
             elif (molecule.nst == 2):
-                if (self.use_ssr_state):
+                if (self.state_interactions):
                     sa_reks = 2
                 else:
                     sa_reks = 1
@@ -259,7 +258,7 @@ class SSR(TeraChem):
             energy = energy.astype(float)
             molecule.states[0].energy = energy[0]
         else:
-            if (self.use_ssr_state):
+            if (self.state_interactions):
                 # SSR state
                 energy = re.findall('SSR state\s\d\s+([-]\S+)', log_out)
                 energy = np.array(energy)
@@ -304,7 +303,7 @@ class SSR(TeraChem):
         if (self.nac == "Yes"):
 
             # 1.99 version do not show H vector
-            if (self.version == 1.99):
+            if (self.version == "1.99"):
                 # Zeroing for G, h and H vectors
                 Gvec = np.zeros((molecule.nat, molecule.nsp))
                 hvec = np.zeros((molecule.nat, molecule.nsp))
@@ -331,7 +330,7 @@ class SSR(TeraChem):
                 molecule.nac[0, 1] = Hvec
                 molecule.nac[1, 0] = - Hvec
 
-            elif (self.version == 1.93):
+            elif (self.version == "1.93"):
                 kst = 0
                 for ist in range(molecule.nst):
                     for jst in range(ist + 1, molecule.nst):

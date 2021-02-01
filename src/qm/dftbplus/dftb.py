@@ -32,13 +32,13 @@ class DFTB(DFTBplus):
         :param boolean mpi: use MPI parallelization
         :param string mpi_path: path for MPI binary
         :param integer nthreads: number of threads in the calculations
-        :param double version: version of DFTB+ program
+        :param string version: version of DFTB+ program
     """
     def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=100, ocdftb=False, \
         lcdftb=False, lc_method="MatrixBased", sdftb=False, unpaired_elec=0., guess="h0", \
         guess_file="./charges.bin", elec_temp=0., mixer="Broyden", ex_symmetry="singlet", e_window=0., \
         k_point=[1, 1, 1], periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.,], \
-        sk_path="./", install_path="./", mpi=False, mpi_path="./", nthreads=1, version=20.1):
+        sk_path="./", install_path="./", mpi=False, mpi_path="./", nthreads=1, version="20.1"):
         # Initialize DFTB+ common variables
         super(DFTB, self).__init__(molecule, sk_path, install_path, nthreads, version)
 
@@ -465,9 +465,9 @@ class DFTB(DFTBplus):
             input_dftb += input_excited
 
         # ParserOptions Block
-        if (self.version == 19.1):
+        if (self.version == "19.1"):
             parser_version = 7
-        elif (self.version == 20.1):
+        elif (self.version == "20.1"):
             parser_version = 8
 
         input_parseroptions = textwrap.dedent(f"""\

@@ -9,7 +9,7 @@ and forces in QM/MM calculation. PyUNIxMD interfaces with followings in current 
     :glob:
     :maxdepth: 1
 
-    tinker
+    prog_tinker
 
 Only one program supports with MM interface of PyUNIxMD in current version.
 If you want to add other programs such as Gromacs, refer "Tinker" section.
