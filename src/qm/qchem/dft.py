@@ -9,7 +9,7 @@ class DFT(QChem):
 
         :param object molecule: molecule object
         :param string basis_set: basis set information
-        :param string memory: allocatable memory in the calculations
+        :param integer memory: allocatable memory in the calculations
         :param integer nthreads: number of threads in the calculation
         :param string functional: xc functional 
         :param integer scf_max_iter: maximum number of SCF iterations
@@ -19,11 +19,11 @@ class DFT(QChem):
         :param integer cpscf_max_iter: maximum number of CP iterations
         :param integer cpscf_grad_tol: gradient convergence of CP iterations
         :param string qm_path: path for QChem
-        :param double version: QChem version
+        :param string version: QChem version
     """
-    def __init__(self, molecule, basis_set="sto-3g", memory="500m", nthreads=1, \
+    def __init__(self, molecule, basis_set="sto-3g", memory=2000, nthreads=1, \
         functional="blyp", scf_max_iter=50, scf_rho_tol=5, cis_max_iter=30, cis_en_tol=6, \
-        cpscf_max_iter=30, cpscf_grad_tol=6, qm_path="./", version=5.2):
+        cpscf_max_iter=30, cpscf_grad_tol=6, qm_path="./", version="5.2"):
         # Initialize QChem common variables
         super(DFT, self).__init__(basis_set, memory, qm_path, nthreads, version)
 
