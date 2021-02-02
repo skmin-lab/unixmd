@@ -63,21 +63,21 @@ Detailed description of arguments
 
 - **basis_set** *(string)* - Default: *'sto-3g'*
 
-Sets the basis set to be used.
-These arguments are same with the original arguments in used in Q-Chem.
-If you want to know the detailed list for basis sets, see the manual of the Q-Chem program.
+  Sets the basis set to be used.
+  These arguments are same with the original arguments in used in Q-Chem.
+  If you want to know the detailed list for basis sets, see the manual of the Q-Chem program.
 
 \
 
 - **memory** *(integer)* - Default : *2000*
 
-The available total memory in unit of megabyte.
+  The available total memory in unit of megabyte.
 
 \
 
 - **nthreads** *(integer)* - Default : *1*
 
-Number of threads in the calculation
+  Number of threads in the calculation
 
 \
 
@@ -132,6 +132,6 @@ Number of threads in the calculation
 
 \
 
-- **version** *(integer)* - Default : *'5.2'*
+- **version** *(string)* - Default : *'5.2'*
 
   Version of Q-Chem
