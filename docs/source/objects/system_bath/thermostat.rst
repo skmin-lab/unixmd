@@ -31,7 +31,7 @@ Detailed description of arguments
 
 - **nrescale** *(integer)* - Default: *20*
 
-  The number of MD steps between rescalings, that is, the temperature is rescalied at each **nrescale** step.
+  The velocities are rescaled at each **nrescale** step.
 
 Rescale2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -60,12 +60,19 @@ Detailed description of arguments
 
 - **dtemperature** *(double)* - Default: *100.0*
 
-  The temperature is rescalied when temperature difference exceed **dtemperature**.
+  The velocities are rescaled when temperature difference exceeds **dtemperature**.
 
 Berendsen
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 :class:`Berendsen` thermostat :cite:`Berendsen`  rescales the velocities by mimicking weak coupling with first-order kinetics
-to an external heat bath with given temperature.
+to an external heat bath with given temperature :math:`T_0`. The scaling factor, :math:`\alpha`, is given by:
+
+.. math::
+
+   \alpha^2 = 1 + \frac{dt}{\tau} (T_0 - T(t)),
+
+where :math:`dt` and :math:`\tau` is the MD step and coupling parameter, respectively. Coupling parameter determines how strongly the system and
+the bath has coupling.
 
 .. note:: Either **coupling_parameter** or **coupling_strength** should be set and only **coupling_parameter** or **coupling_strength** can be set.
 
