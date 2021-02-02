@@ -13,10 +13,10 @@ The target temperature and the number of MD steps between rescalings can be spec
 +-----------------+----------------------------------------------------+-----------+
 | Keywords        | Work                                               | Default   |
 +=================+====================================================+===========+
-| **temperature** | target temperature (K) of the thermostat           | *300.0*   |
+| **temperature** | Target temperature (K) of the thermostat           | *300.0*   |
 | *(double)*      |                                                    |           |
 +-----------------+----------------------------------------------------+-----------+
-| **nrescale**    | the number of MD steps between rescalings          | *20*      |
+| **nrescale**    | The number of MD steps between rescalings          | *20*      |
 | *(integer)*     |                                                    |           |
 +-----------------+----------------------------------------------------+-----------+
 
@@ -25,13 +25,13 @@ Detailed description of arguments
 
 - **temperature** *(double)* - Default: *300.0*
 
-The target temperature (K) of the thermostat to be used.
+  The target temperature (K) of the thermostat to be used.
 
 \
 
 - **nrescale** *(integer)* - Default: *20*
 
-The number of MD steps between rescalings, that is, the temperature is rescalied at each **nrescale** step.
+  The number of MD steps between rescalings, that is, the temperature is rescalied at each **nrescale** step.
 
 Rescale2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -42,10 +42,10 @@ The target temperature and the temperature difference threshold can be specified
 +------------------+----------------------------------------------------+-----------+
 | Keywords         | Work                                               | Default   |
 +==================+====================================================+===========+
-| **temperature**  | target temperature (K) of the thermostat           | *300.0*   |
+| **temperature**  | Target temperature (K) of the thermostat           | *300.0*   |
 | *(double)*       |                                                    |           |
 +------------------+----------------------------------------------------+-----------+
-| **dtemperature** | threshold temperature difference (K)               | *100.0*   |
+| **dtemperature** | Threshold temperature difference (K)               | *100.0*   |
 | *(double)*       |                                                    |           |
 +------------------+----------------------------------------------------+-----------+
 
@@ -54,13 +54,13 @@ Detailed description of arguments
 
 - **temperature** *(double)* - Default: *300.0*
 
-The target temperature (K) of the thermostat to be used.
+  The target temperature (K) of the thermostat to be used.
 
 \
 
 - **dtemperature** *(double)* - Default: *100.0*
 
-The temperature is rescalied when temperature difference exceed **dtemperature**.
+  The temperature is rescalied when temperature difference exceed **dtemperature**.
 
 Berendsen
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -72,13 +72,13 @@ to an external heat bath with given temperature.
 +------------------------+----------------------------------------------------+-----------+
 | Keywords               | Work                                               | Default   |
 +========================+====================================================+===========+
-| **temperature**        | target temperature (K) of the thermostat           | *300.0*   |
+| **temperature**        | Target temperature (K) of the thermostat           | *300.0*   |
 | *(double)*             |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
-| **coupling_parameter** | the characteristic time (fs) to damp               | *None*    |
+| **coupling_parameter** | The characteristic time (fs) to damp               | *None*    |
 | *(double)*             | temperature toward target temperature              |           |
 +------------------------+----------------------------------------------------+-----------+
-| **coupling_strength**  | dimensionless coupling strength for the thermostat | *None*    |
+| **coupling_strength**  | Dimensionless coupling strength for the thermostat | *None*    |
 | *(double)*             |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
 
@@ -87,20 +87,20 @@ Detailed description of arguments
 
 - **temperature** *(double)* - Default: *300.0*
 
-The target temperature (K) of the thermostat to be used.
+  The target temperature (K) of the thermostat to be used.
 
 \
 
 - **coupling_parameter** *(double)* - Default: *None*
 
-Coupling paramter ,:math:`\tau`, is characteristic time to damp temperature toward targer temperature.
-It can be set directly as the characteristic length of time to damp temperature.
+  The **coupling parameter**, :math:`\tau`, is characteristic time to damp temperature toward targer temperature.
+  It can be set directly as the characteristic length of time to damp temperature.
 
 \
 
 - **coupling_strength** *(double)* - Default: *None*
 
-Dimensionless coupling strength for the thermostat is given by :math:`dt/\tau`, where dt is the MD step :math:`\tau` is coupling parameter.
+  Dimensionless coupling strength for the thermostat is given by :math:`dt/\tau`, where dt is the MD step :math:`\tau` is **coupling parameter**.
 
 NHC
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -112,19 +112,19 @@ NHC
 +------------------------+----------------------------------------------------+-----------+
 | Keywords               | Work                                               | Default   |
 +========================+====================================================+===========+
-| **temperature**        | target temperature (K) of the thermostat           | *300.0*   |
+| **temperature**        | Target temperature (K) of the thermostat           | *300.0*   |
 | *(double)*             |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
-| **coupling_strength**  | the coupling strength (cm\ :sup:`-1`\) for the     | *None*    |
+| **coupling_strength**  | The coupling strength (cm\ :sup:`-1`\) for the     | *None*    |
 | *(double)*             | thermostat                                         |           |
 +------------------------+----------------------------------------------------+-----------+
-| **time_scale**         | the coupling time scale (fs)                       | *None*    |
+| **time_scale**         | The coupling time scale (fs)                       | *None*    |
 | *(double)*             |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
-| **chain_length**       | the number of imaginary particles in the thermostat| *3*       |
+| **chain_length**       | The number of imaginary particles in the thermostat| *3*       |
 | *(integer)*            | chain                                              |           |
 +------------------------+----------------------------------------------------+-----------+
-| **order**              | the order of the evolution operator                | *3*       |
+| **order**              | The order of the evolution operator                | *3*       |
 | *(integer)*            |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
 | **nsteps**             | NHC propagation step                               | *1*       |
@@ -136,40 +136,40 @@ Detailed description of arguments
 
 - **temperature** *(double)* - Default: *300.0*
 
-The target temperature (K) of the thermostat to be used.
+  The target temperature (K) of the thermostat to be used.
 
 \
 
 - **coupling_strength** *(double)* - Default: *None*
 
-The coupling strength is used in thermostat.
-This indicate frequency of oscillation of the thermostating particles.
-This is typically related to the highest vibrational mode frequency of given system.
+  The coupling strength is used in thermostat.
+  This indicate frequency of oscillation of the thermostating particles.
+  This is typically related to the highest vibrational mode frequency of given system.
 
 \
 
 - **time_scale** *(double)* - Default: *None*
 
-The coupling time scale is used in thermostat. the unit is fs.
-When **time_scale** is given as :math: `t`, **coupling_strength** is :math: `1/t`.
+  The coupling time scale is used in thermostat. The unit is femtosecond.
+  When **time_scale** is given as :math:`t`, **coupling_strength** set to :math:`1/t`.
 
 \
 
 - **chain_length** *(integer)* - Default: *3*
 
-The number of imaginary particles in the thermostat chain.
+  The number of imaginary particles in the thermostat chain.
 
 \
 
 - **order** *(integer)* - Default: *3*
 
-The order of the evolution operator.
+  The order of the evolution operator.
 
 \
 
 - **nsteps** *(integer)* - Default: *3*
 
-The propagation step in NHC thermostat. 
+  The propagation step in NHC thermostat. 
 
 **Ex.** Making thermostat objects
 

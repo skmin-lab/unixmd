@@ -18,43 +18,43 @@ Q-Chem :cite:`qchem2015` is a comprehensive ab initio quantum chemistry software
 +-----------------------+------------------------------------------------+--------------+
 | Keywords              | Work                                           | Default      |
 +=======================+================================================+==============+
-| **molecule**          | molecular object                               |              |  
+| **molecule**          | Molecular object                               |              |  
 | (:class:`Molecule`)   |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **basis_set**         | basis set information                          | *'sto-3g'*   |
+| **basis_set**         | Basis set information                          | *'sto-3g'*   |
 | *(string)*            |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **memory**            | allocatable memory in the calculations         | *'500m'*     |
+| **memory**            | Allocatable memory in the calculations         | *'500m'*     |
 | *(string)*            |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **nthreads**          | number of threads in the calculation           | *1*          |
+| **nthreads**          | Number of threads in the calculation           | *1*          |
 | *(integer)*           |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **functional**        | xc functional                                  | *'blyp'*     |
+| **functional**        | Xc functional                                  | *'blyp'*     |
 | *(string)*            |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **scf_max_iter**      | maximum number of SCF iterations               | *50*         |
+| **scf_max_iter**      | Maximum number of SCF iterations               | *50*         |
 | *(integer)*           |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **scf_rho_tol**       | density convergence for SCF iterations         | *6*          |
+| **scf_rho_tol**       | Density convergence for SCF iterations         | *6*          |
 | *(integer)*           |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **cis_max_iter**      | maximum number of CIS iterations               | *30*         |
+| **cis_max_iter**      | Maximum number of CIS iterations               | *30*         |
 | *(integer)*           |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **cis_en_tol**        | energy convergence for CIS iterations          | *6*          |
+| **cis_en_tol**        | Energy convergence for CIS iterations          | *6*          |
 | *(integer)*           |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **cpscf_max_iter**    | maximum number of CP iterations                | *30*         |
+| **cpscf_max_iter**    | Maximum number of CP iterations                | *30*         |
 | *(integer)*           |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **cpscf_grad_tol**    | gradient convergence for CP iterations         | *6*          |
+| **cpscf_grad_tol**    | Gradient convergence for CP iterations         | *6*          |
 | *(integer)*           |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **qm_path**           | path for QChem                                 | *'./'*       |
+| **qm_path**           | Path for Q-Chem                                | *'./'*       |
 | *(string)*            |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **version**           | QChem version                                  | *'5.2'*      |
+| **version**           | Q-Chem version                                 | *'5.2'*      |
 | *(string)*            |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
 
@@ -69,9 +69,9 @@ If you want to know the detailed list for basis sets, see the manual of the Q-Ch
 
 \
 
-- **memory** *(string)* - Default : *'500m'*
+- **memory** *(integer)* - Default : *2000*
 
-The available total memory
+The available total memory in unit of megabyte.
 
 \
 
@@ -83,55 +83,55 @@ Number of threads in the calculation
 
 - **functional** *(string)* - Default : *'blyp'*
 
-The exchange-correlation functional to be used.
-These arguments are same with the original arguments in used in Q-Chem.
-If you want to know the detailed list for basis sets, see the manual of the Q-Chem program.
+  The exchange-correlation functional to be used.
+  These arguments are same with the original arguments in used in Q-Chem.
+  If you want to know the detailed list for basis sets, see the manual of the Q-Chem program.
 
 \
 
 - **scf_max_iter** *(integer)* - Default : *50*
 
-Maximum number of iteration for SCF
+  Maximum number of iteration for SCF
 
 \
 
 - **scf_rho_tol** *(integer)* - Default : *6*
 
-SCF is considered converged when the wave function error is less that 10 :sup:`-scf_rho_tol`
+  SCF is considered converged when the wave function error is less that 10 :sup:`-scf_rho_tol`
 
 \
 
 - **cis_max_iter** *(integer)* - Default : *30*
 
-Maximum number of iteration for CIS
+  Maximum number of iteration for CIS
 
 \
 
 - **cis_en_tol** *(integer)* - Default : *6*
 
-CIS is considered converged when error is less that 10 :sup:`-cis_en_tol`
+  CIS is considered converged when error is less that 10 :sup:`-cis_en_tol`
 
 \
 
 - **cpscf_max_iter** *(integer)* - Default : *30*
 
-Maximum number of iteration for CPSCF
+  Maximum number of iteration for CPSCF
 
 \
 
 - **cpscf_grad_tol** *(integer)* - Default : *6*
 
-CPSCF is considered converged when gradient error is less that 10 :sup:`-cpscf_grad_tol`
+  CPSCF is considered converged when gradient error is less that 10 :sup:`-cpscf_grad_tol`
 
 \
 
 - **qm_path** *(string)* - Default : *'./'*
 
-Path for Q-Chem install directory. The environment varialbes for Q-Chem are assigned by executing `qcenv.sh` in Q-Chem install directory.
-Hence, You must set **qm_path** to `'$YOUR_QCHEM_DIR'` not `'$YOUR_QCHEM_DIR/bin'`
+  Path for Q-Chem install directory. The environment varialbes for Q-Chem are assigned by executing `qcenv.sh` in Q-Chem install directory.
+  Hence, You must set **qm_path** to `'$YOUR_QCHEM_DIR'` not `'$YOUR_QCHEM_DIR/bin'`
 
 \
 
 - **version** *(integer)* - Default : *'5.2'*
 
-Version of Q-Chem
+  Version of Q-Chem
