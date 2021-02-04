@@ -76,28 +76,28 @@ CASSCF
 Detailed description of arguments
 ''''''''''''''''''''''''''''''''''''
 
-- **basis_set** *(string)* - Default: *6-31g**
+- **basis_set** *(string)* - Default: *'6-31g*'*
 
- Basis set for calculation. In PyUNIxMD code, currently 10 basis are supported; {cc-pvdz, cc-pvtz, cc-pvqz, 3-21g*, 3-21+g*, 6-31g, 6-31g*, 6-31+g*, 6-311g*, 6-311+g*}.
-
-\
-
-- **memory** *(string)* - Default: *500*
-
- Total memory used for calculation. unit is 'm'
+ Basis set for calculation. In PyUNIxMD code, currently 10 basis sets are supported; {cc-pvdz, cc-pvtz, cc-pvqz, 3-21g*, 3-21+g*, 6-31g, 6-31g*, 6-31+g*, 6-311g*, 6-311+g*}.
 
 \
 
-- **guess** *(string)* - Default: *hf*
+- **memory** *(string)* - Default: *'500'*
+
+ Total memory used for calculation. unit is 'mb'
+
+\
+
+- **guess** *(string)* - Default: *'hf'*
 
  Initial guess method for MCSCF method
 
- + 'hf': Using HF orbitals as initial guess of CASSCF method for every time step.
- + 'read': Reads mocoef file generated from previous step as initial guess.
+ + *'hf'*: Using HF orbitals as initial guess of CASSCF method for every time step.
+ + *'read'*: Reads mocoef file generated from previous step as initial guess.
 
 \
 
-- **guess_file** *(string)* - Default: *./mocoef*
+- **guess_file** *(string)* - Default: *'./mocoef'*
 
  Initial molecular orbital file for MCSCF method. It will be used as initial guess for CASSCF calculation in t=0.0s. This can be obtained from other MCSCF calculations.
 
@@ -106,7 +106,7 @@ Detailed description of arguments
 
 - **scf_en_tol** *(integer)* - Default: *9*
 
- Energy threshold for SCF iterations. 
+ Energy threshold for SCF iterations. Default value is 1.0E-9.
 
 \
 
@@ -120,7 +120,7 @@ Detailed description of arguments
 
 - **mcscf_en_tol** *(integer)* - Default: *8*
 
- Energy convergence for MCSCF iterations
+ Energy convergence for MCSCF iterations. Default value is 1.0E-8.
 
 \
 
@@ -155,7 +155,7 @@ Detailed description of arguments
 
 \
 
-- **qm_path** *(string)* - Default: *./*
+- **qm_path** *(string)* - Default: *'./'*
 
  Path for QM binary. Path must be include binary file itself (ex. /opt/Columbus7.0/Columbus)
 

@@ -57,13 +57,13 @@ in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and a
 Detailed description of arguments
 ''''''''''''''''''''''''''''''''''''
 
-- **functional** *(string)* - Default: *b-lyp*
+- **functional** *(string)* - Default: *'b-lyp'*
 
  Functional for DFT calculation. For the detailed list, check TM manual.
 
 \
 
-- **basis_set** *(string)* - Default: *SV(P)*
+- **basis_set** *(string)* - Default: *'SV(P)'*
 
  Basis set for calculation. For the detailed list, check TM manual.
 
@@ -71,11 +71,11 @@ Detailed description of arguments
 
 - **memory** *(integer)* - Default: *50*
 
- Total memory used for calculation. unit is 'm'
+ Total memory used for calculation. unit is 'mb'
 
 \
 
-- **scf_max_iter* *(integer)* - Default: *50*
+- **scf_max_iter** *(integer)* - Default: *50*
 
  Maximum number of SCF iterations.
 
@@ -83,11 +83,11 @@ Detailed description of arguments
 
 - **scf_en_tol** *(integer)* - Default: *6*
 
- Energy convergence of SCF iterations.
+ Energy convergence of SCF iterations. Default value is 1.0E-6.
 
 \
 
-- **cis_max_iter* *(integer)* - Default: *25*
+- **cis_max_iter** *(integer)* - Default: *25*
 
  Maximum number of CIS iterations.
 
@@ -95,11 +95,11 @@ Detailed description of arguments
 
 - **cis_en_tol** *(integer)* - Default: *6*
 
- Energy convergence of CIS iterations.
+ Energy convergence of CIS iterations. Default value is 1.0E-6.
 
 \
 
-- **qm_path** *(string)* - Default: *./*
+- **qm_path** *(string)* - Default: *'./'*
 
  Path for QM binary. Path must be include binary file itself (ex. /opt/TURBOMOLE/define)
 

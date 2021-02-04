@@ -1,3 +1,5 @@
+MQC	
+-------------------------------------------
 
 Mixed quantum-classical (MQC) dynamics is general method for explaining the variation of molecule including
 electronic state through time propagation. This can be exactly solved by time-dependent Schrodinger equation
@@ -7,6 +9,13 @@ particle which follows classical equation of motion.
 
 UNI-xMD mainly targeted on MQC, and whole dynamics implemented in current version of UNI-xMD are subclass of
 MQC class. In the MQC class, there are functions for update classical properties of nuclear.
+MQC methods implemented in UNI-xMD are listed in the following.	
+
+.. toctree::
+    :glob:	
+    :maxdepth: 1	
+
+    *
 
 Far more insights about treating MQC in terms of code structure, the overall modules are controlled in fundamental
 input file run.py. When user select their dynamics method, they have to make md object from the subclass of
@@ -52,15 +61,14 @@ Further information of each individual md objects are listed in next section.
 
    md = mqc.SH(molecule=mol, nsteps=1000, dt=0.125, istate=1, propagation="density")
 
-   md.run(molecule=mol, qm=qm, input_dir="./TRAJ.sh", save_scr=True, save_qm_log=False)
+   md.run(qm=qm, input_dir="./TRAJ.sh", save_scr=True, save_qm_log=False)
 
-   # molecule, thermostat and qm objects must be made to instatiate md object and use run method in advance.
-   # Those lines are omitted in this sample code.
+   # Making molecule and qm objects are omitted in this sample code, but they must be declared to use run method in advance.
 
 Detailed description of arguments
 ''''''''''''''''''''''''''''''''''''
 
-- **input_dir** *(string)* - Default: *./*
+- **input_dir** *(string)* - Default: *'./'*
 
  Direcrtory for dynamics output. All md output, saved log, ... etc will be saved in this directory.
  If the directory already presence, it will be removed and new directory will be made.
@@ -90,8 +98,8 @@ Detailed description of arguments
 
  Writting options for restarting dynamics from halted trajectory.
 
-+ write: Write a new output, starting from halted timestep.
-+ append: Write a output continually starting from a halted timestep.
+ + '*write*': Write a new output, starting from halted timestep.
+ + '*append*': Write a output continually starting from a halted timestep.
 
 \
 
