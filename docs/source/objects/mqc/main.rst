@@ -9,11 +9,11 @@ particle which follows classical equation of motion.
 
 UNI-xMD mainly targeted on MQC, and whole dynamics implemented in current version of UNI-xMD are subclass of
 MQC class. In the MQC class, there are functions for update classical properties of nuclear.
-MQC methods implemented in UNI-xMD are listed in the following.	
+MQC methods implemented in UNI-xMD are listed in the following.
 
 .. toctree::
-    :glob:	
-    :maxdepth: 1	
+    :glob:
+    :maxdepth: 1
 
     *
 
