@@ -3,10 +3,10 @@ Gaussian 09
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Gaussian 09 :cite:`Frisch2009` has been a standard program for electronic structure calculations of molecules.
-The only BOMD using the DFT option is available with Gaussian 09 in the current version of UNI-xMD,
-because it doesn't explicitly provide with nonadiabatic coupling vectors.
 
-- (TD)DFT is used to provide with a potential energy and its gradient for a certain adiabatic state.
+- The TDDFT implementation of Gaussian 09 supports only analytical gradients, not nonadiabatic couplings.
+  Instead, nonadiabatic coupling matrix elements (NACME) is calculated by using our wavefunction overlap 
+  :cite:`Ryabinkin2015` routines. Thus, it can be used for adiabatic dynamics and surface hopping dynamics.
 
 +---------+------+----+----+-----+
 |         | BOMD | SH | Eh | nac |
@@ -46,7 +46,7 @@ because it doesn't explicitly provide with nonadiabatic coupling vectors.
 | **nthreads**          | number of threads in the calculations  | *1*               |
 | *(integer)*           |                                        |                   |
 +-----------------------+----------------------------------------+-------------------+
-| **version**           | version of Gaussian09 program          | *'Revision A.02'* |
+| **version**           | version of Gaussian 09 program         | *'Revision A.02'* |
 | *(string)*            |                                        |                   |
 +-----------------------+----------------------------------------+-------------------+
 
@@ -55,13 +55,13 @@ Detailed description of the arguments
 
 - **functional** *(string)* - Default: *'BLYP'*
 
-  It specifies the level of DFT theory (exchange-correlation functional). Use the same arguments with the original ones from Gaussian09. For the detailed list, see the manual of the Gaussian 09 program.
+  It specifies the level of DFT theory (exchange-correlation functional). Use the same arguments with the original ones from Gaussian 09. For the detailed list, see the manual of the Gaussian 09 program.
 
 \
 
 - **basis_set** *(string)* - Default: *'sto-3g'*
 
-  It specifies the basis set. Use the same arguments with the original ones from Gaussian09. For the detailed list, see the manual of the Gaussian 09 program.
+  It specifies the basis set. Use the same arguments with the original ones from Gaussian 09. For the detailed list, see the manual of the Gaussian 09 program.
 
 \
 
@@ -75,7 +75,7 @@ Detailed description of the arguments
 
   It determines the initial guess method for SCF iterations.
 
-  + *'Harris'*: Diagonalizes the Harris functional :cite:`Harris1985` for the initial guess. This is the default for all DFT calculations in Gaussian09.
+  + *'Harris'*: Diagonalizes the Harris functional :cite:`Harris1985` for the initial guess. This is the default for all DFT calculations in Gaussian 09.
   + *'read'*: Reads the (previous) checkpoint file, of which the path is given by **guess_file**, for the initial guess. If the checkpoint file is not provided at the initial MD step, the *'Harris'* method is used only once instead.
 
 \
