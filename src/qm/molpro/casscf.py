@@ -24,13 +24,13 @@ class CASSCF(Molpro):
         :param double cpscf_grad_tol: gradient tolerance for CP-MCSCF equations
         :param string qm_path: path for QM binary
         :param integer nthreads: number of threads in the calculations
-        :param double version: version of Molpro program
+        :param string version: version of Molpro program
     """
     def __init__(self, molecule, basis_set="sto-3g", memory="500m", \
         guess="hf", guess_file="./wf.wfu", scf_max_iter=20, scf_en_tol=1E-8, scf_rho_tol=1E-6, \
         mcscf_max_iter=20, mcscf_en_tol=1E-8, mcscf_grad_tol=1E-6, mcscf_step_tol=1E-2, \
         active_elec=2, active_orb=2, cpscf_grad_tol=1E-7, \
-        qm_path="./", nthreads=1, version=2015.1):
+        qm_path="./", nthreads=1, version="2015.1"):
         # Initialize Molpro common variables
         super(CASSCF, self).__init__(basis_set, memory, qm_path, nthreads, version)
 

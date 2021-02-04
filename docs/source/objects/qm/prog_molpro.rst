@@ -3,109 +3,188 @@ Molpro
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Molpro :cite:`Werner2012` is a comprehensive system of ab initio programs for advanced molecular electronic structure
-calculations, designed and maintained by many authors. It comprises efficient and well parallelized
+calculations, designed and maintained by many authors. It comprises efficient and well-parallelized
 programs for standard computational chemistry applications, such as DFT or many wave function based
-methods. Among them, CASSCF method is interfaced with current version of UNI-xMD.
+methods. Among them, the state-averaged complete active space self consistent field (SA-CASSCF) method is interfaced to the current version of PyUNIxMD.
 
-- CASSCF is complete active space self-consistent field method. Molpro supports analytical gradients as
-  well as nonadiabatic couplings, thus it can be used for excited state molecular dynamics.
+- SA-CASSCF is the most famous multi-configurational SCF (MCSCF) method.
+  Since Molpro supports calculations of analytical gradients as well as nonadiabatic coupling vectors (NACVs) of SA-CASSCF states with coupled-perturbed multi-configurational self-consistent field (CP-MCSCF) equations, excited state molecular dynamics simulations are possible.
 
-+--------+------+----+----+-----+
-|        | BOMD | SH | Eh | nac |
-+========+======+====+====+=====+
-| CASSCF | o    | o  | o  | o   |
-+--------+------+----+----+-----+
++-----------+------+----+----+-----+
+|           | BOMD | SH | Eh | nac |
++===========+======+====+====+=====+
+| SA-CASSCF | o    | o  | o  | o   |
++-----------+------+----+----+-----+
 
-CASSCF
+SA-CASSCF
 """""""""""""""""""""""""""""""""""""
 
-.. note:: Our interface script is generated with 2015.1 version of Molpro program.
-   Here, you should refer to manual of Molpro program if you want to see detailed
-   lists for **basis_set** variable.
-
-
-+----------------------+------------------------------------------------+----------------+
-| Keywords             | Work                                           | Default        |
-+======================+================================================+================+
-| **molecule**         | molecular object                               |                |  
-| (:class:`Molecule`)  |                                                |                |
-+----------------------+------------------------------------------------+----------------+
-| **basis_set**        | basis set information                          | *'sto-3g'*     |
-| *(string)*           |                                                |                |
-+----------------------+------------------------------------------------+----------------+
-| **memory**           | allocatable memory in the calculations         | *'500m'*       |
-| *(string)*           |                                                |                |
-+----------------------+------------------------------------------------+----------------+
-| **guess**            | initial guess for MCSCF method                 | *'hf'*         |
-| *(string)*           |                                                |                |
-+----------------------+------------------------------------------------+----------------+
-| **guess_file**       | initial guess file                             | *'./wf.wfu'*   |
-| *(string)*           |                                                |                |
-+----------------------+------------------------------------------------+----------------+
-| **scf_max_iter**     | maximum number of SCF iterations               | *20*           |
-| *(integer)*          |                                                |                |
-+----------------------+------------------------------------------------+----------------+
-| **scf_en_tol**       | energy convergence for SCF iterations          | *1E-8*         |
-| *(double)*           |                                                |                |
-+----------------------+------------------------------------------------+----------------+
-| **scf_rho_tol**      | density convergence for SCF iterations         | *1E-6*         |
-| *(double)*           |                                                |                |
-+----------------------+------------------------------------------------+----------------+
-| **mcscf_max_iter**   | maximum number of MCSCF iterations             | *20*           |
-| *(integer)*          |                                                |                |
-+----------------------+------------------------------------------------+----------------+
-| **mcscf_en_tol**     | energy convergence for MCSCF iterations        | *1E-8*         |
-| *(double)*           |                                                |                |
-+----------------------+------------------------------------------------+----------------+
-| **mcscf_grad_tol**   | gradient convergence for MCSCF iterations      | *1E-6*         |
-| *(double)*           |                                                |                |
-+----------------------+------------------------------------------------+----------------+
-| **mcscf_step_tol**   | step length convergence for MCSCF iterations   | *1E-2*         |
-| *(double)*           |                                                |                |
-+----------------------+------------------------------------------------+----------------+
-| **active_elec**      | number of electrons in active space            | *2*            |
-| *(integer)*          |                                                |                |
-+----------------------+------------------------------------------------+----------------+
-| **active_orb**       | number of orbitals in active space             | *2*            |
-| *(integer)*          |                                                |                |
-+----------------------+------------------------------------------------+----------------+
-| **cpscf_grad_tol**   | gradient tolerance for CP-MCSCF equations      | *1E-7*         |
-| *(double)*           |                                                |                |
-+----------------------+------------------------------------------------+----------------+
-| **qm_path**          | path for QM binary                             | *'./'*         |
-| *(string)*           |                                                |                |
-+----------------------+------------------------------------------------+----------------+
-| **nthreads**         | number of threads in the calculations          | *1*            |
-| *(integer)*          |                                                |                |
-+----------------------+------------------------------------------------+----------------+
-| **version**          | version of Molpro program                      | *'2015.1'*     |
-| *(string)*           |                                                |                |
-+----------------------+------------------------------------------------+----------------+
++----------------------+------------------------------------------------------------+----------------+
+| Keywords             | Work                                                       | Default        |
++======================+============================================================+================+
+| **molecule**         | Molecular object                                           |                |  
+| (:class:`Molecule`)  |                                                            |                |
++----------------------+------------------------------------------------------------+----------------+
+| **basis_set**        | Basis set information                                      | *'sto-3g'*     |
+| *(string)*           |                                                            |                |
++----------------------+------------------------------------------------------------+----------------+
+| **memory**           | Allocatable memory in the calculations                     | *'500m'*       |
+| *(string)*           |                                                            |                |
++----------------------+------------------------------------------------------------+----------------+
+| **guess**            | Initial guess for SA-CASSCF calculations                   | *'hf'*         |
+| *(string)*           |                                                            |                |
++----------------------+------------------------------------------------------------+----------------+
+| **guess_file**       | File containing initial guesses for SA-CASSCF calculations | *'./wf.wfu'*   |
+| *(string)*           |                                                            |                |
++----------------------+------------------------------------------------------------+----------------+
+| **scf_max_iter**     | Maximum number of HF iterations                            | *20*           |
+| *(integer)*          |                                                            |                |
++----------------------+------------------------------------------------------------+----------------+
+| **scf_en_tol**       | Energy convergence threshold for HF iterations             | *1E-8*         |
+| *(double)*           |                                                            |                |
++----------------------+------------------------------------------------------------+----------------+
+| **scf_rho_tol**      | Density convergence threshold for HF iterations            | *1E-6*         |
+| *(double)*           |                                                            |                |
++----------------------+------------------------------------------------------------+----------------+
+| **mcscf_max_iter**   | Maximum number of SA-CASSCF iterations                     | *20*           |
+| *(integer)*          |                                                            |                |
++----------------------+------------------------------------------------------------+----------------+
+| **mcscf_en_tol**     | Energy convergence threshold for SA-CASSCF iterations      | *1E-8*         |
+| *(double)*           |                                                            |                |
++----------------------+------------------------------------------------------------+----------------+
+| **mcscf_grad_tol**   | Gradient convergence threshold for SA-CASSCF iterations    | *1E-6*         |
+| *(double)*           |                                                            |                |
++----------------------+------------------------------------------------------------+----------------+
+| **mcscf_step_tol**   | Step length convergence threshold for SA-CASSCF iterations | *1E-2*         |
+| *(double)*           |                                                            |                |
++----------------------+------------------------------------------------------------+----------------+
+| **active_elec**      | Number of electrons in active space                        | *2*            |
+| *(integer)*          |                                                            |                |
++----------------------+------------------------------------------------------------+----------------+
+| **active_orb**       | Number of orbitals in active space                         | *2*            |
+| *(integer)*          |                                                            |                |
++----------------------+------------------------------------------------------------+----------------+
+| **cpscf_grad_tol**   | Gradient convergence threshold for CP-MCSCF equations      | *1E-7*         |
+| *(double)*           |                                                            |                |
++----------------------+------------------------------------------------------------+----------------+
+| **qm_path**          | Path for QM binary                                         | *'./'*         |
+| *(string)*           |                                                            |                |
++----------------------+------------------------------------------------------------+----------------+
+| **nthreads**         | Number of threads in the calculations                      | *1*            |
+| *(integer)*          |                                                            |                |
++----------------------+------------------------------------------------------------+----------------+
+| **version**          | Version of Molpro program                                  | *'2015.1'*     |
+| *(string)*           |                                                            |                |
++----------------------+------------------------------------------------------------+----------------+
 
 
 Detailed description of the arguments
 ''''''''''''''''''''''''''''''''''''''''''
 
 
+- **basis_set** *(string)* - Default: *'sto-3g'*
+
+  The **basis_set** determines the basis set for atomic orbitals.
+
+\
+
+- **memory** *(string)* - Default: *'500m'*
+
+  This argment determines the memory to be allocated for Molpro calculation.
+
+\
+
 - **guess** *(string)* - Default: *'hf'*
 
-  Determines the initial guess of the CASSCF orbitals at every time step.
+  The **guess** determines the initial guess for a SA-CASSCF calculations.
 
-  + *'hf'*: Use HF orbitals as the initial guess.
-  + *'read'*: Use CASSCF orbitals of the previous time step as the initial guess. 
-    At the first time step, reads the file **guess_file** and use the orbitals in the file.
-    If the file does not exist, uses HF orbitals.
+  + *'hf'*: Use HF orbitals as the initial guess of orbitals for the SA-CASSCF calculation.
+  + *'read'*: Use wave functions calculated at the previous time step as the initial guess for the SA-CASSCF calculation.
 
 \
 
 - **guess_file** *(string)* - Default: *'./wf.wfu'*
    
-  The name of file containing orbitals for the initial guess of the CASSCF calculation.
+  The **guess_file** determines the name of file containing orbitals for the initial guess of orbitals for the SA-CASSCF calculation at the first time step.
+  This argument is effective only if **guess** = *'read'*
+  If the file does not exist, HF calculation is requested for the initial guess for the SA-CASSCF calculation.
+
+\
+
+- **scf_max_iter** *(integer)* - Default: *20*
+
+  This argument determines the maximum number of the HF iterations.
+  
+\
+
+- **scf_en_tol** *(double)* - Default: *1E-8*
+
+  This argument determines the convergence threshold for the HF energy.
+  
+\
+
+- **scf_rho_tol** *(double)* - Default: *1E-6*
+
+  This argument determines the convergence threshold for the HF density matrix.
+  
+\
+
+- **mcscf_max_iter** *(integer)* - Default: *20*
+
+  This argument determines the maximum number of the SA-CASSCF interations.
+  
+\
+
+- **mcscf_en_tol** *(integer)* - Default: *1E-8*
+
+  This argument determines the convergence threshold for the SA-CASSCF energy.
+  
+\
+
+- **mcscf_grad_tol** *(integer)* - Default: *1E-6*
+
+  This argument determines the convergence threshold for the SA-CASSCF gradient.
+  
+\
+
+- **mcscf_step_tol** *(integer)* - Default: *1E-2*
+
+  This argument determines the convergence threshold for SA-CASSCF step length.
+  
+\
+
+- **active_elec** *(integer)* - Default: *'2'*
+
+  This argument determines the number of electrons to be included in the active space of the SA-CASSCF calculations.
+
+\
+
+- **active_orb** *(integer)* - Default: *'2'*
+  
+  This argument determines the number of orbitals to be included in the active space of the SA-CASSCF calculations.
+
+\
+
+- **cpscf_grad_tol** *(double)*  - Default: *1E-7*
+
+  This argument determines the convergence threshold for the accuracy of the CP-MCSCF equations for the analytical gradients and NACVs of the SA-CASSCF states.
 
 \
 
 - **qm_path** *(string)* - Default: *'./'*
   
-  The directory containing the 'Molpro' executable. 
-  The PyUNIxMD search for the executable file *'molpro'* in this directory for QM calculations.
+  This argument determines a path to be searched by  PyUNIxMD for the Molpro executable file, 'molpro' for the SA-CASSCF calculations.
+
+\
+
+- **nthreads** *(integer)* - Default: *'1'*
+  
+  This argument determines the number of thread for parallel execution of Molpro.
+
+\
+
+- **version**  *(string)* - Default: *'2015.1'*
+  
+  This argument indicates the version of Molpro to be executed.
+  Currently, only 2015.1 version is interfaced.
 
