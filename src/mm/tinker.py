@@ -7,17 +7,17 @@ import numpy as np
 class Tinker(MM_calculator):
     """ Class for Tinker program
 
-        :param object molecule: molecule object
-        :param string scheme: type of QM/MM scheme
-        :param string embedding: charge embedding options
-        :param string vdw: van der Walls interactions
-        :param boolean periodic: use periodicity in the calculations
-        :param double,list cell_par: cell lattice parameters (lengths and angles)
-        :param string xyz_file: initial tinker.xyz file
-        :param string key_file: initial tinker.key file
-        :param string mm_path: path for MM binary
-        :param integer nthreads: number of threads in the calculations
-        :param string version: version of Tinker program
+        :param object molecule: Molecule object
+        :param string scheme: Type of QM/MM scheme
+        :param string embedding: Charge embedding options
+        :param string vdw: Van der Walls interactions
+        :param boolean periodic: Use periodicity in the calculations
+        :param double,list cell_par: Cell lattice parameters (lengths and angles)
+        :param string xyz_file: Initial tinker.xyz file
+        :param string key_file: Initial tinker.key file
+        :param string mm_path: Path for MM binary
+        :param integer nthreads: Number of threads in the calculations
+        :param string version: Version of Tinker program
     """
     def __init__(self, molecule, scheme=None, embedding=None, vdw=None, periodic=False, \
         cell_par=[0., 0., 0., 0., 0., 0.], xyz_file="./tinker.xyz", key_file="./tinker.key",

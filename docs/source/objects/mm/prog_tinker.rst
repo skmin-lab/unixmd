@@ -12,37 +12,37 @@ charge penetration effects, and HIPPO (Hydrogen-like Interatomic Polarizable POt
 +------------------------+------------------------------------------------+---------------------+
 | Keywords               | Work                                           | Default             |
 +========================+================================================+=====================+
-| **molecule**           | molecular object                               |                     |  
+| **molecule**           | Molecular object                               |                     |  
 | (:class:`Molecule`)    |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| **scheme**             | type of QM/MM scheme                           | *None*              |
+| **scheme**             | Type of QM/MM scheme                           | *None*              |
 | *(string)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| **embedding**          | charge embedding options                       | *None*              |
+| **embedding**          | Charge embedding options                       | *None*              |
 | *(string)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| **vdw**                | van der Walls interactions                     | *None*              |
+| **vdw**                | Van der Walls interactions                     | *None*              |
 | *(string)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| **periodic**           | use periodicity in the calculations            | *False*             |
+| **periodic**           | Use periodicity in the calculations            | *False*             |
 | *(boolean)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| **cell_par**           | cell lattice parameters (lengths and angles)   | *6 \* [ 0.0 ]*      |
+| **cell_par**           | Cell lattice parameters (lengths and angles)   | *6 \* [ 0.0 ]*      |
 | *(double, list)*       |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| **xyz_file**           | initial tinker.xyz file                        | *'./tinker.xyz'*    |
+| **xyz_file**           | Initial tinker.xyz file                        | *'./tinker.xyz'*    |
 | *(string)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| **key_file**           | initial tinker.key file                        | *'./tinker.key'*    |
+| **key_file**           | Initial tinker.key file                        | *'./tinker.key'*    |
 | *(string)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| **mm_path**            | path for MM binary                             | *'./'*              |
+| **mm_path**            | Path for MM binary                             | *'./'*              |
 | *(string)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| **nthreads**           | number of threads in the calculations          | *1*                 |
+| **nthreads**           | Number of threads in the calculations          | *1*                 |
 | *(integer)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| **version**            | version of Tinker program                      | *'8.7'*             |
+| **version**            | Version of Tinker program                      | *'8.7'*             |
 | *(string)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
 
@@ -55,30 +55,43 @@ Detailed description of arguments
   One is subtractive scheme and the other is additive scheme. The detailed expressions for
   these schemes are given in the literature. :cite:`Senn2009`
 
-  + 'additive': Total three calculations was carried out, which correspond to a QM calculation on the inner region, an MM calculation on the outer region, and an explicit QM-MM coupling term, respectively. In general, it is recommended to use the additive scheme for solution systems.
-  + 'subtractive': Total three calculations was carried out, which correspond to a QM calculation on the inner region, an MM calculation on the entire region, and an MM calculation on the inner region, respectively. In this scheme, no explicit QM-MM coupling terms are needed since they are implicitly included in three calculations. It is recommended to use the subtractive scheme for proteins.
+  + *'additive'*: Total three calculations was carried out, which correspond
+    to a QM calculation on the inner region, an MM calculation on the outer region,
+    and an explicit QM-MM coupling term, respectively. In general, it is
+    recommended to use the additive scheme for solution systems.
+  + *'subtractive'*: Total three calculations was carried out, which correspond
+    to a QM calculation on the inner region, an MM calculation on the entire region,
+    and an MM calculation on the inner region, respectively. In this scheme,
+    no explicit QM-MM coupling terms are needed since they are implicitly included
+    in three calculations. It is recommended to use the subtractive scheme for proteins.
 
 \
 
 - **embedding** *(string)* - Default: *None*
 
-  Type of charge-charge interactions between the inner and outer regions. Current version of PyUNIxMD supports two types of charge-charge embedding.
+  Type of charge-charge interactions between the inner and outer regions.
+  Current version of PyUNIxMD supports two types of charge-charge embedding.
   One is mechanical interaction and the other is electrostatic interaction.
   The **embedding** of the MM object must be same with the **embedding** defined in the QM object.
 
-  + None: Do not use charge-charge embedding in QM/MM method.
-  + 'mechanical': The charge-charge interactions are treated at MM level. The energies are calculated from the interactions between point charges.
-  + 'electrostatic': The charge-charge interactions are treated at QM level. The point charges of the outer regions are added to the one-electron terms of the Hamiltonian in QM calculation. Hence, the polarization effect from the point charges are considered in this embedding.
+  + *None*: Do not use charge-charge embedding in QM/MM method.
+  + *'mechanical'*: The charge-charge interactions are treated at MM level.
+    The energies are calculated from the interactions between point charges.
+  + *'electrostatic'*: The charge-charge interactions are treated at QM level.
+    The point charges of the outer regions are added to the one-electron terms of the
+    Hamiltonian in QM calculation. Hence, the polarization effect from the point charges are considered in this embedding.
 
 \
 
 - **vdw** *(string)* - Default: *None*
 
-  Type of van-der Walls interactions between the inner and outer regions. Current version of PyUNIxMD supports one type of van-der Walls interaction,
-  which is the Lennard-Jones interaction. The other types of van-der Walls interactions provided in the Tinker program are not currently interfaced with PyUNIxMD.
+  Type of van-der Walls interactions between the inner and outer regions.
+  Current version of PyUNIxMD supports one type of van-der Walls interaction,
+  which is the Lennard-Jones interaction. The other types of van-der Walls
+  interactions provided in the Tinker program are not currently interfaced with PyUNIxMD.
 
-  + None: Do not use van-der Walls interactions in QM/MM method.
-  + 'lennardjones': The Lennard-Jones interactions are used for van-der Walls interactions.
+  + *None*: Do not use van-der Walls interactions in QM/MM method.
+  + *'lennardjones'*: The Lennard-Jones interactions are used for van-der Walls interactions.
 
 \
 
@@ -104,20 +117,24 @@ Detailed description of arguments
 
 - **key_file** *(string)* - Default: *'./tinker.key'*
 
-  Initial 'tinker.key' file used in the calculations. The keywords of the Tinker program except **embedding**, **vdw**, and the periodicity can be included in this file.
-  For example, if you want to add some constraints to the systems, then the related keywords can be added to the 'tinker.key' file.
+  Initial 'tinker.key' file used in the calculations. The keywords of the Tinker program
+  except **embedding**, **vdw**, and the periodicity can be included in this file.
+  For example, if you want to add some constraints to the systems, then
+  the related keywords can be added to the 'tinker.key' file.
 
 \
 
 - **mm_path** *(string)* - Default: *'./'*
 
-  Path for Tinker binary. In our interfacing scripts, the testgrad (or testgrad.x) binary is used to calculate the energies and forces in MM level.
+  Path for Tinker binary. In our interfacing scripts, the executable file,
+  'testgrad' (or 'testgrad.x') is used to calculate the energies and forces in MM level.
 
 \
 
 - **nthreads** *(integer)* - Default: *1*
 
-  Number of threads in the calculation. To use this option, you must check that your binarys of the Tinker program supports OpenMP parallelization.
+  Number of threads in the calculation. To use this option, you must check
+  that your binarys of the Tinker program supports OpenMP parallelization.
 
 \
 

@@ -9,30 +9,30 @@ import numpy as np
 class DFTB(DFTBplus):
     """ Class for (TD)DFTB method of DFTB+ program
 
-        :param object molecule: molecule object
-        :param boolean scc: include self-consistent charge (SCC) scheme
-        :param double scc_tol: stopping criteria for the SCC iterations
-        :param integer scc_max_iter: maximum number of SCC iterations
-        :param boolean ocdftb: include onsite correction to SCC term
-        :param boolean lcdftb: include long-range corrected functional
-        :param string lc_method: algorithms for LC-DFTB
-        :param boolean sdftb: include spin-polarisation scheme
-        :param double unpaired_elec: number of unpaired electrons
-        :param string guess: initial guess method for SCC scheme
-        :param string guess_file: initial guess file for charges
-        :param double elec_temp: electronic temperature in Fermi-Dirac scheme
-        :param string mixer: charge mixing method used in DFTB
-        :param string ex_symmetry: symmetry of excited state in TDDFTB
-        :param double e_window: energy window for TDDFTB. Increases efficiency of NACME calculation.
-        :param integer,list k_point: number of k-point samplings
-        :param boolean periodic: use periodicity in the calculations
-        :param double,list cell_length: the lattice vectors of periodic unit cell
-        :param string sk_path: path for slater-koster files
-        :param string install_path: path for DFTB+ install directory
-        :param boolean mpi: use MPI parallelization
-        :param string mpi_path: path for MPI binary
-        :param integer nthreads: number of threads in the calculations
-        :param string version: version of DFTB+ program
+        :param object molecule: Molecule object
+        :param boolean scc: Include self-consistent charge (SCC) scheme
+        :param double scc_tol: Stopping criteria for the SCC iterations
+        :param integer scc_max_iter: Maximum number of SCC iterations
+        :param boolean ocdftb: Include onsite correction to SCC term
+        :param boolean lcdftb: Include long-range corrected functional
+        :param string lc_method: Algorithms for LC-DFTB
+        :param boolean sdftb: Include spin-polarisation scheme
+        :param double unpaired_elec: Number of unpaired electrons
+        :param string guess: Initial guess method for SCC scheme
+        :param string guess_file: Initial guess file for charges
+        :param double elec_temp: Electronic temperature in Fermi-Dirac scheme
+        :param string mixer: Charge mixing method used in DFTB
+        :param string ex_symmetry: Symmetry of excited state in TDDFTB
+        :param double e_window: Energy window for TDDFTB. Increases efficiency of NACME calculation.
+        :param integer,list k_point: Number of k-point samplings
+        :param boolean periodic: Use periodicity in the calculations
+        :param double,list cell_length: The lattice vectors of periodic unit cell
+        :param string sk_path: Path for slater-koster files
+        :param string install_path: Path for DFTB+ install directory
+        :param boolean mpi: Use MPI parallelization
+        :param string mpi_path: Path for MPI binary
+        :param integer nthreads: Number of threads in the calculations
+        :param string version: Version of DFTB+ program
     """
     def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=100, ocdftb=False, \
         lcdftb=False, lc_method="MatrixBased", sdftb=False, unpaired_elec=0., guess="h0", \

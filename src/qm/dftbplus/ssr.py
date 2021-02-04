@@ -8,30 +8,30 @@ import numpy as np
 class SSR(DFTBplus):
     """ Class for SSR method of DFTB+ program
 
-        :param object molecule: molecule object
-        :param boolean scc: include self-consistent charge (SCC) scheme
-        :param double scc_tol: stopping criteria for the SCC iterations
-        :param integer scc_max_iter: maximum number of SCC iterations
-        :param boolean ocdftb: include onsite correction to SCC term
-        :param boolean lcdftb: include long-range corrected functional
-        :param string lc_method: algorithms for LC-DFTB
-        :param boolean ssr22: use SSR(2,2) calculation?
-        :param boolean ssr44: use SSR(4,4) calculation?
-        :param string guess: initial guess method for SCC scheme
-        :param string guess_file: initial guess file for eigenvetors
-        :param boolean state_interactions: include state-interaction terms to SA-REKS
-        :param double shift: level shifting value in SCC iterations
-        :param double,list tuning: scaling factor for atomic spin constants
-        :param string cpreks_grad_alg: algorithms used in CP-REKS equations
-        :param double cpreks_grad_tol: tolerance used in the conjugate-gradient based algorithms
-        :param boolean save_memory: save memory in cache used in CP-REKS equations
-        :param string embedding: charge-charge embedding options
-        :param boolean periodic: use periodicity in the calculations
-        :param double,list cell_length: the lattice vectors of periodic unit cell
-        :param string sk_path: path for slater-koster files
-        :param string install_path: path for DFTB+ install directory
-        :param integer nthreads: number of threads in the calculations
-        :param string version: version of DFTB+ program
+        :param object molecule: Molecule object
+        :param boolean scc: Include self-consistent charge (SCC) scheme
+        :param double scc_tol: Stopping criteria for the SCC iterations
+        :param integer scc_max_iter: Maximum number of SCC iterations
+        :param boolean ocdftb: Include onsite correction to SCC term
+        :param boolean lcdftb: Include long-range corrected functional
+        :param string lc_method: Algorithms for LC-DFTB
+        :param boolean ssr22: Use SSR(2,2) calculation?
+        :param boolean ssr44: Use SSR(4,4) calculation?
+        :param string guess: Initial guess method for SCC scheme
+        :param string guess_file: Initial guess file for eigenvetors
+        :param boolean state_interactions: Include state-interaction terms to SA-REKS
+        :param double shift: Level shifting value in SCC iterations
+        :param double,list tuning: Scaling factor for atomic spin constants
+        :param string cpreks_grad_alg: Algorithms used in CP-REKS equations
+        :param double cpreks_grad_tol: Tolerance used in the conjugate-gradient based algorithms
+        :param boolean save_memory: Save memory in cache used in CP-REKS equations
+        :param string embedding: Charge-charge embedding options
+        :param boolean periodic: Use periodicity in the calculations
+        :param double,list cell_length: The lattice vectors of periodic unit cell
+        :param string sk_path: Path for slater-koster files
+        :param string install_path: Path for DFTB+ install directory
+        :param integer nthreads: Number of threads in the calculations
+        :param string version: Version of DFTB+ program
     """
     def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=1000, ocdftb=False, \
         lcdftb=False, lc_method="MatrixBased", ssr22=False, ssr44=False, guess="h0", \

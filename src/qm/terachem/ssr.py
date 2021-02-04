@@ -7,25 +7,25 @@ import numpy as np
 class SSR(TeraChem):
     """ Class for SSR method of TeraChem program
 
-        :param object molecule: molecule object
-        :param string basis_set: basis set information
-        :param string functional: level of DFT theory
-        :param string precision: precision in the calculations
-        :param double scf_rho_tol: wavefunction convergence for SCF iterations
-        :param integer scf_max_iter: maximum number of SCF iterations
-        :param boolean ssr22: use SSR(2,2) calculation?
-        :param string guess: initial guess for REKS SCF iterations
-        :param string guess_file: initial guess file
+        :param object molecule: Molecule object
+        :param string basis_set: Basis set information
+        :param string functional: Level of DFT theory
+        :param string precision: Precision in the calculations
+        :param double scf_rho_tol: Wavefunction convergence for SCF iterations
+        :param integer scf_max_iter: Maximum number of SCF iterations
+        :param boolean ssr22: Use SSR(2,2) calculation?
+        :param string guess: Initial guess for REKS SCF iterations
+        :param string guess_file: Initial guess file
         :param double reks_rho_tol: DIIS error for REKS SCF iterations
-        :param integer reks_max_iter: maximum number of REKS SCF iterations
-        :param double shift: level shifting value in REKS SCF iterations
-        :param boolean state_interactions: include state-interaction terms to SA-REKS
-        :param double cpreks_grad_tol: gradient tolerance for CP-REKS equations
-        :param integer cpreks_max_iter: maximum number of CP-REKS iterations
-        :param string qm_path: path for QM binary
-        :param integer ngpus: number of GPUs
+        :param integer reks_max_iter: Maximum number of REKS SCF iterations
+        :param double shift: Level shifting value in REKS SCF iterations
+        :param boolean state_interactions: Include state-interaction terms to SA-REKS
+        :param double cpreks_grad_tol: Gradient tolerance for CP-REKS equations
+        :param integer cpreks_max_iter: Maximum number of CP-REKS iterations
+        :param string qm_path: Path for QM binary
+        :param integer ngpus: Number of GPUs
         :param string gpu_id: ID of used GPUs
-        :param string version: version of TeraChem program
+        :param string version: Version of TeraChem program
     """
     def __init__(self, molecule, ngpus=1, gpu_id="1", precision="dynamic", \
         version="1.93", functional="hf", basis_set="sto-3g", scf_rho_tol=1E-2, \

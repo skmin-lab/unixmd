@@ -6,11 +6,11 @@ import os
 class DFTBplus(QM_calculator):
     """ Class for common parts of DFTB+ program
 
-        :param object molecule: molecule object
-        :param string sk_path: path for slater-koster files
-        :param string install_path: path for DFTB+ install directory
-        :param integer nthreads: number of threads in the calculations
-        :param string version: version of DFTB+ program
+        :param object molecule: Molecule object
+        :param string sk_path: Path for slater-koster files
+        :param string install_path: Path for DFTB+ install directory
+        :param integer nthreads: Number of threads in the calculations
+        :param string version: Version of DFTB+ program
     """
     def __init__(self, molecule, sk_path, install_path, nthreads, version):
         # Save name of QM calculator and its method

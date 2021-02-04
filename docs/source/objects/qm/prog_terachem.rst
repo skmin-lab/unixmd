@@ -36,61 +36,61 @@ determined from the **state_interactions** argument.
 +-------------------------+---------------------------------------------+-------------+
 | Keywords                | Work                                        | Default     |
 +=========================+=============================================+=============+
-| **molecule**            | molecular object                            |             |  
+| **molecule**            | Molecular object                            |             |  
 | (:class:`Molecule`)     |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **basis_set**           | basis set information                       | *'sto-3g'*  |
+| **basis_set**           | Basis set information                       | *'sto-3g'*  |
 | *(string)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **functional**          | functional in the calculations              | *'hf'*      |
+| **functional**          | Functional in the calculations              | *'hf'*      |
 | *(string)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **precision**           | precision in the calculations               | *'dynamic'* |
+| **precision**           | Precision in the calculations               | *'dynamic'* |
 | *(string)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **scf_rho_tol**         | wavefunction convergence for SCF iterations | *1E-2**     |
+| **scf_rho_tol**         | Wavefunction convergence for SCF iterations | *1E-2**     |
 | *(double)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **scf_max_iter**        | maximum number of SCF iterations            | *300*       |
+| **scf_max_iter**        | Maximum number of SCF iterations            | *300*       |
 | *(integer)*             |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **ssr22**               | use SSR(2,2) calculation?                   | *False*     |
+| **ssr22**               | Use SSR(2,2) calculation?                   | *False*     |
 | *(boolean)*             |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **guess**               | initial guess for REKS SCF iterations       | *'dft'*     |
+| **guess**               | Initial guess for REKS SCF iterations       | *'dft'*     |
 | *(string)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **guess_file**          | initial guess file                          | *'./c0'*    |
+| **guess_file**          | Initial guess file                          | *'./c0'*    |
 | *(string)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
 | **reks_rho_tol**        | DIIS error for REKS SCF iterations          | *1E-6*      |
 | *(double)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **reks_max_iter**       | maximum number of REKS SCF iterations       | *1000*      |
+| **reks_max_iter**       | Maximum number of REKS SCF iterations       | *1000*      |
 | *(integer)*             |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **shift**               | level shifting value in REKS SCF iterations | *0.3*       |
+| **shift**               | Level shifting value in REKS SCF iterations | *0.3*       |
 | *(double)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **state_interactions**  | include state-interaction terms to SA-REKS  | *False*     |
+| **state_interactions**  | Include state-interaction terms to SA-REKS  | *False*     |
 | *(boolean)*             |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **cpreks_grad_tol**     | gradient tolerance for CP-REKS equations    | *1E-6*      |
+| **cpreks_grad_tol**     | Gradient tolerance for CP-REKS equations    | *1E-6*      |
 | *(double)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **cpreks_max_iter**     | maximum number of CP-REKS iterations        | *1000*      |
+| **cpreks_max_iter**     | Maximum number of CP-REKS iterations        | *1000*      |
 | *(integer)*             |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **qm_path**             | path for QM binary                          | *'./'*      |
+| **qm_path**             | Path for QM binary                          | *'./'*      |
 | *(string)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **ngpus**               | number of GPUs                              | *1*         |
+| **ngpus**               | Number of GPUs                              | *1*         |
 | *(integer)*             |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
 | **gpu_id**              | ID of used GPUs                             | *'1'*       |
 | *(string)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **version**             | version of TeraChem program                 | *'1.93'*    |
+| **version**             | Version of TeraChem program                 | *'1.93'*    |
 | *(string)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
 
@@ -135,7 +135,7 @@ Detailed description of arguments
 
 - **ssr22** *(boolean)* - Default: *False*
 
-  Uses SSR(2,2) calculation. When this sets to True, detailed type of the REKS calculation is
+  Uses SSR(2,2) calculation. When this sets to *True*, detailed type of the REKS calculation is
   automatically determined from the number of states and **state_interactions** argument. If the number of states is one,
   the single-state REKS calculation is carried out. When the number of states is larger than one,
   the SA-REKS or SI-SA-REKS calculation is executed according to the **state_interactions** argument.
@@ -146,14 +146,15 @@ Detailed description of arguments
 
   Initial guess method for the REKS SCF iteration.
 
-  + 'dft': Initial orbitals are generated from the DFT calculation with **scf_rho_tol** tolerance.
-  + 'read': Reads "c0" file generated from previous step. If **guess_file** exists, then "c0" file is used as initial guess at t = 0.0 s.
+  + *'dft'*: Initial orbitals are generated from the DFT calculation with **scf_rho_tol** tolerance.
+  + *'read'*: Reads "c0" file generated from previous step.
+    If **guess_file** exists, then "c0" file is used as initial guess at t = 0.0 s.
 
 \
 
 - **guess_file** *(string)* - Default: *'./c0'*
 
-  Initial guess file for eigenvectors. It is vaild when **guess** is 'read' option.
+  Initial guess file for eigenvectors. It is vaild when **guess** is *'read'* option.
 
 \
 
@@ -171,14 +172,14 @@ Detailed description of arguments
 
 - **shift** *(double)* - Default: *0.3*
 
-  Level shifting value used in REKS SCF iterations. It can be helpful to increase **Shift** when
+  Level shifting value used in REKS SCF iterations. It can be helpful to increase **shift** when
   it is hard to converge the REKS SCF iterations.
 
 \
 
 - **state_interactions** *(boolean)* - Default: *False*
 
-  Includes state-interaction terms to SA-REKS calculation. If this sets to True, the SI-SA-REKS states are calculated.
+  Includes state-interaction terms to SA-REKS calculation. If this sets to *True*, the SI-SA-REKS states are calculated.
   Otherwise, the SA-REKS states are obtained. It is valid when the number of states is larger
   than one. In general, it generates more reliable adiabatic states.
 
@@ -188,7 +189,7 @@ Detailed description of arguments
 
   Tolerance used in the conjugate-gradient based algorithm for solving the CP-REKS equations.
   Sometimes, it can be helpful to use loose tolerance for the stable molecular dynamics.
-  In general, 4E-6 is recommended for the tolerance.
+  In this case, *4E-6* is recommended for the tolerance.
 
 \
 
@@ -212,7 +213,7 @@ Detailed description of arguments
 
 - **gpu_id** *(string)* - Default: *'1'*
 
-  ID of used GPUs. If you want to use 2 GPUs with ID of 0 and 1, then put '0 1' into **gpu_id**.
+  ID of used GPUs. If you want to use 2 GPUs with ID of 0 and 1, then put *'0 1'* into **gpu_id**.
 
 \
 
