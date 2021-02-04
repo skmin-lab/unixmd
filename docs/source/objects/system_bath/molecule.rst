@@ -63,7 +63,7 @@ Detailed description of the arguments
 
 - **geometry** *(string)* - Default: *None*
 
-  The structure of **geometry** string is the following.
+  **geometry** string contains information of the structure of the system. The structure of this string is the following.
 
   1. the number of atoms
 
@@ -77,48 +77,53 @@ Detailed description of the arguments
 
 - **nsp** *(integer)* - Default: *3*
 
-  Sets the dimension of space where the dynamics occurs. 
+  It specifies the dimension of space where the dynamics occurs. 
 
 \
 
 - **nstates** *(integer)* - Default: *3*
 
-  Sets the number of BO states treated in the dynamics.
+  It specifies the number of BO states treated in the dynamics.
 
 \
 
 - **qmmm** *(boolean)* - Default: *False*
 
-  Determines whether QMMM scheme is used.
+  This flag determines whether QMMM scheme is used.
 
 \
 
 - **natoms_mm** *(integer)* - Default: *None*
 
-  Sets the number of atoms in MM region when **qmmm** is *True*. 
+  It specifies the number of atoms in the MM region when **qmmm** is *True*. 
 
 \
 
 - **dof** *(integer)* - Default: *None*
 
-  Sets the Degrees of freedom (if **model** is *False*, the molecular DoF is given.)
+  It specifies the degrees of freedom of the system. This value will be set automatically if no specific value is given.
+
+  +**model** == *False*: :math:`3 \times \textrm{(the number of atoms)}-6` (The DoF of a non-linear molecule)
+  +**model** == *True*: :math:`\textrm{(the dimension)} \times \textrm{(the number of atoms)}`
+
+  When the argument is present, it overrides the above defaults.
 
 \
 
 - **unit_pos** *(string)* - Default: *'A'*
 
-  Defines the unit of position
+  It specifies the unit of position.
 
   + *'A'*: Angstrom
-  + *'au'*: atomic unit
+  + *'au'*: Hartree atomic unit
 
 \
 
 - **unit_vel** *(string)* - Default: *'au'*
 
-  Defines the unit of velocity
+  It specifies the unit of velocity.
 
-  + *'au'*: atomic unit
+  + *'au'*: Hartree atomic unit
   + *'A/ps'*: Angstrom per picosecond
   + *'A/fs'*: Angstrom per femtosecond
 
@@ -126,11 +131,11 @@ Detailed description of the arguments
 
 - **charge** *(integer)* - Default: *0*
 
-  Sets the total charge of the system 
+  It specifies the total charge of the system 
 
 \
 
 - **model** *(boolean)* - Default: *False*
 
-  Determines whether the system is a model system or not. About model systems dealt with PyUNIxMD, see the Model Systems item in the :class:`QM_calculator` section.
+  This flag determines whether the system is a model system or not. About model systems provided by PyUNIxMD, see the Model Systems item in the :class:`QM_calculator` section.
 
