@@ -3,7 +3,25 @@ Molecule
 -------------------------------------------
 
 At the very first stage of dynamics calculations, users need to make
-a molecule object to be investigated. The keywords to specify the molecule are below.
+a molecule object to be investigated. 
+
+**Ex.** Making a water molecule object
+
+.. code-block:: python
+
+   from molecule import Molecule
+
+   geometry = """
+   3
+   h2o
+   O    0.00    0.00    0.00    0.00    0.00    0.00
+   H    0.95   -0.55    0.00    0.00    0.00    0.00
+   H   -0.95   -0.55    0.00    0.00    0.00    0.00
+   """
+
+   mol = Molecule(geometry=geometry, nstates=2)
+
+The keywords to specify the molecule are below.
 
 +---------------+------------------------------------------------------+-----------+
 | Keywords      | Work                                                 | Default   |
@@ -108,23 +126,4 @@ Detailed description of the arguments
 - **model** *(boolean)* - Default: *False*
 
   Determines whether the system is a model system or not. About model systems dealt with PyUNIxMD, see the Model Systems item in the QM_calculator section.
-
-\
-
-**Ex.** Making a water molecule object
-
-.. code-block:: python
-
-   from molecule import Molecule
-
-   geometry = """
-   3
-   h2o
-   O    0.00    0.00    0.00    0.00    0.00    0.00
-   H    0.95   -0.55    0.00    0.00    0.00    0.00
-   H   -0.95   -0.55    0.00    0.00    0.00    0.00
-   """
-
-   mol = Molecule(geometry=geometry, nstates=2)
-
 
