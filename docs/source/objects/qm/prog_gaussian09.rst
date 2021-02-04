@@ -40,7 +40,7 @@ Gaussian 09 :cite:`Frisch2009` has been a standard program for electronic struct
 | **guess_file**        | initial guess file                     | *'./g09.chk'*     |
 | *(string)*            |                                        |                   |
 +-----------------------+----------------------------------------+-------------------+
-| **G09_root_path**     | path for G09 root                      | *'/opt/gaussian'* |
+| **G09_root_path**     | path for Gaussian 09 root              | *'/opt/gaussian'* |
 | *(string)*            |                                        |                   |
 +-----------------------+----------------------------------------+-------------------+
 | **nthreads**          | number of threads in the calculations  | *1*               |
