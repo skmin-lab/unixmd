@@ -48,14 +48,14 @@ package or a customized Hamiltonian, and nuclear propagation is done by the Velo
 | **istate**             | initial state                                  | *0*        |
 | *(integer)*            |                                                |            |
 +------------------------+------------------------------------------------+------------+
-| **dt**                 | time interval (fs)                             | *0.5*      |
+| **dt**                 | time interval                                  | *0.5*      |
 | *(double)*             |                                                |            |
 +------------------------+------------------------------------------------+------------+
 | **nsteps**             | Total step of nuclear propagation              | *1000*     |
 | *(integer)*            |                                                |            |
 +------------------------+------------------------------------------------+------------+
-| **unit_dt**            | unit of time step (fs = femtosecond,           | *'fs'*     |
-| *(string)*             | au = atomic unit)                              |            |
+| **unit_dt**            | unit of time step                              | *'fs'*     |
+| *(string)*             |                                                |            |
 +------------------------+------------------------------------------------+------------+
 | **out_freq**           | frequency of printing output                   | *1*        |
 | *(integer)*            |                                                |            |
@@ -90,9 +90,8 @@ Detailed description of the arguments
 
   The time unit is used in dynamics.
 
-  + 'fs': femto second
-  
-  + 'au': atomic unit
+  + *'fs'*: femtosecond
+  + *'au'*: atomic unit
 
 \
 

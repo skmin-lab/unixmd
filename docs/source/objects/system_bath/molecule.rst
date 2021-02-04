@@ -44,10 +44,10 @@ The keywords to specify the molecule are below.
 | **dof**       | degrees of freedom (if **model** is *False*,         | *None*    |
 | *(integer)*   | the molecular DoF is given.)                         |           |
 +---------------+------------------------------------------------------+-----------+
-| **unit_pos**  | unit of position (A = angstrom, au = atomic unit)    | *'A'*     |
+| **unit_pos**  | unit of position                                     | *'A'*     |
 | *(string)*    |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **unit_vel**  | unit of velocity (au = atomic unit, A/ps, A/fs)      | *'au'*    |
+| **unit_vel**  | unit of velocity                                     | *'au'*    |
 | *(string)*    |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
 | **charge**    | total charge of the system                           | *0*       |
@@ -71,7 +71,7 @@ Detailed description of the arguments
 
   3. specification of the molecule (atomic symbol, positions, velocities)
 
-  When QMMM scheme is used (**qmmm** == True), information of MM atoms is followed by QM atoms.
+  When QMMM scheme is used (**qmmm** == *True*), information of MM atoms is followed by QM atoms.
 
 \
 
@@ -95,7 +95,7 @@ Detailed description of the arguments
 
 - **natoms_mm** *(integer)* - Default: *None*
 
-  Sets the number of atoms in MM region when **qmmm** is True. 
+  Sets the number of atoms in MM region when **qmmm** is *True*. 
 
 \
 
@@ -107,13 +107,20 @@ Detailed description of the arguments
 
 - **unit_pos** *(string)* - Default: *'A'*
 
-  Defines the unit of position (A = angstrom, au = atomic unit)
+  Defines the unit of position
+
+  + *'A'*: Angstrom
+  + *'au'*: atomic unit
 
 \
 
 - **unit_vel** *(string)* - Default: *'au'*
 
-  Defines the unit of velocity (au = atomic unit, A/ps, A/fs)
+  Defines the unit of velocity
+
+  + *'au'*: atomic unit
+  + *'A/ps'*: Angstrom per picosecond
+  + *'A/fs'*: Angstrom per femtosecond
 
 \
 
@@ -125,5 +132,5 @@ Detailed description of the arguments
 
 - **model** *(boolean)* - Default: *False*
 
-  Determines whether the system is a model system or not. About model systems dealt with PyUNIxMD, see the Model Systems item in the QM_calculator section.
+  Determines whether the system is a model system or not. About model systems dealt with PyUNIxMD, see the Model Systems item in the :class:`QM_calculator` section.
 
