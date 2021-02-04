@@ -45,7 +45,7 @@ package or a customized Hamiltonian, and nuclear propagation is done by the Velo
 | **thermostat**         | thermostat type                                | *None*     |
 | (:class:`Thermostat`)  |                                                |            |
 +------------------------+------------------------------------------------+------------+
-| **istate**             | initial state                                  | *0*        |
+| **istate**             | electronic state                               | *0*        |
 | *(integer)*            |                                                |            |
 +------------------------+------------------------------------------------+------------+
 | **dt**                 | time interval                                  | *0.5*      |
@@ -70,25 +70,25 @@ Detailed description of the arguments
 
 - **istate** *(integer)* - Default: *0* (Ground state)
   
-  The initial state. The possible range of the argument is from *0* to ``molecule.nstate-1``.
+  It specifies the electronic state where nuclei move on. The possible range of the argument is from *0* to ``molecule.nstate-1``.
    
 \
 
 - **dt** *(double)* - Default: *0.5*
 
-  The time interval is used in dynamics.
+  It specifies the time interval is used in dynamics.
 
 \
 
 - **nsteps** *(integer)* - Default: *1000*
 
-  The number of nuclei propagation steps is used in dynamics.
+  It specifies the number of nuclei propagation steps is used in dynamics.
 
 \
 
 - **unit_dt** *(string)* - Default: *'fs'*
 
-  The time unit is used in dynamics.
+  It specifies the unit of time used in dynamics.
 
   + *'fs'*: femtosecond
   + *'au'*: atomic unit
@@ -97,12 +97,16 @@ Detailed description of the arguments
 
 - **out_freq** *(integer)* - Default: *1*
 
-  the output is printed at each **out_freq** steps.
+  The output is printed at each **out_freq** steps.
 
 \
 
 - **verbosity** *(integer)* - Default: *0*
 
-  verbosity.
+  It determines the verbosity of the output files and stream.
+
+  + **verbosity** :math:`\geq` 1: Prints potential energy of all BO states.
+  + **verbosity** :math:`\geq` 2: Prints accumulated hopping probabilities and writes the NACVs (NACV\_\ *ist*\_\ *jst*), qauntum momentum (QMOM), 
+    phase terms (AUX_PHASE\_\ *ist*), and atomic postions and velocities of the auxiliary trajectories (AUX_MOVIE\_\ *ist*.xyz).
 
 \
