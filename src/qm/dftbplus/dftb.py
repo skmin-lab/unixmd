@@ -158,12 +158,12 @@ class DFTB(DFTBplus):
     def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from (TD)DFTB method
 
-            :param object molecule: molecule object
-            :param string base_dir: base directory
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param double dt: time interval
-            :param integer istep: current MD step
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param string base_dir: Base directory
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param double dt: Time interval
+            :param integer istep: Current MD step
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         self.copy_files(molecule, istep, calc_force_only)
         super().get_data(base_dir, calc_force_only)
@@ -176,9 +176,9 @@ class DFTB(DFTBplus):
     def copy_files(self, molecule, istep, calc_force_only):
         """ Copy necessary scratch files in previous step
 
-            :param object molecule: molecule object
-            :param integer istep: current MD step
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param integer istep: Current MD step
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         # Copy required files for NACME
         if (self.calc_coupling and not calc_force_only and istep >= 0 and molecule.nst > 1):
@@ -202,10 +202,10 @@ class DFTB(DFTBplus):
     def get_input(self, molecule, istep, bo_list, calc_force_only):
         """ Generate DFTB+ input files: geometry.gen, dftb_in.hsd
 
-            :param object molecule: molecule object
-            :param integer istep: current MD step
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param integer istep: Current MD step
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         # Make 'geometry.gen' file
         os.system("xyz2gen geometry.xyz")
@@ -530,11 +530,11 @@ class DFTB(DFTBplus):
     def run_QM(self, molecule, base_dir, istep, bo_list, calc_force_only):
         """ Run (TD)DFTB calculation and save the output files to QMlog directory
 
-            :param object molecule: molecule object
-            :param string base_dir: base directory
-            :param integer istep: current MD step
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param string base_dir: Base directory
+            :param integer istep: Current MD step
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         # Set run command
         qm_command = os.path.join(self.qm_path, "dftb+")
@@ -575,12 +575,12 @@ class DFTB(DFTBplus):
     def extract_QM(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
         """ Read the output files to get BO information
 
-            :param object molecule: molecule object
-            :param string base_dir: base directory
-            :param integer istep: current MD step
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param double dt: time interval
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param string base_dir: Base directory
+            :param integer istep: Current MD step
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param double dt: Time interval
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         # Read 'detailed.out' file
         # TODO: the qmmm information is written in this file
@@ -627,9 +627,9 @@ class DFTB(DFTBplus):
         """ Read the necessary files and calculate NACME from tdnac.c routine,
             note that only reading of several files is required in this method
 
-            :param object molecule: molecule object
-            :param integer istep: current MD step
-            :param double dt: time interval
+            :param object molecule: Molecule object
+            :param integer istep: Current MD step
+            :param double dt: Time interval
         """
         # Read upper right block of 'oversqr.dat' file (< t | t+dt >)
         file_name_in = "oversqr.dat"

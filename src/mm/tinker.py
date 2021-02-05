@@ -116,11 +116,11 @@ class Tinker(MM_calculator):
     def get_data(self, molecule, base_dir, bo_list, istep, calc_force_only):
         """ Extract energy and gradient from Tinker
 
-            :param object molecule: molecule object
-            :param string base_dir: base directory
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param integer istep: current MD step
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param string base_dir: Base directory
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param integer istep: Current MD step
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         super().get_data(base_dir, calc_force_only)
         if (not calc_force_only):
@@ -132,7 +132,7 @@ class Tinker(MM_calculator):
     def get_input(self, molecule):
         """ Generate Tinker input files: tinker.xyz, tinker.key
 
-            :param object molecule: molecule object
+            :param object molecule: Molecule object
         """
         # Copy xyz file to currect directory
         if (os.path.isfile(self.xyz_file)):
@@ -397,8 +397,8 @@ class Tinker(MM_calculator):
     def run_MM(self, base_dir, istep):
         """ Run Tinker calculation and save the output files to MMlog directory
 
-            :param string base_dir: base directory
-            :param integer istep: current MD step
+            :param string base_dir: Base directory
+            :param integer istep: Current MD step
         """
         # Set correct binary for Tinker calculation
         binary1 = os.path.join(self.mm_path, "testgrad")
@@ -436,9 +436,9 @@ class Tinker(MM_calculator):
     def extract_MM(self, molecule, bo_list, calc_force_only):
         """ Read the output files to get MM information
 
-            :param object molecule: molecule object
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         if (not calc_force_only):
             # Energy; initialize the energy at MM level

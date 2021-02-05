@@ -99,12 +99,12 @@ class SSR(DFTBplus):
     def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from SSR method
 
-            :param object molecule: molecule object
-            :param string base_dir: base directory
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param double dt: time interval
-            :param integer istep: current MD step
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param string base_dir: Base directory
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param double dt: Time interval
+            :param integer istep: Current MD step
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         self.copy_files(istep)
         super().get_data(base_dir, calc_force_only)
@@ -117,7 +117,7 @@ class SSR(DFTBplus):
     def copy_files(self, istep):
         """ Copy necessary scratch files in previous step
 
-            :param integer istep: current MD step
+            :param integer istep: Current MD step
         """
         # Copy required files to read initial guess
         if (self.guess == "read" and istep >= 0):
@@ -128,9 +128,9 @@ class SSR(DFTBplus):
     def get_input(self, molecule, istep, bo_list):
         """ Generate DFTB+ input files: geometry.gen, dftb_in.hsd
 
-            :param object molecule: molecule object
-            :param integer istep: current MD step
-            :param integer,list bo_list: list of BO states for BO calculation
+            :param object molecule: Molecule object
+            :param integer istep: Current MD step
+            :param integer,list bo_list: List of BO states for BO calculation
         """
         # Make 'geometry.gen' file
         os.system("xyz2gen geometry.xyz")
@@ -408,9 +408,9 @@ class SSR(DFTBplus):
     def run_QM(self, base_dir, istep, bo_list):
         """ Run SSR calculation and save the output files to QMlog directory
 
-            :param string base_dir: base directory
-            :param integer istep: current MD step
-            :param integer,list bo_list: list of BO states for BO calculation
+            :param string base_dir: Base directory
+            :param integer istep: Current MD step
+            :param integer,list bo_list: List of BO states for BO calculation
         """
         # Set run command
         qm_command = os.path.join(self.qm_path, "dftb+")
@@ -429,8 +429,8 @@ class SSR(DFTBplus):
     def extract_QM(self, molecule, bo_list):
         """ Read the output files to get BO information
 
-            :param object molecule: molecule object
-            :param integer,list bo_list: list of BO states for BO calculation
+            :param object molecule: Molecule object
+            :param integer,list bo_list: List of BO states for BO calculation
         """
         # Read 'log' file
         file_name = "log"
