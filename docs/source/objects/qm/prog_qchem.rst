@@ -30,7 +30,7 @@ Q-Chem :cite:`qchem2015` is a comprehensive ab initio quantum chemistry software
 | **nthreads**          | Number of threads in the calculation           | *1*          |
 | *(integer)*           |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **functional**        | Xc functional                                  | *'blyp'*     |
+| **functional**        | XC functional                                  | *'blyp'*     |
 | *(string)*            |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
 | **scf_max_iter**      | Maximum number of SCF iterations               | *50*         |

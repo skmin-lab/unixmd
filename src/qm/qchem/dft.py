@@ -60,7 +60,7 @@ class DFT(QChem):
     def get_input(self, molecule, bo_list, calc_force_only):
         """ Generate Q-Chem input files: qchem.in
 
-            :param object molecule: Mmolecule object
+            :param object molecule: Molecule object
             :param integer istep: Current MD step
             :param integer,list bo_list: List of BO states for BO calculation
         """
