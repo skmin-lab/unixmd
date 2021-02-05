@@ -8,14 +8,14 @@ Ehrenfest dynamics :cite:`Prezhdo1999`, which is mean-field dynamics, evolves nu
 
    E(\underline{\underline{\bf R}}(t))=\sum_{i}\vert c_i \vert^2E_i,
 
-where :math:`E_i` is *i*-th adiabatic energy and
+where :math:`E_i` is :math:`i-th` adiabatic energy and
 the driving force is given by:
 
 .. math::
 
    \vec{F}=\sum_{i} \vec{F}_i + \sum_{i\neq j} c_ic_j(E_i-E_j)d_{ij},
 
-where :math:`d_{ij}` is nonadiabatic couping between *i*-th and *j*-th adiabatic state.
+where :math:`d_{ij}` is nonadiabatic couping between :math:`i-th` and :math:`j-th` adiabatic state.
 
 +----------------------------+------------------------------------------------+-------------+
 | Keywords                   | Work                                           | Default     |
@@ -96,22 +96,22 @@ Detailed description of arguments
 
   The electronic propagation scheme is used in dynamics.
 
-  + *'coefficient'*: Solve time-dependent schrodinger equation in terms of adiabatic coefficient.
-  + *'density'*: Solve time-dependent schrodinger equation in terms of adaiabatic population.
+  + *'coefficient'*: Solve time-dependent schrödinger equation in terms of adiabatic coefficient.
+  + *'density'*: Solve time-dependent schrödinger equation in terms of adaiabatic population.
 
 \
 
 - **solver** *(string)* - Default: *'rk4'*
 
-  The algorithms to solve time-dependent schrodinger equation is used in dynamics.
+  The algorithms to solve time-dependent schrödinger equation is used in dynamics.
 
-  + 'rk4': Use Runge-Kutta 4th order.
+  + *'rk4'*: Use Runge-Kutta 4th order.
 
 \
 
 - **l_pop_print** *(boolean)* - Default: *False*
 
-  Whether print adiabatic population or not when **propagation** is set to 'coefficient'.
+  Whether print adiabatic population or not when **propagation** is set to *coefficient'*.
   if **l_pop_print** is *True*, then print adiabatic population
   if **l_pop_print** is *False*, then do not print adiabatic population
 
@@ -137,8 +137,8 @@ Detailed description of arguments
 
   The time unit is used in dynamics
   
-  + 'fs': femtosecond
-  + 'au': atomic unit
+  + *'fs'*: femtosecond
+  + *'au'*: atomic unit
 
 \
 
