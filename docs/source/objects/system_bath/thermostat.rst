@@ -5,20 +5,28 @@ Thermostat
 A thermostat object should be provided to set temperature conditions of the dynamics (even in the
 case that no thermostating process is needed). The following are the options.
 
+**Ex.** Making thermostat object
+
+.. code-block:: python
+
+   from thermostat import *
+
+   bathT = rescale1(temperature=300.0, nrescale=20) # velocity rescaling thermostat
+
 Rescale1
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 :class:`Rescale1` thermostat rescales the velocities periodically during the dynamics.
 The target temperature and the number of MD steps between rescalings can be specified.
 
-+-----------------+----------------------------------------------------+-----------+
-| Keywords        | Work                                               | Default   |
-+=================+====================================================+===========+
-| **temperature** | Target temperature (K) of the thermostat           | *300.0*   |
-| *(double)*      |                                                    |           |
-+-----------------+----------------------------------------------------+-----------+
-| **nrescale**    | The number of MD steps between rescalings          | *20*      |
-| *(integer)*     |                                                    |           |
-+-----------------+----------------------------------------------------+-----------+
++---------------------+----------------------------------------------------+-----------+
+| Keywords            | Work                                               | Default   |
++=====================+====================================================+===========+
+| **temperature**     | Target temperature (K) of the thermostat           | *300.0*   |
+| *(double)*          |                                                    |           |
++---------------------+----------------------------------------------------+-----------+
+| **nrescale**        | The number of MD steps between rescalings          | *20*      |
+| *(integer)*         |                                                    |           |
++---------------------+----------------------------------------------------+-----------+
 
 Detailed description of arguments
 ''''''''''''''''''''''''''''''''''''
@@ -36,7 +44,7 @@ Detailed description of arguments
 Rescale2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 :class:`Rescale2` thermostat rescales the velocities when the difference between the current temperature
-at a specific time step and the target temperature is beyond a specified thereshold.
+at a specific time step and the target temperature is beyond a specified threshold.
 The target temperature and the temperature difference threshold can be specified.
 
 +------------------+----------------------------------------------------+-----------+
@@ -71,10 +79,8 @@ to an external heat bath with given temperature :math:`T_0`. The scaling factor,
 
    \alpha^2 = 1 + \frac{dt}{\tau} (T_0 - T(t)),
 
-where :math:`dt` and :math:`\tau` is the MD step and coupling parameter, respectively. Coupling parameter determines how strongly the system and
-the bath has coupling.
-
-.. note:: Either **coupling_parameter** or **coupling_strength** should be set and only **coupling_parameter** or **coupling_strength** can be set.
+where :math:`dt` and :math:`\tau` is the MD step and coupling parameter, respectively. 
+Coupling parameter determines how strongly the system and the bath have coupling.
 
 +------------------------+----------------------------------------------------+-----------+
 | Keywords               | Work                                               | Default   |
@@ -94,28 +100,27 @@ Detailed description of arguments
 
 - **temperature** *(double)* - Default: *300.0*
 
-  The target temperature (K) of the thermostat to be used.
+  The target temperature (K) of the thermostat is used in dynamics.
 
 \
 
 - **coupling_parameter** *(double)* - Default: *None*
 
-  The **coupling parameter**, :math:`\tau`, is characteristic time to damp temperature toward targer temperature.
-  It can be set directly as the characteristic length of time to damp temperature.
+  The **coupling_parameter**, :math:`\tau`, is characteristic time to damp temperature toward target temperature.
+  It can be set directly as the characteristic length of time to damp temperature. The unit is femtosecond.
+  Either **coupling_parameter** or **coupling_strength** should be set and only **coupling_parameter** or **coupling_strength** can be set.
 
 \
 
 - **coupling_strength** *(double)* - Default: *None*
 
-  Dimensionless coupling strength for the thermostat is given by :math:`dt/\tau`, where dt is the MD step :math:`\tau` is **coupling parameter**.
+  Dimensionless coupling strength for the thermostat is given by :math:`\frac{dt}{\tau}`, where :math:`dt` is the MD step :math:`\tau` is **coupling_parameter**.
+  Either **coupling_parameter** or **coupling_strength** should be set and only **coupling_parameter** or **coupling_strength** can be set.
 
 NHC
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-:class:`NHC` thermostat, which is Nosé-Hoover chain thermostat :cite:`NHC` , rescales the velocities by using friction factor, which comes from imaginary particles. 
+:class:`NHC` thermostat, which is Nosé-Hoover chain thermostat :cite:`NHC`, rescales the velocities by using friction factor which comes from imaginary particles. 
 
-.. note:: Either **coupling_strength** or **time_scale** should be set and only **coupling_strength** or **time_scale** can be set. 
-   **order** should be *3* or *5*.
-   
 +------------------------+----------------------------------------------------+-----------+
 | Keywords               | Work                                               | Default   |
 +========================+====================================================+===========+
@@ -150,8 +155,9 @@ Detailed description of arguments
 - **coupling_strength** *(double)* - Default: *None*
 
   The coupling strength is used in thermostat.
-  This indicate frequency of oscillation of the thermostating particles.
+  This indicates frequency of oscillation of the thermostating particles.
   This is typically related to the highest vibrational mode frequency of given system.
+  **coupling_strength** or **time_scale** should be set and only **coupling_strength** or **time_scale** can be set. 
 
 \
 
@@ -159,30 +165,22 @@ Detailed description of arguments
 
   The coupling time scale is used in thermostat. The unit is femtosecond.
   When **time_scale** is given as :math:`t`, **coupling_strength** set to :math:`1/t`.
+  **coupling_strength** or **time_scale** should be set and only **coupling_strength** or **time_scale** can be set. 
 
 \
 
 - **chain_length** *(integer)* - Default: *3*
 
-  The number of imaginary particles in the thermostat chain.
+  The number of imaginary particles in the thermostat chain is used in dynamics.
 
 \
 
 - **order** *(integer)* - Default: *3*
 
-  The order of the evolution operator.
+  The order of the evolution operator is used in dynamics. **order** should be *3* or *5*.
 
 \
 
 - **nsteps** *(integer)* - Default: *3*
 
   The propagation step in NHC thermostat. 
-
-**Ex.** Making thermostat objects
-
-.. code-block:: python
-
-   from thermostat import *
-
-   bathT = rescale1(temperature=300.0, nrescale=20) # velocity rescaling thermostat
-
