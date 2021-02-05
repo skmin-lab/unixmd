@@ -22,17 +22,17 @@ speed. (TD)DFTB and SSR methods are interfaced with current version of PyUNIxMD.
   states can be generated. SSR can provide nonadiabatic couplings so it can be used for
   surface hopping or Ehrenfest dynamics.
 
-+-------------------+------+----+----+-----+
-|                   | BOMD | SH | Eh | nac |
-+===================+======+====+====+=====+
-| (TD)DFTB          | o    | o  | x  | x   |
-+-------------------+------+----+----+-----+
-| single-state REKS | o    | x  | x  | x   |
-+-------------------+------+----+----+-----+
-| SA-REKS           | o    | x  | x  | x   |
-+-------------------+------+----+----+-----+
-| SI-SA-REKS (SSR)  | o    | o  | o  | o   |
-+-------------------+------+----+----+-----+
++-------------------+------+--------+----+-----+
+|                   | BOMD | SH(XF) | Eh | nac |
++===================+======+========+====+=====+
+| (TD)DFTB          | o    | o      | x  | x   |
++-------------------+------+--------+----+-----+
+| single-state REKS | o    | x      | x  | x   |
++-------------------+------+--------+----+-----+
+| SA-REKS           | o    | x      | x  | x   |
++-------------------+------+--------+----+-----+
+| SI-SA-REKS (SSR)  | o    | o      | o  | o   |
++-------------------+------+--------+----+-----+
 
 .. note:: To run DFTB+ interfacing script, the information about maximum angular momentum is
    needed. In current version of PyUNIxMD, the values for maximum angular momentum are included
