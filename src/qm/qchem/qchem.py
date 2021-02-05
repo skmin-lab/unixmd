@@ -3,19 +3,19 @@ from qm.qm_calculator import QM_calculator
 from misc import call_name
 
 class QChem(QM_calculator):
-    """ Class for common parts of QChem program
+    """ Class for common parts of Q-Chem program
 
-        :param string basis_set: basis set information
-        :param string memory: allocatable memory in the calculations
-        :param string qm_path: path for QChem
-        :param integer nthreads: number of threads in the calculations
-        :param string version: version of QChem program
+        :param string basis_set: Basis set information
+        :param string memory: Allocatable memory in the calculations
+        :param string qm_path: Path for Q-Chem
+        :param integer nthreads: Number of threads in the calculations
+        :param string version: Version of Q-Chem program
     """
     def __init__(self, basis_set, memory, qm_path, nthreads, version):
         # Save name of QM calculator and its method
         super().__init__()
 
-        # Initialize QChem common variables
+        # Initialize Q-Chem common variables
         self.basis_set = basis_set
 
         self.memory = memory
