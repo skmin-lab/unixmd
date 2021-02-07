@@ -92,7 +92,7 @@ Detailed description of the arguments
 
 \
 
-- **nthreads** *(string)* - Default: *'1'*
+- **nthreads** *(integer)* - Default: *1*
 
   It specifies the number of threads in the calculations.
 
