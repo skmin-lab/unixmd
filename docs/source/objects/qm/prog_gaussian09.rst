@@ -22,31 +22,31 @@ Gaussian 09 :cite:`Frisch2009` has been a standard program for electronic struct
 +-----------------------+----------------------------------------+-------------------+
 | Keywords              | Work                                   | Default           |
 +=======================+========================================+===================+
-| **molecule**          | molecular object                       |                   |  
+| **molecule**          | Molecular object                       |                   |  
 | (:class:`Molecule`)   |                                        |                   |
 +-----------------------+----------------------------------------+-------------------+
-| **functional**        | the level of DFT theory                | *'BLYP'*          |
+| **functional**        | The level of DFT theory                | *'BLYP'*          |
 | *(string)*            |                                        |                   |
 +-----------------------+----------------------------------------+-------------------+
-| **basis_set**         | basis set information                  | *'sto-3g'*        |
+| **basis_set**         | Basis set information                  | *'sto-3g'*        |
 | *(string)*            |                                        |                   |
 +-----------------------+----------------------------------------+-------------------+
-| **memory**            | allocatable memories                   | *'1gb'*           |
+| **memory**            | Allocatable memories                   | *'1gb'*           |
 | *(string)*            |                                        |                   |
 +-----------------------+----------------------------------------+-------------------+
-| **guess**             | initial guess type for SCF iterations  | *'Harris'*        |
+| **guess**             | Initial guess type for SCF iterations  | *'Harris'*        |
 | *(string)*            |                                        |                   |
 +-----------------------+----------------------------------------+-------------------+
-| **guess_file**        | initial guess file                     | *'./g09.chk'*     |
+| **guess_file**        | Initial guess file                     | *'./g09.chk'*     |
 | *(string)*            |                                        |                   |
 +-----------------------+----------------------------------------+-------------------+
-| **G09_root_path**     | path for Gaussian 09 root              | *'/opt/gaussian'* |
+| **G09_root_path**     | Path for Gaussian 09 root              | *'/opt/gaussian'* |
 | *(string)*            |                                        |                   |
 +-----------------------+----------------------------------------+-------------------+
-| **nthreads**          | number of threads in the calculations  | *1*               |
+| **nthreads**          | Number of threads in the calculations  | *1*               |
 | *(integer)*           |                                        |                   |
 +-----------------------+----------------------------------------+-------------------+
-| **version**           | version of Gaussian 09 program         | *'Revision A.02'* |
+| **version**           | Version of Gaussian 09 program         | *'Revision A.02'* |
 | *(string)*            |                                        |                   |
 +-----------------------+----------------------------------------+-------------------+
 

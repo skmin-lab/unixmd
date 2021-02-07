@@ -26,34 +26,34 @@ The keywords to specify the molecule are below.
 +---------------+------------------------------------------------------+-----------+
 | Keywords      | Work                                                 | Default   |
 +===============+======================================================+===========+
-| **geometry**  | a string containing position and velocity            |           |
+| **geometry**  | A string containing position and velocity            |           |
 | *(string)*    |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **nsp**       | dimension of space                                   | *3*       |
+| **nsp**       | Dimension of space                                   | *3*       |
 | *(integer)*   |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **nstates**   | number of BO states                                  | *3*       |
+| **nstates**   | Number of BO states                                  | *3*       |
 | *(integer)*   |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **qmmm**      | use QMMM scheme for the calculation of large systems | *False*   |
+| **qmmm**      | Use QMMM scheme for the calculation of large systems | *False*   |
 | *(boolean)*   |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **natoms_mm** | number of atoms in MM region                         | *None*    |
+| **natoms_mm** | Number of atoms in MM region                         | *None*    |
 | *(integer)*   |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **dof**       | degrees of freedom (if **model** is *False*,         | *None*    |
+| **dof**       | Degrees of freedom (if **model** is *False*,         | *None*    |
 | *(integer)*   | the molecular DoF is given.)                         |           |
 +---------------+------------------------------------------------------+-----------+
-| **unit_pos**  | unit of position                                     | *'A'*     |
+| **unit_pos**  | Unit of position                                     | *'A'*     |
 | *(string)*    |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **unit_vel**  | unit of velocity                                     | *'au'*    |
+| **unit_vel**  | Unit of velocity                                     | *'au'*    |
 | *(string)*    |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **charge**    | total charge of the system                           | *0*       |
+| **charge**    | Total charge of the system                           | *0*       |
 | *(integer)*   |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **model**     | is the system a model system?                        | *False*   |
+| **model**     | Is the system a model system?                        | *False*   |
 | *(boolean)*   |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
 

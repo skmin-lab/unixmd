@@ -39,28 +39,28 @@ package or a customized Hamiltonian, and nuclear propagation is done by the Velo
 +------------------------+------------------------------------------------+------------+
 | Keywords               | Work                                           | Default    |
 +========================+================================================+============+
-| **molecule**           | molecular object                               |            |
+| **molecule**           | Molecular object                               |            |
 | (:class:`Molecule`)    |                                                |            |
 +------------------------+------------------------------------------------+------------+
-| **thermostat**         | thermostat type                                | *None*     |
+| **thermostat**         | Thermostat type                                | *None*     |
 | (:class:`Thermostat`)  |                                                |            |
 +------------------------+------------------------------------------------+------------+
-| **istate**             | electronic state                               | *0*        |
+| **istate**             | Electronic state                               | *0*        |
 | *(integer)*            |                                                |            |
 +------------------------+------------------------------------------------+------------+
-| **dt**                 | time interval                                  | *0.5*      |
+| **dt**                 | Time interval                                  | *0.5*      |
 | *(double)*             |                                                |            |
 +------------------------+------------------------------------------------+------------+
 | **nsteps**             | Total step of nuclear propagation              | *1000*     |
 | *(integer)*            |                                                |            |
 +------------------------+------------------------------------------------+------------+
-| **unit_dt**            | unit of time step                              | *'fs'*     |
+| **unit_dt**            | Unit of time step                              | *'fs'*     |
 | *(string)*             |                                                |            |
 +------------------------+------------------------------------------------+------------+
-| **out_freq**           | frequency of printing output                   | *1*        |
+| **out_freq**           | Frequency of printing output                   | *1*        |
 | *(integer)*            |                                                |            |
 +------------------------+------------------------------------------------+------------+
-| **verbosity**          | verbosity of output                            | *0*        | 
+| **verbosity**          | Verbosity of output                            | *0*        | 
 | *(integer)*            |                                                |            |
 +------------------------+------------------------------------------------+------------+
 
