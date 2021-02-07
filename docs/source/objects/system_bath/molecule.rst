@@ -26,7 +26,7 @@ The keywords to specify the molecule are below.
 +---------------+------------------------------------------------------+-----------+
 | Keywords      | Work                                                 | Default   |
 +===============+======================================================+===========+
-| **geometry**  | A string containing position and velocity            |           |
+| **geometry**  | A string containing atomic position and velocity     |           |
 | *(string)*    |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
 | **nsp**       | Dimension of space                                   | *3*       |
@@ -44,10 +44,10 @@ The keywords to specify the molecule are below.
 | **dof**       | Degrees of freedom (if **model** is *False*,         | *None*    |
 | *(integer)*   | the molecular DoF is given.)                         |           |
 +---------------+------------------------------------------------------+-----------+
-| **unit_pos**  | Unit of position                                     | *'A'*     |
+| **unit_pos**  | Unit of atomic position                              | *'A'*     |
 | *(string)*    |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **unit_vel**  | Unit of velocity                                     | *'au'*    |
+| **unit_vel**  | Unit of atomic velocity                              | *'au'*    |
 | *(string)*    |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
 | **charge**    | Total charge of the system                           | *0*       |
@@ -71,7 +71,7 @@ Detailed description of the arguments
 
   3. specification of the molecule (atomic symbol, positions, velocities)
 
-  When QMMM scheme is used (**qmmm** == *True*), information of MM atoms is followed by QM atoms.
+  When QMMM scheme is used (**qmmm** = *True*), information of MM atoms is followed by QM atoms.
 
 \
 
@@ -103,8 +103,9 @@ Detailed description of the arguments
 
   It specifies the degrees of freedom of the system. This value will be set automatically if no specific value is given.
 
-  +**model** == *False*: :math:`3 \times \textrm{(the number of atoms)}-6` (The DoF of a non-linear molecule)
-  +**model** == *True*: :math:`\textrm{(the dimension)} \times \textrm{(the number of atoms)}`
+  If **model** = *False*, it becomes :math:`3 \times \textrm{(the number of atoms)}-6` (The DoF of a non-linear molecule).
+
+  If **model** = *True*, :math:`\textrm{(the dimension)} \times \textrm{(the number of atoms)}`.
 
   When the argument is present, it overrides the above defaults.
 
@@ -112,18 +113,18 @@ Detailed description of the arguments
 
 - **unit_pos** *(string)* - Default: *'A'*
 
-  It specifies the unit of position.
+  It specifies the unit of atomic position.
 
   + *'A'*: Angstrom
-  + *'au'*: Hartree atomic unit
+  + *'au'*: Atomic unit
 
 \
 
 - **unit_vel** *(string)* - Default: *'au'*
 
-  It specifies the unit of velocity.
+  It specifies the unit of atomic velocity.
 
-  + *'au'*: Hartree atomic unit
+  + *'au'*: Atomic unit
   + *'A/ps'*: Angstrom per picosecond
   + *'A/fs'*: Angstrom per femtosecond
 
