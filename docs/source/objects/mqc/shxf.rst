@@ -31,7 +31,7 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **istate**                 | Initial state                                        | *0*          |
 | *(integer)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **dt**                     | Time interval (fs)                                   | *0.5*        |
+| **dt**                     | Time interval                                        | *0.5*        |
 | *(double)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **nsteps**                 | Total step of nuclear propagation                    | *1000*       |
@@ -86,8 +86,21 @@ Detailed description of the arguments
 
 - **istate** *(integer)* - Default: *0* (Ground state)
   
-  Initial running state. The possible range of the argument is from *0* to ``molecule.nstate-1``.
+  This argument specifies the initial running state. The possible range of the argument is from *0* to ``molecule.nstate-1``.
    
+\
+
+- **dt** *(double)* - Default: *0.5*
+  
+  This argument determines the time interval of the nuclear time steps.
+  You can select the unit of time for the dynamics with the argument **unit_dt**.
+
+\
+
+- **nsteps** - Default: *1000*
+
+  This argument determines the total number of the nuclear time steps.
+
 \
 
 - **nesteps** *(integer)* - Default: *20*
@@ -114,11 +127,17 @@ Detailed description of the arguments
 
 \
 
-- **l_pop_print** *(boolean)* - Default: *'False'*
+- **l_pop_print** *(boolean)* - Default: *False*
   
   Determine whether write output files for density matrix elements (BOPOP, BOCOH) or not.
   If this option is set to *True*, then the BOPOP and BOCOH files are written during the dynamics.
   This option is effective only if the argument **propagation** is set to *'coefficient'* or ignored otherwise.
+
+\
+
+- **l_adjnac** *(boolean)* - Default: *True* 
+
+  If this argument is set to *True*, the signs of the NACVs are adjusted to match the phases to the previous time step during the dynamics.
 
 \
 
@@ -159,7 +178,6 @@ Detailed description of the arguments
 
 \
 
-
 - **coefficient** *(double/complex, list)* - Default: *None*
 
   Defines the initial density matrix.
@@ -175,10 +193,25 @@ Detailed description of the arguments
 
 \
 
+- **unit_dt** *(string)* - Default: *'fs'*
+
+  This argument determines the unit of time for the simulation.
+  
+  + *'fs'*: Femtosecond
+  + *'au'*: Atomic unit
+
+\
+
+- **out_freq** *(integer)* - Default: *1*
+  
+  PyUNIxMD prints and writes the dynamics information at every **out_freq** time steps.
+
+\
+
 - **verbosity** *(integer)* - Default: *0*
 
   Determines the verbosity of the output files and stream.
 
-  + **verbosity** :math:`\geq` 1: Prints potential energy of all BO states.
-  + **verbosity** :math:`\geq` 2: Prints accumulated hopping probabilities and writes the NACVs (NACV\_\ *ist*\_\ *jst*), qauntum momentum (QMOM), 
+  + **verbosity** :math:`\geq` *1*: Prints potential energy of all BO states.
+  + **verbosity** :math:`\geq` *2*: Prints accumulated hopping probabilities and writes the NACVs (NACV\_\ :math:`ist`\_\ :math:`jst`), qauntum momentum (QMOM), 
     phase terms (AUX_PHASE\_\ *ist*), and atomic postions and velocities of the auxiliary trajectories (AUX_MOVIE\_\ *ist*.xyz).
