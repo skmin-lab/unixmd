@@ -5,14 +5,14 @@ Gaussian 09
 Gaussian 09 :cite:`Frisch2009` has been a standard program for electronic structure calculations of molecules.
 
 - The TDDFT implementation of Gaussian 09 supports only analytical gradients, not nonadiabatic couplings.
-  Instead, nonadiabatic coupling matrix elements (NACME) is calculated by using our wavefunction overlap 
+  Instead, nonadiabatic coupling matrix elements (NACME) are calculated by using our wavefunction overlap 
   :cite:`Ryabinkin2015` routines. Thus, it can be used for adiabatic dynamics and surface hopping dynamics.
 
-+---------+------+----+----+-----+
-|         | BOMD | SH | Eh | nac |
-+=========+======+====+====+=====+
-| (TD)DFT | o    | o  | x  | x   |
-+---------+------+----+----+-----+
++---------+------+--------+----+-----+
+|         | BOMD | SH(XF) | Eh | nac |
++=========+======+========+====+=====+
+| (TD)DFT | o    | o      | x  | x   |
++---------+------+--------+----+-----+
 
 (TD)DFT
 """""""""""""""""""""""""""""""""""""
@@ -31,7 +31,7 @@ Gaussian 09 :cite:`Frisch2009` has been a standard program for electronic struct
 | **basis_set**         | Basis set information                  | *'sto-3g'*        |
 | *(string)*            |                                        |                   |
 +-----------------------+----------------------------------------+-------------------+
-| **memory**            | Allocatable memories                   | *'1gb'*           |
+| **memory**            | Allocatable memory                     | *'1gb'*           |
 | *(string)*            |                                        |                   |
 +-----------------------+----------------------------------------+-------------------+
 | **guess**             | Initial guess type for SCF iterations  | *'Harris'*        |
@@ -67,7 +67,7 @@ Detailed description of the arguments
 
 - **memory** *(string)* - Default: *'1gb'*
 
-  It specifies allocatable memories in the calculations.
+  It specifies allocatable memory in the calculations.
 
 \
 
