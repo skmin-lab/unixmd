@@ -10,11 +10,11 @@ methods. Among them, the state-averaged complete active space self consistent fi
 - SA-CASSCF is the most famous multi-configurational SCF (MCSCF) method.
   Since Molpro supports calculations of analytical gradients as well as nonadiabatic coupling vectors (NACVs) of SA-CASSCF states with coupled-perturbed multi-configurational self-consistent field (CP-MCSCF) equations, excited state molecular dynamics simulations are possible.
 
-+-----------+------+----+----+-----+
-|           | BOMD | SH | Eh | nac |
-+===========+======+====+====+=====+
-| SA-CASSCF | o    | o  | o  | o   |
-+-----------+------+----+----+-----+
++-----------+------+--------+----+-----+
+|           | BOMD | SH(XF) | Eh | nac |
++===========+======+========+====+=====+
+| SA-CASSCF | o    | o      | o  | o   |
++-----------+------+--------+----+-----+
 
 SA-CASSCF
 """""""""""""""""""""""""""""""""""""
@@ -81,6 +81,7 @@ SA-CASSCF
 Detailed description of the arguments
 ''''''''''''''''''''''''''''''''''''''''''
 
+.. note:: Please refer Molpro (2015.1 version) manual for available options and more detailed descripttion about the input of the Molpro program.
 
 - **basis_set** *(string)* - Default: *'sto-3g'*
 
@@ -90,7 +91,7 @@ Detailed description of the arguments
 
 - **memory** *(string)* - Default: *'500m'*
 
-  This argment determines the memory to be allocated for Molpro calculation.
+  This argument determines the memory to be allocated for Molpro calculation.
 
 \
 
@@ -106,7 +107,7 @@ Detailed description of the arguments
 - **guess_file** *(string)* - Default: *'./wf.wfu'*
    
   The **guess_file** determines the name of file containing orbitals for the initial guess of orbitals for the SA-CASSCF calculation at the first time step.
-  This argument is effective only if **guess** = *'read'*
+  This argument is effective only if **guess** = *'read'*.
   If the file does not exist, HF calculation is requested for the initial guess for the SA-CASSCF calculation.
 
 \
@@ -153,13 +154,13 @@ Detailed description of the arguments
   
 \
 
-- **active_elec** *(integer)* - Default: *'2'*
+- **active_elec** *(integer)* - Default: *2*
 
   This argument determines the number of electrons to be included in the active space of the SA-CASSCF calculations.
 
 \
 
-- **active_orb** *(integer)* - Default: *'2'*
+- **active_orb** *(integer)* - Default: *2*
   
   This argument determines the number of orbitals to be included in the active space of the SA-CASSCF calculations.
 
@@ -177,13 +178,13 @@ Detailed description of the arguments
 
 \
 
-- **nthreads** *(integer)* - Default: *'1'*
+- **nthreads** *(integer)* - Default: *1*
   
   This argument determines the number of thread for parallel execution of Molpro.
 
 \
 
-- **version**  *(string)* - Default: *'2015.1'*
+- **version** *(string)* - Default: *'2015.1'*
   
   This argument indicates the version of Molpro to be executed.
   Currently, only 2015.1 version is interfaced.
