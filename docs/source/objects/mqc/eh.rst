@@ -8,14 +8,14 @@ Ehrenfest dynamics :cite:`Prezhdo1999`, which is mean-field dynamics, evolves nu
 
    E(\underline{\underline{\bf R}}(t))=\sum_{i}\vert c_i \vert^2E_i,
 
-where :math:`E_i` is :math:`i-th` adiabatic energy and
+where :math:`E_i` is :math:`i`-th adiabatic energy and
 the driving force is given by:
 
 .. math::
 
    \vec{F}=\sum_{i} \vec{F}_i + \sum_{i\neq j} c_ic_j(E_i-E_j)d_{ij},
 
-where :math:`d_{ij}` is nonadiabatic couping between :math:`i-th` and :math:`j-th` adiabatic state.
+where :math:`d_{ij}` is nonadiabatic couping between :math:`i`-th and :math:`j`-th adiabatic state.
 
 +----------------------------+------------------------------------------------+-------------+
 | Keywords                   | Work                                           | Default     |
@@ -23,7 +23,7 @@ where :math:`d_{ij}` is nonadiabatic couping between :math:`i-th` and :math:`j-t
 | **molecule**               | Molecular object                               |             |
 | (:class:`Molecule`)        |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **thermostat**             | Thermostat type                                | *None**     |
+| **thermostat**             | Thermostat type                                | *None*      |
 | (:class:`Thermostat`)      |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
 | **istate**                 | Initial state                                  | *0*         |
@@ -66,77 +66,74 @@ where :math:`d_{ij}` is nonadiabatic couping between :math:`i-th` and :math:`j-t
 Detailed description of arguments
 ''''''''''''''''''''''''''''''''''''
 
-- **istate** *(integer)* - Default: *0*
+- **istate** *(integer)* - Default: *0* (Ground state)
 
-  The initial adiabatic state is used in dynamics. *0* indicates ground state.
-  If **coefficient** does not given, the BO population of **istate** sets to 1 + 0.j
-  and the BO population of other states sets to 0.
+  This argument specifies the initial running state. The possible range of the argument is from *0* to ``molecule.nstate-1``.
 
 \
 
 - **dt** *(double)* - Default: *0.5*
 
-  The time interval is used in dynamics.
-
+  This argument determines the time interval of the nuclear time steps.
+  You can select the unit of time for the dynamics with the argument **unit_dt**
 \
 
 - **nsteps** *(integer)* - Default: *1000*
 
-  The number of nuclei propagation steps is used in dynamics.
+  This argument determines the total number of the nuclear time steps.
 
 \
 
 - **nesteps** *(integer)* - Default: *20*
 
-  The number of electronic propagation steps is used in dynamics.
+  Number of electronic time steps between one nuclear time step for the integration of the electronic equation of motion.
+  The electronic equation of motion is more sensitive to the time interval than the nuclear equation of motion since the electrons are much lighter than the nuclei.
+  Therefore, the nuclear time step is further divided and electronic equation of motion is integrated with smaller time step.
 
 \
 
 - **propagation** *(string)* - Default: *'density'*
 
-  The electronic propagation scheme is used in dynamics.
+  The **propagation** argument determines the representation for the electronic state.
 
-  + *'coefficient'*: Solve time-dependent schrödinger equation in terms of adiabatic coefficient.
-  + *'density'*: Solve time-dependent schrödinger equation in terms of adaiabatic population.
+  + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}\}`
+  + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}\}`
 
 \
 
 - **solver** *(string)* - Default: *'rk4'*
 
-  The algorithms to solve time-dependent schrödinger equation is used in dynamics.
-
-  + *'rk4'*: Use Runge-Kutta 4th order.
+  Numerical integration method for the electronic equation of motion.
+  Currently, only the RK4 algorithm (*'rk4'*) is available.
 
 \
 
 - **l_pop_print** *(boolean)* - Default: *False*
 
-  Whether print adiabatic population or not when **propagation** is set to *coefficient'*.
-  if **l_pop_print** is *True*, then print adiabatic population
-  if **l_pop_print** is *False*, then do not print adiabatic population
+  Determine whether write output files for density matrix elements (BOPOP, BOCOH) or not.
+  If this option is set to *True*, then the BOPOP and BOCOH files are written during the dynamics.
+  This option is effective only if the argument **propagation** is set to *'coefficient'* or ignored otherwise.
 
 \
 
 - **l_adjnac** *(boolean)* - Default: *True*
 
-  Whether adjust non-adiabatic coupling (NAC) or not.
-  if **l_adjnac** is *True*, then adjust NAC. 
-  if **l_adjnac** is *False*, then do not adjust NAC
+  If this argument is set to *True*, the signs of the NACVs are adjusted to match the phases to the previous time step during the dynamics.
 
 \
 
 - **coefficient** *(double/complex, list)* - Default: *None*
 
-  The initial adiabatic coefficient is used in dynamics.
-  This should be given by list which has length same to total adiabatic state in dynamics.
-  The components in this can be both double and complex.
+  Defines the initial density matrix.
+  The elements can be either real or complex values.
+  If the argument is not given, the density matrix is initialized according to the initial running state.
 
 \
 
 - **unit_dt** *(string)* - Default: *'fs'*
 
-  The time unit is used in dynamics
-  
+  This argument determines the unit of time for the simulation.
+
   + *'fs'*: femtosecond
   + *'au'*: atomic unit
 
@@ -144,12 +141,12 @@ Detailed description of arguments
 
 - **out_freq** *(integer)* - Default: *1*
 
-  The output is printed at each **out_freq** steps.
+  PyUNIxMD prints and writes the dynamics information at every **out_freq** time steps.
 
 \
 
 - **verbosity** *(integer)* - Default: *0*
 
-  Verbosity
+  Determines the verbosity of the output files and stream.  
 
-\
+  + **verbosity** :math:`\geq` *2*: Writes the NACVs (NACV\_\ :math:`i`\_\ :math:`j`).
