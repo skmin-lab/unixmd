@@ -4,11 +4,11 @@ from qm.qm_calculator import QM_calculator
 class Gaussian09(QM_calculator):
     """ Class for common parts of Gaussian09 program
 
-        :param string basis_set: basis set information
-        :param string memory: allocatable memory in the calculations
-        :param integer nthreads: number of threads in the calculations
-        :param string g09_root_path: path for Gaussian09 root
-        :param string version: version of Gaussian09 program
+        :param string basis_set: Basis set information
+        :param string memory: Allocatable memory in the calculations
+        :param integer nthreads: Number of threads in the calculations
+        :param string g09_root_path: Path for Gaussian09 root
+        :param string version: Version of Gaussian09 program
     """
     def __init__(self, basis_set, memory, nthreads, g09_root_path, version):
         # Save name of QM calculator and its method
