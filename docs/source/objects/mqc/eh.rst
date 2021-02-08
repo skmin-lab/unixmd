@@ -104,7 +104,7 @@ Detailed description of arguments
 - **solver** *(string)* - Default: *'rk4'*
 
   Numerical integration method for the electronic equation of motion.
-  Currently, only the RK4 algorithm (*'rk4'*) is available.
+  Currently, only the RK4 algorithm {*'rk4'*} is available.
 
 \
 
@@ -126,7 +126,7 @@ Detailed description of arguments
 
   Defines the initial density matrix.
   The elements can be either real or complex values.
-  If the argument is not given, the density matrix is initialized according to the initial running state.
+  If the argument is not given, the density matrix is initialized according to **istate**.
 
 \
 
