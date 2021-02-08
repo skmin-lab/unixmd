@@ -210,7 +210,7 @@ Detailed description of arguments
   Mixing method for charges used in DFTB. These arguments are same with the original arguments in used in DFTB+.
   The detailed parameters used in each mixer are set to default values of the DFTB+ program.
   If you want to know the detailed process of each mixer, see the manual of the DFTB+ program.
-  Following four mixers can be used in current interfacing; {'Broyden', 'Anderson', 'DIIS', 'Simple'}
+  Following four mixers can be used in current interfacing; {*'Broyden'*, *'Anderson'*, *'DIIS'*, *'Simple'*}
 
 \
 
