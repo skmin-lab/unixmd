@@ -12,11 +12,11 @@ In the current version of UNI-xMD, only CASSCF method is available.
 - CASSCF is complete active space self-consistent field method. It provides analytical gradients as
   well as nonadiabatic couplings, thus it can be used for excited state molecular dynamics.
 
-+--------+------+----+----+-----+
-|        | BOMD | SH | Eh | nac |
-+========+======+====+====+=====+
-| CASSCF | o    | o  | o  | o   |
-+--------+------+----+----+-----+
++--------+------+---------+----+-----+
+|        | BOMD | SH(XF) | Eh | nac |
++========+======+========+====+=====+
+| CASSCF | o    | o      | o  | o   |
++--------+------+--------+----+-----+
 
 CASSCF
 """""""""""""""""""""""""""""""""""""
@@ -24,52 +24,52 @@ CASSCF
 +------------------------+-----------------------------------------------------+----------------+
 | Keywords               | Work                                                | Default        |
 +========================+=====================================================+================+
-| **molecule**           | molecular object                                    |                |
+| **molecule**           | Molecular object                                    |                |
 | (:class:`Molecule`)    |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **basis_set**          | basis set information                               | *'6-31g\*'*    |
+| **basis_set**          | Basis set information                               | *'6-31g\*'*    |
 | *(string)*             |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **memory**             | allocatable memory in the calculations              | *'500'*        |
+| **memory**             | Allocatable memory in the calculations              | *'500'*        |
 | *(string)*             |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **guess**              | initial guess for MCSCF method                      | *'hf'*         |
+| **guess**              | Initial guess for MCSCF method                      | *'hf'*         |
 | *(string)*             |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **guess_file**         | initial guess file                                  | *'./mocoef'*   |
+| **guess_file**         | Initial guess file                                  | *'./mocoef'*   |
 | *(string)*             |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **scf_en_tol**         | energy convergence for SCF iterations               | *9*            |
+| **scf_en_tol**         | Energy convergence for SCF iterations               | *9*            |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **scf_max_iter**       | maximum number of SCF iterations                    | *40*           |
+| **scf_max_iter**       | Maximum number of SCF iterations                    | *40*           |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **mcscf_en_tol**       | energy convergence for MCSCF iterations             | *8*            |
+| **mcscf_en_tol**       | Energy convergence for MCSCF iterations             | *8*            |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **mcscf_max_iter**     | maximum number of MCSCF iterations                  | *100*          |
+| **mcscf_max_iter**     | Maximum number of MCSCF iterations                  | *100*          |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **cpscf_grad_tol**     | gradient tolerance for CP-MCSCF equations           | *6*            |
+| **cpscf_grad_tol**     | Gradient tolerance for CP-MCSCF equations           | *6*            |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **cpscf_max_iter**     | maximum number of iterations for CP-MCSCF equations | *100*          |
+| **cpscf_max_iter**     | Maximum number of iterations for CP-MCSCF equations | *100*          |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **active_elec**        | number of electrons in active space                 | *2*            |
+| **active_elec**        | Number of electrons in active space                 | *2*            |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **active_orb**         | number of orbitals in active space                  | *2*            |
+| **active_orb**         | Number of orbitals in active space                  | *2*            |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **qm_path**            | path for QM binary                                  | *'./'*         |
+| **qm_path**            | Path for QM binary                                  | *'./'*         |
 | *(string)*             |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **nthreads**           | number of threads in the calculations               | *1*            |
+| **nthreads**           | Number of threads in the calculations               | *1*            |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **version**            | version of Molpro program                           | *'7.0'*        |
+| **version**            | Version of Molpro program                           | *'7.0'*        |
 | *(string)*             |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
 

@@ -1,4 +1,4 @@
-MQC	
+MQC
 -------------------------------------------
 
 Mixed quantum-classical (MQC) dynamics is general method for explaining the variation of molecule including
@@ -29,25 +29,25 @@ md subclasses of :class:`MQC`, not :class:`MQC` itself.
 +-----------------------------+-------------------------------------------------+----------+
 | Keywords                    | Work                                            | Default  |
 +=============================+=================================================+==========+
-| **qm**                      | qm object containing on-the-fly                 |          |
+| **qm**                      | QM object containing on-the-fly                 |          |
 | (:class:`QM_calculator`)    | calculation information                         |          |
 +-----------------------------+-------------------------------------------------+----------+
-| **mm**                      | mm object containing MM                         | *None*   |
+| **mm**                      | MM object containing MM                         | *None*   |
 | (:class:`MM_calculator`)    | calculation information                         |          |
 +-----------------------------+-------------------------------------------------+----------+
-| **input_dir**               | location of input directory                     | *'./'*   |
+| **input_dir**               | Location of input directory                     | *'./'*   |
 | *(string)*                  | calculation information                         |          |
 +-----------------------------+-------------------------------------------------+----------+
-| **save_qm_log**             | logical for saving QM calculation log           | *False*  |
+| **save_qm_log**             | Logical for saving QM calculation log           | *False*  |
 | *(boolean)*                 | calculation information                         |          |
 +-----------------------------+-------------------------------------------------+----------+
-| **save_mm_log**             | logical for saving MM calculation log           | *False*  |
+| **save_mm_log**             | Logical for saving MM calculation log           | *False*  |
 | *(boolean)*                 | calculation information                         |          |
 +-----------------------------+-------------------------------------------------+----------+
-| **save_scr**                | logical for saving scratch directory            | *True*   |
+| **save_scr**                | Logical for saving scratch directory            | *True*   |
 | *(boolean)*                 | calculation information                         |          |
 +-----------------------------+-------------------------------------------------+----------+
-| **restart**                 | option for controlling dynamics restarting      | *None*   |
+| **restart**                 | Option for controlling dynamics restarting      | *None*   |
 | *(string)*                  | calculation information                         |          |
 +-----------------------------+-------------------------------------------------+----------+
 

@@ -8,11 +8,11 @@ in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and a
 
 - (TD)DFT provides analytical gradients, thus it can be used born-oppenhiemer molecular dynamics (BOMD).
 
-+--------+------+----+----+-----+
-|        | BOMD | SH | Eh | nac |
-+========+======+====+====+=====+
-| TDDFT  | o    | x  | x  | x   |
-+--------+------+----+----+-----+
++--------+------+--------+----+-----+
+|        | BOMD | SH(XF) | Eh | nac |
++========+======+========+====+=====+
+| TDDFT  | o    | x      | x  | x   |
++--------+------+--------+----+-----+
 
 (TD)DFT
 """""""""""""""""""""""""""""""""""""
@@ -20,37 +20,37 @@ in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and a
 +---------------------+-------------------------------------------+----------------+
 | Keywords            | Work                                      | Default        |
 +=====================+===========================================+================+
-| **molecule**        | molecular object                          |                |
+| **molecule**        | Molecular object                          |                |
 | (:class:`Molecule`) |                                           |                |
 +---------------------+-------------------------------------------+----------------+
-| **functional**      | xc functional information                 | *'b-lyp'*      |
+| **functional**      | XC functional information                 | *'b-lyp'*      |
 | *(string)*          |                                           |                |
 +---------------------+-------------------------------------------+----------------+
-| **basis_set**       | basis set information                     | *'SV(P)'*      |
+| **basis_set**       | Basis set information                     | *'SV(P)'*      |
 | *(string)*          |                                           |                |
 +---------------------+-------------------------------------------+----------------+
-| **memory**          | allocatable memory in the calculations    | *50*           |
+| **memory**          | Allocatable memory in the calculations    | *50*           |
 | *(integer)*         |                                           |                |
 +---------------------+-------------------------------------------+----------------+
-| **scf_max_iter**    | maximum number of SCF iterations          | *50*           |
+| **scf_max_iter**    | Maximum number of SCF iterations          | *50*           |
 | *(integer)*         |                                           |                |
 +---------------------+-------------------------------------------+----------------+
-| **scf_en_tol**      | energy convergence for SCF iterations     | *6*            |
+| **scf_en_tol**      | Energy convergence for SCF iterations     | *6*            |
 | *(integer)*         |                                           |                |
 +---------------------+-------------------------------------------+----------------+
-| **cis_max_iter**    | maximum number of CIS iterations          | *25*           |
+| **cis_max_iter**    | Maximum number of CIS iterations          | *25*           |
 | *(integer)*         |                                           |                |
 +---------------------+-------------------------------------------+----------------+
-| **cis_en_tol**      | energy convergence for CIS iterations     | *6*            |
+| **cis_en_tol**      | Energy convergence for CIS iterations     | *6*            |
 | *(integer)*         |                                           |                |
 +---------------------+-------------------------------------------+----------------+
-| **qm_path**         | path for QM program                       | *'./'*         |
+| **qm_path**         | Path for QM program                       | *'./'*         |
 | *(string)*          |                                           |                |
 +---------------------+-------------------------------------------+----------------+
-| **nthreads**        | number of threads in the calculations     | *1*            |
+| **nthreads**        | Number of threads in the calculations     | *1*            |
 | *(integer)*         |                                           |                |
 +---------------------+-------------------------------------------+----------------+
-| **version**         | version of Turbomole program              | *'6.4'*        |
+| **version**         | Version of Turbomole program              | *'6.4'*        |
 | *(string)*          |                                           |                |
 +---------------------+-------------------------------------------+----------------+
 
