@@ -9,7 +9,7 @@ class CASSCF(Columbus):
 
         :param object molecule: molecule object
         :param string basis_set: basis set information
-        :param string memory: allocatable memory in the calculations
+        :param integer memory: allocatable memory in the calculations
         :param string guess: initial guess for MCSCF method
         :param string guess_file: initial guess file
         :param integer scf_en_tol: energy convergence for SCF iterations
@@ -24,7 +24,7 @@ class CASSCF(Columbus):
         :param integer nthreads: number of threads in the calculations
         :param string version: version of Columbus program
     """
-    def __init__(self, molecule, basis_set="6-31g*", memory="500", \
+    def __init__(self, molecule, basis_set="6-31g*", memory=500, \
         guess="hf", guess_file="./mocoef", scf_en_tol=9, scf_max_iter=40, \
         mcscf_en_tol=8, mcscf_max_iter=100, cpscf_grad_tol=6, cpscf_max_iter=100, \
         active_elec=2, active_orb=2, qm_path="./", nthreads=1, version="7.0"):

@@ -9,7 +9,7 @@ class Columbus(QM_calculator):
 
         :param object molecule: molecule object
         :param string basis_set: basis set information
-        :param string memory: allocatable memory in the calculations
+        :param integer memory: allocatable memory in the calculations
         :param string qm_path: path for QM binary
         :param integer nthreads: number of threads in the calculations
         :param string version: version of Columbus program

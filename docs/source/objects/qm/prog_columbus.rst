@@ -31,7 +31,7 @@ CASSCF
 | *(string)*             |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
 | **memory**             | Allocatable memory in the calculations              | *500*          |
-| *(int)*                |                                                     |                |
+| *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
 | **guess**              | Initial guess for MCSCF method                      | *'hf'*         |
 | *(string)*             |                                                     |                |
@@ -82,7 +82,7 @@ Detailed description of arguments
 
 \
 
-- **memory** *(int)* - Default: *500*
+- **memory** *(integer)* - Default: *500*
 
  Total memory used for calculation. unit is 'MB'.
 
