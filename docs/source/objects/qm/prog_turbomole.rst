@@ -59,13 +59,13 @@ Detailed description of arguments
 
 - **functional** *(string)* - Default: *'b-lyp'*
 
- Functional for DFT calculation. For the detailed list, check TM manual.
+ Functional for DFT calculation. Here, you should refer to manual of TM program if you want to see detailed lists for **functional** variable.
 
 \
 
 - **basis_set** *(string)* - Default: *'SV(P)'*
 
- Basis set for calculation. For the detailed list, check TM manual.
+ Basis set for calculation. Here, you should refer to manual of TM program if you want to see detailed lists for **basis_set** variable.
 
 \
 
@@ -83,7 +83,7 @@ Detailed description of arguments
 
 - **scf_en_tol** *(integer)* - Default: *6*
 
- Energy convergence of SCF iterations. Default value is 1.0E-6.
+ Energy convergence of SCF iterations. Default value is :math:`10^{-\textbf{scf_en_tol}}`.
 
 \
 
@@ -95,13 +95,13 @@ Detailed description of arguments
 
 - **cis_en_tol** *(integer)* - Default: *6*
 
- Energy convergence of CIS iterations. Default value is 1.0E-6.
+ Energy convergence of CIS iterations. Default value is :math:`10^{-\textbf{cis_en_tol}}`.
 
 \
 
 - **qm_path** *(string)* - Default: *'./'*
 
- Path for QM binary. Path must be include binary file itself (ex. /opt/TURBOMOLE/define)
+ Path for QM binary. Path must be include binary file itself. For example, **qm_path** = *'/opt/TURBOMOLE/define'*.
 
 \
 
@@ -114,7 +114,6 @@ Detailed description of arguments
 - **version** *(string)* - Default: *'6.4'*
 
  Version of Turbomole program. Our interface script is generated with 6.4 version of TM program.
- Here, you should refer to manual of TM program if you want to see detailed lists for **basis_set**, **functional** variable.
 
 \
 

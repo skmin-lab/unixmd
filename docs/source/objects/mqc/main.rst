@@ -71,13 +71,13 @@ Detailed description of arguments
 - **input_dir** *(string)* - Default: *'./'*
 
  Direcrtory for dynamics output. All md output, saved log, ... etc will be saved in this directory.
- If the directory already presence, it will be removed and new directory will be made.
+ If the directory already present, it will be removed and new directory will be made.
 
 \
 
 - **save_qm_log** *(boolean)* - Default: *False*
 
- Save QM calculation logs for passed timestep. Logs will be saved in 'input_dir/qm_log_dir'.
+ Save QM calculation logs for passed timestep. Logs will be saved in **'input_dir/qm_log_dir'**.
  
 \
   
@@ -90,7 +90,7 @@ Detailed description of arguments
    
 - **save_scr** *(boolean)* - Default: *True*
 
- Save scratch output directory in 'input_dir/md/scr' after qm calculation.
+ Save scratch output directory in **'input_dir/md/scr_QM'** after qm calculation, and **'input_dir/md/scr_mm'** after MM calculation.
 
 \
 
@@ -98,8 +98,8 @@ Detailed description of arguments
 
  Writting options for restarting dynamics from halted trajectory.
 
- + '*write*': Write a new output, starting from halted timestep.
- + '*append*': Write a output continually starting from a halted timestep.
+ + *'write'*: Write a new output, starting from halted timestep.
+ + *'append'*: Write a output continually starting from a halted timestep.
 
 \
 

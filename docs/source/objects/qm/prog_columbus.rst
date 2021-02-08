@@ -12,11 +12,11 @@ In the current version of UNI-xMD, only CASSCF method is available.
 - CASSCF is complete active space self-consistent field method. It provides analytical gradients as
   well as nonadiabatic couplings, thus it can be used for excited state molecular dynamics.
 
-+--------+------+---------+----+-----+
-|        | BOMD | SH(XF) | Eh | nac |
-+========+======+========+====+=====+
-| CASSCF | o    | o      | o  | o   |
-+--------+------+--------+----+-----+
++-------------+------+--------+----+-----+
+|             | BOMD | SH(XF) | Eh | nac |
++=============+======+========+====+=====+
+| (SA-)CASSCF | o    | o      | o  | o   |
++-------------+------+--------+----+-----+
 
 CASSCF
 """""""""""""""""""""""""""""""""""""
@@ -30,8 +30,8 @@ CASSCF
 | **basis_set**          | Basis set information                               | *'6-31g\*'*    |
 | *(string)*             |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **memory**             | Allocatable memory in the calculations              | *'500'*        |
-| *(string)*             |                                                     |                |
+| **memory**             | Allocatable memory in the calculations              | *500*          |
+| *(int)*                |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
 | **guess**              | Initial guess for MCSCF method                      | *'hf'*         |
 | *(string)*             |                                                     |                |
@@ -76,15 +76,15 @@ CASSCF
 Detailed description of arguments
 ''''''''''''''''''''''''''''''''''''
 
-- **basis_set** *(string)* - Default: *'6-31g*'*
+- **basis_set** *(string)* - Default: *'6-31g\*'*
 
- Basis set for calculation. In PyUNIxMD code, currently 10 basis sets are supported; {cc-pvdz, cc-pvtz, cc-pvqz, 3-21g*, 3-21+g*, 6-31g, 6-31g*, 6-31+g*, 6-311g*, 6-311+g*}.
+ Basis set for calculation. In PyUNIxMD code, currently 10 basis sets are supported; {*cc-pvdz*, *cc-pvtz*, *cc-pvqz*, *3-21g\**, *3-21+g\**, *6-31g*, *6-31g\**, *6-31+g\**, *6-311g\**, *6-311+g\**}.
 
 \
 
-- **memory** *(string)* - Default: *'500'*
+- **memory** *(int)* - Default: *500*
 
- Total memory used for calculation. unit is 'mb'
+ Total memory used for calculation. unit is 'MB'.
 
 \
 
@@ -103,10 +103,9 @@ Detailed description of arguments
 
 \
 
-
 - **scf_en_tol** *(integer)* - Default: *9*
 
- Energy threshold for SCF iterations. Default value is 1.0E-9.
+ Energy threshold for SCF iterations. Default value is :math:`10^{-\textbf{scf_en_tol}}`.
 
 \
 
@@ -120,25 +119,25 @@ Detailed description of arguments
 
 - **mcscf_en_tol** *(integer)* - Default: *8*
 
- Energy convergence for MCSCF iterations. Default value is 1.0E-8.
+ Energy convergence for MCSCF iterations. Default value is :math:`10^{-\textbf{mcscf_en_tol}}`.
 
 \
 
 - **mcscf_max_iter** *(integer)* - Default: *100*
 
- Maximum number of MCSCF iterations
+ Maximum number of MCSCF iterations.
 
 \
 
 - **cpscf_grad_tol** *(integer)* - Default: *6*
 
- Gradient tolerance for CP-MCSCF equations
+ Gradient tolerance for CP-MCSCF equations.
 
 \
 
 - **cpscf_max_iter** *(integer)* - Default: *100*
 
- Maximum number of iterations for CP-MCSCF equations
+ Maximum number of iterations for CP-MCSCF equations.
 
 \
 
@@ -157,7 +156,7 @@ Detailed description of arguments
 
 - **qm_path** *(string)* - Default: *'./'*
 
- Path for QM binary. Path must be include binary file itself (ex. /opt/Columbus7.0/Columbus)
+ Path for QM binary. Path must be include binary file itself. For example, **qm_path** = *'/opt/Columbus7.0/Columbus'*.
 
 \
 
@@ -169,7 +168,7 @@ Detailed description of arguments
 
 - **version** *(string)* - Default: *'7.0'*
 
- Version of Columbus program. PyUNIxMD Code is currently based on ver 7.0, may not support ver 5.9 or lower.
+ Version of Columbus program. PyUNIxMD Code is currently based on 7.0 version, may not support ver 5.9 or lower.
 
 \
 
