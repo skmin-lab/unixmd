@@ -83,14 +83,14 @@ Detailed description of arguments
   
 - **save_mm_log** *(boolean)* - Default: *False*
 
- Save MM calculation logs for passed timestep. Logs will be saved in 'input_dir/mm_log_dir'.
+ Save MM calculation logs for passed timestep. Logs will be saved in **'input_dir/mm_log_dir'**.
  If there is no mm data, this argument will be ignored.
 
 \
    
 - **save_scr** *(boolean)* - Default: *True*
 
- Save scratch output directory in **'input_dir/md/scr_QM'** after qm calculation, and **'input_dir/md/scr_mm'** after MM calculation.
+ Save scratch output directory in **'input_dir/md/scr_qm'** after qm calculation, and **'input_dir/md/scr_mm'** after MM calculation.
 
 \
 

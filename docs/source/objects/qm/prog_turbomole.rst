@@ -71,7 +71,7 @@ Detailed description of arguments
 
 - **memory** *(integer)* - Default: *50*
 
- Total memory used for calculation. unit is 'mb'
+ Total memory used for calculation. unit is 'MB'
 
 \
 

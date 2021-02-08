@@ -109,13 +109,11 @@ Detailed description of arguments
 
 \
 
-
 - **scf_max_iter** *(integer)* - Default: *40*
 
  Maximum number of SCF iterations.
 
 \
-
 
 - **mcscf_en_tol** *(integer)* - Default: *8*
 
@@ -131,7 +129,7 @@ Detailed description of arguments
 
 - **cpscf_grad_tol** *(integer)* - Default: *6*
 
- Gradient tolerance for CP-MCSCF equations.
+ Gradient tolerance for CP-MCSCF equations. Default value is :math:`10^{-\textbf{cpscf_grad_tol}}`.
 
 \
 
@@ -168,7 +166,7 @@ Detailed description of arguments
 
 - **version** *(string)* - Default: *'7.0'*
 
- Version of Columbus program. PyUNIxMD Code is currently based on 7.0 version, may not support ver 5.9 or lower.
+ Version of Columbus program. PyUNIxMD Code is currently based on 7.0 version, may not support 5.9 version or lower.
 
 \
 
