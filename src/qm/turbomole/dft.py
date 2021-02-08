@@ -17,11 +17,11 @@ class DFT(Turbomole):
         :param integer cis_en_tol: energy convergence for CIS iterations
         :param string qm_path: path for QM turbomole
         :param integer nthreads: number of threads in the calculations
-        :param double version: version of Turbomole program
+        :param string version: version of Turbomole program
     """
     def __init__(self, molecule, functional="b-lyp", basis_set="SV(P)", memory=50, \
         scf_max_iter=50, scf_en_tol=6, cis_max_iter=25, cis_en_tol=6, \
-        qm_path="./", nthreads=1, version=6.4):
+        qm_path="./", nthreads=1, version="6.4"):
         # Initialize Turbomole common variables
         super(DFT, self).__init__(functional, basis_set, memory, qm_path, nthreads, version)
 

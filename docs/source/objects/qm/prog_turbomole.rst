@@ -111,7 +111,7 @@ Detailed description of arguments
 
 \
 
-- **version** *(double)* - Default: *6.4*
+- **version** *(string)* - Default: *'6.4'*
 
  Version of Turbomole program. Our interface script is generated with 6.4 version of TM program.
  Here, you should refer to manual of TM program if you want to see detailed lists for **basis_set**, **functional** variable.

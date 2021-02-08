@@ -22,12 +22,12 @@ class CASSCF(Columbus):
         :param integer active_orb: number of orbitals in active space
         :param string qm_path: path for QM binary
         :param integer nthreads: number of threads in the calculations
-        :param double version: version of Columbus program
+        :param string version: version of Columbus program
     """
     def __init__(self, molecule, basis_set="6-31g*", memory="500", \
         guess="hf", guess_file="./mocoef", scf_en_tol=9, scf_max_iter=40, \
         mcscf_en_tol=8, mcscf_max_iter=100, cpscf_grad_tol=6, cpscf_max_iter=100, \
-        active_elec=2, active_orb=2, qm_path="./", nthreads=1, version=7.0):
+        active_elec=2, active_orb=2, qm_path="./", nthreads=1, version="7.0"):
         # Initialize Columbus common variables
         super(CASSCF, self).__init__(molecule, basis_set, memory, qm_path, nthreads, version)
 

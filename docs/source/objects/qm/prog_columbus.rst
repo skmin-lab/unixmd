@@ -167,7 +167,7 @@ Detailed description of arguments
 
 \
 
-- **version** *(double)* - Default: *7.0*
+- **version** *(string)* - Default: *'7.0'*
 
  Version of Columbus program. PyUNIxMD Code is currently based on ver 7.0, may not support ver 5.9 or lower.
 
