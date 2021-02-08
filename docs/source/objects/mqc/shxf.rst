@@ -97,7 +97,7 @@ Detailed description of the arguments
 
 \
 
-- **nsteps** - Default: *1000*
+- **nsteps** *(integer)* - Default: *1000*
 
   This argument determines the total number of the nuclear time steps.
 
@@ -213,5 +213,5 @@ Detailed description of the arguments
   Determines the verbosity of the output files and stream.
 
   + **verbosity** :math:`\geq` *1*: Prints potential energy of all BO states.
-  + **verbosity** :math:`\geq` *2*: Prints accumulated hopping probabilities and writes the NACVs (NACV\_\ :math:`ist`\_\ :math:`jst`), qauntum momentum (QMOM), 
-    phase terms (AUX_PHASE\_\ *ist*), and atomic postions and velocities of the auxiliary trajectories (AUX_MOVIE\_\ *ist*.xyz).
+  + **verbosity** :math:`\geq` *2*: Prints accumulated hopping probabilities and writes the NACVs (NACV\_\ :math:`i`\_\ :math:`j`), qauntum momentum (QMOM), 
+    phase terms (AUX_PHASE\_\ :math:`i`), and atomic postions and velocities of the auxiliary trajectories (AUX_MOVIE\_\ :math:`i`.xyz) where :math:`i` and :math:`j` represent BO states.
