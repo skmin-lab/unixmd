@@ -29,7 +29,7 @@ where :math:`d_{ij}` is nonadiabatic couping between :math:`i-th` and :math:`j-t
 | **istate**                 | Initial state                                  | *0*         |
 | *(integer)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **dt**                     | Time interval (fs)                             | *0.5*       |
+| **dt**                     | Time interval                                  | *0.5*       |
 | *(double)*                 |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
 | **nsteps**                 | Total step of nuclear propagation              | *1000*      |
