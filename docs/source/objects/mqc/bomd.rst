@@ -54,7 +54,7 @@ package or a customized Hamiltonian, and nuclear propagation is done by the Velo
 | **nsteps**             | Total step of nuclear propagation              | *1000*     |
 | *(integer)*            |                                                |            |
 +------------------------+------------------------------------------------+------------+
-| **unit_dt**            | Unit of time step                              | *'fs'*     |
+| **unit_dt**            | Unit of time interval                          | *'fs'*     |
 | *(string)*             |                                                |            |
 +------------------------+------------------------------------------------+------------+
 | **out_freq**           | Frequency of printing output                   | *1*        |
@@ -70,34 +70,35 @@ Detailed description of the arguments
 
 - **istate** *(integer)* - Default: *0* (Ground state)
   
-  It specifies the electronic state where nuclei move on. The possible range of the argument is from *0* to ``molecule.nstate-1``.
+  This argument specifies the initial running state. The possible range of the argument is from *0* to ``molecule.nstate-1``.
    
 \
 
 - **dt** *(double)* - Default: *0.5*
 
-  It specifies the time interval is used in dynamics.
+  This argument determines the time interval of the nuclear time steps.
+  You can select the unit of time for the dynamics with the argument **unit_dt**.
 
 \
 
 - **nsteps** *(integer)* - Default: *1000*
 
-  It specifies the number of nuclei propagation steps is used in dynamics.
+  This argument determines the total number of the nuclear time steps.
 
 \
 
 - **unit_dt** *(string)* - Default: *'fs'*
 
-  It specifies the unit of time used in dynamics.
-
-  + *'fs'*: femtosecond
-  + *'au'*: atomic unit
+  This argument determines the unit of time for the simulation.
+  
+  + *'fs'*: Femtosecond
+  + *'au'*: Atomic unit
 
 \
 
 - **out_freq** *(integer)* - Default: *1*
 
-  The output is printed at each **out_freq** steps.
+  PyUNIxMD prints and writes the dynamics information at every **out_freq** time steps.
 
 \
 
