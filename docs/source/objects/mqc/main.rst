@@ -7,7 +7,7 @@ for all particles, but this solution requires enormous cost for numerical calcul
 very small system. To overcome this limit, MQC tried to describe larger system by consider nuclear as classical 
 particle which follows classical equation of motion.
 
-UNI-xMD mainly targeted on MQC, and whole dynamics implemented in current version of UNI-xMD are subclass of
+PyUNIxMD mainly targeted on MQC, and whole dynamics implemented in current version of PyUNIxMD are subclass of
 MQC class. In the MQC class, there are functions for update classical properties of nuclear.
 MQC methods implemented in UNI-xMD are listed in the following.
 
@@ -51,9 +51,10 @@ md subclasses of :class:`MQC`, not :class:`MQC` itself.
 | *(string)*                  | calculation information                         |          |
 +-----------------------------+-------------------------------------------------+----------+
 
-Further information of each individual md objects are listed in next section.
+Further information of each individual MD objects are listed in next section.
 
-**Ex.** Making a md object with FSSH method
+**Ex.** Making a MD object with FSSH method
+        Making molecule and QM objects are omitted in this sample code, but they must be declared to use run method in advance.
 
 .. code-block:: python
 
@@ -63,43 +64,43 @@ Further information of each individual md objects are listed in next section.
 
    md.run(qm=qm, input_dir="./TRAJ.sh", save_scr=True, save_qm_log=False)
 
-   # Making molecule and qm objects are omitted in this sample code, but they must be declared to use run method in advance.
+
 
 Detailed description of arguments
 ''''''''''''''''''''''''''''''''''''
 
 - **input_dir** *(string)* - Default: *'./'*
 
- Direcrtory for dynamics output. All md output, saved log, ... etc will be saved in this directory.
- If the directory already present, it will be removed and new directory will be made.
+  Direcrtory for dynamics output. All md output, saved log, ... etc will be saved in this directory.
+  If the directory already present, it will be removed and new directory will be made.
 
 \
 
 - **save_qm_log** *(boolean)* - Default: *False*
 
- Save QM calculation logs for passed timestep. Logs will be saved in **'input_dir/qm_log_dir'**.
+  Save QM calculation logs for passed timestep. Logs will be saved in **'input_dir/qm_log_dir'**.
  
 \
   
 - **save_mm_log** *(boolean)* - Default: *False*
 
- Save MM calculation logs for passed timestep. Logs will be saved in **'input_dir/mm_log_dir'**.
- If there is no mm data, this argument will be ignored.
+  Save MM calculation logs for passed timestep. Logs will be saved in **'input_dir/mm_log_dir'**.
+  If there is no MM data, this argument will be ignored.
 
 \
    
 - **save_scr** *(boolean)* - Default: *True*
 
- Save scratch output directory in **'input_dir/md/scr_qm'** after qm calculation, and **'input_dir/md/scr_mm'** after MM calculation.
+  Save scratch output directory in **'input_dir'**/md/scr_qm after QM calculation, and **'input_dir'**/md/scr_mm after MM calculation.
 
 \
 
 - **restart** *(string)* - Default: *None*
 
- Writting options for restarting dynamics from halted trajectory.
+  Writting options for restarting dynamics from halted trajectory.
 
- + *'write'*: Write a new output, starting from halted timestep.
- + *'append'*: Write a output continually starting from a halted timestep.
+  + *'write'*: Write a new output, starting from halted timestep.
+  + *'append'*: Write a output continually starting from a halted timestep.
 
 \
 

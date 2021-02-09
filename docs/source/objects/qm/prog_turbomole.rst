@@ -59,61 +59,61 @@ Detailed description of arguments
 
 - **functional** *(string)* - Default: *'b-lyp'*
 
- Functional for DFT calculation. Here, you should refer to manual of TM program if you want to see detailed lists for **functional** variable.
+  Functional for DFT calculation. Here, you should refer to manual of Turbomole program if you want to see detailed lists for **functional** variable.
 
 \
 
 - **basis_set** *(string)* - Default: *'SV(P)'*
 
- Basis set for calculation. Here, you should refer to manual of TM program if you want to see detailed lists for **basis_set** variable.
+  Basis set for calculation. Here, you should refer to manual of Turbomole program if you want to see detailed lists for **basis_set** variable.
 
 \
 
 - **memory** *(integer)* - Default: *50*
 
- Total memory used for calculation. unit is 'MB'
+  Total memory used for calculation. unit is MB
 
 \
 
 - **scf_max_iter** *(integer)* - Default: *50*
 
- Maximum number of SCF iterations.
+  Maximum number of SCF iterations.
 
 \
 
 - **scf_en_tol** *(integer)* - Default: *6*
 
- Energy convergence of SCF iterations. Default value is :math:`10^{-\textbf{scf_en_tol}}`.
+  Energy convergence of SCF iterations. Conversion criteria is :math:`10^{-\textbf{scf_en_tol}}`.
 
 \
 
 - **cis_max_iter** *(integer)* - Default: *25*
 
- Maximum number of CIS iterations.
+  Maximum number of CIS iterations.
 
 \
 
 - **cis_en_tol** *(integer)* - Default: *6*
 
- Energy convergence of CIS iterations. Default value is :math:`10^{-\textbf{cis_en_tol}}`.
+  Energy convergence of CIS iterations. Conversion criteria is :math:`10^{-\textbf{cis_en_tol}}`.
 
 \
 
 - **qm_path** *(string)* - Default: *'./'*
 
- Path for QM binary. Path must be include binary file itself. For example, **qm_path** = *'/opt/TURBOMOLE/define'*.
+  Path for QM binary. Path must not be include binary file itself. For example, **qm_path** = *'/opt/TURBOMOLE'*.
 
 \
 
 - **nthreads** *(integer)* - Default: *1*
 
- Number of threads for calculation.
+  Number of threads for calculation.
 
 \
 
 - **version** *(string)* - Default: *'6.4'*
 
- Version of Turbomole program. Our interface script is generated with 6.4 version of TM program.
+  Version of Turbomole program. Our interface script is generated with 6.4 version of Turbomole program.
 
 \
 

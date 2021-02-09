@@ -7,17 +7,17 @@ import numpy as np
 class DFT(Turbomole):
     """ Class for (TD)DFT method of Turbomole program
 
-        :param object molecule: molecule object
-        :param string functional: level of DFT theory
-        :param string basis_set: basis set information
-        :param integer memory: allocatable memory in the calculations
-        :param integer scf_max_iter: maximum number of SCF iterations
-        :param integer scf_en_tol: energy convergence for SCF iterations
-        :param integer cis_max_iter: maximum number of CIS iterations
-        :param integer cis_en_tol: energy convergence for CIS iterations
-        :param string qm_path: path for QM turbomole
-        :param integer nthreads: number of threads in the calculations
-        :param string version: version of Turbomole program
+        :param object molecule: Molecule object
+        :param string functional: Level of DFT theory
+        :param string basis_set: Basis set information
+        :param integer memory: Allocatable memory in the calculations
+        :param integer scf_max_iter: Maximum number of SCF iterations
+        :param integer scf_en_tol: Energy convergence for SCF iterations
+        :param integer cis_max_iter: Maximum number of CIS iterations
+        :param integer cis_en_tol: Energy convergence for CIS iterations
+        :param string qm_path: Path for QM turbomole
+        :param integer nthreads: Number of threads in the calculations
+        :param string version: Version of Turbomole program
     """
     def __init__(self, molecule, functional="b-lyp", basis_set="SV(P)", memory=50, \
         scf_max_iter=50, scf_en_tol=6, cis_max_iter=25, cis_en_tol=6, \

@@ -7,22 +7,22 @@ import numpy as np
 class CASSCF(Columbus):
     """ Class for CASSCF method of Columbus program
 
-        :param object molecule: molecule object
-        :param string basis_set: basis set information
-        :param integer memory: allocatable memory in the calculations
-        :param string guess: initial guess for MCSCF method
-        :param string guess_file: initial guess file
-        :param integer scf_en_tol: energy convergence for SCF iterations
-        :param integer scf_max_iter: maximum number of SCF iterations
-        :param integer mcscf_en_tol: energy convergence for MCSCF iterations
-        :param integer mcscf_max_iter: maximum number of MCSCF iterations
-        :param integer cpscf_grad_tol: gradient tolerance for CP-MCSCF equations
-        :param integer cpscf_max_iter: maximum number of iterations for CP-MCSCF equations
-        :param integer active_elec: number of electrons in active space
-        :param integer active_orb: number of orbitals in active space
-        :param string qm_path: path for QM binary
-        :param integer nthreads: number of threads in the calculations
-        :param string version: version of Columbus program
+        :param object molecule: Molecule object
+        :param string basis_set: Basis set information
+        :param integer memory: Allocatable memory in the calculations
+        :param string guess: Initial guess for CASSCF method
+        :param string guess_file: Initial guess file
+        :param integer scf_en_tol: Energy convergence for SCF iterations
+        :param integer scf_max_iter: Maximum number of SCF iterations
+        :param integer mcscf_en_tol: Energy convergence for CASSCF iterations
+        :param integer mcscf_max_iter: Maximum number of CASSCF iterations
+        :param integer cpscf_grad_tol: Gradient tolerance for CP-CASSCF equations
+        :param integer cpscf_max_iter: Maximum number of iterations for CP-CASSCF equations
+        :param integer active_elec: Number of electrons in active space
+        :param integer active_orb: Number of orbitals in active space
+        :param string qm_path: Path for QM binary
+        :param integer nthreads: Number of threads in the calculations
+        :param string version: Version of Columbus program
     """
     def __init__(self, molecule, basis_set="6-31g*", memory=500, \
         guess="hf", guess_file="./mocoef", scf_en_tol=9, scf_max_iter=40, \

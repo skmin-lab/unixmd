@@ -8,21 +8,21 @@ import os, shutil
 class MQC(object):
     """ Class for nuclear/electronic propagator used in MQC dynamics
 
-        :param object molecule: molecule object
-        :param object thermostat: thermostat type
-        :param integer istate: initial adiabatic state
-        :param double dt: time interval
-        :param integer nsteps: nuclear step
-        :param integer nesteps: electronic step
-        :param string propagation: propagation scheme
-        :param string solver: propagation solver
-        :param boolean l_pop_print: logical to print BO population and coherence
-        :param boolean l_adjnac: logical to adjust nonadiabatic coupling
-        :param coefficient: initial BO coefficient
-        :type coefficient: double, list or complex, list
-        :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
-        :param integer out_freq: frequency of printing output
-        :param integer verbosity: verbosity of output
+        :param object molecule: Molecule object
+        :param object thermostat: Thermostat type
+        :param integer istate: Initial adiabatic state
+        :param double dt: Time interval
+        :param integer nsteps: Nuclear step
+        :param integer nesteps: Electronic step
+        :param string propagation: Propagation scheme
+        :param string solver: Propagation solver
+        :param boolean l_pop_print: Logical to print BO population and coherence
+        :param boolean l_adjnac: Logical to adjust nonadiabatic coupling
+        :param coefficient: Initial BO coefficient
+        :type coefficient: Double, list or complex, list
+        :param string unit_dt: Unit of time step (fs = femtosecond, au = atomic unit)
+        :param integer out_freq: Frequency of printing output
+        :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat, istate, dt, nsteps, nesteps, \
         propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity):
