@@ -3,8 +3,25 @@
 #include <complex.h>
 #include <math.h>
 
+// Routine to calculate dot product from two temporary arrays
+static double dot(int nst, double complex *u, double complex *v){
+
+    double complex sum;
+    double norm;
+    int ist;
+
+    sum = 0.0 + 0.0 * I;
+    for(ist = 0; ist < nst; ist++){
+        sum += conj(u[ist]) * v[ist];
+    }
+
+    norm = creal(sum);
+    return norm;
+
+}
+
 // Routine to calculate cdot contribution originated from Ehrenfest term
-static void ct_cdot(int nst, double *e, double **dv, double *qmom_term, double complex *c, double complex *c_dot){
+static void ct_cdot(int nst, double *e, double **dv, double **k_lk, double complex *c, double complex *c_dot){
 
     double complex *na_term = malloc(nst * sizeof(double complex));
 
@@ -22,11 +39,15 @@ static void ct_cdot(int nst, double *e, double **dv, double *qmom_term, double c
 
     egs = e[0];
     for(ist = 0; ist < nst; ist++){
-        c_dot[ist] = - 1.0 * I * c[ist] * (e[ist] - egs) + na_term[ist] - qmom_term[ist] * c[ist];
+        c_dot[ist] = - 1.0 * I * c[ist] * (e[ist] - egs) + na_term[ist];
+        for(jst = 0; jst < nst; jst++){
+            if(jst != ist){
+                c_dot[ist] += 0.25 * (k_lk[ist][jst] - k_lk[jst][ist]) * creal(conj(c[jst]) * c[jst]) * c[ist];
+            }
+        }
     }
 
     free(na_term);
-
 }
 
 // Routine to calculate rhodot contribution originated from Ehrenfest term

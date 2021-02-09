@@ -3,33 +3,32 @@
 #include <complex.h>
 #include <math.h>
 #include <string.h>
-#include "derivs.h"
 #include "derivs_ct.h"
 
 // Routine for coefficient propagation scheme in rk4 solver
 static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *energy_old,
-    double **nacme, double **nacme_old, double *qmom_dot_phase, double complex *coef);
+    double **nacme, double **nacme_old, double **k_lk, double complex *coef);
 
 // Routine for density propagation scheme in rk4 solver
 static void rk4_rho(int nst, int nesteps, double dt, double *energy, double *energy_old,
-    double **nacme, double **nacme_old, double *qmom_dot_phase, double complex **rho);
+    double **nacme, double **nacme_old, double **k_lk, double complex **rho);
 
 // Interface routine for propagation scheme in rk4 solver
 static void rk4(int nst, int nesteps, double dt, char *propagation, double *energy, double *energy_old,
-    double **nacme, double **nacme_old, double *qmom_dot_phase, double complex *coef, double complex **rho){
+    double **nacme, double **nacme_old, double **k_lk, double complex *coef, double complex **rho){
 
     if(strcmp(propagation, "coefficient") == 0){
-        rk4_coef(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, qmom_dot_phase, coef);
+        rk4_coef(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, k_lk, coef);
     }
     else if(strcmp(propagation, "density") == 0){
-        rk4_rho(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, qmom_dot_phase, rho);
+        rk4_rho(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, k_lk, rho);
     }
 
 }
 
 // Routine for coefficient propagation scheme in rk4 solver
 static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *energy_old,
-    double **nacme, double **nacme_old, double *qmom_dot_phase, double complex *coef){
+    double **nacme, double **nacme_old, double **k_lk, double complex *coef){
 
     double complex *k1 = malloc(nst * sizeof(double complex));
     double complex *k2 = malloc(nst * sizeof(double complex));
@@ -40,22 +39,11 @@ static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *en
     double complex *c_dot = malloc(nst * sizeof(double complex));
     double complex *coef_new = malloc(nst * sizeof(double complex));
     double *eenergy = malloc(nst * sizeof(double));
-    double *qmom_term = malloc(nst * sizeof(double));
 //    double *na_term = malloc(nst * sizeof(double));
     double **dv = malloc(nst * sizeof(double*));
 
     int ist, jst, iestep;
     double frac, edt, norm;
-
-    // calculate term originated from CTMQC
-    for(ist = 0; ist < nst; ist++){
-        qmom_term[ist] = - qmom_dot_phase[ist];
-        for(jst = 0; jst < nst; jst++){
-            if(jst != ist){
-                qmom_term[ist] += qmom_dot_phase[jst] * pow(abs(coef[jst]), 2);
-            }
-        }
-    }
 
     for(ist = 0; ist < nst; ist++){
         dv[ist] = malloc(nst * sizeof(double));
@@ -75,7 +63,7 @@ static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *en
         }
 
         // Calculate k1
-        ct_cdot(nst, eenergy, dv, qmom_term, coef, c_dot);
+        ct_cdot(nst, eenergy, dv, k_lk, coef, c_dot);
 
         for(ist = 0; ist < nst; ist++){
             k1[ist] = edt * c_dot[ist];
@@ -84,7 +72,7 @@ static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *en
         }
 
         // Calculate k2
-        ct_cdot(nst, eenergy, dv, qmom_term, coef, c_dot);
+        ct_cdot(nst, eenergy, dv, k_lk, coef_new, c_dot);
 
         for(ist = 0; ist < nst; ist++){
             k2[ist] = edt * c_dot[ist];
@@ -93,7 +81,7 @@ static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *en
         }
 
         // Calculate k3
-        ct_cdot(nst, eenergy, dv, qmom_term, coef, c_dot);
+        ct_cdot(nst, eenergy, dv, k_lk, coef_new, c_dot);
 
         for(ist = 0; ist < nst; ist++){
             k3[ist] = edt * c_dot[ist];
@@ -102,7 +90,7 @@ static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *en
         }
 
         // Calculate k4
-        ct_cdot(nst, eenergy, dv, qmom_term, coef, c_dot);
+        ct_cdot(nst, eenergy, dv, k_lk, coef_new, c_dot);
 
         for(ist = 0; ist < nst; ist++){
             k4[ist] = edt * c_dot[ist];
@@ -149,13 +137,12 @@ static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *en
     free(eenergy);
 //    free(na_term);
     free(dv);
-    free(qmom_term);
 
 }
 
 // Routine for density propagation scheme in rk4 solver
 static void rk4_rho(int nst, int nesteps, double dt, double *energy, double *energy_old,
-    double **nacme, double **nacme_old, double *qmom_dot_phase, double complex **rho){
+    double **nacme, double **nacme_old, double **k_lk, double complex **rho){
 
     double complex **k1 = malloc(nst * sizeof(double complex*));
     double complex **k2 = malloc(nst * sizeof(double complex*));
