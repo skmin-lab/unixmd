@@ -80,7 +80,7 @@ Detailed description of arguments
 
   This argument contains basis set information about selected QM calculation.
   Not all basis sets are supported depending on a QM program, so it is recommended to check a QM program manual for the compatibility with PyUNIxMD.
-  In PyUNIxMD code, currently 10 basis sets are supported while use Columbus software; {*'cc-pvdz'*, *'cc-pvtz'*, *'cc-pvqz'*, *'3-21g\*'*, *'3-21+g\*'*, *'6-31g'*, *'6-31g\*'*, *'6-31+g\*'*, *'6-311g\*'*, *'6-311+g\*'*}'.
+  In PyUNIxMD code, currently 10 basis sets are supported while use Columbus software; {*'cc-pvdz'*, *'cc-pvtz'*, *'cc-pvqz'*, *'3-21g\*'*, *'3-21+g\*'*, *'6-31g'*, *'6-31g\*'*, *'6-31+g\*'*, *'6-311g\*'*, *'6-311+g\*'*}.
 
 \
 
