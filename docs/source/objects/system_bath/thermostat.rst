@@ -33,13 +33,14 @@ Detailed description of arguments
 
 - **temperature** *(double)* - Default: *300.0*
 
-  The target temperature (K) of the thermostat to be used.
+  This argument specifies the target temperature in unit of K.
 
 \
 
 - **nrescale** *(integer)* - Default: *20*
 
-  The velocities are rescaled at each **nrescale** step.
+  This argument specifies the period to rescale velocities, that is,
+  the velocities are rescaled at each **nrescale** step.
 
 Rescale2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -62,13 +63,14 @@ Detailed description of arguments
 
 - **temperature** *(double)* - Default: *300.0*
 
-  The target temperature (K) of the thermostat to be used.
+  This argument specifies the target temperature in unit of K.
 
 \
 
 - **dtemperature** *(double)* - Default: *100.0*
 
-  The velocities are rescaled when temperature difference exceeds **dtemperature**.
+  This argument specifies the deviation to rescale velocities, that is,
+  the velocities are rescaled when temperature difference exceeds **dtemperature**.
 
 Berendsen
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -100,7 +102,7 @@ Detailed description of arguments
 
 - **temperature** *(double)* - Default: *300.0*
 
-  The target temperature (K) of the thermostat is used in dynamics.
+  This argument specifies the target temperature in unit of K.
 
 \
 
@@ -114,7 +116,8 @@ Detailed description of arguments
 
 - **coupling_strength** *(double)* - Default: *None*
 
-  Dimensionless coupling strength for the thermostat is given by :math:`\frac{dt}{\tau}`, where :math:`dt` is the MD step :math:`\tau` is **coupling_parameter**.
+  Dimensionless coupling strength, **coupling_strength**, for the thermostat is given by :math:`\frac{dt}{\tau}`, 
+  where :math:`dt` is the MD step :math:`\tau` is **coupling_parameter**.
   Either **coupling_parameter** or **coupling_strength** should be set and only **coupling_parameter** or **coupling_strength** can be set.
 
 NHC
@@ -148,39 +151,39 @@ Detailed description of arguments
 
 - **temperature** *(double)* - Default: *300.0*
 
-  The target temperature (K) of the thermostat to be used.
+  This argument specifies the target temperature in unit of K.
 
 \
 
 - **coupling_strength** *(double)* - Default: *None*
 
-  The coupling strength is used in thermostat.
-  This indicates frequency of oscillation of the thermostating particles.
-  This is typically related to the highest vibrational mode frequency of given system.
-  **coupling_strength** or **time_scale** should be set and only **coupling_strength** or **time_scale** can be set. 
+  This argument specifies coupling strength which indicates frequency of oscillation of the thermostating particles.
+  coupling strength is typically related to the highest vibrational mode frequency of given system.
+  **coupling_strength** or **time_scale** should be set and only **coupling_strength** or **time_scale** can be set.
 
 \
 
 - **time_scale** *(double)* - Default: *None*
 
-  The coupling time scale is used in thermostat. The unit is femtosecond.
+  This argument specifies coupling time scale in unit of femtosecond.
   When **time_scale** is given as :math:`t`, **coupling_strength** set to :math:`1/t`.
-  **coupling_strength** or **time_scale** should be set and only **coupling_strength** or **time_scale** can be set. 
+  **coupling_strength** or **time_scale** should be set and only **coupling_strength** or **time_scale** can be set.
 
 \
 
 - **chain_length** *(integer)* - Default: *3*
 
-  The number of imaginary particles in the thermostat chain is used in dynamics.
+  This argument specifies the number of imaginary particles in the thermostat chain is used in dynamics.
 
 \
 
 - **order** *(integer)* - Default: *3*
 
-  The order of the evolution operator is used in dynamics. **order** should be *3* or *5*.
+  This argument specifies the order of the evolution operator. 
+  **order** should be *3* or *5*.
 
 \
 
 - **nsteps** *(integer)* - Default: *3*
 
-  The propagation step in NHC thermostat. 
+  This argument specifies the propagation step in NHC thermostat.
