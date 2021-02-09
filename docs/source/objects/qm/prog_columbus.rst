@@ -6,19 +6,19 @@ Columbus :cite:`Lischka2011` is one of famous open-source software for high-leve
 quantum calculation. Similar with other softwares, it can do various types of fundamental quantum
 calculation. However, the major competitiveness of Columbus compared to other softwares is that
 it is mainly designed to compute multireference calculations on electonic ground and excited states.
-This feature is indeed well suited for dynamics in UNI-xMD, it is implemented for various types of dynamics.
-In the current version of UNI-xMD, only CASSCF method is available.
+This feature is indeed well suited for dynamics in PyUNIxMD, it is implemented for various types of dynamics.
+In the current version of PyUNIxMD, only SA-CASSCF method is available.
 
-- CASSCF is complete active space self-consistent field method. It provides analytical gradients as
+- SA-CASSCF is state-averaged complete active space self-consistent field method. It provides analytical gradients as
   well as nonadiabatic couplings, thus it can be used for excited state molecular dynamics.
 
-+-------------+------+--------+----+-----+
-|             | BOMD | SH(XF) | Eh | nac |
-+=============+======+========+====+=====+
-| (SA-)CASSCF | o    | o      | o  | o   |
-+-------------+------+--------+----+-----+
++-----------+------+--------+----+-----+
+|           | BOMD | SH(XF) | Eh | nac |
++===========+======+========+====+=====+
+| SA-CASSCF | o    | o      | o  | o   |
++-----------+------+--------+----+-----+
 
-CASSCF
+SA-CASSCF
 """""""""""""""""""""""""""""""""""""
 
 +------------------------+-----------------------------------------------------+----------------+
@@ -78,19 +78,21 @@ Detailed description of arguments
 
 - **basis_set** *(string)* - Default: *'6-31g\*'*
 
- Basis set for calculation. In PyUNIxMD code, currently 10 basis sets are supported; {*cc-pvdz*, *cc-pvtz*, *cc-pvqz*, *3-21g\**, *3-21+g\**, *6-31g*, *6-31g\**, *6-31+g\**, *6-311g\**, *6-311+g\**}.
+ This argument contains basis set information about selected QM calculation.
+ Not all basis sets are suppoted depending on a QM program, so it is recommanded to check a QM program manual for the compatibility with PyUNIxMD.
+ In PyUNIxMD code, currently 10 basis sets are supported while use Columbus software; {*cc-pvdz*, *cc-pvtz*, *cc-pvqz*, *3-21g\**, *3-21+g\**, *6-31g*, *6-31g\**, *6-31+g\**, *6-311g\**, *6-311+g\**}.
 
 \
 
 - **memory** *(integer)* - Default: *500*
 
- Total memory used for calculation. unit is 'MB'.
+ This argument contains how much memory will be used in a QM calculation. Basically, the unit is 'MB'.
 
 \
 
 - **guess** *(string)* - Default: *'hf'*
 
- Initial guess method for MCSCF method
+ This argument determines initial guess method for MCSCF method. 
 
  + *'hf'*: Using HF orbitals as initial guess of CASSCF method for every time step.
  + *'read'*: Reads mocoef file generated from previous step as initial guess.
@@ -154,13 +156,14 @@ Detailed description of arguments
 
 - **qm_path** *(string)* - Default: *'./'*
 
- Path for QM binary. Path must be include binary file itself. For example, **qm_path** = *'/opt/Columbus7.0/Columbus'*.
+ This argument determines path for QM binary file for the selected QM calculation.
+ Path must be include binary file itself. For example, **qm_path** = *'/opt/Columbus7.0/Columbus'*.
 
 \
 
 - **nthreads** *(integer)* - Default: *1*
 
- Number of threads for calculation.
+ This argument contains information of number of threads for QM calculation.
 
 \
 
