@@ -282,7 +282,7 @@ class MQC(object):
             thermostat_info = "  No Thermostat: Total energy is conserved!\n"
             print (thermostat_info, flush=True)
 
-    def touch_file(self,  unixmd_dir):
+    def touch_file(self, unixmd_dir):
         """ Routine to write PyUNIxMD output files
 
             :param string unixmd_dir: unixmd directory
@@ -327,7 +327,7 @@ class MQC(object):
             tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
             typewriter(tmp, unixmd_dir, "DOTPOPD", "w")
 
-    def write_md_output(self,  unixmd_dir, istep):
+    def write_md_output(self, unixmd_dir, istep):
         """ Write output files
 
             :param string unixmd_dir: unixmd directory
