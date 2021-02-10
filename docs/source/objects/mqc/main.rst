@@ -51,7 +51,7 @@ md subclasses of :class:`MQC`, not :class:`MQC` itself.
 | *(string)*                  | calculation information                         |          |
 +-----------------------------+-------------------------------------------------+----------+
 
-Further information of each individual MD objects are listed in next section.
+Further information of each individual MD objects are listed in each section.
 
 **Ex.** Making a MD object with FSSH method
         Making molecule and QM objects are omitted in this sample code, but they must be declared to use run method in advance.
@@ -78,20 +78,20 @@ Detailed description of arguments
 
 - **save_qm_log** *(boolean)* - Default: *False*
 
-  Save QM calculation logs for passed timestep. Logs will be saved in **'input_dir/qm_log_dir'**.
+  Save QM calculation logs for passed timestep. Logs will be saved in **input_dir**/qm_log_dir.
  
 \
   
 - **save_mm_log** *(boolean)* - Default: *False*
 
-  Save MM calculation logs for passed timestep. Logs will be saved in **'input_dir/mm_log_dir'**.
+  Save MM calculation logs for passed timestep. Logs will be saved in **input_dir**/mm_log_dir.
   If there is no MM data, this argument will be ignored.
 
 \
    
 - **save_scr** *(boolean)* - Default: *True*
 
-  Save scratch output directory in **'input_dir'**/md/scr_qm after QM calculation, and **'input_dir'**/md/scr_mm after MM calculation.
+  Save scratch output directory in **input_dir**/md/scr_qm after QM calculation, and **input_dir**/md/scr_mm after MM calculation.
 
 \
 

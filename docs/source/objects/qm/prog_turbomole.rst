@@ -8,11 +8,11 @@ in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and a
 
 - (TD)DFT provides analytical gradients, thus it can be used born-oppenhiemer molecular dynamics (BOMD).
 
-+--------+------+--------+----+-----+
-|        | BOMD | SH(XF) | Eh | nac |
-+========+======+========+====+=====+
-| TDDFT  | o    | x      | x  | x   |
-+--------+------+--------+----+-----+
++---------+------+--------+----+-----+
+|         | BOMD | SH(XF) | Eh | nac |
++=========+======+========+====+=====+
+| (TD)DFT | o    | x      | x  | x   |
++---------+------+--------+----+-----+
 
 (TD)DFT
 """""""""""""""""""""""""""""""""""""
@@ -101,7 +101,7 @@ Detailed description of arguments
 
 - **qm_path** *(string)* - Default: *'./'*
 
-  Path for QM binary. Path must not be include binary file itself. For example, **qm_path** = *'/opt/TURBOMOLE'*.
+  Path for QM binary. Path must not include binary file itself. For example, **qm_path** = *'/opt/TURBOMOLE'*.
 
 \
 

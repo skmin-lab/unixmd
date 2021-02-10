@@ -69,7 +69,7 @@ In the current version of PyUNIxMD, only (SA-)CASSCF method is available.
 | **nthreads**           | Number of threads in the calculations               | *1*            |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **version**            | Version of Molpro program                           | *'7.0'*        |
+| **version**            | Version of Columbus program                         | *'7.0'*        |
 | *(string)*             |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
 
@@ -92,16 +92,17 @@ Detailed description of arguments
 
 - **guess** *(string)* - Default: *'hf'*
 
-  This argument determines initial guess method for CASSCF method. 
+  This argument determines initial guess method for (SA-)CASSCF method. 
 
-  + *'hf'*: Using HF orbitals as initial guess of CASSCF method for every time step.
+  + *'hf'*: Using HF orbitals as initial guess of (SA-)CASSCF method for every time step.
   + *'read'*: Reads 'mocoef' file generated from previous step as initial guess.
 
 \
 
 - **guess_file** *(string)* - Default: *'./mocoef'*
 
-  Initial molecular orbital file for CASSCF method. It will be used as initial guess for CASSCF calculation in first MD step. This can be obtained from other CASSCF calculations.
+  Initial molecular orbital file for (SA-)CASSCF method.
+  It will be used as initial guess for (SA-)CASSCF calculation in first MD step. This can be obtained from other CASSCF calculations.
 
 \
 
@@ -119,13 +120,13 @@ Detailed description of arguments
 
 - **mcscf_en_tol** *(integer)* - Default: *8*
 
-  Energy convergence for CASSCF iterations. Conversion criteria is :math:`10^{-\textbf{mcscf_en_tol}}`.
+  Energy convergence for (SA-)CASSCF iterations. Conversion criteria is :math:`10^{-\textbf{mcscf_en_tol}}`.
 
 \
 
 - **mcscf_max_iter** *(integer)* - Default: *100*
 
-  Maximum number of CASSCF iterations.
+  Maximum number of (SA-)CASSCF iterations.
 
 \
 
@@ -157,7 +158,7 @@ Detailed description of arguments
 - **qm_path** *(string)* - Default: *'./'*
 
   This argument determines path for QM binary file for the selected QM calculation.
-  Path must not be include binary file itself. For example, **qm_path** = *'/opt/Columbus7.0/Columbus'*.
+  Path must not include binary file itself. For example, **qm_path** = *'/opt/Columbus7.0/Columbus'*.
 
 \
 
