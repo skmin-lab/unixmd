@@ -100,6 +100,19 @@ Detailed description of the arguments
    
 \
 
+- **dt** *(double)* - Default: *0.5*
+  
+  This argument determines the time interval of the nuclear time steps.
+  You can select the unit of time for the dynamics with the argument **unit_dt**.
+
+\
+
+- **nsteps** *(integer)* - Default: *1000*
+
+  This argument determines the total number of the nuclear time steps.
+
+\
+
 - **nesteps** *(integer)* - Default: *20*
   
   Number of electronic time steps between one nuclear time step for the integration of the electronic equation of motion.
@@ -129,6 +142,12 @@ Detailed description of the arguments
   Determine whether write output files for density matrix elements (BOPOP, BOCOH) or not.
   If this option is set to *True*, then the BOPOP and BOCOH files are written during the dynamics.
   This option is effective only if the argument **propagation** is set to *'coefficient'* or ignored otherwise.
+
+\
+
+- **l_adjnac** *(boolean)* - Default: *True* 
+
+  If this argument is set to *True*, the signs of the NACVs are adjusted to match the phases to the previous time step during the dynamics.
 
 \
 
@@ -173,6 +192,21 @@ Detailed description of the arguments
 - **edc_parameter** *(double)* - Default: *0.1*
 
   Energy parameter in the EDC equation.
+
+\
+
+- **unit_dt** *(string)* - Default: *'fs'*
+
+  This argument determines the unit of time for the simulation.
+  
+  + *'fs'*: Femtosecond
+  + *'au'*: Atomic unit
+
+\
+
+- **out_freq** *(integer)* - Default: *1*
+  
+  PyUNIxMD prints and writes the dynamics information at every **out_freq** time steps.
 
 \
 
