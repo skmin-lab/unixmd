@@ -65,7 +65,7 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | *(double/(double, list))*  | for auxiliary trajectories                           |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **coefficient**            | Initial BO coefficient                               | *None*       |
-| *(double/complex, list)*   | for auxiliary trajectories                           |              |
+| *(double/complex, list)*   |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **l_state_wise**           | Logical to use state-wise total energies             | *False*      |
 | *(boolean)*                | for auxiliary trajectories                           |              |
