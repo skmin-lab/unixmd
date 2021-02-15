@@ -44,7 +44,7 @@ in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and a
 | **cis_en_tol**      | Energy convergence for CIS iterations     | *6*            |
 | *(integer)*         |                                           |                |
 +---------------------+-------------------------------------------+----------------+
-| **qm_path**         | Path for QM program                       | *'./'*         |
+| **qm_path**         | Path for QM binary                        | *'./'*         |
 | *(string)*          |                                           |                |
 +---------------------+-------------------------------------------+----------------+
 | **nthreads**        | Number of threads in the calculations     | *1*            |
@@ -59,61 +59,64 @@ Detailed description of arguments
 
 - **functional** *(string)* - Default: *'b-lyp'*
 
-  Functional for DFT calculation. Here, you should refer to manual of Turbomole program if you want to see detailed lists for **functional** variable.
+  This argument contains functional information about selected QM calculation.
+  Not all functionals are supported depending on a QM program, so it is recommended to check a QM program manual for the compatibility with PyUNIxMD.
 
 \
 
 - **basis_set** *(string)* - Default: *'SV(P)'*
 
-  Basis set for calculation. Here, you should refer to manual of Turbomole program if you want to see detailed lists for **basis_set** variable.
+  This argument contains basis set information about selected QM calculation.
+  Not all basis sets are supported depending on a QM program, so it is recommended to check a QM program manual for the compatibility with PyUNIxMD.
 
 \
 
 - **memory** *(integer)* - Default: *50*
 
-  Total memory used for calculation. unit is MB
+  This argument contains how much memory will be used in a QM calculation. Basically, the unit is MB.
 
 \
 
 - **scf_max_iter** *(integer)* - Default: *50*
 
-  Maximum number of SCF iterations.
+  This argument determines maximum number of SCF iterations.
 
 \
 
 - **scf_en_tol** *(integer)* - Default: *6*
 
-  Energy convergence of SCF iterations. Conversion criteria is :math:`10^{-\textbf{scf_en_tol}}`.
+  This argument determines energy threshold for SCF iterations. Convergence criteria is :math:`10^{-\textbf{scf_en_tol}}`.
 
 \
 
 - **cis_max_iter** *(integer)* - Default: *25*
 
-  Maximum number of CIS iterations.
+  This argument determines maximum number of CIS iterations.
 
 \
 
 - **cis_en_tol** *(integer)* - Default: *6*
 
-  Energy convergence of CIS iterations. Conversion criteria is :math:`10^{-\textbf{cis_en_tol}}`.
+  This argument determines energy threshold for CIS iterations. Convergence criteria is :math:`10^{-\textbf{scf_en_tol}}`.
 
 \
 
 - **qm_path** *(string)* - Default: *'./'*
 
-  Path for QM binary. Path must not include binary file itself. For example, **qm_path** = *'/opt/TURBOMOLE'*.
+  This argument designates path for QM binary file for the selected QM calculation.
+  Path must not include binary file itself. For example, **qm_path** = *'/opt/TURBOMOLE/'*.
 
 \
 
 - **nthreads** *(integer)* - Default: *1*
 
-  Number of threads for calculation.
+  This argument contains information of number of threads for QM calculation.
 
 \
 
 - **version** *(string)* - Default: *'6.4'*
 
-  Version of Turbomole program. Our interface script is generated with 6.4 version of Turbomole program.
+  This argument determines version of Turbomole program. Our interface script is generated with 6.4 version of Turbomole program.
 
 \
 
