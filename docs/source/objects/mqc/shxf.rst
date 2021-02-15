@@ -70,8 +70,8 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **l_state_wise**           | Logical to use state-wise total energies             | *False*      |
 | *(boolean)*                | for auxiliary trajectories                           |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **unit_dt**                | Unit of time interval (fs = femtosecond,             | *'fs'*       |
-| *(string)*                 | au = atomic unit)                                    |              |
+| **unit_dt**                | Unit of time interval                                | *'fs'*       |
+| *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **out_freq**               | Frequency of printing output                         | *1*          |
 | *(integer)*                |                                                      |              |
@@ -105,7 +105,7 @@ Detailed description of the arguments
 
 - **nesteps** *(integer)* - Default: *20*
   
-  Number of electronic time steps between one nuclear time step for the integration of the electronic equation of motion.
+  This argument determines the number of electronic time steps between one nuclear time step for the integration of the electronic equation of motion.
   The electronic equation of motion is more sensitive to the time interval than the nuclear equation of motion since the electrons are much lighter than the nuclei.
   Therefore, the nuclear time step is further divided and electronic equation of motion is integrated with smaller time step.
 
@@ -122,14 +122,14 @@ Detailed description of the arguments
 
 - **solver** *(string)* - Default: *'rk4'*
 
-  Numerical integration method for the electronic equation of motion.
+  This argument determines the numerical integration method for the electronic equation of motion.
   Currently, only the RK4 algorithm (*'rk4'*) is available.
 
 \
 
 - **l_pop_print** *(boolean)* - Default: *False*
   
-  Determine whether write output files for density matrix elements (BOPOP, BOCOH) or not.
+  This argument determines whether write output files for density matrix elements (BOPOP, BOCOH) or not.
   If this option is set to *True*, then the BOPOP and BOCOH files are written during the dynamics.
   This option is effective only if the argument **propagation** is set to *'coefficient'* or ignored otherwise.
 
@@ -143,7 +143,7 @@ Detailed description of the arguments
 
 - **vel_rescale** *(string)* - Default: *'momentum'*
 
-  Determines the direction of the momentum to be adjusted after a hop to conserve the total energy.
+  This argument determines the direction of the momentum to be adjusted after a hop to conserve the total energy.
   If there is not enough kinetic energy in this direction, the hop is rejected and the running state is switched back to the original state.
   
   + *'energy'*: Simply rescale the nuclear velocities.
@@ -155,7 +155,7 @@ Detailed description of the arguments
    
 - **vel_reject** *(string)* - Default: *'reverse'*
   
-  Determines the momentum rescaling method when a hop is rejected.
+  This argument determines the momentum rescaling method when a hop is rejected.
   
   + *'keep'*: Do nothing, keeps the nuclear velocities.
   + *'reverse'*: Reverse the momentum along the NACV.
@@ -164,14 +164,14 @@ Detailed description of the arguments
 
 - **threshold** *(double)* - Default: *0.01*
 
-  Defines the numerical threshold for the coherence. 
+  This argument defines the numerical threshold for the coherence. 
   Specifically, if the populations of two or more states are larger than this value, the electronic state is 'coherent' and the decoherence term is calculated.
 
 \
 
 - **wsigma** *(double/(double, list))* - Default: *None*
 
-  Defines the width of the frozen gaussian wave packet on the auxiliary trajectories.
+  This argument defines the width of the frozen gaussian wave packet on the auxiliary trajectories.
   If a scalar value is given, all nuclei share the same width.
   Or, if a list with the length of the number of the atoms is given, atom-wise width is used.
   In this case, the order of the atoms is same as the order of the xyz format string when the molecule object is created (``molecule.symbols``).
@@ -180,7 +180,7 @@ Detailed description of the arguments
 
 - **coefficient** *(double/complex, list)* - Default: *None*
 
-  Defines the initial density matrix.
+  This argument defines the initial density matrix.
   The elements can be either real or complex values.
   If the argument is not given, the density matrix is initialized according to the initial running state.
 
@@ -188,7 +188,7 @@ Detailed description of the arguments
 
 - **l_state_wise** *(boolean)* - Default: *False*
 
-  Determines whether the total energies of the auxiliary trajectories are different or identical.
+  This argument determines whether the total energies of the auxiliary trajectories are different or identical.
   If this is set to *True*, auxiliary trajectories have differnt total energy, or they all have same total energy.
 
 \
@@ -210,7 +210,7 @@ Detailed description of the arguments
 
 - **verbosity** *(integer)* - Default: *0*
 
-  Determines the verbosity of the output files and stream.
+  This argument determines the verbosity of the output files and stream.
 
   + **verbosity** :math:`\geq` *1*: Prints potential energy of all BO states.
   + **verbosity** :math:`\geq` *2*: Prints accumulated hopping probabilities and writes the NACVs (NACV\_\ :math:`i`\_\ :math:`j`), qauntum momentum (QMOM), 
