@@ -2,10 +2,10 @@
 Columbus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Columbus :cite:`Lischka2011` is one of famous open-source software for high-level *ab initio*
+Columbus :cite:`Lischka2011` is one of a famous open-source software for high-level *ab initio*
 quantum calculation. Similar with other softwares, it can do various types of fundamental quantum
-calculation. However, the major competitiveness of Columbus compared to other softwares is that
-it is mainly designed to compute multireference calculations on electonic ground and excited states.
+calculations. However, the major competitiveness of Columbus compared to other softwares is 
+mainly designed to compute multireference calculations on electonic ground and excited states.
 This feature is indeed well suited for dynamics in PyUNIxMD, it is implemented for various types of dynamics.
 In the current version of PyUNIxMD, only (SA-)CASSCF method is available.
 
@@ -101,63 +101,64 @@ Detailed description of arguments
 
 - **guess_file** *(string)* - Default: *'./mocoef'*
 
-  Initial molecular orbital file for (SA-)CASSCF method.
-  It will be used as initial guess for (SA-)CASSCF calculation in first MD step. This can be obtained from other CASSCF calculations.
+  This argument designates initial molecular orbital file for (SA-)CASSCF method.
+  It will be used as initial guess for (SA-)CASSCF calculation in first MD step. This file can be obtained from other CASSCF calculations.
 
 \
 
 - **scf_en_tol** *(integer)* - Default: *9*
 
-  Energy threshold for SCF iterations. Conversion criteria is :math:`10^{-\textbf{scf_en_tol}}`.
+  This argument determines energy threshold for SCF iterations. Conversion criteria is :math:`10^{-\textbf{scf_en_tol}}`.
 
 \
 
 - **scf_max_iter** *(integer)* - Default: *40*
 
-  Maximum number of SCF iterations.
+  This argument determines maximum number of SCF iterations.
 
 \
 
 - **mcscf_en_tol** *(integer)* - Default: *8*
 
-  Energy convergence for (SA-)CASSCF iterations. Conversion criteria is :math:`10^{-\textbf{mcscf_en_tol}}`.
+  This argument determines energy convergence for (SA-)CASSCF iterations. Conversion criteria is :math:`10^{-\textbf{mcscf_en_tol}}`.
 
 \
 
 - **mcscf_max_iter** *(integer)* - Default: *100*
 
-  Maximum number of (SA-)CASSCF iterations.
+  This argument determines maximum number of (SA-)CASSCF iterations.
 
 \
 
 - **cpscf_grad_tol** *(integer)* - Default: *6*
 
-  Gradient tolerance for CP-CASSCF equations. Conversion criteria is :math:`10^{-\textbf{cpscf_grad_tol}}`.
+  This arugment determines gradient tolerance for CP-CASSCF equations. Conversion criteria is :math:`10^{-\textbf{cpscf_grad_tol}}`.
 
 \
 
 - **cpscf_max_iter** *(integer)* - Default: *100*
 
-  Maximum number of iterations for CP-CASSCF equations.
+  This argument determines maximum number of iterations for CP-CASSCF equations.
 
 \
 
 - **active_elec** *(integer)* - Default: *2*
 
-  Number of electrons included in active space. Currently, only closed shell system is supported. 
+  This argument determines number of electrons included in active space. Currently, only closed shell system is supported. 
   Number of electrons included in doubly occupied orbitals are automatically calculated by total number of electrons and active electrons.
 
 \
 
 - **active_orb** *(integer)* - Default: *2*
 
-  Number of orbitals in active space. Currently, orbital matching between different timesteps are not supported, so be careful when deal with degenerated system.
+  This argument determines number of orbitals in active space. 
+  Currently, orbital matching between different timesteps are not supported, so be careful when deal with degenerated system.
 
 \
 
 - **qm_path** *(string)* - Default: *'./'*
 
-  This argument determines path for QM binary file for the selected QM calculation.
+  This argument designates path for QM binary file for the selected QM calculation.
   Path must not include binary file itself. For example, **qm_path** = *'/opt/Columbus7.0/Columbus'*.
 
 \
@@ -170,7 +171,7 @@ Detailed description of arguments
 
 - **version** *(string)* - Default: *'7.0'*
 
-  Version of Columbus program. PyUNIxMD Code is currently based on 7.0 version, may not support 5.9 version or lower.
+  This argument determines version of Columbus program. PyUNIxMD Code is currently based on 7.0 version, may not support 5.9 version or lower.
 
 \
 
