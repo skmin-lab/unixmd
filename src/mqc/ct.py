@@ -1,7 +1,7 @@
 from __future__ import division
 from build.el_propagator_ct import el_run
 from mqc.mqc import MQC
-from misc import eps, au_to_K, au_to_A, call_name, typewriter, elapsed_time
+from misc import eps, au_to_K, au_to_A, call_name, typewriter
 import os, shutil, textwrap
 import numpy as np
 import pickle
@@ -14,16 +14,17 @@ class CT(MQC):
         coefficients=None, unit_dt="fs", out_freq=1, verbosity=2):
         # Initialize input values
         self.mols = molecules
+        #TODO: ntrajs?
         self.ntrajs = len(self.mols)
         self.istates = istates
         if ((self.istates != None) and (self.ntrajs != len(self.istates))):
-            raise ValueError("Error: istates!")
+            raise ValueError (f"( {self.md_type}.{call_name()} ) the length of istates should be same to total number of trajectories! {self.istates}")
 
         if (coefficients == None):
             coefficients = [None] * self.ntrajs
         else:
             if (self.ntrajs != len(coefficients)):
-                raise ValueError("Error: coefficients!")
+                raise ValueError (f"( {self.md_type}.{call_name()} ) the length of coefficients should be same to total number of trajectories! {self.coefficients}")
 
         # Initialize input values and coefficient for first trajectory
         super().__init__(self.mols[0], thermostat, istates[0], dt, nsteps, nesteps, \
@@ -44,12 +45,11 @@ class CT(MQC):
         self.qmom = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.nsp))
         self.K_lk = np.zeros((self.ntrajs, self.nst, self.nst))
 
-        self.dotpopd = np.zeros(self.mol.nst)
+        self.dotpopd = np.zeros(self.nst)
 
-    @elapsed_time
     def run(self, qm, mm=None, input_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         # Initialize UNI-xMD
-        # TODO
+        # TODO: output directory control
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
              self.run_init(qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
         unixmd_dirs = [''] * self.ntrajs
@@ -60,7 +60,7 @@ class CT(MQC):
                 shutil.move(unixmd_dirs[itraj], unixmd_dirs[itraj] + "_old_" + str(os.getpid()))
             os.makedirs(unixmd_dirs[itraj])
 
-        bo_list = [ist for ist in range(self.mol.nst)]
+        bo_list = [ist for ist in range(self.nst)]
         qm.calc_coupling = True
         self.print_init()
 
@@ -72,6 +72,7 @@ class CT(MQC):
 
                 self.mol.reset_bo(qm.calc_coupling)
                 qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
+                
                 # TODO: QM/MM
                 self.mol.get_nacme()
 
@@ -79,14 +80,15 @@ class CT(MQC):
 
                 self.get_phase(itraj)
 
-                self.mols[itraj] = self.mol
+                #self.mols[itraj] = self.mol
 
                 self.write_md_output(itraj, unixmd_dirs[itraj], self.istep)
-                #self.print_step(self.istep)
+
             self.calculate_qmom(self.istep, unixmd_dirs)
 
             self.print_step(self.istep)
 
+        #TODO: restart
         else: 
             raise ValueError ("restart option is invalid in CTMQC yet.")
 
@@ -103,7 +105,7 @@ class CT(MQC):
                 self.mol.backup_bo()
                 self.mol.reset_bo(qm.calc_coupling)
                 qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
-                # TODO: QM/MM
+                #TODO: QM/MM
 
                 self.mol.adjust_nac()
 
@@ -114,7 +116,7 @@ class CT(MQC):
                 
                 el_run(self, itraj)
 
-                # TODO: thermostat
+                #TODO: thermostat
                 #if (self.thermo != None):
                 #    self.thermo.run(self)
 
@@ -124,12 +126,12 @@ class CT(MQC):
 
                 if ((istep + 1) % self.out_freq == 0):
                     self.write_md_output(itraj, unixmd_dirs[itraj], istep)
-#                    self.print_step(self.mols[itraj], istep)
                 if (istep == self.nsteps - 1):
                     self.write_final_xyz(unixmd_dirs[itraj], istep)
 
-                self.mols[itraj] = self.mol
-                # TODO: restart
+                #self.mols[itraj] = self.mol
+
+                #TODO: restart
                 #self.fstep = istep
                 #restart_file = os.path.join(base_dir, "RESTART.bin")
                 #with open(restart_file, 'wb') as f:
@@ -147,19 +149,22 @@ class CT(MQC):
 
     def calculate_force(self, itrajectory):
         """ Routine to calculate force
+            
+            :param integer itrajectory: Index for trajectories
         """
         self.rforce = np.zeros((self.nat, self.nsp))
-        # 
+        
+        # Derivatives of energy
         for ist, istate in enumerate(self.mols[itrajectory].states):
             self.rforce += istate.force * self.mol.rho.real[ist, ist]
 
-        # Non-adiabatic forces from Ehrenfest force 
+        # Non-adiabatic forces 
         for ist in range(self.nst):
             for jst in range(ist + 1, self.nst):
                 self.rforce += 2. * self.mol.nac[ist, jst] * self.mol.rho.real[ist, jst] \
                     * (self.mol.states[ist].energy - self.mol.states[jst].energy)
 
-        # CT force
+        # CT forces
         ctforce = np.zeros((self.nat, self.nsp))
         for ist in range(self.nst):
             for jst in range(self.nst):
@@ -182,6 +187,8 @@ class CT(MQC):
 
     def get_phase(self, itrajectory):
         """ Routine to calculate phase
+            
+            :param integer itrajectory: Index for trajectories
         """
         for ist in range(self.nst):
             rho_ii = self.mol.rho[ist, ist].real
@@ -192,8 +199,11 @@ class CT(MQC):
 
     def calculate_qmom(self, istep, dirs):
         """ Routine to calculate quantum momentum
+            
+            :param integer istep: Current MD step
+            :param string dirs: Output directory name
         """
-        #TODO
+        #TODO: parameter
         M_parameter = 10.
         sigma = np.ones((self.nat, self.nsp)) * 0.3
 
@@ -201,22 +211,23 @@ class CT(MQC):
         # i and j are trajectory index.
         # -------------------------------------------------------------------
         # 1. Calculate sigma for each trajectory
-        smooth_factor = 2. #TODO: Q. How to determine cutoff ?
-        sigma_lk = np.ones((self.ntrajs, self.nst_pair, self.nat, self.nsp)) * sigma_x # TODO: state-pair
+        #TODO: parameter
+        smooth_factor = 2.
+        sigma_lk = np.ones((self.ntrajs, self.nst_pair, self.nat, self.nsp)) # TODO: state-pair
         for itraj in range(self.ntrajs):
             nntraj = np.zeros((self.nat)) # Count  
-            R2_tmp = np.zeros((self.nat, self.nsp)) # temporary variable for R**2
-            R_tmp = np.zeros((self.nat, self.nsp))  # temporary variable for R
+            R2_tmp = np.zeros((self.nat, self.nsp)) # Temporary variable for R**2
+            R_tmp = np.zeros((self.nat, self.nsp))  # Temporary variable for R
 
             for jtraj in range(self.ntrajs):
-                pos_diff = self.mols[jtraj].pos - self.mols[itraj].pos # dimension = (self.nat, self.nsp)
-                pos_diff2 = np.sum(pos_diff * pos_diff, axis=1) # dimension = (self.nat)
+                pos_diff = self.mols[jtraj].pos - self.mols[itraj].pos # Dimension = (self.nat, self.nsp)
+                pos_diff2 = np.sum(pos_diff * pos_diff, axis=1) # Dimension = (self.nat)
 
                 for iat in range(self.nat):
-                    distance = np.sqrt(pos_diff2[iat]) # distance between i-th atom in itraj and jtraj
+                    distance = np.sqrt(pos_diff2[iat]) # Distance between i-th atom in itraj and jtraj
                     if (distance <= smooth_factor):
-                        R_tmp += self.mols[jtraj].pos # dimension = (self.nat, self.nsp)
-                        R2_tmp += self.mols[jtraj].pos * self.mols[jtraj].pos # dimension = (self.nat, self.nsp)
+                        R_tmp += self.mols[jtraj].pos # Dimension = (self.nat, self.nsp)
+                        R2_tmp += self.mols[jtraj].pos * self.mols[jtraj].pos # Dimension = (self.nat, self.nsp)
                         nntraj[iat] += 1
 
             tmp= f'{istep+1:8d}' + \
@@ -237,8 +248,8 @@ class CT(MQC):
 
         # 2. Calculate slope
         # (2-1) Calculate w_ij
-        # g_i means single gaussian for i-th trajectory.
-        # prod_g_i is to multiply gaussians with respect to atoms.
+        # g_i means nuclear density at the position of i-th classical trajectory.
+        # prod_g_i is to multiply gaussians with respect to atoms and spaces.
         g_i = np.zeros((self.ntrajs)) 
         prod_g_i = np.ones((self.ntrajs, self.ntrajs))
         for itraj in range(self.ntrajs):
@@ -263,7 +274,7 @@ class CT(MQC):
         slope_i = np.zeros((self.ntrajs, self.nat, self.nsp))
         for itraj in range(self.ntrajs):
             for jtraj in range(self.ntrajs):
-                slope_i[itraj] -= w_ij[itraj, jtraj] # TODO: minus?
+                slope_i[itraj] -= w_ij[itraj, jtraj]
 
             tmp= f'{istep+1:8d}{slope_i[itraj, 0, 0]:15.8f}'
             typewriter(tmp, dirs[itraj], f"SLOPE", "a")
@@ -287,7 +298,7 @@ class CT(MQC):
                                 (self.phase[itraj, ist, iat, isp] - self.phase[itraj, jst, iat, isp]) * slope_i[itraj, iat, isp]
 
         # (3-2) Compute numerator
-        ratio = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.nsp))
+        ratio_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.nsp)) # numerator / denominator
         numer_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.nsp)) # numerator
         for itraj in range(self.ntrajs):
             index_lk = -1
@@ -299,13 +310,13 @@ class CT(MQC):
                             numer_lk[itraj, index_lk, iat, isp] = rho[itraj, ist] * rho[itraj, jst] * (rho[itraj, ist] + rho[itraj, jst]) * \
                                 self.mols[itraj].pos[iat, isp] * (self.phase[itraj, ist, iat, isp] - self.phase[itraj, jst, iat, isp]) * \
                                 slope_i[itraj, iat, isp]
-                            if (abs(deno_lk[index_lk, iat, isp]) <= 1.0e-08):
-                                ratio[itraj, index_lk, iat, isp] = 0.
+                            if (abs(deno_lk[index_lk, iat, isp]) <= 1.0E-08):
+                                ratio_lk[itraj, index_lk, iat, isp] = 0.
                             else:
-                                ratio[itraj, index_lk, iat, isp] = numer_lk[itraj, index_lk, iat, isp] / \
+                                ratio_lk[itraj, index_lk, iat, isp] = numer_lk[itraj, index_lk, iat, isp] / \
                                     deno_lk[index_lk, iat, isp]
 
-        # Center of quantum momentum is calculated by Eq.(S28) of paper Min et al.
+        # Center of quantum momentum is calculated by Eq.(S28) of J. Phys. Chem. Lett., 2017, 8, 3048-3055.
         center_old_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.nsp))
         for itraj in range(self.ntrajs):
             index_lk = -1
@@ -315,11 +326,11 @@ class CT(MQC):
                     for iat in range(self.nat):
                         for isp in range(self.nsp):
                             for jtraj in range(self.ntrajs):
-                                center_old_lk[itraj, index_lk, iat, isp] += ratio[jtraj, index_lk, iat, isp]
-                            if ((abs(slope_i[itraj, iat, isp]) <= 1.0e-08) or (center_old_lk[itraj, index_lk, iat, isp] == 0.)):
+                                center_old_lk[itraj, index_lk, iat, isp] += ratio_lk[jtraj, index_lk, iat, isp]
+                            if ((abs(slope_i[itraj, iat, isp]) <= 1.0E-08) or (center_old_lk[itraj, index_lk, iat, isp] == 0.)):
                                 center_old_lk[itraj, index_lk, iat, isp] = self.mols[itraj].pos[iat, isp]
 
-        # Center of quantum momentum is calculated by Eq.(S21) of paper Min et al.
+        # Center of quantum momentum is calculated by Eq.(S21) of J. Phys. Chem. Lett., 2017, 8, 3048-3055.
         center_new_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.nsp))
         for itraj in range(self.ntrajs):
             index_lk = -1
@@ -328,12 +339,12 @@ class CT(MQC):
                     index_lk += 1
                     for iat in range(self.nat):
                         for isp in range(self.nsp):
-                            if (abs(slope_i[itraj, iat, isp]) <= 1.0e-08):
+                            if (abs(slope_i[itraj, iat, isp]) <= 1.0E-08):
                                 center_new_lk[itraj, index_lk, iat, isp] = self.mols[itraj].pos[iat, isp]
                             else:
                                 for jtraj in range(self.ntrajs):
                                     center_new_lk[itraj, index_lk, iat, isp] += self.mols[jtraj].pos[iat, isp] * prod_g_i[itraj, jtraj] /\
-                                        (2. * sigma_lk[jtraj, 0, iat, isp] ** 2 * g_i[itraj] * (- slope_i[itraj, iat, isp])) #TODO:
+                                        (2. * sigma_lk[jtraj, 0, iat, isp] ** 2 * g_i[itraj] * (- slope_i[itraj, iat, isp]))
 
         # (3-3) Determine qauntum momentum center
         center_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.nsp)) # Finally, qmom_center
@@ -381,8 +392,8 @@ class CT(MQC):
     def write_md_output(self, itrajectory, unixmd_dir, istep):
         """ Write output files
 
-            :param string unixmd_dir: unixmd directory
-            :param integer istep: current MD step
+            :param string unixmd_dir: Unixmd directory
+            :param integer istep: Current MD step
         """
         # Write the common part
         super().write_md_output(unixmd_dir, istep)
@@ -393,8 +404,8 @@ class CT(MQC):
     def write_deco(self, itrajectory, unixmd_dir, istep):
         """ Write CT-based decoherence information
 
-            :param string unixmd_dir: unixmd directory
-            :param integer istep: current MD step
+            :param string unixmd_dir: Unixmd directory
+            :param integer istep: Current MD step
         """
         # Write time-derivative density matrix elements in DOTPOTD
         #tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopd])
@@ -433,6 +444,8 @@ class CT(MQC):
 
     def print_step(self, istep):
         """ Routine to print each steps infomation about dynamics
+
+            :param integer istep: Current MD step
         """
         rho = np.zeros((self.nst, self.nst), dtype=np.complex_)
         for itraj in range(self.ntrajs):
