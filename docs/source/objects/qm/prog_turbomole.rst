@@ -17,63 +17,65 @@ in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and a
 (TD)DFT
 """""""""""""""""""""""""""""""""""""
 
-+---------------------+-------------------------------------------+----------------+
-| Keywords            | Work                                      | Default        |
-+=====================+===========================================+================+
-| **molecule**        | Molecular object                          |                |
-| (:class:`Molecule`) |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **functional**      | XC functional information                 | *'b-lyp'*      |
-| *(string)*          |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **basis_set**       | Basis set information                     | *'SV(P)'*      |
-| *(string)*          |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **memory**          | Allocatable memory in the calculations    | *50*           |
-| *(integer)*         |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **scf_max_iter**    | Maximum number of SCF iterations          | *50*           |
-| *(integer)*         |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **scf_en_tol**      | Energy convergence for SCF iterations     | *6*            |
-| *(integer)*         |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **cis_max_iter**    | Maximum number of CIS iterations          | *25*           |
-| *(integer)*         |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **cis_en_tol**      | Energy convergence for CIS iterations     | *6*            |
-| *(integer)*         |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **qm_path**         | Path for QM binary                        | *'./'*         |
-| *(string)*          |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **nthreads**        | Number of threads in the calculations     | *1*            |
-| *(integer)*         |                                           |                |
-+---------------------+-------------------------------------------+----------------+
-| **version**         | Version of Turbomole program              | *'6.4'*        |
-| *(string)*          |                                           |                |
-+---------------------+-------------------------------------------+----------------+
++---------------------+---------------------------------------------+----------------+
+| Keywords            | Work                                        | Default        |
++=====================+=============================================+================+
+| **molecule**        | Molecule object                             |                |
+| (:class:`Molecule`) |                                             |                |
++---------------------+---------------------------------------------+----------------+
+| **functional**      | Exchange-correlation functional information | *'b-lyp'*      |
+| *(string)*          |                                             |                |
++---------------------+---------------------------------------------+----------------+
+| **basis_set**       | Basis set information                       | *'SV(P)'*      |
+| *(string)*          |                                             |                |
++---------------------+---------------------------------------------+----------------+
+| **memory**          | Allocatable memory in the calculations      | *50*           |
+| *(integer)*         |                                             |                |
++---------------------+---------------------------------------------+----------------+
+| **scf_max_iter**    | Maximum number of SCF iterations            | *50*           |
+| *(integer)*         |                                             |                |
++---------------------+---------------------------------------------+----------------+
+| **scf_en_tol**      | Energy convergence for SCF iterations       | *6*            |
+| *(integer)*         |                                             |                |
++---------------------+---------------------------------------------+----------------+
+| **cis_max_iter**    | Maximum number of CIS iterations            | *25*           |
+| *(integer)*         |                                             |                |
++---------------------+---------------------------------------------+----------------+
+| **cis_en_tol**      | Energy convergence for CIS iterations       | *6*            |
+| *(integer)*         |                                             |                |
++---------------------+---------------------------------------------+----------------+
+| **qm_path**         | Path for QM binary                          | *'./'*         |
+| *(string)*          |                                             |                |
++---------------------+---------------------------------------------+----------------+
+| **nthreads**        | Number of threads in the calculations       | *1*            |
+| *(integer)*         |                                             |                |
++---------------------+---------------------------------------------+----------------+
+| **version**         | Version of Turbomole program                | *'6.4'*        |
+| *(string)*          |                                             |                |
++---------------------+---------------------------------------------+----------------+
 
 Detailed description of arguments
 ''''''''''''''''''''''''''''''''''''
 
 - **functional** *(string)* - Default: *'b-lyp'*
 
-  This argument contains functional information about selected QM calculation.
-  Not all functionals are supported depending on a QM program, so it is recommended to check a QM program manual for the compatibility with PyUNIxMD.
+  This argument specifies exchange-correlation functional used in Turbomole calculation.
+  These arguments are same as the original arguments of Turbomole.
+  It is recommended to check a Turbomole manual for the detailed list of **functional**.
 
 \
 
 - **basis_set** *(string)* - Default: *'SV(P)'*
 
-  This argument contains basis set information about selected QM calculation.
-  Not all basis sets are supported depending on a QM program, so it is recommended to check a QM program manual for the compatibility with PyUNIxMD.
+  This argument specifies basis sets used in Turbomole calculation.
+  These arguments are same as the original arguments of Turbomole.
+  It is recommended to check a Turbomole manual for the detailed list of **basis_set**.
 
 \
 
 - **memory** *(integer)* - Default: *50*
 
-  This argument contains how much memory will be used in a QM calculation. Basically, the unit is MB.
+  This argument determines how much memory will be allocated in a QM calculation. The unit is MB.
 
 \
 
@@ -85,7 +87,7 @@ Detailed description of arguments
 
 - **scf_en_tol** *(integer)* - Default: *6*
 
-  This argument determines energy threshold for SCF iterations. Convergence criteria is :math:`10^{-\textbf{scf_en_tol}}`.
+  This argument determines energy convergence threshold for SCF iterations. Convergence threshold is :math:`10^{-\textbf{scf_en_tol}}`.
 
 \
 
@@ -97,20 +99,21 @@ Detailed description of arguments
 
 - **cis_en_tol** *(integer)* - Default: *6*
 
-  This argument determines energy threshold for CIS iterations. Convergence criteria is :math:`10^{-\textbf{scf_en_tol}}`.
+  This argument determines energy convergence threshold for CIS iterations. Convergence threshold is :math:`10^{-\textbf{scf_en_tol}}`.
 
 \
 
 - **qm_path** *(string)* - Default: *'./'*
 
-  This argument designates path for QM binary file for the selected QM calculation.
-  Path must not include binary file itself. For example, **qm_path** = *'/opt/TURBOMOLE/'*.
+  This argument designates path for QM binary file for the Turbomole.
+  The `$TURBOMOLE` environment variable determines the directory where Turbomole is installed, not the binary files itself.
+  Thus, **qm_path** must be a *'`$TURBOMOLE`'*, not a *'`$TURBOMOLE`/define'*. 
 
 \
 
 - **nthreads** *(integer)* - Default: *1*
 
-  This argument contains information of number of threads for QM calculation.
+  This argument specifies number of threads for QM calculation.
 
 \
 

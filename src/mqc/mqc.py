@@ -79,13 +79,13 @@ class MQC(object):
     def run_init(self, qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart):
         """ Initialize MQC dynamics
 
-            :param object qm: qm object containing on-the-fly calculation infomation
-            :param object mm: mm object containing MM calculation infomation
-            :param string input_dir: location of input directory
-            :param boolean save_qm_log: logical for saving QM calculation log
-            :param boolean save_mm_log: logical for saving MM calculation log
-            :param boolean save_scr: logical for saving scratch directory
-            :param string restart: option for controlling dynamics restarting
+            :param object qm: QM object containing on-the-fly calculation infomation
+            :param object mm: MM object containing MM calculation infomation
+            :param string input_dir: Location of input directory
+            :param boolean save_qm_log: Logical for saving QM calculation log
+            :param boolean save_mm_log: Logical for saving MM calculation log
+            :param boolean save_scr: Logical for saving scratch directory
+            :param string restart: Option for controlling dynamics restarting
         """
         # Check whether the restart option is right
         if not (restart in [None, "write", "append"]):
@@ -178,8 +178,8 @@ class MQC(object):
     def print_init(self, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
-            :param object qm: qm object containing on-the-fly calculation infomation
-            :param object mm: mm object containing MM calculation infomation
+            :param object qm: QM object containing on-the-fly calculation infomation
+            :param object mm: MM object containing MM calculation infomation
         """
         # Print UNI-xMD version
         cur_time = datetime.datetime.now()
@@ -291,7 +291,7 @@ class MQC(object):
     def touch_file(self, unixmd_dir):
         """ Routine to write PyUNIxMD output files
 
-            :param string unixmd_dir: unixmd directory
+            :param string unixmd_dir: PyUNIxMD directory
         """
         # Energy information file header
         tmp = f'{"#":5s}{"Step":9s}{"Kinetic(H)":15s}{"Potential(H)":15s}{"Total(H)":15s}' + \
@@ -336,8 +336,8 @@ class MQC(object):
     def write_md_output(self, unixmd_dir, istep):
         """ Write output files
 
-            :param string unixmd_dir: unixmd directory
-            :param integer istep: current MD step
+            :param string unixmd_dir: PyUNIxMD directory
+            :param integer istep: Current MD step
         """
         # Write MOVIE.xyz file including positions and velocities
         tmp = f'{self.mol.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
@@ -387,8 +387,8 @@ class MQC(object):
     def write_final_xyz(self, unixmd_dir, istep):
         """ Write final positions and velocities
 
-            :param string unixmd_dir: unixmd directory
-            :param integer istep: current MD step
+            :param string unixmd_dir: PyUNIxMD directory
+            :param integer istep: Current MD step
         """
         # Write FINAL.xyz file including positions and velocities
         tmp = f'{self.mol.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)'
@@ -402,8 +402,8 @@ class MQC(object):
     def check_qmmm(self, qm, mm):
         """ Routine to check compatibility between QM and MM objects
 
-            :param object qm: qm object containing on-the-fly calculation infomation
-            :param object mm: mm object containing MM calculation infomation
+            :param object qm: QM object containing on-the-fly calculation infomation
+            :param object mm: MM object containing MM calculation infomation
         """
         # Now check MM object
         if (mm.mm_prog == "Tinker"):

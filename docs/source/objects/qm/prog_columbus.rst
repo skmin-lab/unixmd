@@ -24,7 +24,7 @@ In the current version of PyUNIxMD, only (SA-)CASSCF method is available.
 +------------------------+-----------------------------------------------------+----------------+
 | Keywords               | Work                                                | Default        |
 +========================+=====================================================+================+
-| **molecule**           | Molecular object                                    |                |
+| **molecule**           | Molecule object                                     |                |
 | (:class:`Molecule`)    |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
 | **basis_set**          | Basis set information                               | *'6-31g\*'*    |
@@ -33,7 +33,7 @@ In the current version of PyUNIxMD, only (SA-)CASSCF method is available.
 | **memory**             | Allocatable memory in the calculations              | *500*          |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **guess**              | Initial guess method for CASSCF method              | *'hf'*         |
+| **guess**              | Initial guess method for (SA-)CASSCF method         | *'hf'*         |
 | *(string)*             |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
 | **guess_file**         | Initial guess file                                  | *'./mocoef'*   |
@@ -45,10 +45,10 @@ In the current version of PyUNIxMD, only (SA-)CASSCF method is available.
 | **scf_max_iter**       | Maximum number of SCF iterations                    | *40*           |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **mcscf_en_tol**       | Energy convergence for CASSCF iterations            | *8*            |
+| **mcscf_en_tol**       | Energy convergence for (SA-)CASSCF iterations       | *8*            |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **mcscf_max_iter**     | Maximum number of CASSCF iterations                 | *100*          |
+| **mcscf_max_iter**     | Maximum number of (SA-)CASSCF iterations            | *100*          |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
 | **cpscf_grad_tol**     | Gradient tolerance for CP-CASSCF equations          | *6*            |
@@ -66,9 +66,6 @@ In the current version of PyUNIxMD, only (SA-)CASSCF method is available.
 | **qm_path**            | Path for QM binary                                  | *'./'*         |
 | *(string)*             |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **nthreads**           | Number of threads in the calculations               | *1*            |
-| *(integer)*            |                                                     |                |
-+------------------------+-----------------------------------------------------+----------------+
 | **version**            | Version of Columbus program                         | *'7.0'*        |
 | *(string)*             |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
@@ -78,15 +75,15 @@ Detailed description of arguments
 
 - **basis_set** *(string)* - Default: *'6-31g\*'*
 
-  This argument contains basis set information about selected QM calculation.
-  Not all basis sets are supported depending on a QM program, so it is recommended to check a QM program manual for the compatibility with PyUNIxMD.
-  In PyUNIxMD code, currently 10 basis sets are supported while use Columbus software; {*'cc-pvdz'*, *'cc-pvtz'*, *'cc-pvqz'*, *'3-21g\*'*, *'3-21+g\*'*, *'6-31g'*, *'6-31g\*'*, *'6-31+g\*'*, *'6-311g\*'*, *'6-311+g\*'*}.
+  This argument specifies basis sets used in Columbus calculation.
+  Not all basis sets are supported, so it is recommended to check a Columbus manual for the compatibility with PyUNIxMD.
+  In PyUNIxMD, currently 10 basis sets are supported; {*'cc-pvdz'*, *'cc-pvtz'*, *'cc-pvqz'*, *'3-21g\*'*, *'3-21+g\*'*, *'6-31g'*, *'6-31g\*'*, *'6-31+g\*'*, *'6-311g\*'*, *'6-311+g\*'*}.
 
 \
 
 - **memory** *(integer)* - Default: *500*
 
-  This argument contains how much memory will be used in a QM calculation. Basically, the unit is MB.
+  This argument determines how much memory will be allocated in a QM calculation. The unit is MB.
 
 \
 
@@ -94,21 +91,22 @@ Detailed description of arguments
 
   This argument determines initial guess method for (SA-)CASSCF method. 
 
-  + *'hf'*: Using HF orbitals as initial guess of (SA-)CASSCF method for every time step.
+  + *'hf'*: Initial orbitals for (SA-)CASSCF method are generated from the HF calculation.
   + *'read'*: Reads 'mocoef' file generated from previous step as initial guess.
+    In t = 0.0 s, **guess_file** will be used as initial guess.
 
 \
 
 - **guess_file** *(string)* - Default: *'./mocoef'*
 
-  This argument designates initial molecular orbital file for (SA-)CASSCF method.
-  It will be used as initial guess for (SA-)CASSCF calculation in first MD step. This file can be obtained from other CASSCF calculations.
+  This argument designates initial molecular orbital file for (SA-)CASSCF method. It is valid when **guess** = 'read'.
+  It will be used as initial guess for (SA-)CASSCF calculation in first MD step.
 
 \
 
 - **scf_en_tol** *(integer)* - Default: *9*
 
-  This argument determines energy threshold for SCF iterations. Convergence criteria is :math:`10^{-\textbf{scf_en_tol}}`.
+  This argument determines energy convergence threshold for SCF iterations. Convergence threshold is :math:`10^{-\textbf{scf_en_tol}}`.
 
 \
 
@@ -120,7 +118,7 @@ Detailed description of arguments
 
 - **mcscf_en_tol** *(integer)* - Default: *8*
 
-  This argument determines energy threshold for (SA-)CASSCF iterations. Convergence criteria is :math:`10^{-\textbf{mcscf_en_tol}}`.
+  This argument determines energy convergence threshold for (SA-)CASSCF iterations. Convergence threshold is :math:`10^{-\textbf{mcscf_en_tol}}`.
 
 \
 
@@ -132,7 +130,7 @@ Detailed description of arguments
 
 - **cpscf_grad_tol** *(integer)* - Default: *6*
 
-  This arugment determines gradient threshold for CP-CASSCF equations. Convergence criteria is :math:`10^{-\textbf{cpscf_grad_tol}}`.
+  This arugment determines gradient convergence threshold for CP-CASSCF equations. Convergence threshold is :math:`10^{-\textbf{cpscf_grad_tol}}`.
 
 \
 
@@ -145,33 +143,26 @@ Detailed description of arguments
 - **active_elec** *(integer)* - Default: *2*
 
   This argument determines number of electrons included in active space. Currently, only closed shell system is supported. 
-  Number of electrons included in doubly occupied orbitals are automatically calculated by total number of electrons and **active_elec**.
 
 \
 
 - **active_orb** *(integer)* - Default: *2*
 
   This argument determines number of orbitals in active space.
-  When deal with degenerated system, large **active_orb** are recommanded.
 
 \
 
 - **qm_path** *(string)* - Default: *'./'*
 
-  This argument designates path for QM binary file for the selected QM calculation.
-  Path must not include binary file itself. For example, **qm_path** = *'/opt/Columbus7.0/Columbus/'*.
-
-\
-
-- **nthreads** *(integer)* - Default: *1*
-
-  This argument contains information of number of threads for QM calculation.
+  This argument designates a path for QM binary files for the Columbus.
+  The `$COLUMBUS` environment variable determines the directory where Columbus is installed, not the binary files itself.
+  Thus, **qm_path** must be a *'`$COLUMBUS`/Columbus/'*, not a *'`$COLUMBUS`/Columbus/runc'*.
 
 \
 
 - **version** *(string)* - Default: *'7.0'*
 
-  This argument determines version of Columbus program. PyUNIxMD Code is currently based on 7.0 version, may not support 5.9 version or lower.
+  This argument determines version of Columbus program. PyUNIxMD is currently based on 7.0 version.
 
 \
 
