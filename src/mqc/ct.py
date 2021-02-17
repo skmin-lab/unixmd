@@ -1,7 +1,7 @@
 from __future__ import division
 from build.el_propagator_ct import el_run
 from mqc.mqc import MQC
-from misc import eps, au_to_K, au_to_A, call_name, typewriter
+from misc import eps, au_to_K, au_to_A, call_name, typewriter, gaussain1d
 import os, shutil, textwrap
 import numpy as np
 import pickle
@@ -14,7 +14,6 @@ class CT(MQC):
         coefficients=None, unit_dt="fs", out_freq=1, verbosity=2):
         # Initialize input values
         self.mols = molecules
-        #TODO: ntrajs?
         self.ntrajs = len(self.mols)
         self.istates = istates
         if ((self.istates != None) and (self.ntrajs != len(self.istates))):
@@ -62,7 +61,9 @@ class CT(MQC):
 
         bo_list = [ist for ist in range(self.nst)]
         qm.calc_coupling = True
-        self.print_init()
+
+        # TODO: output control
+        #self.print_init()
 
         if (restart == None):
             # Calculate initial input geometry for all trajectories at t = 0.0 s
@@ -86,11 +87,12 @@ class CT(MQC):
 
             self.calculate_qmom(self.istep, unixmd_dirs)
 
-            self.print_step(self.istep)
+            # TODO: output control
+            #self.print_step(self.istep)
 
         #TODO: restart
         else: 
-            raise ValueError ("restart option is invalid in CTMQC yet.")
+            raise ValueError (f"( {self.md_type}.{call_name()} ) restart is not valid in CTMQC ! {restart}")
 
         self.istep += 1
 
@@ -139,7 +141,8 @@ class CT(MQC):
 
             self.calculate_qmom(istep, unixmd_dirs)
 
-            self.print_step(istep)
+            # TODO: output control
+            #self.print_step(istep)
 
         # Delete scratch directory
         if (not save_scr):
@@ -455,11 +458,3 @@ class CT(MQC):
         rho /= self.ntrajs
 
         print(f'RHO{istep+1:8d}{rho[0, 0].real:15.8f}{rho[1, 1].real:15.8f}', flush=True)
-
-#TODO: move to misc.py?
-def gaussian1d(x, const, sigma, x0):
-    if (sigma < 0.0):
-        return -1
-    else:
-        res = const / (sigma * np.sqrt(2. * np.pi)) * np.exp(- (x - x0) ** 2 / (2. * sigma ** 2))
-        return res 
