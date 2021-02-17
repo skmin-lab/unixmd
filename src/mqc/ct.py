@@ -37,7 +37,8 @@ class CT(MQC):
         self.nst = self.mols[0].nst
         self.nat = self.mols[0].nat
         self.nsp = self.mols[0].nsp
-        self.rho_threshold = threshold
+        self.upper_th = 1. - threshold
+        self.lower_th = threshold
 
         self.phase = np.zeros((self.ntrajs, self.nst, self.nat, self.nsp))
         self.nst_pair = int(self.nst * (self.nst - 1) / 2)
@@ -194,11 +195,11 @@ class CT(MQC):
             :param integer itrajectory: Index for trajectories
         """
         for ist in range(self.nst):
-            rho_ii = self.mol.rho[ist, ist].real
-            if ((rho_ii > self.rho_threshold) and (rho_ii < (1. - self.rho_threshold))):
-                self.phase[itrajectory, ist] += self.mol.states[ist].force * self.dt
-            else:
+            rho = self.mol.rho[ist, ist].real
+            if (rho > self.upper_th or rho < self.lower_th):
                 self.phase[itrajectory, ist] = np.zeros((self.nat, self.nsp))
+            else:
+                self.phase[itrajectory, ist] += self.mol.states[ist].force * self.dt
 
     def calculate_qmom(self, istep, dirs):
         """ Routine to calculate quantum momentum
