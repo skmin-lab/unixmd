@@ -7,23 +7,30 @@ import numpy as np
 import pickle
 
 class CT(MQC):
-    """ Class for coupled-trajectory mixed quantum-classical dynamics
+    """ Class for coupled-trajectory mixed quantum-classical (CTMQC) dynamics
     """
     def __init__(self, molecules, thermostat=None, istates=None, dt=0.5, nsteps=1000, nesteps=20, \
-        threshold=0.01, propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
+        threshold=0.01, propagation="coefficient", solver="rk4", l_pop_print=False, l_adjnac=True, \
         coefficients=None, unit_dt="fs", out_freq=1, verbosity=2):
         # Initialize input values
         self.mols = molecules
         self.ntrajs = len(self.mols)
+
         self.istates = istates
-        if ((self.istates != None) and (self.ntrajs != len(self.istates))):
+        if (self.istates != None):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) istates should be required! {self.istates}")
+        elif (self.ntrajs != len(self.istates)):
             raise ValueError (f"( {self.md_type}.{call_name()} ) the length of istates should be same to total number of trajectories! {self.istates}")
+        
 
         if (coefficients == None):
             coefficients = [None] * self.ntrajs
         else:
             if (self.ntrajs != len(coefficients)):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) the length of coefficients should be same to total number of trajectories! {self.coefficients}")
+
+        if (propagation != "coefficient"):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) coefficient propagation is only valid! {self.propagation}")
 
         # Initialize input values and coefficient for first trajectory
         super().__init__(self.mols[0], thermostat, istates[0], dt, nsteps, nesteps, \
@@ -37,6 +44,7 @@ class CT(MQC):
         self.nst = self.mols[0].nst
         self.nat = self.mols[0].nat
         self.nsp = self.mols[0].nsp
+
         self.upper_th = 1. - threshold
         self.lower_th = threshold
 
@@ -81,8 +89,6 @@ class CT(MQC):
                 self.update_energy()
 
                 self.get_phase(itraj)
-
-                #self.mols[itraj] = self.mol
 
                 self.write_md_output(itraj, unixmd_dirs[itraj], self.istep)
 
@@ -131,8 +137,6 @@ class CT(MQC):
                     self.write_md_output(itraj, unixmd_dirs[itraj], istep)
                 if (istep == self.nsteps - 1):
                     self.write_final_xyz(unixmd_dirs[itraj], istep)
-
-                #self.mols[itraj] = self.mol
 
                 #TODO: restart
                 #self.fstep = istep
@@ -208,6 +212,7 @@ class CT(MQC):
             :param string dirs: Output directory name
         """
         #TODO: parameter
+        smooth_factor = 2.
         M_parameter = 10.
         sigma = np.ones((self.nat, self.nsp)) * 0.3
 
@@ -215,11 +220,11 @@ class CT(MQC):
         # i and j are trajectory index.
         # -------------------------------------------------------------------
         # 1. Calculate sigma for each trajectory
-        #TODO: parameter
-        smooth_factor = 2.
         sigma_lk = np.ones((self.ntrajs, self.nst_pair, self.nat, self.nsp)) # TODO: state-pair
         for itraj in range(self.ntrajs):
-            nntraj = np.zeros((self.nat)) # Count  
+            # Variable to determine how many trajecories are in cutoff.
+            nntraj = np.zeros((self.nat)) 
+
             R2_tmp = np.zeros((self.nat, self.nsp)) # Temporary variable for R**2
             R_tmp = np.zeros((self.nat, self.nsp))  # Temporary variable for R
 
@@ -266,6 +271,7 @@ class CT(MQC):
                             sigma_lk[jtraj, 0, iat, isp], self.mols[jtraj].pos[iat, isp])
                 g_i[itraj] += prod_g_i[itraj, jtraj]
 
+        # w_ij is defined as W_IJ in SI of J. Phys. Chem. Lett., 2017, 8, 3048-3055.
         w_ij = np.zeros((self.ntrajs, self.ntrajs, self.nat, self.nsp))
         for itraj in range(self.ntrajs):
             for jtraj in range(self.ntrajs):
@@ -275,6 +281,7 @@ class CT(MQC):
                         (2. * sigma_lk[jtraj, 0, iat, isp] ** 2 * g_i[itraj])
 
         # (2-2) Calculate slope_i
+        # the slope is calculated as a sum over j of w_ij
         slope_i = np.zeros((self.ntrajs, self.nat, self.nsp))
         for itraj in range(self.ntrajs):
             for jtraj in range(self.ntrajs):
@@ -298,7 +305,7 @@ class CT(MQC):
                     index_lk += 1
                     for iat in range(self.nat):
                         for isp in range(self.nsp):
-                            deno_lk[index_lk, iat, isp] += rho[itraj, ist] * rho[itraj, jst] * (rho[itraj, ist] + rho[itraj, jst]) *\
+                            deno_lk[index_lk, iat, isp] += rho[itraj, ist] * rho[itraj, jst] * (rho[itraj, ist] + rho[itraj, jst]) * \
                                 (self.phase[itraj, ist, iat, isp] - self.phase[itraj, jst, iat, isp]) * slope_i[itraj, iat, isp]
 
         # (3-2) Compute numerator
