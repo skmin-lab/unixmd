@@ -1,7 +1,7 @@
 from __future__ import division
 from build.el_propagator_ct import el_run
 from mqc.mqc import MQC
-from misc import eps, au_to_K, au_to_A, call_name, typewriter, gaussain1d
+from misc import eps, au_to_K, au_to_A, call_name, typewriter, gaussian1d
 import os, shutil, textwrap
 import numpy as np
 import pickle
@@ -12,56 +12,65 @@ class CT(MQC):
     def __init__(self, molecules, thermostat=None, istates=None, dt=0.5, nsteps=1000, nesteps=20, \
         threshold=0.01, propagation="coefficient", solver="rk4", l_pop_print=False, l_adjnac=True, \
         coefficients=None, unit_dt="fs", out_freq=1, verbosity=2):
+        # Save name of MQC dynamics
+        self.md_type = self.__class__.__name__
+
         # Initialize input values
         self.mols = molecules
         self.ntrajs = len(self.mols)
+        self.nst = self.mols[0].nst
+        self.nat = self.mols[0].nat
+        self.nsp = self.mols[0].nsp
 
-        self.istates = istates
-        if (self.istates != None):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) istates should be required! {self.istates}")
-        elif (self.ntrajs != len(self.istates)):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) the length of istates should be same to total number of trajectories! {self.istates}")
-        
+        if (istates == None):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) istates should be required! {istates}")
+
+        if (isinstance(istates, list)):
+            if (len(istates) != self.ntrajs):
+                raise ValueError (f"( {self.md_type}.{call_name()} ) The length of istates should be same to total number of trajectories! {istates}")
+            else:
+                if (max(istates) >= self.nst):
+                    raise ValueError (f"( {self.md_type}.{call_name()} ) Index for initial state must be smaller than number of states! {max(istates)}")
+        else:
+            raise ValueError (f"( {self.md_type}.{call_name()} ) The type of istates should be list! {istates}")
 
         if (coefficients == None):
             coefficients = [None] * self.ntrajs
         else:
             if (self.ntrajs != len(coefficients)):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) the length of coefficients should be same to total number of trajectories! {self.coefficients}")
-
-        if (propagation != "coefficient"):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) coefficient propagation is only valid! {self.propagation}")
+                raise ValueError (f"( {self.md_type}.{call_name()} ) The length of coefficients should be same to total number of trajectories! {coefficients}")
 
         # Initialize input values and coefficient for first trajectory
         super().__init__(self.mols[0], thermostat, istates[0], dt, nsteps, nesteps, \
             propagation, solver, l_pop_print, l_adjnac, coefficients[0], unit_dt, out_freq, verbosity)
 
+        if (self.propagation != "coefficient"):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) coefficient propagation is only valid! {self.propagation}")
+
         # Initialize coefficient for other trajectories
         for itraj in range(1, self.ntrajs):
-            self.mols[itraj].get_coefficient(coefficients[itraj], self.istates[itraj])
+            self.mols[itraj].get_coefficient(coefficients[itraj], istates[itraj])
 
         # Initialize variables for CTMQC
-        self.nst = self.mols[0].nst
-        self.nat = self.mols[0].nat
-        self.nsp = self.mols[0].nsp
-
-        self.upper_th = 1. - threshold
-        self.lower_th = threshold
-
         self.phase = np.zeros((self.ntrajs, self.nst, self.nat, self.nsp))
         self.nst_pair = int(self.nst * (self.nst - 1) / 2)
         self.qmom = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.nsp))
         self.K_lk = np.zeros((self.ntrajs, self.nst, self.nst))
+
+        self.upper_th = 1. - threshold
+        self.lower_th = threshold
 
         self.dotpopd = np.zeros(self.nst)
 
     def run(self, qm, mm=None, input_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         # Initialize UNI-xMD
         # TODO: output directory control
-        base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
-             self.run_init(qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
         unixmd_dirs = [''] * self.ntrajs
         qm_log_dirs= [''] * self.ntrajs
+
+        base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
+             self.run_init(qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
+        
         for itraj in range(self.ntrajs):
             unixmd_dirs[itraj] = f'{unixmd_dir}_{itraj+1:03d}'
             if (os.path.exists(unixmd_dirs[itraj])):
