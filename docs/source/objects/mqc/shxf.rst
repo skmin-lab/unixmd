@@ -25,7 +25,7 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **molecule**               | Molecular object                                     |              |
 | (:class:`Molecule`)        |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **thermostat**             | Thermostat type                                      | *None*       |
+| **thermostat**             | Thermostat object                                    | *None*       |
 | (:class:`Thermostat`)      |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **istate**                 | Initial state                                        | *0*          |
@@ -180,7 +180,7 @@ Detailed description of the arguments
 
 - **coefficient** *(double/complex, list)* - Default: *None*
 
-  This argument defines the initial density matrix.
+  This argument defines the initial BO coefficients.
   The elements can be either real or complex values.
   If the argument is not given, the density matrix is initialized according to the initial running state.
 

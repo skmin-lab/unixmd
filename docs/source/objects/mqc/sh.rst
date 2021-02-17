@@ -38,7 +38,7 @@ trajectories will be transit to that state in stochastical behavior.
 | **molecule**               | Molecular object                                 |                |
 | (:class:`Molecule`)        |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
-| **thermostat**             | Thermostat type                                  | *None*         |
+| **thermostat**             | Thermostat object                                | *None*         |
 | (:class:`Thermostat`)      |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
 | **istate**                 | Initial state                                    | *0*            |
@@ -139,7 +139,7 @@ Detailed description of the arguments
 
 - **l_pop_print** *(boolean)* - Default: *False*
   
-  This argument determines whether write output files for density matrix elements (BOPOP, BOCOH) or not.
+  This argument determines whether to write output files for density matrix elements (BOPOP, BOCOH) or not.
   If this option is set to *True*, then the BOPOP and BOCOH files are written during the dynamics.
   This option is effective only if the argument **propagation** is set to *'coefficient'* or ignored otherwise.
 
@@ -158,7 +158,7 @@ Detailed description of the arguments
   
   + *'energy'*: Simply rescale the nuclear velocities.
   + *'momentum'*: Adjust the momentum in the direction of the NACV.
-  + *'augment'*: First, the hop is evaluated as the  *'momentum'*. 
+  + *'augment'*: First, the hop is evaluated as the *'momentum'*. 
     If the kinetic energy is not enough, then the hop is evaluated again as the *'energy'*. 
 
 \
@@ -174,7 +174,7 @@ Detailed description of the arguments
 
 - **coefficient** *(double/complex, list)* - Default: *None*
 
-  This argument defines the initial density matrix.
+  This argument defines the initial BO coefficients.
   The elements can be either real or complex values.
   If the argument is not given, the density matrix is initialized according to the initial running state.
 
@@ -182,7 +182,7 @@ Detailed description of the arguments
 
 - **deco_correction** *(string)* - Default: *None*
 
-  This argument determines the decoherence correction method.
+  This argument determines the simple decoherence correction method.
 
   + *'edc'*: Energy based decoherence correction (EDC) scheme of Granucci et al :cite:`Granucci2010`. 
   + *'idc'*: Instantaneous decoherence correction scheme
@@ -206,7 +206,7 @@ Detailed description of the arguments
 
 - **out_freq** *(integer)* - Default: *1*
   
-  PyUNIxMD prints and writes the dynamics information at every **out_freq** time steps.
+  PyUNIxMD prints and writes the dynamics information at every **out_freq** time step.
 
 \
 
