@@ -91,7 +91,7 @@ Detailed description of arguments
 
   + *'hf'*: Initial orbitals for (SA-)CASSCF method are generated from the HF calculation.
   + *'read'*: Reads 'mocoef' file generated from previous step as initial guess.
-    At t = 0.0 s, **guess_file** will be used as initial guess.
+    At first MD step, **guess_file** will be used as initial guess.
 
 \
 

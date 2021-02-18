@@ -18,7 +18,7 @@ MQC methods implemented in PyUNIxMD are listed in the following.
     *
 
 Far more insights about treating MQC in terms of code structure, the overall modules are controlled in fundamental
-input file *run.py*. When user select their dynamics method, they have to make md object from the subclass of
+input file 'run.py'. When user select their dynamics method, they have to make md object from the subclass of
 :class:`MQC` class such as :class:`SH` (:class:`mqc.SH`), and a run method (``md.run``) to run that md object. In the md object, basic dynamics
 parameters such as number of steps are given as arguments. Besides, the run method includes overall dynamics condition as arguments.
 
@@ -70,7 +70,7 @@ Detailed description of arguments
 
 - **input_dir** *(string)* - Default: *'./'*
 
-  This argument designates directory for dynamics output. All subdirectories (MD output, QM/MM logs) will be saved in this directory.
+  This argument designates directory for dynamics output. All subdirectories (MD output, QM/MM logs) will be saved under **input_dir**.
   If the subdirectories are already present, old subdirectories will be renamed with '_old' and new subdirectories will be made.
 
 \
