@@ -106,7 +106,7 @@ Detailed description of arguments
 - **qm_path** *(string)* - Default: *'./'*
 
   This argument designates path for QM binary file for the Turbomole.
-  The `$TURBOMOLE` environment variable determines the directory where Turbomole is installed, not the binary files itself.
+  The `$TURBOMOLE` environment variable determines the directory where Turbomole is installed, not the binary files themselves (For example, `$TURBOMOLE` is '/my_disk/my_name/TURBOMOLE').
   Thus, **qm_path** must be a *'`$TURBOMOLE`'*, not a *'`$TURBOMOLE`/define'*. 
 
 \
@@ -119,7 +119,7 @@ Detailed description of arguments
 
 - **version** *(string)* - Default: *'6.4'*
 
-  This argument determines version of Turbomole program. Our interface script is generated with 6.4 version of Turbomole program.
+  This argument determines version of Turbomole program. PyUNIxMD is currently based on 7.0 version of Turbomole program.
 
 \
 
