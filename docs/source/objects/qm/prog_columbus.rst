@@ -128,7 +128,7 @@ Detailed description of arguments
 
 - **cpscf_grad_tol** *(integer)* - Default: *6*
 
-  This arugment determines gradient convergence threshold for CP-CASSCF equations. Convergence threshold is :math:`10^{-\textbf{cpscf_grad_tol}}`.
+  This argument determines gradient convergence threshold for CP-CASSCF equations. Convergence threshold is :math:`10^{-\textbf{cpscf_grad_tol}}`.
 
 \
 

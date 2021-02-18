@@ -67,7 +67,7 @@ Detailed description of arguments
 
 - **basis_set** *(string)* - Default: *'SV(P)'*
 
-  This argument specifies basis sets used in Turbomole calculation.
+  This argument specifies a basis set used in Turbomole calculation.
   These arguments are same as the original arguments of Turbomole.
   It is recommended to check a Turbomole manual for the detailed list of **basis_set**.
 
