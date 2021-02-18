@@ -2,11 +2,9 @@
 Columbus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Columbus :cite:`Lischka2011` is one of open-source software for high-level *ab initio*
-quantum calculation. Similar with other softwares, it can do various types of fundamental quantum
-calculations. However, the major competitiveness of Columbus compared to other softwares is 
-mainly designed to compute multireference calculations on electonic ground and excited states.
-This feature is indeed well suited for dynamics in PyUNIxMD, it is implemented for various types of dynamics.
+Columbus :cite:`Lischka2011` is one of open-source software for high-level ab initio
+quantum calculation. It is designed primarily for extended multi-reference (MR) calculations
+on electronic ground and excited states of atoms and molecules.
 In the current version of PyUNIxMD, only (SA-)CASSCF method is available.
 
 - (SA-)CASSCF is state-averaged complete active space self-consistent field method. It provides analytical gradients as
@@ -75,7 +73,7 @@ Detailed description of arguments
 
 - **basis_set** *(string)* - Default: *'6-31g\*'*
 
-  This argument specifies basis sets used in Columbus calculation.
+  This argument specifies a basis set used in Columbus calculation.
   Not all basis sets are supported, so it is recommended to check a Columbus manual for the compatibility with PyUNIxMD.
   In PyUNIxMD, currently 10 basis sets are supported; {*'cc-pvdz'*, *'cc-pvtz'*, *'cc-pvqz'*, *'3-21g\*'*, *'3-21+g\*'*, *'6-31g'*, *'6-31g\*'*, *'6-31+g\*'*, *'6-311g\*'*, *'6-311+g\*'*}.
 
@@ -93,13 +91,13 @@ Detailed description of arguments
 
   + *'hf'*: Initial orbitals for (SA-)CASSCF method are generated from the HF calculation.
   + *'read'*: Reads 'mocoef' file generated from previous step as initial guess.
-    In t = 0.0 s, **guess_file** will be used as initial guess.
+    At t = 0.0 s, **guess_file** will be used as initial guess.
 
 \
 
 - **guess_file** *(string)* - Default: *'./mocoef'*
 
-  This argument designates initial molecular orbital file for (SA-)CASSCF method. It is valid when **guess** = 'read'.
+  This argument designates initial molecular orbital file for (SA-)CASSCF method. It is valid when **guess** = *'read'*.
   It will be used as initial guess for (SA-)CASSCF calculation in first MD step.
 
 \
@@ -155,8 +153,8 @@ Detailed description of arguments
 - **qm_path** *(string)* - Default: *'./'*
 
   This argument designates a path for QM binary files for the Columbus.
-  The `$COLUMBUS` environment variable determines the directory where Columbus is installed, not the binary files itself.
-  Thus, **qm_path** must be a *'`$COLUMBUS`/Columbus/'*, not a *'`$COLUMBUS`/Columbus/runc'*.
+  The `$COLUMBUS` environment variable determines the directory where Columbus is installed, not the binary files themselves (ex. `$COLUMBUS` = /opt/Columbus7.0/Columbus/).
+  Thus, **qm_path** must be a *'`$COLUMBUS`'*, not a *'`$COLUMBUS`/runc'*.
 
 \
 

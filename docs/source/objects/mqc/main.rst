@@ -4,7 +4,7 @@ MQC
 Mixed quantum-classical (MQC) dynamics is general method for explaining the variation of molecule including
 electronic state through time propagation. This can be exactly solved by time-dependent Schrodinger equation
 for all particles, but this solution requires enormous cost for numerical calculation so it is restricted for
-very small system. To overcome this limit, MQC tried to describe larger system by considering nuclear as classical 
+very small system. To overcome this limit, MQC tried to describe larger system by considering nuclei as classical 
 particle which follows classical equation of motion.
 
 PyUNIxMD mainly targeted on MQC, and whole dynamics implemented in current version of PyUNIxMD are subclass of
@@ -18,11 +18,11 @@ MQC methods implemented in PyUNIxMD are listed in the following.
     *
 
 Far more insights about treating MQC in terms of code structure, the overall modules are controlled in fundamental
-input file run.py. When user select their dynamics method, they have to make md object from the subclass of
+input file *run.py*. When user select their dynamics method, they have to make md object from the subclass of
 :class:`MQC` class such as :class:`SH` (:class:`mqc.SH`), and a run method (``md.run``) to run that md object. In the md object, basic dynamics
 parameters such as number of steps are given as arguments. Besides, the run method includes overall dynamics condition as arguments.
 
-Arguments for ``run`` method are listed below. The important point is that ``run`` method is included in each
+Arguments for run method are listed below. The important point is that run method is included in each
 md subclasses of :class:`MQC`, not :class:`MQC` itself.
 
 +-----------------------------+-------------------------------------------------+----------+
@@ -70,7 +70,7 @@ Detailed description of arguments
 
 - **input_dir** *(string)* - Default: *'./'*
 
-  This argument designates directory for dynamics output. All md output, saved log, ... etc will be saved in this directory.
+  This argument designates directory for dynamics output. All subdirectories (MD output, QM/MM logs) will be saved in this directory.
   If the subdirectories are already present, old subdirectories will be renamed with '_old' and new subdirectories will be made.
 
 \
@@ -84,7 +84,7 @@ Detailed description of arguments
 - **save_mm_log** *(boolean)* - Default: *False*
 
   This argument determines saving MM calculation logs. Logs will be saved in '**input_dir**/mm_log'.
-  If **MM** = *none*, this argument will be ignored.
+  If **MM** = *None*, this argument will be ignored.
 
 \
 
