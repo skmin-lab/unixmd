@@ -9,7 +9,7 @@ class BOMD(MQC):
     """ Class for born-oppenheimer molecular dynamics (BOMD)
 
         :param object molecule: Molecule object
-        :param object thermostat: Thermostat type
+        :param object thermostat: Thermostat object
         :param integer istate: Electronic state
         :param double dt: Time interval
         :param integer nsteps: Total step of nuclear propagation

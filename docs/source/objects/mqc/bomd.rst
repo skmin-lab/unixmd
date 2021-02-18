@@ -39,10 +39,10 @@ package or a customized Hamiltonian, and nuclear propagation is done by the Velo
 +------------------------+------------------------------------------------+------------+
 | Keywords               | Work                                           | Default    |
 +========================+================================================+============+
-| **molecule**           | Molecular object                               |            |
+| **molecule**           | Molecule object                                |            |
 | (:class:`Molecule`)    |                                                |            |
 +------------------------+------------------------------------------------+------------+
-| **thermostat**         | Thermostat type                                | *None*     |
+| **thermostat**         | Thermostat object                              | *None*     |
 | (:class:`Thermostat`)  |                                                |            |
 +------------------------+------------------------------------------------+------------+
 | **istate**             | Electronic state                               | *0*        |
@@ -70,7 +70,7 @@ Detailed description of the arguments
 
 - **istate** *(integer)* - Default: *0* (Ground state)
   
-  This argument specifies the initial running state. The possible range of the argument is from *0* to ``molecule.nstate-1``.
+  This argument specifies the adiabatic state which provides the potential energy surface nuclei follow. The possible range of the argument is from *0* to ``molecule.nstate-1``.
    
 \
 

@@ -5,9 +5,9 @@ class Gaussian09(QM_calculator):
     """ Class for common parts of Gaussian09 program
 
         :param string basis_set: Basis set information
-        :param string memory: Allocatable memory in the calculations
+        :param string memory: Allocatable memory
         :param integer nthreads: Number of threads in the calculations
-        :param string g09_root_path: Path for Gaussian09 root
+        :param string g09_root_path: Path for Gaussian 09 root
         :param string version: Version of Gaussian09 program
     """
     def __init__(self, basis_set, memory, nthreads, g09_root_path, version):

@@ -9,10 +9,10 @@ class DFT(Gaussian09):
     """ Class for the (TD)DFT method of Gaussian09 program
 
         :param object molecule: Molecule object
-        :param string functional: The level of DFT theory
+        :param string functional: Exchange-correlation functional information
         :param string basis_set: Basis set information
         :param string memory: Allocatable memory
-        :param string guess: Initial guess type for SCF iterations
+        :param string guess: Initial guess for SCF iterations
         :param string guess_file: Initial guess file
         :param string g09_root_path: Path for Gaussian 09 root
         :param integer nthreads: Number of threads in the calculations
@@ -21,7 +21,7 @@ class DFT(Gaussian09):
     def __init__(self, molecule, nthreads=1, memory="1gb", \
         functional="BLYP", basis_set="STO-3G", \
         guess="Harris", guess_file="./g09.chk", \
-        g09_root_path="/opt/gaussian/", version="Revision A.02"):
+        g09_root_path="./", version="Revision A.02"):
         # Initialize Gaussian09 common variables
         super(DFT, self).__init__(basis_set, memory, nthreads, g09_root_path, version)
 
