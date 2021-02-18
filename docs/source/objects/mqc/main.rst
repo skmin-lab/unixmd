@@ -22,8 +22,8 @@ input file 'run.py'. When users select their dynamics method, they have to make 
 :class:`MQC` class such as :class:`SH` (:class:`mqc.SH`), and a run method (``md.run``) to run that md object. In the md object, basic dynamics
 parameters such as number of steps are given as arguments. Besides, the run method includes overall dynamics condition as arguments.
 
-Arguments for run method are listed below. The important point is that run method is included in each singular
-md subclasses of :class:`MQC`, not :class:`MQC` itself.
+Arguments for run method are listed below. The important point is that run method is included in each
+md subclass of :class:`MQC`, not :class:`MQC` itself.
 
 +-----------------------------+-------------------------------------------------+----------+
 | Keywords                    | Work                                            | Default  |
