@@ -291,7 +291,7 @@ class MQC(object):
     def touch_file(self, unixmd_dir):
         """ Routine to write PyUNIxMD output files
 
-            :param string unixmd_dir: PyUNIxMD directory
+            :param string unixmd_dir: Directory where MD output files written
         """
         # Energy information file header
         tmp = f'{"#":5s}{"Step":9s}{"Kinetic(H)":15s}{"Potential(H)":15s}{"Total(H)":15s}' + \
@@ -336,7 +336,7 @@ class MQC(object):
     def write_md_output(self, unixmd_dir, istep):
         """ Write output files
 
-            :param string unixmd_dir: PyUNIxMD directory
+            :param string unixmd_dir: Directory where MD output files written
             :param integer istep: Current MD step
         """
         # Write MOVIE.xyz file including positions and velocities
@@ -387,7 +387,7 @@ class MQC(object):
     def write_final_xyz(self, unixmd_dir, istep):
         """ Write final positions and velocities
 
-            :param string unixmd_dir: PyUNIxMD directory
+            :param string unixmd_dir: Directory where MD output files written
             :param integer istep: Current MD step
         """
         # Write FINAL.xyz file including positions and velocities
