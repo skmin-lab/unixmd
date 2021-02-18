@@ -22,7 +22,7 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 +----------------------------+------------------------------------------------------+--------------+
 | Keywords (type)            | Work                                                 | Default      |
 +============================+======================================================+==============+
-| **molecule**               | Molecular object                                     |              |
+| **molecule**               | Molecule object                                      |              |
 | (:class:`Molecule`)        |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **thermostat**             | Thermostat object                                    | *None*       |
@@ -129,8 +129,8 @@ Detailed description of the arguments
 
 - **l_pop_print** *(boolean)* - Default: *False*
   
-  This argument determines whether write output files for density matrix elements (BOPOP, BOCOH) or not.
-  If this option is set to *True*, then the BOPOP and BOCOH files are written during the dynamics.
+  This argument determines whether to write output files for density matrix elements ('BOPOP', 'BOCOH') or not.
+  If this option is set to *True*, then the 'BOPOP' and 'BOCOH' files are written during the dynamics.
   This option is effective only if the argument **propagation** is set to *'coefficient'* or ignored otherwise.
 
 \
@@ -148,7 +148,7 @@ Detailed description of the arguments
   
   + *'energy'*: Simply rescale the nuclear velocities.
   + *'momentum'*: Adjust the momentum in the direction of the NACV.
-  + *'augment'*: First, the hop is evaluated as the  *'momentum'*. 
+  + *'augment'*: First, the hop is evaluated as the *'momentum'*. 
     If the kinetic energy is not enough, then the hop is evaluated again as the *'energy'*. 
 
 \
@@ -182,7 +182,7 @@ Detailed description of the arguments
 
   This argument defines the initial BO coefficients.
   The elements can be either real or complex values.
-  If the argument is not given, the density matrix is initialized according to the initial running state.
+  If the argument is not given, the BO coefficients and density matrix are initialized according to the initial running state.
 
 \
 
@@ -204,7 +204,7 @@ Detailed description of the arguments
 
 - **out_freq** *(integer)* - Default: *1*
   
-  PyUNIxMD prints and writes the dynamics information at every **out_freq** time steps.
+  PyUNIxMD prints and writes the dynamics information at every **out_freq** time step.
 
 \
 
@@ -213,5 +213,5 @@ Detailed description of the arguments
   This argument determines the verbosity of the output files and stream.
 
   + **verbosity** :math:`\geq` *1*: Prints potential energy of all BO states.
-  + **verbosity** :math:`\geq` *2*: Prints accumulated hopping probabilities and writes the NACVs (NACV\_\ :math:`i`\_\ :math:`j`), qauntum momentum (QMOM), 
-    phase terms (AUX_PHASE\_\ :math:`i`), and atomic postions and velocities of the auxiliary trajectories (AUX_MOVIE\_\ :math:`i`.xyz) where :math:`i` and :math:`j` represent BO states.
+  + **verbosity** :math:`\geq` *2*: Prints accumulated hopping probabilities and writes the NACVs ('NACV\_\ :math:`i`\_\ :math:`j`'), qauntum momentum (QMOM), 
+    phase terms ('AUX_PHASE\_\ :math:`i`'), and atomic postions and velocities of the auxiliary trajectories ('AUX_MOVIE\_\ :math:`i`.xyz') where :math:`i` and :math:`j` represent BO states.

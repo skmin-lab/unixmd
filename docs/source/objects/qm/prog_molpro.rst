@@ -8,7 +8,7 @@ programs for standard computational chemistry applications, such as DFT or many 
 methods. Among them, the state-averaged complete active space self consistent field (SA-CASSCF) method is interfaced to the current version of PyUNIxMD.
 
 - (SA-)CASSCF is the most famous multi-configurational SCF (MCSCF) method.
-  Since Molpro supports calculations of analytical gradients of (SA-)CASSCF states as well as nonadiabatic coupling vectors (NACVs) among them with coupled-perturbed multi-configurational self-consistent field (CP-MCSCF) equations, excited state molecular dynamics simulations are possible.
+  Since Molpro supports calculations of analytical gradients of (SA-)CASSCF states as well as nonadiabatic coupling vectors (NACVs) among them with coupled-perturbed CASSCF (CP-CASSCF) equations, excited state molecular dynamics simulations are possible.
 
 +-------------+------+--------+----+-----+
 |             | BOMD | SH(XF) | Eh | nac |
@@ -22,7 +22,7 @@ methods. Among them, the state-averaged complete active space self consistent fi
 +----------------------+----------------------------------------------------------------+----------------+
 | Keywords             | Work                                                           | Default        |
 +======================+================================================================+================+
-| **molecule**         | Molecular object                                               |                |  
+| **molecule**         | Molecule object                                                |                |  
 | (:class:`Molecule`)  |                                                                |                |
 +----------------------+----------------------------------------------------------------+----------------+
 | **basis_set**        | Basis set information                                          | *'sto-3g'*     |
@@ -64,7 +64,7 @@ methods. Among them, the state-averaged complete active space self consistent fi
 | **active_orb**       | Number of orbitals in active space                             | *2*            |
 | *(integer)*          |                                                                |                |
 +----------------------+----------------------------------------------------------------+----------------+
-| **cpscf_grad_tol**   | Gradient convergence threshold for CP-MCSCF equations          | *1E-7*         |
+| **cpscf_grad_tol**   | Gradient convergence threshold for CP-CASSCF equations         | *1E-7*         |
 | *(double)*           |                                                                |                |
 +----------------------+----------------------------------------------------------------+----------------+
 | **qm_path**          | Path for QM binary                                             | *'./'*         |

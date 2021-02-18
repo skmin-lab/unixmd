@@ -35,7 +35,7 @@ trajectories will be transit to that state in stochastical behavior.
 +----------------------------+--------------------------------------------------+----------------+
 | Keywords                   | Work                                             | Default        |
 +============================+==================================================+================+
-| **molecule**               | Molecular object                                 |                |
+| **molecule**               | Molecule object                                  |                |
 | (:class:`Molecule`)        |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
 | **thermostat**             | Thermostat object                                | *None*         |
@@ -139,8 +139,8 @@ Detailed description of the arguments
 
 - **l_pop_print** *(boolean)* - Default: *False*
   
-  This argument determines whether to write output files for density matrix elements (BOPOP, BOCOH) or not.
-  If this option is set to *True*, then the BOPOP and BOCOH files are written during the dynamics.
+  This argument determines whether to write output files for density matrix elements ('BOPOP', 'BOCOH') or not.
+  If this option is set to *True*, then the 'BOPOP' and 'BOCOH' files are written during the dynamics.
   This option is effective only if the argument **propagation** is set to *'coefficient'* or ignored otherwise.
 
 \
@@ -176,7 +176,7 @@ Detailed description of the arguments
 
   This argument defines the initial BO coefficients.
   The elements can be either real or complex values.
-  If the argument is not given, the density matrix is initialized according to the initial running state.
+  If the argument is not given, the BO coefficients and density matrix are initialized according to the initial running state.
 
 \
 
@@ -215,4 +215,4 @@ Detailed description of the arguments
   This argument determines the verbosity of the output files and stream.
 
   + **verbosity** :math:`\geq` *1*: Prints potential energy of all BO states.
-  + **verbosity** :math:`\geq` *2*: Prints accumulated hopping probabilities and writes the NACVs (NACV\_\ :math:`i`\_\ :math:`j`).
+  + **verbosity** :math:`\geq` *2*: Prints accumulated hopping probabilities and writes the NACVs ('NACV\_\ :math:`i`\_\ :math:`j`').
