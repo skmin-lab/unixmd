@@ -9,9 +9,9 @@ class DFT(QChem):
 
         :param object molecule: Molecule object
         :param string basis_set: Basis set information
-        :param integer memory: Allocatable memory in the calculations
+        :param integer memory: Allocatable memory in the calculation
         :param integer nthreads: Number of threads in the calculation
-        :param string functional: XC functional 
+        :param string functional: Exchange-correlation functional 
         :param integer scf_max_iter: Maximum number of SCF iterations
         :param integer scf_rho_tol: Density convergence for SCF iterations
         :param integer cis_max_iter: Maximum number of CIS iterations
@@ -22,7 +22,7 @@ class DFT(QChem):
         :param string version: Q-Chem version
     """
     def __init__(self, molecule, basis_set="sto-3g", memory=2000, nthreads=1, \
-        functional="blyp", scf_max_iter=50, scf_rho_tol=5, cis_max_iter=30, cis_en_tol=6, \
+        functional="blyp", scf_max_iter=50, scf_rho_tol=8, cis_max_iter=30, cis_en_tol=6, \
         cpscf_max_iter=30, cpscf_grad_tol=6, qm_path="./", version="5.2"):
         # Initialize Q-Chem common variables
         super(DFT, self).__init__(basis_set, memory, qm_path, nthreads, version)
@@ -43,12 +43,12 @@ class DFT(QChem):
     def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from (TD)DFT method
 
-            :param object molecule: molecule object
-            :param string base_dir: base directory
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param double dt: time interval
-            :param integer istep: current MD step
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param string base_dir: Base directory
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param double dt: Time interval
+            :param integer istep: Current MD step
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         super().get_data(base_dir, calc_force_only)
         self.write_xyz(molecule)

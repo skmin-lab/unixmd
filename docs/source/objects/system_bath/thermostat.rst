@@ -33,7 +33,7 @@ Detailed description of arguments
 
 - **temperature** *(double)* - Default: *300.0*
 
-  This argument specifies the target temperature in unit of K.
+  This argument specifies the target temperature. The unit is K.
 
 \
 
@@ -44,9 +44,8 @@ Detailed description of arguments
 
 Rescale2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-:class:`Rescale2` thermostat rescales the velocities when the difference between the current temperature
-at a specific time step and the target temperature is beyond a specified threshold.
-The target temperature and the temperature difference threshold can be specified.
+:class:`Rescale2` thermostat rescales the velocities when the difference between current temperature and the target temperature is 
+beyond a specified threshold. The temperature difference threshold can be specified.
 
 +------------------+----------------------------------------------------+-----------+
 | Keywords         | Work                                               | Default   |
@@ -117,7 +116,7 @@ Detailed description of arguments
 - **coupling_strength** *(double)* - Default: *None*
 
   Dimensionless coupling strength, **coupling_strength**, for the thermostat is given by :math:`\frac{dt}{\tau}`, 
-  where :math:`dt` is the MD step :math:`\tau` is **coupling_parameter**.
+  where :math:`dt` is time interval of dynamics and :math:`\tau` is **coupling_parameter**.
   Either **coupling_parameter** or **coupling_strength** should be set and only **coupling_parameter** or **coupling_strength** can be set.
 
 NHC
@@ -130,14 +129,14 @@ NHC
 | **temperature**        | Target temperature (K) of the thermostat           | *300.0*   |
 | *(double)*             |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
-| **coupling_strength**  | The coupling strength (cm\ :sup:`-1`\) for the     | *None*    |
+| **coupling_strength**  | Coupling strength (cm\ :sup:`-1`\) for the         | *None*    |
 | *(double)*             | thermostat                                         |           |
 +------------------------+----------------------------------------------------+-----------+
-| **time_scale**         | The coupling time scale (fs)                       | *None*    |
+| **time_scale**         | Coupling time scale (fs)                           | *None*    |
 | *(double)*             |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
-| **chain_length**       | The number of imaginary particles in the thermostat| *3*       |
-| *(integer)*            | chain                                              |           |
+| **chain_length**       | The number of particles in the NHC                 | *3*       |
+| *(integer)*            |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
 | **order**              | The order of the evolution operator                | *3*       |
 | *(integer)*            |                                                    |           |

@@ -6,9 +6,9 @@ class QChem(QM_calculator):
     """ Class for common parts of Q-Chem program
 
         :param string basis_set: Basis set information
-        :param string memory: Allocatable memory in the calculations
+        :param string memory: Allocatable memory in the calculation
         :param string qm_path: Path for Q-Chem
-        :param integer nthreads: Number of threads in the calculations
+        :param integer nthreads: Number of threads in the calculation
         :param string version: Version of Q-Chem program
     """
     def __init__(self, basis_set, memory, qm_path, nthreads, version):

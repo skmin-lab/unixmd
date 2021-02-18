@@ -18,25 +18,25 @@ Q-Chem :cite:`qchem2015` is a comprehensive ab initio quantum chemistry software
 +-----------------------+------------------------------------------------+--------------+
 | Keywords              | Work                                           | Default      |
 +=======================+================================================+==============+
-| **molecule**          | Molecular object                               |              |  
+| **molecule**          | Molecule object                                |              |  
 | (:class:`Molecule`)   |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
 | **basis_set**         | Basis set information                          | *'sto-3g'*   |
 | *(string)*            |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **memory**            | Allocatable memory in the calculations         | *'2000'*     |
+| **memory**            | Allocatable memory in the calculation          | *'2000'*     |
 | *(integer)*           |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
 | **nthreads**          | Number of threads in the calculation           | *1*          |
 | *(integer)*           |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **functional**        | XC functional                                  | *'blyp'*     |
+| **functional**        | Exchange-correlation functional                | *'blyp'*     |
 | *(string)*            |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
 | **scf_max_iter**      | Maximum number of SCF iterations               | *50*         |
 | *(integer)*           |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **scf_rho_tol**       | Density convergence for SCF iterations         | *6*          |
+| **scf_rho_tol**       | Density convergence for SCF iterations         | *8*          |
 | *(integer)*           |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
 | **cis_max_iter**      | Maximum number of CIS iterations               | *30*         |
@@ -63,75 +63,78 @@ Detailed description of arguments
 
 - **basis_set** *(string)* - Default: *'sto-3g'*
 
-  Sets the basis set to be used.
-  These arguments are same with the original arguments in used in Q-Chem.
-  If you want to know the detailed list for basis sets, see the manual of the Q-Chem program.
+
+  This argument specifies a basis set to be used in calculation.
+  If you want to know the detailed list for basis sets, see the manual of the Q-Chem.
 
 \
 
 - **memory** *(integer)* - Default : *2000*
 
-  The available total memory in unit of MB.
+  This argument determines how much memory will be allocated in calculation. The unit is MB.
 
 \
 
 - **nthreads** *(integer)* - Default : *1*
 
-  Number of threads in the calculation
+  This argument specifies number of threads in calculation.
 
 \
 
 - **functional** *(string)* - Default : *'blyp'*
 
-  The exchange-correlation functional to be used.
-  These arguments are same with the original arguments in used in Q-Chem.
-  If you want to know the detailed list for basis sets, see the manual of the Q-Chem program.
+  This argument specifies exchange-correlation functional to be used in calculation.
+  If you want to know the detailed list for exchane-correlation functional, see the manual of the Q-Chem.
 
 \
 
 - **scf_max_iter** *(integer)* - Default : *50*
 
-  Maximum number of iteration for SCF
+  This argument determines maximum number of SCF iterations.
 
 \
 
-- **scf_rho_tol** *(integer)* - Default : *6*
+- **scf_rho_tol** *(integer)* - Default : *8*
 
-  SCF is considered converged when the wave function error is less that :math:`10^{-\textbf{scf_rho_tol}}`
+  This argument determines density threshold for SCF convergence.
+  The density threshold is :math:`10^{-\textbf{scf_rho_tol}}`.
 
 \
 
 - **cis_max_iter** *(integer)* - Default : *30*
 
-  Maximum number of iteration for CIS
+  This argument determines maximum number of CIS iterations.
 
 \
 
 - **cis_en_tol** *(integer)* - Default : *6*
 
-  CIS is considered converged when error is less that :math:`10^{-\textbf{cis_en_tol}}`
+  This argument determines energy convergence threshold for CIS iterations.
+  The convergence threshold is :math:`10^{-\textbf{cis_en_tol}}`.
 
 \
 
 - **cpscf_max_iter** *(integer)* - Default : *30*
 
-  Maximum number of iteration for CPSCF
+  This argument determines maximum number of CPSCF iterations.
 
 \
 
 - **cpscf_grad_tol** *(integer)* - Default : *6*
 
-  CPSCF is considered converged when gradient error is less that :math:`10^{-\textbf{cpscf_grad_tol}}`
+  This arugment determines gradient convergence threshold for CP-CASSCF equations. 
+  The convergence threshold is :math:`10^{-\textbf{cpscf_grad_tol}}`.
 
 \
 
 - **qm_path** *(string)* - Default : *'./'*
 
-  Path for Q-Chem install directory. The environment varialbes for Q-Chem are assigned by executing 'qcenv.sh' in Q-Chem install directory.
-  Hence, You must set **qm_path** to *'/opt/qchem'* not *'/opt/qchem/bin'*
+  This argument designates a path for Q-Chem install directory. 
+  To execute Q-Chem binary file, the environment varialbes for Q-Chem are assigned by executing 'qcenv.sh' in Q-Chem install directory.
+  Hence, You must set **qm_path** to *'/my_disk/my_name/qchem'* not *'/my_disk/my_name/qchem/bin'*.
 
 \
 
 - **version** *(string)* - Default : *'5.2'*
 
-  Version of Q-Chem
+  This argument determines version of Q-Chem. PyUNIxMD is currently based on 5.2 version.

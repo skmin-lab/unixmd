@@ -10,11 +10,11 @@ class Eh(MQC):
     """ Class for Ehrenfest dynamics
 
         :param object molecule: Molecule object
-        :param object thermostat: Thermostat type
-        :param integer istate: Initial adiabatic state
+        :param object thermostat: Thermostat object
+        :param integer istate: Initial state
         :param double dt: Time interval
-        :param integer nsteps: Nuclear step
-        :param integer nesteps: Electronic step
+        :param integer nsteps: Total step of nuclear propation
+        :param integer nesteps: Total step of electronic propagation
         :param string propagation: Propagation scheme
         :param string solver: Propagation solver
         :param boolean l_pop_print: Logical to print BO population and coherence
@@ -178,7 +178,7 @@ class Eh(MQC):
     def print_step(self, istep):
         """ Routine to print each steps infomation about dynamics
 
-            :param integer istep: current MD step
+            :param integer istep: Current MD step
         """
         ctemp = self.mol.ekin * 2. / float(self.mol.dof) * au_to_K
         norm = 0.

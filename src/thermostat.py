@@ -20,8 +20,8 @@ class Thermostat(object):
 class Rescale1(Thermostat):
     """ Rescale the velocities in a given period
 
-        :param double temperature: The temperature (K) set in the NVT ensemble
-        :param integer nrescale: Period for rescaling step
+        :param double temperature: Target temperature (K) of the thermostat
+        :param integer nrescale: The number of MD steps between rescalings
     """
     def __init__(self, temperature=300., nrescale=20):
         # Initialize input values
@@ -67,8 +67,8 @@ class Rescale1(Thermostat):
 class Rescale2(Thermostat):
     """ Rescale the velocities when the temerature is out of a given range
 
-        :param double temperature: The temperature (K) set in the NVT ensemble
-        :param double dtemperature: The trigger temperature difference (K)
+        :param double temperature: Target temperature (K) of the thermostat
+        :param double dtemperature: Threshold temperature difference (K)
     """
     def __init__(self, temperature=300., dtemperature=100.):
         # Initialize input values
@@ -110,9 +110,9 @@ class Rescale2(Thermostat):
 class Berendsen(Thermostat):
     """ Rescale the velocities by Berendsen thermostat
         
-        :param double temperature: The temperature (K) set in the NVT ensemble
-        :param double coupling_parameter: The coupling parameter
-        :param double coupling_strength: The coupling strength
+        :param double temperature: Target temperature (K) of the thermostat
+        :param double coupling_parameter: The characteristic tims to damp temperature toward target temperature.
+        :param double coupling_strength: Dimensionless coupling strength for the thermostat
     """
     def __init__(self, temperature=300., coupling_parameter=None, coupling_strength=None):
         # Initialize input values
@@ -171,12 +171,12 @@ class Berendsen(Thermostat):
 class NHC(Thermostat):
     """ Rescale the velocities by Nose-Hoover chain thermostat
         
-        :param double temperature: The temperature (K) set in the NVT ensemble
-        :param double coupling_strength: The coupling strength
-        :param double time_scale: The coupling time scale
-        :param integer chain_length: The number of particles in the thermostat chain
-        :param integer order: The order in the thermostat chain
-        :param integer nsteps: The total propagation step
+        :param double temperature: Target temperature (K) of the thermostat
+        :param double coupling_strength: Coupling strength
+        :param double time_scale: Coupling time scale
+        :param integer chain_length: The number of particles in the NHC chain
+        :param integer order: The order of evolution operator
+        :param integer nsteps: NHC propagation step
     """
     def __init__(self, temperature=300., coupling_strength=None, time_scale=None, chain_length=3, order=3, nsteps=1):
         # Initialize input values

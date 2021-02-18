@@ -20,10 +20,10 @@ where :math:`d_{ij}` is nonadiabatic couping between :math:`i`-th and :math:`j`-
 +----------------------------+------------------------------------------------+-------------+
 | Keywords                   | Work                                           | Default     |
 +============================+================================================+=============+
-| **molecule**               | Molecular object                               |             |
+| **molecule**               | Molecule object                                |             |
 | (:class:`Molecule`)        |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **thermostat**             | Thermostat type                                | *None*      |
+| **thermostat**             | Thermostat object                              | *None*      |
 | (:class:`Thermostat`)      |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
 | **istate**                 | Initial state                                  | *0*         |
@@ -86,7 +86,7 @@ Detailed description of arguments
 
 - **nesteps** *(integer)* - Default: *20*
 
-  Number of electronic time steps between one nuclear time step for the integration of the electronic equation of motion.
+  This argument determines the number of electronic time steps between one nuclear time step for the integration of the electronic equation of motion.
   The electronic equation of motion is more sensitive to the time interval than the nuclear equation of motion since the electrons are much lighter than the nuclei.
   Therefore, the nuclear time step is further divided and electronic equation of motion is integrated with smaller time step.
 
@@ -103,16 +103,16 @@ Detailed description of arguments
 
 - **solver** *(string)* - Default: *'rk4'*
 
-  Numerical integration method for the electronic equation of motion.
-  Currently, only the RK4 algorithm {*'rk4'*} is available.
+  This argument determines the numerical integration method for the electronic equation of motion.
+  Currently, only the RK4 algorithm (*'rk4'*) is available.
 
 \
 
 - **l_pop_print** *(boolean)* - Default: *False*
 
-  Determine whether write output files for density matrix elements (BOPOP, BOCOH) or not.
-  If this option is set to *True*, then the BOPOP and BOCOH files are written during the dynamics.
-  This option is effective only if the argument **propagation** is set to *'coefficient'* or ignored otherwise.
+  This argument determines whether to write output files for density matrix elements (BOPOP, BOCOH) or not.
+  If this option is set to *True*, then the 'BOPOP' and 'BOCOH' files are written during the dynamics.
+  This option is effective only if the argument **propagation** is set to *'coefficient'* or ignored otherwise
 
 \
 
@@ -124,10 +124,9 @@ Detailed description of arguments
 
 - **coefficient** *(double/complex, list)* - Default: *None*
 
-  Defines the initial density matrix.
+  This argument defines the initial BO coefficients.
   The elements can be either real or complex values.
   If the argument is not given, the density matrix is initialized according to **istate**.
-
 \
 
 - **unit_dt** *(string)* - Default: *'fs'*
@@ -147,6 +146,6 @@ Detailed description of arguments
 
 - **verbosity** *(integer)* - Default: *0*
 
-  Determines the verbosity of the output files and stream.  
+  This argument determines the verbosity of the output files and stream.  
 
   + **verbosity** :math:`\geq` *2*: Writes the NACVs (NACV\_\ :math:`i`\_\ :math:`j`).
