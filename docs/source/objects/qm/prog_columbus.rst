@@ -104,7 +104,7 @@ Detailed description of arguments
 
 - **scf_en_tol** *(integer)* - Default: *9*
 
-  This argument determines energy convergence threshold for SCF iterations. Convergence threshold is :math:`10^{-\textbf{scf_en_tol}}`.
+  SCF is considered converged when the energy error is less than :math:`10^{-\textbf{scf_en_tol}}`.
 
 \
 
@@ -116,7 +116,7 @@ Detailed description of arguments
 
 - **mcscf_en_tol** *(integer)* - Default: *8*
 
-  This argument determines energy convergence threshold for (SA-)CASSCF iterations. Convergence threshold is :math:`10^{-\textbf{mcscf_en_tol}}`.
+  (SA-)CASSCF is considered converged when the energy error is less than :math:`10^{-\textbf{scf_en_tol}}`.
 
 \
 
@@ -128,7 +128,7 @@ Detailed description of arguments
 
 - **cpscf_grad_tol** *(integer)* - Default: *6*
 
-  This argument determines gradient convergence threshold for CP-CASSCF equations. Convergence threshold is :math:`10^{-\textbf{cpscf_grad_tol}}`.
+  CP-CASSCF is considered converged when the gradient error is less than :math:`10^{-\textbf{scf_en_tol}}`.
 
 \
 

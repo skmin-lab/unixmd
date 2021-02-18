@@ -87,7 +87,7 @@ Detailed description of arguments
 
 - **scf_en_tol** *(integer)* - Default: *6*
 
-  This argument determines energy convergence threshold for SCF iterations. Convergence threshold is :math:`10^{-\textbf{scf_en_tol}}`.
+  SCF is considered converged when the energy error is less than :math:`10^{-\textbf{scf_en_tol}}`.
 
 \
 
@@ -99,7 +99,7 @@ Detailed description of arguments
 
 - **cis_en_tol** *(integer)* - Default: *6*
 
-  This argument determines energy convergence threshold for CIS iterations. Convergence threshold is :math:`10^{-\textbf{scf_en_tol}}`.
+  CIS is considered converged when the energy error is less than :math:`10^{-\textbf{scf_en_tol}}`.
 
 \
 
