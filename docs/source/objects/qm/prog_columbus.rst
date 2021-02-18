@@ -153,7 +153,7 @@ Detailed description of arguments
 - **qm_path** *(string)* - Default: *'./'*
 
   This argument designates a path for QM binary files for the Columbus.
-  The `$COLUMBUS` environment variable determines the directory where Columbus is installed, not the binary files themselves (ex. `$COLUMBUS` = /opt/Columbus7.0/Columbus/).
+  The `$COLUMBUS` environment variable determines the directory where Columbus is installed, not the binary files themselves (ex. `$COLUMBUS` = '/opt/Columbus7.0/Columbus/').
   Thus, **qm_path** must be a *'`$COLUMBUS`'*, not a *'`$COLUMBUS`/runc'*.
 
 \
