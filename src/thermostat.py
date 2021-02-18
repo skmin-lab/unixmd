@@ -7,7 +7,7 @@ import numpy as np
 class Thermostat(object):
     """ Object class for a thermostat. The type of given thermostat is classified by its subclasses.
 
-        :param double temperature: Temperature (K) set in the NVT ensemble
+        :param double temperature: Target temperature (K) of the thermostat
     """
     def __init__(self, temperature):
         # Save name of thermostat type
