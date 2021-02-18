@@ -96,8 +96,7 @@ Detailed description of arguments
 
 - **scf_rho_tol** *(integer)* - Default : *8*
 
-  This argument determines density threshold for SCF convergence.
-  The density threshold is :math:`10^{-\textbf{scf_rho_tol}}`.
+  SCF is considered converged when the density error is less than :math:`10^{-\textbf{scf_rho_tol}}`.
 
 \
 
@@ -109,8 +108,7 @@ Detailed description of arguments
 
 - **cis_en_tol** *(integer)* - Default : *6*
 
-  This argument determines energy convergence threshold for CIS iterations.
-  The convergence threshold is :math:`10^{-\textbf{cis_en_tol}}`.
+  CIS is considered converged when the energy error is less than :math:`10^{-\textbf{cis_en_tol}}`.
 
 \
 
@@ -122,8 +120,7 @@ Detailed description of arguments
 
 - **cpscf_grad_tol** *(integer)* - Default : *6*
 
-  This arugment determines gradient convergence threshold for CP-CASSCF equations. 
-  The convergence threshold is :math:`10^{-\textbf{cpscf_grad_tol}}`.
+  CPSCF is considered converged when the gradient error is less than :math:`10^{-\textbf{cpscf_grad_tol}}`.
 
 \
 
