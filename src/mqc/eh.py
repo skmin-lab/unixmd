@@ -9,21 +9,21 @@ import pickle
 class Eh(MQC):
     """ Class for Ehrenfest dynamics
 
-        :param object molecule: molecule object
-        :param object thermostat: thermostat type
-        :param integer istate: initial adiabatic state
-        :param double dt: time interval
-        :param integer nsteps: nuclear step
-        :param integer nesteps: electronic step
-        :param string propagation: propagation scheme
-        :param string solver: propagation solver
-        :param boolean l_pop_print: logical to print BO population and coherence
-        :param boolean l_adjnac: logical to adjust nonadiabatic coupling
-        :param coefficient: initial BO coefficient
-        :type coefficient: double, list or complex, list
-        :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
-        :param integer out_freq: frequency of printing output
-        :param integer verbosity: verbosity of output
+        :param object molecule: Molecule object
+        :param object thermostat: Thermostat object
+        :param integer istate: Initial state
+        :param double dt: Time interval
+        :param integer nsteps: Total step of nuclear propation
+        :param integer nesteps: Total step of electronic propagation
+        :param string propagation: Propagation scheme
+        :param string solver: Propagation solver
+        :param boolean l_pop_print: Logical to print BO population and coherence
+        :param boolean l_adjnac: Logical to adjust nonadiabatic coupling
+        :param coefficient: Initial BO coefficient
+        :type coefficient: Double, list or complex, list
+        :param string unit_dt: Unit of time step (fs = femtosecond, au = atomic unit)
+        :param integer out_freq: Frequency of printing output
+        :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
@@ -35,13 +35,13 @@ class Eh(MQC):
     def run(self, qm, mm=None, input_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         """ Run MQC dynamics according to Ehrenfest dynamics
 
-            :param object qm: qm object containing on-the-fly calculation infomation
-            :param object mm: mm object containing MM calculation infomation
-            :param string input_dir: location of input directory
-            :param boolean save_qm_log: logical for saving QM calculation log
-            :param boolean save_mm_log: logical for saving MM calculation log
-            :param boolean save_scr: logical for saving scratch directory
-            :param string restart: option for controlling dynamics restarting
+            :param object qm: QM object containing on-the-fly calculation infomation
+            :param object mm: MM object containing MM calculation infomation
+            :param string input_dir: Location of input directory
+            :param boolean save_qm_log: Logical for saving QM calculation log
+            :param boolean save_mm_log: Logical for saving MM calculation log
+            :param boolean save_scr: Logical for saving scratch directory
+            :param string restart: Option for controlling dynamics restarting
         """
         # Initialize UNI-xMD
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
@@ -148,8 +148,8 @@ class Eh(MQC):
     def print_init(self, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
-            :param object qm: qm object containing on-the-fly calculation infomation
-            :param object mm: mm object containing MM calculation infomation
+            :param object qm: QM object containing on-the-fly calculation infomation
+            :param object mm: MM object containing MM calculation infomation
         """
         # Print initial information about molecule, qm, mm and thermostat
         super().print_init(qm, mm, restart)
@@ -178,7 +178,7 @@ class Eh(MQC):
     def print_step(self, istep):
         """ Routine to print each steps infomation about dynamics
 
-            :param integer istep: current MD step
+            :param integer istep: Current MD step
         """
         ctemp = self.mol.ekin * 2. / float(self.mol.dof) * au_to_K
         norm = 0.
