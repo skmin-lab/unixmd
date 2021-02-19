@@ -36,7 +36,7 @@ determined from the **state_interactions** argument.
 +-------------------------+---------------------------------------------+-------------+
 | Keywords                | Work                                        | Default     |
 +=========================+=============================================+=============+
-| **molecule**            | Molecular object                            |             |  
+| **molecule**            | Molecule object                             |             |  
 | (:class:`Molecule`)     |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
 | **basis_set**           | Basis set information                       | *'sto-3g'*  |
@@ -99,125 +99,130 @@ Detailed description of arguments
 
 - **basis_set** *(string)* - Default: *'sto-3g'*
 
-  Basis set information used in the calculations.
-  These arguments are same with the original arguments in used in TeraChem.
-  If you want to know the detailed list for basis sets, see the manual of the TeraChem program.
+  This argument specifies a basis set used in TeraChem.
+  These arguments are same as the original arguments of TeraChem.
+  It is recommended to check a TeraChem manual for the detailed list of **basis_set**.
 
 \
 
 - **functional** *(string)* - Default: *'hf'*
 
-  Exchange-correlation functional used in the calculations.
-  These arguments are same with the original arguments in used in TeraChem.
-  If you want to know the detailed list for functionals, see the manual of the TeraChem program.
+  This argument specifies exchange-correlation functional used in TeraChem.
+  These arguments are same as the original arguments of TeraChem.
+  It is recommended to check a TeraChem manual for the detailed list of **functional**.
 
 \
 
 - **precision** *(string)* - Default: *'dynamic'*
 
-  Method to determine the accuracy of the evaluation of the integrals.
-  These arguments are same with the original arguments in used in TeraChem.
-  If you want to know the detailed list for functionals, see the manual of the TeraChem program.
+  This argument specifies a method to determine the accuracy of the evaluation of the integrals.
+  These arguments are same as the original arguments of TeraChem.
+  It is recommended to check a TeraChem manual for the detailed list of **precision**.
 
 \
 
 - **scf_rho_tol** *(double)* - Default: *1E-2*
 
-  Wavefunction convergence for the SCF iterations.
+  SCF cycles are considered converged when the wavefunction error is less than **scf_rho_tol**.
 
 \
 
 - **scf_max_iter** *(integer)* - Default: *300*
 
-  Maximum number of the SCF iteractions.
+  This argument determines maximum number of SCF iterations.
 
 \
 
 - **ssr22** *(boolean)* - Default: *False*
 
-  Uses SSR(2,2) calculation. When this sets to *True*, detailed type of the REKS calculation is
-  automatically determined from the number of states and **state_interactions** argument. If the number of states is one,
-  the single-state REKS calculation is carried out. When the number of states is larger than one,
+  When **ssr22** sets to *True*, SSR(2,2) calculation is carried out, and detailed type of the REKS calculation is
+  automatically determined from ``molecule.nst`` and **state_interactions** arguments. If ``molecule.nst`` is one,
+  the single-state REKS calculation is carried out. When ``molecule.nst`` is larger than one,
   the SA-REKS or SI-SA-REKS calculation is executed according to the **state_interactions** argument.
 
 \
 
 - **guess** *(string)* - Default: *'dft'*
 
-  Initial guess method for the REKS SCF iteration.
+  This argument determines initial guess method for SSR method.
 
-  + *'dft'*: Initial orbitals are generated from the DFT calculation with **scf_rho_tol** tolerance.
-  + *'read'*: Reads "c0" file generated from previous step.
-    If **guess_file** exists, then "c0" file is used as initial guess at t = 0.0 s.
+  + *'dft'*: Initial orbitals for SSR method are generated from the DFT calculation with **scf_rho_tol** tolerance.
+  + *'read'*: Reads 'c0' file generated from previous step as initial guess.
+    At first MD step, **guess_file** will be used as initial guess.
 
 \
 
 - **guess_file** *(string)* - Default: *'./c0'*
 
-  Initial guess file for eigenvectors. It is vaild when **guess** is *'read'* option.
+  This argument designates initial molecular orbital file for SSR method.
+  It is vaild when **guess** is *'read'*.
 
 \
 
 - **reks_rho_tol** *(double)* - Default: *1E-6*
 
-  DIIS error for the REKS SCF iterations.
+  REKS SCF cycles are considered converged when the wavefunction error is less than **reks_rho_tol**.
 
 \
 
 - **reks_max_iter** *(integer)* - Default: *1000*
 
-  Maximum number of the REKS SCF iteractions.
+  This argument determines maximum number of REKS SCF iterations.
 
 \
 
 - **shift** *(double)* - Default: *0.3*
 
-  Level shifting value used in REKS SCF iterations. It can be helpful to increase **shift** when
-  it is hard to converge the REKS SCF iterations.
+  This argument specifies level shifting value used in REKS SCF iterations. It can be helpful to increase **shift** when
+  it is hard to converge the SCC iterations.
 
 \
 
 - **state_interactions** *(boolean)* - Default: *False*
 
-  Includes state-interaction terms to SA-REKS calculation. If this sets to *True*, the SI-SA-REKS states are calculated.
-  Otherwise, the SA-REKS states are obtained. It is valid when the number of states is larger
+  When **state_interactions** sets to *True*, state-interaction terms are included so that SI-SA-REKS states are generated.
+  Otherwise, the SA-REKS states are obtained. It is valid when ``molecule.nst`` is larger
   than one. In general, it generates more reliable adiabatic states.
 
 \
 
 - **cpreks_grad_tol** *(double)* - Default: *1E-6*
 
-  Tolerance used in the conjugate-gradient based algorithm for solving the CP-REKS equations.
-  Sometimes, it can be helpful to use loose tolerance for the stable molecular dynamics.
-  In this case, *4E-6* is recommended for the tolerance.
+  This argument determines tolerance used in the conjugate-gradient based algorithm for solving the CP-REKS equations.
+  Sometimes, it can be helpful to use slightly loose tolerance for the stable molecular dynamics.
+  In this case, *4E-6* is recommended for **cpreks_grad_tol**.
 
 \
 
 - **cpreks_max_iter** *(integer)* - Default: *1000*
 
-  Maximum number of the CP-REKS iterations.
+  This argument determines maximum number of CP-REKS iterations.
 
 \
 
 - **qm_path** *(string)* - Default: *'./'*
 
-  Path for TeraChem binary.
+  This argument determines path for QM binary file for TeraChem. The `$TeraChem` environment
+  variable determines the directory where the licensing file can be found, i.e. '`$TeraChem`/license.dat'.
+  Thus, **qm_path** must be *'`$TeraChem`/bin/'*, not *'`$TeraChem`/'*.
 
 \
 
 - **ngpus** *(integer)* - Default: *1*
 
-  Number of GPUs used in the calculations.
+  This argument determines number of GPUs used in TeraChem.
 
 \
 
 - **gpu_id** *(string)* - Default: *'1'*
 
-  ID of used GPUs. If you want to use 2 GPUs with ID of 0 and 1, then put *'0 1'* into **gpu_id**.
+  This argument specifies the ID of used GPUs. If you want to use 2 GPUs with ID of 0 and 1,
+  then put *'0 1'* into **gpu_id**.
 
 \
 
 - **version** *(string)* - Default: *'1.93'*
 
-  Version of TeraChem program. Currently, 1.93 and 1.99 versions are interfaced with PyUNIxMD.
+  This argument determines version of TeraChem program.
+  PyUNIxMD is currently based on 1.93 and 1.99 versions of TeraChem program.
 
