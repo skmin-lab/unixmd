@@ -56,7 +56,7 @@ Detailed description of the arguments
 - **functional** *(string)* - Default: *'BLYP'*
 
   This argument specifies exchange-correlation functional used in Gaussian 09 calculation.
-  These arguments are same as the original arguments of Gaussian 09.
+  The available options for this argument is same as the original arguments of Gaussian 09.
   It is recommended to check a Gaussian 09 manual for the detailed list of **functional**.
 
 \
@@ -64,7 +64,7 @@ Detailed description of the arguments
 - **basis_set** *(string)* - Default: *'sto-3g'*
 
   This argument specifies a basis set used in Gaussian 09 calculation.
-  These arguments are same as the original arguments of Gaussian 09.
+  The available options for this argument is same as the original arguments of Gaussian 09.
   It is recommended to check a Gaussian 09 manual for the detailed list of **basis_set**.
 \
 
@@ -76,24 +76,24 @@ Detailed description of the arguments
 
 - **guess** *(string)* - Default: *'Harris'*
 
-  This argument determines initial guess method for (TD)DFT method.
+  This argument determines initial guess for (TD)DFT calculations.
 
-  + *'Harris'*: Diagonalizes the Harris functional :cite:`Harris1985` for the initial guess. This is the default for all DFT calculations in Gaussian 09.
-  + *'read'*: Reads the checkpoint file generated from previous step as initial guess.
-  At first MD step, **guess_file** will be used as initial guess.
+  + *'Harris'*: Use the default method of Gaussian 09 (Diagonalizing the Harris functional :cite:`Harris1985`).
+  + *'read'*: Use orbitals calculated at the previous time step as the initial guess for the (TD)DFT calculation.
 
 \
 
 - **guess_file** *(string)* - Default: *'./g09.chk'*
 
-  This argument designates initial checkpoint file for (TD)DFT method. It is valid when **guess** = *'read'*.
-  It will be used as initial guess for (TD)DFT calculation in first MD step.
+  The **guess_file** determines the name of file containing orbitals for the initial guess of orbitals for the (TD)DFT calculation at the first time step.
+  This argument is effective only if **guess** = *'read'*.
+  If the file does not exist, *'Harris'* option is requested for the initial guess for the (TD)DFT calculation.
 
 \
 
 - **G09_root_path** *(string)* - Default: *'./'*
 
-  This argument designates a path for the Gaussian 09 root directory, that is, the top level directory ('/my_disk/my_name/gaussian09/').
+  This argument designates a path for the Gaussian 09 root directory, that is, the top level directory (for example, '/my_disk/my_name/gaussian09/').
 
 \
 

@@ -77,31 +77,31 @@ Detailed description of the arguments
 
 - **nsp** *(integer)* - Default: *3*
 
-  It specifies the dimension of space where the dynamics occurs. 
+  This argument specifies the dimension of space where the dynamics occurs. 
 
 \
 
 - **nstates** *(integer)* - Default: *3*
 
-  It specifies the number of BO states treated in the dynamics.
+  This argument specifies the number of BO states treated in the dynamics.
 
 \
 
 - **qmmm** *(boolean)* - Default: *False*
 
-  This flag determines whether QMMM scheme is used.
+  This argument determines whether QMMM scheme is used.
 
 \
 
 - **natoms_mm** *(integer)* - Default: *None*
 
-  It specifies the number of atoms in the MM region when **qmmm** is *True*. 
+  This argument specifies the number of atoms in the MM region when **qmmm** is *True*. 
 
 \
 
 - **dof** *(integer)* - Default: *None*
 
-  It specifies the degrees of freedom of the system. This value will be set automatically if no specific value is given.
+  This argument specifies the degrees of freedom of the system. This value will be set automatically if no specific value is given.
 
   If **model** = *False*, it becomes :math:`3 \times \textrm{(the number of atoms)}-6` (The DoF of a non-linear molecule).
 
@@ -113,7 +113,7 @@ Detailed description of the arguments
 
 - **unit_pos** *(string)* - Default: *'A'*
 
-  It specifies the unit of atomic position.
+  This argument specifies the unit of atomic position.
 
   + *'A'*: Angstrom
   + *'au'*: Atomic unit
@@ -122,7 +122,7 @@ Detailed description of the arguments
 
 - **unit_vel** *(string)* - Default: *'au'*
 
-  It specifies the unit of atomic velocity.
+  This argument specifies the unit of atomic velocity.
 
   + *'au'*: Atomic unit
   + *'A/ps'*: Angstrom per picosecond
@@ -132,11 +132,11 @@ Detailed description of the arguments
 
 - **charge** *(integer)* - Default: *0*
 
-  It specifies the total charge of the system 
+  This argument specifies the total charge of the system 
 
 \
 
 - **model** *(boolean)* - Default: *False*
 
-  This flag determines whether the system is a model system or not. About model systems provided by PyUNIxMD, see the Model Systems item in the :class:`QM_calculator` section.
+  This argument determines whether the system is a model system or not. About model systems provided by PyUNIxMD, see the Model Systems item in the :class:`QM_calculator` section.
 

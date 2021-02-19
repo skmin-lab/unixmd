@@ -70,7 +70,7 @@ Detailed description of the arguments
 
 - **istate** *(integer)* - Default: *0* (Ground state)
   
-  This argument specifies the adiabatic state which provides the potential energy surface nuclei follow. The possible range of the argument is from *0* to ``molecule.nstate-1``.
+  This argument specifies the adiabatic state which provides the potential energy surface nuclei follow. The possible range of the argument is from *0* to ``molecule.nst-1``.
    
 \
 
