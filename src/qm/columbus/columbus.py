@@ -7,14 +7,13 @@ import os
 class Columbus(QM_calculator):
     """ Class for common parts of Columbus program
 
-        :param object molecule: molecule object
-        :param string basis_set: basis set information
-        :param string memory: allocatable memory in the calculations
-        :param string qm_path: path for QM binary
-        :param integer nthreads: number of threads in the calculations
-        :param string version: version of Columbus program
+        :param object molecule: Molecule object
+        :param string basis_set: Basis set information
+        :param integer memory: Allocatable memory in the calculations
+        :param string qm_path: Path for QM binary
+        :param string version: Version of Columbus program
     """
-    def __init__(self, molecule, basis_set, memory, qm_path, nthreads, version):
+    def __init__(self, molecule, basis_set, memory, qm_path, version):
         # Save name of QM calculator and its method
         super().__init__()
 
@@ -23,7 +22,6 @@ class Columbus(QM_calculator):
 
         self.memory = memory
         self.qm_path = qm_path
-        self.nthreads = nthreads
         self.version = version
 
         # qm_path should be saved in the environmental variable "COLUMBUS"
