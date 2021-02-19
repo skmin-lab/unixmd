@@ -3,49 +3,7 @@ Molecule
 -------------------------------------------
 
 At the very first stage of dynamics calculations, users need to make
-a molecule object to be investigated. The keywords to specify the molecule are below.
-
-+---------------+------------------------------------------------------+-----------+
-| Keywords      | Work                                                 | Default   |
-+===============+======================================================+===========+
-| **geometry**  | a string containing position and velocity            |           |
-| *(string)*    |                                                      |           |
-+---------------+------------------------------------------------------+-----------+
-| **nsp**       | dimension of space                                   | *3*       |
-| *(integer)*   |                                                      |           |
-+---------------+------------------------------------------------------+-----------+
-| **nstates**   | number of BO states                                  | *3*       |
-| *(integer)*   |                                                      |           |
-+---------------+------------------------------------------------------+-----------+
-| **qmmm**      | use QMMM scheme for the calculation of large systems | *False*   |
-| *(boolean)*   |                                                      |           |
-+---------------+------------------------------------------------------+-----------+
-| **natoms_mm** | number of atoms in MM region                         | *None*    |
-| *(integer)*   |                                                      |           |
-+---------------+------------------------------------------------------+-----------+
-| **dof**       | degrees of freedom (if model is *False*,             | *None*    |
-| *(integer)*   | molecular DoF is given.)                             |           |
-+---------------+------------------------------------------------------+-----------+
-| **unit_pos**  | unit of position (A = angstrom, au = atomic unit)    | *'A'*     |
-| *(string)*    |                                                      |           |
-+---------------+------------------------------------------------------+-----------+
-| **unit_vel**  | unit of velocity (au = atomic unit, A/ps, A/fs)      | *'au'*    |
-| *(string)*    |                                                      |           |
-+---------------+------------------------------------------------------+-----------+
-| **charge**    | total charge of the system                           | *0*       |
-| *(integer)*   |                                                      |           |
-+---------------+------------------------------------------------------+-----------+
-| **model**     | is the system a model system?                        | *False*   |
-| *(boolean)*   |                                                      |           |
-+---------------+------------------------------------------------------+-----------+
-
-The structure of **geometry** string is the following.
-
-1. the number of atoms
-
-2. comment line
-
-3. specification of the molecule (atomic symbol, positions, velocities)
+a molecule object to be investigated. 
 
 **Ex.** Making a water molecule object
 
@@ -63,4 +21,122 @@ The structure of **geometry** string is the following.
 
    mol = Molecule(geometry=geometry, nstates=2)
 
+The keywords to specify the molecule are below.
+
++---------------+------------------------------------------------------+-----------+
+| Keywords      | Work                                                 | Default   |
++===============+======================================================+===========+
+| **geometry**  | A string containing atomic position and velocity     |           |
+| *(string)*    |                                                      |           |
++---------------+------------------------------------------------------+-----------+
+| **nsp**       | Dimension of space                                   | *3*       |
+| *(integer)*   |                                                      |           |
++---------------+------------------------------------------------------+-----------+
+| **nstates**   | Number of BO states                                  | *3*       |
+| *(integer)*   |                                                      |           |
++---------------+------------------------------------------------------+-----------+
+| **qmmm**      | Use QMMM scheme for the calculation of large systems | *False*   |
+| *(boolean)*   |                                                      |           |
++---------------+------------------------------------------------------+-----------+
+| **natoms_mm** | Number of atoms in MM region                         | *None*    |
+| *(integer)*   |                                                      |           |
++---------------+------------------------------------------------------+-----------+
+| **dof**       | Degrees of freedom (if **model** is *False*,         | *None*    |
+| *(integer)*   | the molecular DoF is given.)                         |           |
++---------------+------------------------------------------------------+-----------+
+| **unit_pos**  | Unit of atomic position                              | *'A'*     |
+| *(string)*    |                                                      |           |
++---------------+------------------------------------------------------+-----------+
+| **unit_vel**  | Unit of atomic velocity                              | *'au'*    |
+| *(string)*    |                                                      |           |
++---------------+------------------------------------------------------+-----------+
+| **charge**    | Total charge of the system                           | *0*       |
+| *(integer)*   |                                                      |           |
++---------------+------------------------------------------------------+-----------+
+| **model**     | Is the system a model system?                        | *False*   |
+| *(boolean)*   |                                                      |           |
++---------------+------------------------------------------------------+-----------+
+
+
+Detailed description of the arguments
+""""""""""""""""""""""""""""""""""""""""""
+
+- **geometry** *(string)* - Default: *None*
+
+  **geometry** string contains information of the structure of the system. The structure of this string is the following.
+
+  1. the number of atoms
+
+  2. comment line
+
+  3. specification of the molecule (atomic symbol, positions, velocities)
+
+  When QMMM scheme is used (**qmmm** = *True*), information of MM atoms is followed by QM atoms.
+
+\
+
+- **nsp** *(integer)* - Default: *3*
+
+  This argument specifies the dimension of space where the dynamics occurs. 
+
+\
+
+- **nstates** *(integer)* - Default: *3*
+
+  This argument specifies the number of BO states treated in the dynamics.
+
+\
+
+- **qmmm** *(boolean)* - Default: *False*
+
+  This argument determines whether QMMM scheme is used.
+
+\
+
+- **natoms_mm** *(integer)* - Default: *None*
+
+  This argument specifies the number of atoms in the MM region when **qmmm** is *True*. 
+
+\
+
+- **dof** *(integer)* - Default: *None*
+
+  This argument specifies the degrees of freedom of the system. This value will be set automatically if no specific value is given.
+
+  If **model** = *False*, it becomes :math:`3 \times \textrm{(the number of atoms)}-6` (The DoF of a non-linear molecule).
+
+  If **model** = *True*, :math:`\textrm{(the dimension)} \times \textrm{(the number of atoms)}`.
+
+  When the argument is present, it overrides the above defaults.
+
+\
+
+- **unit_pos** *(string)* - Default: *'A'*
+
+  This argument specifies the unit of atomic position.
+
+  + *'A'*: Angstrom
+  + *'au'*: Atomic unit
+
+\
+
+- **unit_vel** *(string)* - Default: *'au'*
+
+  This argument specifies the unit of atomic velocity.
+
+  + *'au'*: Atomic unit
+  + *'A/ps'*: Angstrom per picosecond
+  + *'A/fs'*: Angstrom per femtosecond
+
+\
+
+- **charge** *(integer)* - Default: *0*
+
+  This argument specifies the total charge of the system 
+
+\
+
+- **model** *(boolean)* - Default: *False*
+
+  This argument determines whether the system is a model system or not. About model systems provided by PyUNIxMD, see the Model Systems item in the :class:`QM_calculator` section.
 

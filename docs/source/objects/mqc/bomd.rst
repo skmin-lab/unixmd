@@ -39,27 +39,73 @@ package or a customized Hamiltonian, and nuclear propagation is done by the Velo
 +------------------------+------------------------------------------------+------------+
 | Keywords               | Work                                           | Default    |
 +========================+================================================+============+
-| **molecule**           | molecular object                               |            |
+| **molecule**           | Molecule object                                |            |
 | (:class:`Molecule`)    |                                                |            |
 +------------------------+------------------------------------------------+------------+
-| **thermostat**         | thermostat type                                | *None*     |
+| **thermostat**         | Thermostat object                              | *None*     |
 | (:class:`Thermostat`)  |                                                |            |
 +------------------------+------------------------------------------------+------------+
-| **istate**             | initial state                                  | *0*        |
+| **istate**             | Electronic state                               | *0*        |
 | *(integer)*            |                                                |            |
 +------------------------+------------------------------------------------+------------+
-| **dt**                 | time interval (fs)                             | *0.5*      |
+| **dt**                 | Time interval                                  | *0.5*      |
 | *(double)*             |                                                |            |
 +------------------------+------------------------------------------------+------------+
 | **nsteps**             | Total step of nuclear propagation              | *1000*     |
 | *(integer)*            |                                                |            |
 +------------------------+------------------------------------------------+------------+
-| **unit_dt**            | unit of time step (fs = femtosecond,           | *'fs'*     |
-| *(string)*             | au = atomic unit)                              |            |
+| **unit_dt**            | Unit of time interval                          | *'fs'*     |
+| *(string)*             |                                                |            |
 +------------------------+------------------------------------------------+------------+
-| **out_freq**           | frequency of printing output                   | *1*        |
+| **out_freq**           | Frequency of printing output                   | *1*        |
 | *(integer)*            |                                                |            |
 +------------------------+------------------------------------------------+------------+
-| **verbosity**          | verbosity of output                            | *0*        | 
+| **verbosity**          | Verbosity of output                            | *0*        | 
 | *(integer)*            |                                                |            |
 +------------------------+------------------------------------------------+------------+
+
+
+Detailed description of the arguments
+""""""""""""""""""""""""""""""""""""""""""
+
+- **istate** *(integer)* - Default: *0* (Ground state)
+  
+  This argument specifies the adiabatic state which provides the potential energy surface nuclei follow. The possible range of the argument is from *0* to ``molecule.nst-1``.
+   
+\
+
+- **dt** *(double)* - Default: *0.5*
+
+  This argument determines the time interval of the nuclear time steps.
+  You can select the unit of time for the dynamics with the argument **unit_dt**.
+
+\
+
+- **nsteps** *(integer)* - Default: *1000*
+
+  This argument determines the total number of the nuclear time steps.
+
+\
+
+- **unit_dt** *(string)* - Default: *'fs'*
+
+  This argument determines the unit of time for the simulation.
+  
+  + *'fs'*: Femtosecond
+  + *'au'*: Atomic unit
+
+\
+
+- **out_freq** *(integer)* - Default: *1*
+
+  PyUNIxMD prints and writes the dynamics information at every **out_freq** time steps.
+
+\
+
+- **verbosity** *(integer)* - Default: *0*
+
+  It determines the verbosity of the output files and stream.
+
+  + **verbosity** :math:`\geq` *1*: Prints potential energy of all BO states.
+
+\
