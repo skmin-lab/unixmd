@@ -60,7 +60,7 @@ Detailed description of arguments
 - **functional** *(string)* - Default: *'b-lyp'*
 
   This argument specifies exchange-correlation functional used in Turbomole calculation.
-  These arguments are same as the original arguments of Turbomole.
+  The available options for this argument are same as the original arguments of Turbomole.
   It is recommended to check a Turbomole manual for the detailed list of **functional**.
 
 \
@@ -68,7 +68,7 @@ Detailed description of arguments
 - **basis_set** *(string)* - Default: *'SV(P)'*
 
   This argument specifies a basis set used in Turbomole calculation.
-  These arguments are same as the original arguments of Turbomole.
+  The available options for this argument are same as the original arguments of Turbomole.
   It is recommended to check a Turbomole manual for the detailed list of **basis_set**.
 
 \
@@ -99,7 +99,7 @@ Detailed description of arguments
 
 - **cis_en_tol** *(integer)* - Default: *6*
 
-  CIS is considered converged when the energy error is less than :math:`10^{-\textbf{scf_en_tol}}`.
+  CIS is considered converged when the energy error is less than :math:`10^{-\textbf{cis_en_tol}}`.
 
 \
 

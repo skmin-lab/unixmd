@@ -5,7 +5,7 @@ Mixed quantum-classical (MQC) dynamics is general method for explaining the vari
 electronic state through time propagation. This can be exactly solved by time-dependent Schrodinger equation
 for all particles, but this solution requires enormous cost for numerical calculation so it is restricted for
 very small system. To overcome this limit, MQC tried to describe larger system by considering nuclei as classical 
-particle which follows classical equation of motion.
+particles which follow classical equation of motion.
 
 PyUNIxMD mainly targeted on MQC, and whole dynamics implemented in current version of PyUNIxMD are subclass of
 MQC class. In the MQC class, there are functions to update classical properties of nuclei.
@@ -77,20 +77,20 @@ Detailed description of arguments
 
 - **save_qm_log** *(boolean)* - Default: *False*
 
-  This argument determines saving QM calculation logs. Logs will be saved in '**input_dir**/qm_log'.
+  This argument determines saving QM calculation logs. Logs will be saved in '**input_dir**/qm_log/'.
  
 \
 
 - **save_mm_log** *(boolean)* - Default: *False*
 
-  This argument determines saving MM calculation logs. Logs will be saved in '**input_dir**/mm_log'.
+  This argument determines saving MM calculation logs. Logs will be saved in '**input_dir**/mm_log/'.
   If **MM** = *None*, this argument will be ignored.
 
 \
 
 - **save_scr** *(boolean)* - Default: *True*
 
-  This argument determines saving scratch output directory in '**input_dir**/md/scr_qm' after QM calculation, and '**input_dir**/md/scr_mm' after MM calculation.
+  This argument determines saving scratch output directory in '**input_dir**/md/scr_qm/' after QM calculation, and '**input_dir**/md/scr_mm/' after MM calculation.
 
 \
 

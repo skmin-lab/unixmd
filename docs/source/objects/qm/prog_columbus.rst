@@ -98,7 +98,8 @@ Detailed description of arguments
 - **guess_file** *(string)* - Default: *'./mocoef'*
 
   This argument designates initial molecular orbital file for (SA-)CASSCF method. It is valid when **guess** = *'read'*.
-  It will be used as initial guess for (SA-)CASSCF calculation in first MD step.
+  It will be used as initial guess for the (SA-)CASSCF calculation in first MD step.
+  If the file does not exist, HF calculation is requested for the initial guess for the (SA-)CASSCF calculation.
 
 \
 
@@ -116,7 +117,7 @@ Detailed description of arguments
 
 - **mcscf_en_tol** *(integer)* - Default: *8*
 
-  (SA-)CASSCF is considered converged when the energy error is less than :math:`10^{-\textbf{scf_en_tol}}`.
+  (SA-)CASSCF is considered converged when the energy error is less than :math:`10^{-\textbf{mcscf_en_tol}}`.
 
 \
 
@@ -128,7 +129,7 @@ Detailed description of arguments
 
 - **cpscf_grad_tol** *(integer)* - Default: *6*
 
-  CP-CASSCF is considered converged when the gradient error is less than :math:`10^{-\textbf{scf_en_tol}}`.
+  CP-CASSCF is considered converged when the gradient error is less than :math:`10^{-\textbf{cpscf_grad_tol}}`.
 
 \
 
