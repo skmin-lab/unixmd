@@ -130,7 +130,7 @@ Detailed description of arguments
 
 - **scc** *(boolean)* - Default: *True*
 
-  When **scc** sets to *True*, self-consistent charge (SCC) scheme is included in DFTB.
+  When **scc** is set to *True*, self-consistent charge (SCC) scheme is included in DFTB.
   If **scc** is *False*, then the calculation will change to non-SCC DFTB.
 
 \
@@ -150,13 +150,13 @@ Detailed description of arguments
 
 - **ocdftb** *(boolean)* - Default: *False*
 
-  When **ocdftb** sets to *True*, onsite-correction (OC) scheme is added to SCC-DFTB.
+  When **ocdftb** is set to *True*, onsite-correction (OC) scheme is added to SCC-DFTB.
 
 \
 
 - **lcdftb** *(boolean)* - Default: *False*
 
-  When **lcdftb** sets to *True*, long-range corrected (LC) functional is added to SCC-DFTB.
+  When **lcdftb** is set to *True*, long-range corrected (LC) functional is added to SCC-DFTB.
   In this case, the corresponding slater-koster files must be used. Check the **sk_path** carefully.
 
 \
@@ -164,7 +164,7 @@ Detailed description of arguments
 - **lc_method** *(string)* - Default: *'MatrixBased'*
 
   This argument specifies detailed algorithms used in LC-DFTB.
-  These arguments are same as the original arguments of DFTB+.
+  The available options of this argument are same as the original arguments of DFTB+.
 
   + *'Thresholded'*: Screening according to estimated magnitude of terms.
   + *'NeighbourBased'*: Uses a purely neighbour-list based algorithm.
@@ -174,7 +174,7 @@ Detailed description of arguments
 
 - **sdftb** *(boolean)* - Default: *False*
 
-  When **sdftb** sets to *True*, spin-polarisation scheme is added to SCC-DFTB.
+  When **sdftb** is set to *True*, spin-polarisation scheme is added to SCC-DFTB.
   The atomic spin constants are given in '`$PYUNIXMD`/src/qm/dftb/dftbpar.py',
   and the values about hydrogen, carbon, nitrogen, and oxygen atoms are currently included.
   If you want to exploit spin-polarisation scheme with other atomic species, then add the
@@ -193,16 +193,17 @@ Detailed description of arguments
 
   This argument determines initial guess method for SCC-DFTB method.
 
-  + *'h0'*: Initial charges of SCC term are set to zero for every MD step.
-  + *'read'*: Reads 'charges.bin' file generated from previous step as initial guess.
-    At first MD step, **guess_file** will be used as initial guess.
+  + *'h0'*: Initial charges for SCC-DFTB method are set to zero for every MD step.
+  + *'read'*: Use charges calculated at the previous time step as the initial guess for the SCC-DFTB calculation.
 
 \
 
 - **guess_file** *(string)* - Default: *'./charges.bin'*
 
-  This argument designates initial charge file for SCC-DFTB method.
-  It is vaild when **guess** is *'read'*.
+  The **guess_file** determines the name of file containing orbitals for
+  the initial guess of orbitals for the SCC-DFTB calculation at the first MD step.
+  This argument is effective only if **guess** = *'read'*.
+  If the file does not exist, *'h0'* option is requested for the initial guess for the SCC-DFTB calculation.
 
 \
 
@@ -215,7 +216,7 @@ Detailed description of arguments
 - **mixer** *(string)* - Default: *'Broyden'*
 
   This argument specifies mixing method for charges used in SCC-DFTB.
-  These arguments are same as the original arguments of DFTB+.
+  The available options of this argument are same as the original arguments of DFTB+.
   The detailed parameters used in each mixer are set to default values of the DFTB+ program.
   If you want to know the detailed process of each mixer, see the manual of the DFTB+ program.
   Following four mixers can be used in current interfacing; {*'Broyden'*, *'Anderson'*, *'DIIS'*, *'Simple'*}
@@ -225,7 +226,7 @@ Detailed description of arguments
 - **ex_symmetry** *(string)* - Default: *'singlet'*
 
   This argument specifies symmetry of excited state used in TD-DFTB.
-  These arguments are same as the original arguments of DFTB+.
+  The available options of this argument are same as the original arguments of DFTB+.
   Currently, *'triplet'* and *'both'* options are not added in our interfacing script.
 
   + *'singlet'*: Calculate singlet excited state in Casida formalism.
@@ -235,8 +236,8 @@ Detailed description of arguments
 - **e_window** *(double)* - Default: *0.0*
 
   This argument determines energy window for TD-DFTB. It increases the efficiency
-  of NACME evaluation. **e_window** indicates the energy range from the highest orbital
-  among the related orbitals for excited states. This option must be treated carefully.
+  of NACME evaluation. **e_window** indicates the energy range above the last transition at
+  highest excitation to be included in excited state calculation. This option must be treated carefully.
 
 \
 
@@ -249,7 +250,7 @@ Detailed description of arguments
 
 - **periodic** *(boolean)* - Default: *False*
 
-  When **periodic** sets to *True*, a periodicity is considered in the calculation.
+  When **periodic** is set to *True*, a periodicity is considered in the calculation.
 
 \
 
@@ -269,14 +270,15 @@ Detailed description of arguments
 - **install_path** *(string)* - Default: *'./'*
 
   This argument determines path for DFTB+ install directory. The `$DFTB` environment
-  variable determines the directory where DFTB+ program is installed.
+  variable determines the directory where DFTB+ program is installed
+  (For example, `$DFTB` is '/my_disk/my_name/dftbplus-**version**/').
   Thus, **install_path** must be *'`$DFTB`/install/'*, not *'`$DFTB`/install/bin/'*.
 
 \
 
 - **mpi** *(boolean)* - Default: *False*
 
-  When **mpi** sets to *True*, MPI parallelization is used for large scale calculation.
+  When **mpi** is set to *True*, MPI parallelization is used for large scale calculation.
   This option can be used when only ground state is included in the calculations.
 
 \
@@ -304,6 +306,10 @@ SSR
 PyUNIxMD automatically determines single-state REKS as BO interfaces for ground state BOMD.
 When we include the excited states, SA-REKS or SSR methods can be exploited and these are
 determined from the **state_interactions** argument.
+
+.. note:: In the case of SSR method, the calculation is possible only when the number
+   of states (``molecule.nst``) is smaller than 4 due to the limited active space.
+   If you want to treat more excited states, then increase the active space.
 
 +------------------------+------------------------------------------------+---------------------+
 | Keywords               | Work                                           | Default             |
@@ -386,7 +392,7 @@ Detailed description of arguments
 
 - **scc** *(boolean)* - Default: *True*
 
-  When **scc** sets to *True*, self-consistent charge (SCC) scheme is included in DFTB/SSR.
+  When **scc** is set to *True*, self-consistent charge (SCC) scheme is included in DFTB/SSR.
   If **scc** is *False*, then the calculation will be died since SCC scheme is a mandatory option.
 
 \
@@ -406,14 +412,14 @@ Detailed description of arguments
 
 - **ocdftb** *(boolean)* - Default: *False*
 
-  When **ocdftb** sets to *True*, onsite-correction (OC) scheme is added to DFTB/SSR.
+  When **ocdftb** is set to *True*, onsite-correction (OC) scheme is added to DFTB/SSR.
   It is currently experimental feature, and not implemented in SSR calculation.
 
 \
 
 - **lcdftb** *(boolean)* - Default: *False*
 
-  When **lcdftb** sets to *True*, long-range corrected (LC) functional is added to DFTB/SSR.
+  When **lcdftb** is set to *True*, long-range corrected (LC) functional is added to DFTB/SSR.
   To deal with the excited states properly, it is recommended to use LC funtional for DFTB/SSR calculation.
   In this case, the corresponding slater-koster files must be used. Check the **sk_path** carefully.
 
@@ -422,7 +428,7 @@ Detailed description of arguments
 - **lc_method** *(string)* - Default: *'MatrixBased'*
 
   This argument specifies detailed algorithms used in LC-DFTB.
-  These arguments are same as the original arguments of DFTB+.
+  The available options of this argument are same as the original arguments of DFTB+.
 
   + *'Thresholded'*: Screening according to estimated magnitude of terms.
   + *'NeighbourBased'*: Uses a purely neighbour-list based algorithm.
@@ -432,7 +438,7 @@ Detailed description of arguments
 
 - **ssr22** *(boolean)* - Default: *False*
 
-  When **ssr22** sets to *True*, DFTB/SSR(2,2) calculation is carried out, and detailed type of the REKS calculation is
+  When **ssr22** is set to *True*, DFTB/SSR(2,2) calculation is carried out, and detailed type of the REKS calculation is
   automatically determined from ``molecule.nst`` and **state_interactions** arguments. If ``molecule.nst`` is one,
   the single-state REKS calculation is carried out. When ``molecule.nst`` is larger than one,
   the SA-REKS or SI-SA-REKS calculation is executed according to the **state_interactions** argument.
@@ -441,7 +447,7 @@ Detailed description of arguments
 
 - **ssr44** *(boolean)* - Default: *False*
 
-  When **ssr44** sets to *True*, DFTB/SSR(4,4) calculation is carried out, and detailed type of the REKS calculation is
+  When **ssr44** is set to *True*, DFTB/SSR(4,4) calculation is carried out, and detailed type of the REKS calculation is
   automatically determined from ``molecule.nst`` and **state_interactions** arguments. If ``molecule.nst`` is one,
   the single-state REKS calculation is carried out. When ``molecule.nst`` is larger than one,
   the SA-REKS or SI-SA-REKS calculation is executed according to the **state_interactions** argument.
@@ -455,21 +461,22 @@ Detailed description of arguments
   The *'read'* option with DFTB/SSR method is supported in 20.2 version (or newer).
 
   + *'h0'*: Initial orbitals for DFTB/SSR method are generated from the diagonalization of non-SCC Hamiltonian.
-  + *'read'*: Reads 'eigenvec.bin' file generated from previous step as initial guess.
-    At first MD step, **guess_file** will be used as initial guess.
+  + *'read'*: Use orbitals calculated at the previous time step as the initial guess for the DFTB/SSR calculation.
 
 \
 
 - **guess_file** *(string)* - Default: *'./eigenvec.bin'*
 
-  This argument designates initial charge file for DFTB/SSR method.
-  It is vaild when **guess** is *'read'*.
+  The **guess_file** determines the name of file containing orbitals for
+  the initial guess of orbitals for the DFTB/SSR calculation at the first MD step.
+  This argument is effective only if **guess** = *'read'*.
+  If the file does not exist, *'h0'* option is requested for the initial guess for the DFTB/SSR calculation.
 
 \
 
 - **state_interactions** *(boolean)* - Default: *False*
 
-  When **state_interactions** sets to *True*, state-interaction terms are included so that SI-SA-REKS states are generated.
+  When **state_interactions** is set to *True*, state-interaction terms are included so that SI-SA-REKS states are generated.
   Otherwise, the SA-REKS states are obtained. It is valid when ``molecule.nst`` is larger
   than one. In general, it generates more reliable adiabatic states.
 
@@ -533,7 +540,7 @@ Detailed description of arguments
 
 - **periodic** *(boolean)* - Default: *False*
 
-  When **periodic** sets to *True*, a periodicity is considered in the calculation.
+  When **periodic** is set to *True*, a periodicity is considered in the calculation.
   Only :math:`\Gamma`-point sampling is supported with DFTB/SSR method when the periodicity is considered.
 
 \
@@ -554,7 +561,8 @@ Detailed description of arguments
 - **install_path** *(string)* - Default: *'./'*
 
   This argument determines path for DFTB+ install directory. The `$DFTB` environment
-  variable determines the directory where DFTB+ program is installed.
+  variable determines the directory where DFTB+ program is installed
+  (For example, `$DFTB` is '/my_disk/my_name/dftbplus-**version**/').
   Thus, **install_path** must be *'`$DFTB`/install/'*, not *'`$DFTB`/install/bin/'*.
 
 \

@@ -33,6 +33,10 @@ PyUNIxMD automatically determines single-state REKS as BO interfaces for ground 
 When we include the excited states, SA-REKS or SSR methods can be exploited and these are
 determined from the **state_interactions** argument.
 
+.. note:: In the case of SSR method, the calculation is possible only when the number
+   of states (``molecule.nst``) is smaller than 4 due to the limited active space.
+   If you want to treat more excited states, then increase the active space.
+
 +-------------------------+---------------------------------------------+-------------+
 | Keywords                | Work                                        | Default     |
 +=========================+=============================================+=============+
@@ -100,7 +104,7 @@ Detailed description of arguments
 - **basis_set** *(string)* - Default: *'sto-3g'*
 
   This argument specifies a basis set used in TeraChem.
-  These arguments are same as the original arguments of TeraChem.
+  The available options of this argument are same as the original arguments of TeraChem.
   It is recommended to check a TeraChem manual for the detailed list of **basis_set**.
 
 \
@@ -108,7 +112,7 @@ Detailed description of arguments
 - **functional** *(string)* - Default: *'hf'*
 
   This argument specifies exchange-correlation functional used in TeraChem.
-  These arguments are same as the original arguments of TeraChem.
+  The available options of this argument are same as the original arguments of TeraChem.
   It is recommended to check a TeraChem manual for the detailed list of **functional**.
 
 \
@@ -116,7 +120,7 @@ Detailed description of arguments
 - **precision** *(string)* - Default: *'dynamic'*
 
   This argument specifies a method to determine the accuracy of the evaluation of the integrals.
-  These arguments are same as the original arguments of TeraChem.
+  The available options of this argument are same as the original arguments of TeraChem.
   It is recommended to check a TeraChem manual for the detailed list of **precision**.
 
 \
@@ -135,7 +139,7 @@ Detailed description of arguments
 
 - **ssr22** *(boolean)* - Default: *False*
 
-  When **ssr22** sets to *True*, SSR(2,2) calculation is carried out, and detailed type of the REKS calculation is
+  When **ssr22** is set to *True*, SSR(2,2) calculation is carried out, and detailed type of the REKS calculation is
   automatically determined from ``molecule.nst`` and **state_interactions** arguments. If ``molecule.nst`` is one,
   the single-state REKS calculation is carried out. When ``molecule.nst`` is larger than one,
   the SA-REKS or SI-SA-REKS calculation is executed according to the **state_interactions** argument.
@@ -147,15 +151,16 @@ Detailed description of arguments
   This argument determines initial guess method for SSR method.
 
   + *'dft'*: Initial orbitals for SSR method are generated from the DFT calculation with **scf_rho_tol** tolerance.
-  + *'read'*: Reads 'c0' file generated from previous step as initial guess.
-    At first MD step, **guess_file** will be used as initial guess.
+  + *'read'*: Use orbitals calculated at the previous time step as the initial guess for the SSR calculation.
 
 \
 
 - **guess_file** *(string)* - Default: *'./c0'*
 
-  This argument designates initial molecular orbital file for SSR method.
-  It is vaild when **guess** is *'read'*.
+  The **guess_file** determines the name of file containing orbitals for
+  the initial guess of orbitals for the SSR calculation at the first MD step.
+  This argument is effective only if **guess** = *'read'*.
+  If the file does not exist, *'dft'* option is requested for the initial guess for the SSR calculation.
 
 \
 
@@ -180,7 +185,7 @@ Detailed description of arguments
 
 - **state_interactions** *(boolean)* - Default: *False*
 
-  When **state_interactions** sets to *True*, state-interaction terms are included so that SI-SA-REKS states are generated.
+  When **state_interactions** is set to *True*, state-interaction terms are included so that SI-SA-REKS states are generated.
   Otherwise, the SA-REKS states are obtained. It is valid when ``molecule.nst`` is larger
   than one. In general, it generates more reliable adiabatic states.
 
@@ -203,7 +208,8 @@ Detailed description of arguments
 - **qm_path** *(string)* - Default: *'./'*
 
   This argument determines path for QM binary file for TeraChem. The `$TeraChem` environment
-  variable determines the directory where the licensing file can be found, i.e. '`$TeraChem`/license.dat'.
+  variable determines the directory where the licensing file can be found, i.e. '`$TeraChem`/license.dat'
+  (For example, `$TeraChem` is '/my_disk/my_name/TeraChem/').
   Thus, **qm_path** must be *'`$TeraChem`/bin/'*, not *'`$TeraChem`/'*.
 
 \
