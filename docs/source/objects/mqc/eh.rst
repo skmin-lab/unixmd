@@ -68,14 +68,14 @@ Detailed description of arguments
 
 - **istate** *(integer)* - Default: *0* (Ground state)
 
-  This argument specifies the initial running state. The possible range of the argument is from *0* to ``molecule.nstate-1``.
+  This argument specifies the initial running state. The possible range of the argument is from *0* to ``molecule.nst-1``.
 
 \
 
 - **dt** *(double)* - Default: *0.5*
 
   This argument determines the time interval of the nuclear time steps.
-  You can select the unit of time for the dynamics with the argument **unit_dt**
+  You can select the unit of time for the dynamics with the argument **unit_dt**.
 \
 
 - **nsteps** *(integer)* - Default: *1000*
@@ -110,9 +110,9 @@ Detailed description of arguments
 
 - **l_pop_print** *(boolean)* - Default: *False*
 
-  This argument determines whether to write output files for density matrix elements (BOPOP, BOCOH) or not.
+  This argument determines whether to write output files for density matrix elements ('BOPOP', 'BOCOH') or not.
   If this option is set to *True*, then the 'BOPOP' and 'BOCOH' files are written during the dynamics.
-  This option is effective only if the argument **propagation** is set to *'coefficient'* or ignored otherwise
+  This option is effective only if the argument **propagation** is set to *'coefficient'* or ignored otherwise.
 
 \
 
@@ -126,7 +126,8 @@ Detailed description of arguments
 
   This argument defines the initial BO coefficients.
   The elements can be either real or complex values.
-  If the argument is not given, the density matrix is initialized according to **istate**.
+  If the argument is not given, the BO coefficients and density matrix are initialized according to **istate**.
+
 \
 
 - **unit_dt** *(string)* - Default: *'fs'*
@@ -148,4 +149,5 @@ Detailed description of arguments
 
   This argument determines the verbosity of the output files and stream.  
 
-  + **verbosity** :math:`\geq` *2*: Writes the NACVs (NACV\_\ :math:`i`\_\ :math:`j`).
+  + **verbosity** :math:`\geq` *1*: Prints potential energy of all BO states.
+  + **verbosity** :math:`\geq` *2*: Writes the NACVs ('NACV\_\ :math:`i`\_\ :math:`j`').

@@ -63,7 +63,6 @@ Detailed description of arguments
 
 - **basis_set** *(string)* - Default: *'sto-3g'*
 
-
   This argument specifies a basis set to be used in calculation.
   If you want to know the detailed list for basis sets, see the manual of the Q-Chem.
 
@@ -128,7 +127,7 @@ Detailed description of arguments
 
   This argument designates a path for Q-Chem install directory. 
   To execute Q-Chem binary file, the environment varialbes for Q-Chem are assigned by executing 'qcenv.sh' in Q-Chem install directory.
-  Hence, You must set **qm_path** to *'/my_disk/my_name/qchem'* not *'/my_disk/my_name/qchem/bin'*.
+  Hence, You must set **qm_path** to *'/my_disk/my_name/qchem/'* not *'/my_disk/my_name/qchem/bin/'*.
 
 \
 

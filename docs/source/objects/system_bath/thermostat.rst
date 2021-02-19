@@ -69,7 +69,7 @@ Detailed description of arguments
 - **dtemperature** *(double)* - Default: *100.0*
 
   This argument specifies the deviation to rescale velocities, that is,
-  the velocities are rescaled when temperature difference exceeds **dtemperature**.
+  the velocities are rescaled when temperature difference exceeds **dtemperature**. The unit is K.
 
 Berendsen
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -108,7 +108,7 @@ Detailed description of arguments
 - **coupling_parameter** *(double)* - Default: *None*
 
   The **coupling_parameter**, :math:`\tau`, is characteristic time to damp temperature toward target temperature.
-  It can be set directly as the characteristic length of time to damp temperature. The unit is femtosecond.
+  It can be set directly as the characteristic length of time to damp temperature. The unit is fs.
   Either **coupling_parameter** or **coupling_strength** should be set and only **coupling_parameter** or **coupling_strength** can be set.
 
 \
@@ -157,14 +157,14 @@ Detailed description of arguments
 - **coupling_strength** *(double)* - Default: *None*
 
   This argument specifies coupling strength which indicates frequency of oscillation of the thermostating particles.
-  coupling strength is typically related to the highest vibrational mode frequency of given system.
+  coupling strength is typically related to the highest vibrational mode frequency of given system. The unit is cm :sup:`-1`.
   **coupling_strength** or **time_scale** should be set and only **coupling_strength** or **time_scale** can be set.
 
 \
 
 - **time_scale** *(double)* - Default: *None*
 
-  This argument specifies coupling time scale in unit of femtosecond.
+  This argument specifies coupling time scale in unit of fs.
   When **time_scale** is given as :math:`t`, **coupling_strength** set to :math:`1/t`.
   **coupling_strength** or **time_scale** should be set and only **coupling_strength** or **time_scale** can be set.
 
@@ -183,6 +183,6 @@ Detailed description of arguments
 
 \
 
-- **nsteps** *(integer)* - Default: *3*
+- **nsteps** *(integer)* - Default: *1*
 
   This argument specifies the propagation step in NHC thermostat.
