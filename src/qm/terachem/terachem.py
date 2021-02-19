@@ -6,7 +6,7 @@ class TeraChem(QM_calculator):
     """ Class for common parts of TeraChem program
 
         :param string basis_set: Basis set information
-        :param string functional: Functional in the calculations
+        :param string functional: Exchange-correlation functional information
         :param string precision: Precision in the calculations
         :param string qm_path: Path for QM binary
         :param integer ngpus: Number of GPUs

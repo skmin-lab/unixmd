@@ -9,14 +9,14 @@ class SSR(TeraChem):
 
         :param object molecule: Molecule object
         :param string basis_set: Basis set information
-        :param string functional: Level of DFT theory
+        :param string functional: Exchange-correlation functional information
         :param string precision: Precision in the calculations
         :param double scf_rho_tol: Wavefunction convergence for SCF iterations
         :param integer scf_max_iter: Maximum number of SCF iterations
         :param boolean ssr22: Use SSR(2,2) calculation?
         :param string guess: Initial guess for REKS SCF iterations
         :param string guess_file: Initial guess file
-        :param double reks_rho_tol: DIIS error for REKS SCF iterations
+        :param double reks_rho_tol: wavefunction error for REKS SCF iterations
         :param integer reks_max_iter: Maximum number of REKS SCF iterations
         :param double shift: Level shifting value in REKS SCF iterations
         :param boolean state_interactions: Include state-interaction terms to SA-REKS

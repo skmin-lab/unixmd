@@ -46,7 +46,7 @@ determined from the **state_interactions** argument.
 | **basis_set**           | Basis set information                       | *'sto-3g'*  |
 | *(string)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **functional**          | Functional in the calculations              | *'hf'*      |
+| **functional**          | Exchange-correlation functional information | *'hf'*      |
 | *(string)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
 | **precision**           | Precision in the calculations               | *'dynamic'* |
@@ -67,7 +67,7 @@ determined from the **state_interactions** argument.
 | **guess_file**          | Initial guess file                          | *'./c0'*    |
 | *(string)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **reks_rho_tol**        | DIIS error for REKS SCF iterations          | *1E-6*      |
+| **reks_rho_tol**        | wavefunction error for REKS SCF iterations  | *1E-6*      |
 | *(double)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
 | **reks_max_iter**       | Maximum number of REKS SCF iterations       | *1000*      |
