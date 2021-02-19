@@ -8,14 +8,14 @@ class DFT(Turbomole):
     """ Class for (TD)DFT method of Turbomole program
 
         :param object molecule: Molecule object
-        :param string functional: Level of DFT theory
+        :param string functional: Exchange-correlation functional information
         :param string basis_set: Basis set information
         :param integer memory: Allocatable memory in the calculations
         :param integer scf_max_iter: Maximum number of SCF iterations
         :param integer scf_en_tol: Energy convergence for SCF iterations
         :param integer cis_max_iter: Maximum number of CIS iterations
         :param integer cis_en_tol: Energy convergence for CIS iterations
-        :param string qm_path: Path for QM turbomole
+        :param string qm_path: Path for QM binary
         :param integer nthreads: Number of threads in the calculations
         :param string version: Version of Turbomole program
     """

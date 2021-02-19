@@ -6,10 +6,10 @@ import os
 class Turbomole(QM_calculator):
     """ Class for common parts of Turbomole program
 
-        :param string functional: XC functional information
+        :param string functional: Exchange-correlation functional information
         :param string basis_set: Basis set information
         :param string memory: Allocatable memory in the calculations
-        :param string qm_path: Path for QM
+        :param string qm_path: Path for QM binary
         :param integer nthreads: Number of threads in the calculations
         :param string version: Version of Turbomole program
     """

@@ -10,12 +10,12 @@ class CASSCF(Columbus):
         :param object molecule: Molecule object
         :param string basis_set: Basis set information
         :param integer memory: Allocatable memory in the calculations
-        :param string guess: Initial guess for CASSCF method
+        :param string guess: Initial guess for (SA-)CASSCF method
         :param string guess_file: Initial guess file
         :param integer scf_en_tol: Energy convergence for SCF iterations
         :param integer scf_max_iter: Maximum number of SCF iterations
-        :param integer mcscf_en_tol: Energy convergence for CASSCF iterations
-        :param integer mcscf_max_iter: Maximum number of CASSCF iterations
+        :param integer mcscf_en_tol: Energy convergence for (SA-)CASSCF iterations
+        :param integer mcscf_max_iter: Maximum number of (SA-)CASSCF iterations
         :param integer cpscf_grad_tol: Gradient tolerance for CP-CASSCF equations
         :param integer cpscf_max_iter: Maximum number of iterations for CP-CASSCF equations
         :param integer active_elec: Number of electrons in active space
