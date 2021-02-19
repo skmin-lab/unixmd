@@ -270,7 +270,7 @@ Detailed description of arguments
 
   This argument determines path for DFTB+ install directory. The `$DFTB` environment
   variable determines the directory where DFTB+ program is installed.
-  Thus, **install_path** must be '`$DFTB`/install/', not '`$DFTB`/install/bin/'.
+  Thus, **install_path** must be *'`$DFTB`/install/'*, not *'`$DFTB`/install/bin/'*.
 
 \
 
@@ -555,7 +555,7 @@ Detailed description of arguments
 
   This argument determines path for DFTB+ install directory. The `$DFTB` environment
   variable determines the directory where DFTB+ program is installed.
-  Thus, **install_path** must be '`$DFTB`/install/', not '`$DFTB`/install/bin/'.
+  Thus, **install_path** must be *'`$DFTB`/install/'*, not *'`$DFTB`/install/bin/'*.
 
 \
 
