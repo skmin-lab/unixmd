@@ -12,7 +12,7 @@ charge penetration effects, and HIPPO (Hydrogen-like Interatomic Polarizable POt
 +------------------------+------------------------------------------------+---------------------+
 | Keywords               | Work                                           | Default             |
 +========================+================================================+=====================+
-| **molecule**           | Molecular object                               |                     |  
+| **molecule**           | Molecule object                                |                     |  
 | (:class:`Molecule`)    |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
 | **scheme**             | Type of QM/MM scheme                           | *None*              |
@@ -51,7 +51,7 @@ Detailed description of arguments
 
 - **scheme** *(string)* - Default: *None*
 
-  Type of QM/MM scheme. Current version of PyUNIxMD supports two types of QM/MM scheme.
+  This argument specifies type of QM/MM scheme. Current version of PyUNIxMD supports two types of QM/MM scheme.
   One is subtractive scheme and the other is additive scheme. The detailed expressions for
   these schemes are given in the literature. :cite:`Senn2009`
 
@@ -69,12 +69,12 @@ Detailed description of arguments
 
 - **embedding** *(string)* - Default: *None*
 
-  Type of charge-charge interactions between the inner and outer regions.
+  This argument specifies type of charge-charge interactions between the inner and outer regions.
   Current version of PyUNIxMD supports two types of charge-charge embedding.
   One is mechanical interaction and the other is electrostatic interaction.
   The **embedding** of the MM object must be same with the **embedding** defined in the QM object.
+  If this argument is *None*, the charge-charge embedding is not included in QM/MM calculation.
 
-  + *None*: Do not use charge-charge embedding in QM/MM method.
   + *'mechanical'*: The charge-charge interactions are treated at MM level.
     The energies are calculated from the interactions between point charges.
   + *'electrostatic'*: The charge-charge interactions are treated at QM level.
@@ -85,39 +85,42 @@ Detailed description of arguments
 
 - **vdw** *(string)* - Default: *None*
 
-  Type of van-der Walls interactions between the inner and outer regions.
+  This argument specifies type of van-der Walls interactions between the inner and outer regions.
   Current version of PyUNIxMD supports one type of van-der Walls interaction,
   which is the Lennard-Jones interaction. The other types of van-der Walls
   interactions provided in the Tinker program are not currently interfaced with PyUNIxMD.
+  If this argument is *None*, the van-der Walls interactions are not included in QM/MM calculation.
 
-  + *None*: Do not use van-der Walls interactions in QM/MM method.
   + *'lennardjones'*: The Lennard-Jones interactions are used for van-der Walls interactions.
 
 \
 
 - **periodic** *(boolean)* - Default: *False*
 
-  Uses a periodicity in the calculation. Only :math:`\Gamma`-point sampling is supported with Tinker program when the periodicity is considered.
+  When **periodic** is set to *True*, a periodicity is considered in the calculation.
+  Only :math:`\Gamma`-point sampling is supported with Tinker program when the periodicity is considered.
 
 \
 
 - **cell_par** *(double, list)* - Default: *6 \* [ 0.0 ]*
 
-  Cell lattice parameters of the periodic unit cell. The list consists of six elements and first three elements correspond to
-  the :math:`a`, :math:`b`, and :math:`c` lengths while the last three elements correspond to the :math:`\alpha`, :math:`\beta`,
-  and :math:`\gamma` angles, respectively.
+  This argument specifies cell lattice parameters of the periodic unit cell.
+  The list consists of six elements and first three elements correspond to
+  the :math:`a`, :math:`b`, and :math:`c` lengths while the last three
+  elements correspond to the :math:`\alpha`, :math:`\beta`, and :math:`\gamma` angles, respectively.
 
 \
 
 - **xyz_file** *(string)* - Default: *'./tinker.xyz'*
 
-  Initial 'tinker.xyz' file with tinker xyz format. The 'tinker.xyz' file must include correct atom types and bonding information.
+  This argument specifies initial 'tinker.xyz' file with tinker xyz format.
+  The 'tinker.xyz' file must include correct atom types and bonding information.
 
 \
 
 - **key_file** *(string)* - Default: *'./tinker.key'*
 
-  Initial 'tinker.key' file used in the calculations. The keywords of the Tinker program
+  This argument specifies initial 'tinker.key' file used in the calculations. The keywords of the Tinker program
   except **embedding**, **vdw**, and the periodicity can be included in this file.
   For example, if you want to add some constraints to the systems, then
   the related keywords can be added to the 'tinker.key' file.
@@ -129,16 +132,20 @@ Detailed description of arguments
   Path for Tinker binary. In our interfacing scripts, the executable file,
   'testgrad' (or 'testgrad.x') is used to calculate the energies and forces in MM level.
 
+  This argument determines a path for Tinker binaries such as testgrad.
+  (For example, '/my_disk/my_name/Tinker/bin/').
+
 \
 
 - **nthreads** *(integer)* - Default: *1*
 
-  Number of threads in the calculation. To use this option, you must check
+  This argument specifies number of threads in the calculation. To use this option, you must check
   that your binarys of the Tinker program supports OpenMP parallelization.
 
 \
 
 - **version** *(string)* - Default: *'8.7'*
 
-  Version of Tinker program. Current interfacing scripts are generated with 8.7 version of the Tinker program.
+  This argument determines version of Tinker program.
+  PyUNIxMD is currently based on 8.7 version of Tinker program.
 
