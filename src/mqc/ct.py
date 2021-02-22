@@ -18,6 +18,8 @@ class CT(MQC):
         # Initialize input values
         self.mols = molecules
         self.ntrajs = len(self.mols)
+        self.digit = len(str(self.ntrajs))
+
         self.nst = self.mols[0].nst
         self.nat = self.mols[0].nat
         self.nsp = self.mols[0].nsp
@@ -64,18 +66,8 @@ class CT(MQC):
 
     def run(self, qm, mm=None, input_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         # Initialize UNI-xMD
-        # TODO: output directory control
-        unixmd_dirs = [''] * self.ntrajs
-        qm_log_dirs= [''] * self.ntrajs
-
-        base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
+        base_dirs, unixmd_dirs, qm_log_dirs, mm_log_dirs =\
              self.run_init(qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
-        
-        for itraj in range(self.ntrajs):
-            unixmd_dirs[itraj] = f'{unixmd_dir}_{itraj+1:03d}'
-            if (os.path.exists(unixmd_dirs[itraj])):
-                shutil.move(unixmd_dirs[itraj], unixmd_dirs[itraj] + "_old_" + str(os.getpid()))
-            os.makedirs(unixmd_dirs[itraj])
 
         bo_list = [ist for ist in range(self.nst)]
         qm.calc_coupling = True
@@ -90,7 +82,7 @@ class CT(MQC):
                 self.mol = self.mols[itraj]
 
                 self.mol.reset_bo(qm.calc_coupling)
-                qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
+                qm.get_data(self.mol, base_dirs[itraj], bo_list, self.dt, self.istep, calc_force_only=False)
                 
                 # TODO: QM/MM
                 self.mol.get_nacme()
@@ -122,7 +114,7 @@ class CT(MQC):
 
                 self.mol.backup_bo()
                 self.mol.reset_bo(qm.calc_coupling)
-                qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
+                qm.get_data(self.mol, base_dirs[itraj], bo_list, self.dt, istep, calc_force_only=False)
                 #TODO: QM/MM
 
                 self.mol.adjust_nac()
@@ -144,6 +136,7 @@ class CT(MQC):
 
                 if ((istep + 1) % self.out_freq == 0):
                     self.write_md_output(itraj, unixmd_dirs[itraj], istep)
+                    #self.print_traj(istep)
                 if (istep == self.nsteps - 1):
                     self.write_final_xyz(unixmd_dirs[itraj], istep)
 
@@ -160,9 +153,10 @@ class CT(MQC):
 
         # Delete scratch directory
         if (not save_scr):
-            tmp_dir = os.path.join(unixmd_dir, "scr_qm")
-            if (os.path.exists(tmp_dir)):
-                shutil.rmtree(tmp_dir)
+            for itraj in range(self.ntrajs):
+                tmp_dir = os.path.join(unixmd_dirs, "scr_qm")
+                if (os.path.exists(tmp_dir)):
+                    shutil.rmtree(tmp_dir)
 
     def calculate_force(self, itrajectory):
         """ Routine to calculate force
@@ -300,10 +294,10 @@ class CT(MQC):
             typewriter(tmp, dirs[itraj], f"SLOPE", "a")
 
         # 3. Calculate the center of quantum momentum
-        rho = np.zeros((self.ntrajs, self.nst))
+        rho_i = np.zeros((self.ntrajs, self.nst))
         for itraj in range(self.ntrajs):
             for ist in range(self.nst):
-                rho[itraj, ist] = self.mols[itraj].rho[ist, ist].real
+                rho_i[itraj, ist] = self.mols[itraj].rho[ist, ist].real
 
         # (3-1) Compute denominator
         deno_lk = np.zeros((self.nst_pair, self.nat, self.nsp)) # denominator
@@ -314,8 +308,11 @@ class CT(MQC):
                     index_lk += 1
                     for iat in range(self.nat):
                         for isp in range(self.nsp):
-                            deno_lk[index_lk, iat, isp] += rho[itraj, ist] * rho[itraj, jst] * (rho[itraj, ist] + rho[itraj, jst]) * \
+                            deno_lk[index_lk, iat, isp] += rho_i[itraj, ist] * rho_i[itraj, jst] * (rho_i[itraj, ist] + rho_i[itraj, jst]) * \
                                 (self.phase[itraj, ist, iat, isp] - self.phase[itraj, jst, iat, isp]) * slope_i[itraj, iat, isp]
+                            
+                            #deno_lk[index_lk, iat, isp] += rho[itraj, ist] * rho[itraj, jst] * \
+                            #    (self.phase[itraj, ist, iat, isp] - self.phase[itraj, jst, iat, isp]) * slope_i[itraj, iat, isp]
 
         # (3-2) Compute numerator
         ratio_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.nsp)) # numerator / denominator
@@ -327,9 +324,12 @@ class CT(MQC):
                     index_lk += 1
                     for iat in range(self.nat):
                         for isp in range(self.nsp):
-                            numer_lk[itraj, index_lk, iat, isp] = rho[itraj, ist] * rho[itraj, jst] * (rho[itraj, ist] + rho[itraj, jst]) * \
+                            numer_lk[itraj, index_lk, iat, isp] = rho_i[itraj, ist] * rho_i[itraj, jst] * (rho_i[itraj, ist] + rho_i[itraj, jst]) * \
                                 self.mols[itraj].pos[iat, isp] * (self.phase[itraj, ist, iat, isp] - self.phase[itraj, jst, iat, isp]) * \
                                 slope_i[itraj, iat, isp]
+
+                            #numer_lk[itraj, index_lk, iat, isp] = rho[itraj, ist] * rho[itraj, jst] * self.mols[itraj].pos[iat, isp] * \
+                            #    (self.phase[itraj, ist, iat, isp] - self.phase[itraj, jst, iat, isp]) * slope_i[itraj, iat, isp]
                             if (abs(deno_lk[index_lk, iat, isp]) <= 1.0E-08):
                                 ratio_lk[itraj, index_lk, iat, isp] = 0.
                             else:
@@ -459,6 +459,11 @@ class CT(MQC):
 
     def print_init(self):
         """ Routine to print the initial information of dynamics
+        """
+        pass
+
+    def print_traj(self):
+        """ Routine to print each trajectory infomation at each step about dynamics
         """
         pass
 

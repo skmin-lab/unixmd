@@ -1,5 +1,6 @@
 from functools import wraps
 import sys, time, os
+import numpy as np
 
 # Atomic weight
 data = { "xx" : 1.00794, "H" : 1.00794, "He" : 4.00260, "Li" : 6.941, "Be" : 9.012187, "B" : 10.811,

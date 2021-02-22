@@ -103,43 +103,77 @@ class MQC(object):
 
         # Set directory information
         input_dir = os.path.expanduser(input_dir)
-        base_dir = os.path.join(os.getcwd(), input_dir)
-        unixmd_dir = os.path.join(base_dir, "md")
-        qm_log_dir = os.path.join(base_dir, "qm_log")
-        mm_log_dir = None
+        base_dir = []
+        unixmd_dir = []
+        qm_log_dir = []
+        mm_log_dir = [None]
+
         if (self.mol.qmmm and mm != None):
-            mm_log_dir = os.path.join(base_dir, "mm_log")
+            mm_log_dir = []
+
+        dir_tmp = os.path.join(os.getcwd(), input_dir)
+        if (self.md_type != "CT"):
+            base_dir.append(dir_tmp)
+        else:
+            for itraj in range(self.ntrajs):
+                itraj_dir = os.path.join(dir_tmp, f"traj{itraj + 1:0{self.digit}d}")
+                base_dir.append(itraj_dir)
+
+        for idir in base_dir:
+            unixmd_dir.append(os.path.join(idir, "md"))
+            qm_log_dir.append(os.path.join(idir, "qm_log"))
+            if (self.mol.qmmm and mm != None):
+                mm_log_dir.append(os.path.join(idir, "mm_log"))
 
         # Check and make directories
         if (restart == "append"):
-            if (not os.path.exists(unixmd_dir)):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Directory to be appended for restart not found! {restart} and {unixmd_dir}")
-            if (not os.path.exists(unixmd_dir) and save_qm_log):
-                os.makedirs(qm_log_dir)
-            if (self.mol.qmmm and mm != None):
-                if (not os.path.exists(mm_log_dir) and save_mm_log):
-                    os.makedirs(mm_log_dir)
-        else:
-            if (os.path.exists(unixmd_dir)):
-                shutil.move(unixmd_dir, unixmd_dir + "_old_" + str(os.getpid()))
-            os.makedirs(unixmd_dir)
+            # For MD output directory
+            for md_idir in unixmd_dir:
+                if (not os.path.exists(md_idir)):
+                    raise ValueError (f"( {self.md_type}.{call_name()} ) Directory to be appended for restart not found! {restart} and {md_idir}")
 
-            if (os.path.exists(qm_log_dir)):
-                shutil.move(qm_log_dir, qm_log_dir + "_old_" + str(os.getpid()))
+            # For QM output directory
             if (save_qm_log):
-                os.makedirs(qm_log_dir)
+                for qm_idir in qm_log_dir:
+                    if (not os.path.exists(qm_idir)):
+                        os.makedirs(qm_idir)
 
+            # For MM output directory
             if (self.mol.qmmm and mm != None):
-                if (os.path.exists(mm_log_dir)):
-                    shutil.move(mm_log_dir, mm_log_dir + "_old_" + str(os.getpid()))
                 if (save_mm_log):
-                    os.makedirs(mm_log_dir)
+                    for mm_idir in mm_log_dir:
+                        if (not os.path.exists(mm_idir)):
+                            os.makedirs(mm_idir)
+        else:
+            # For MD output directory
+            for md_idir in unixmd_dir:
+                if (os.path.exists(md_idir)):
+                    shutil.move(md_idir, md_idir + "_old_" + str(os.getpid()))
+                os.makedirs(md_idir)
 
-            self.touch_file(unixmd_dir)
+                self.touch_file(md_idir)
 
-        os.chdir(base_dir)
+            # For QM output directory
+            for qm_idir in qm_log_dir:
+                if (os.path.exists(qm_idir)):
+                    shutil.move(qm_idir, qm_idir + "_old_" + str(os.getpid()))
+                if (save_qm_log):
+                    os.makedirs(qm_idir)
 
-        return base_dir, unixmd_dir, qm_log_dir, mm_log_dir
+            # For MM output directory
+            for mm_idir in mm_log_dir:
+                if (self.mol.qmmm and mm != None):
+                    if (os.path.exists(mm_idir)):
+                        shutil.move(mm_idir, mm_idir + "_old_" + str(os.getpid()))
+                    if (save_mm_log):
+                        os.makedirs(mm_idir)
+
+        os.chdir(base_dir[0])
+
+        if (self.md_type != "CT"):
+            return base_dir[0], unixmd_dir[0], qm_log_dir[0], mm_log_dir[0]
+        else:
+            return base_dir, unixmd_dir, qm_log_dir, mm_log_dir
 
     def cl_update_position(self):
         """ Routine to update nuclear positions
