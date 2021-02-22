@@ -2,8 +2,8 @@ QM_calculator
 -------------------------------------------
 
 The propagation of molecular dynamics needs the information about potential enrgy surfaces.
-The object for QM calculator should be constructed in UNI-xMD to evaluate the energies,
-forces and nonadiabatic couplings. UNI-xMD interfaces with followings in current version.
+The object for QM calculator should be constructed in PyUNIxMD to evaluate the energies,
+forces and nonadiabatic couplings. PyUNIxMD interfaces with followings in current version.
 
 .. toctree::
    :glob:
@@ -11,11 +11,10 @@ forces and nonadiabatic couplings. UNI-xMD interfaces with followings in current
 
    prog*
    model
-   DIY
 
-Only some methods support with QM interface of UNI-xMD in current version.
-If you want to add other methods such as CASPT2, see "Do It yourself" section.
-The QM interfacings in UNI-xMD proceed with **get_data** method in each object.
+Only some methods support with QM interface of PyUNIxMD in current version.
+If you want to add other methods such as CASPT2, please refer other interfacings.
+The QM interfacings in PyUNIxMD proceed with **get_data** method in each object.
 Detailed explanation of **get_data** method is given in *modules* section.
 
 **Ex.** Making a QM object with CASSCF method of Molpro program

@@ -11,8 +11,8 @@ class MM_calculator(object):
     def get_data(self, base_dir, calc_force_only):
         """ Make scratch directory and copy geometry file
 
-            :param string base_dir: base directory
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param string base_dir: Base directory
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         # Make 'scr_mm' directory
         unixmd_dir = os.path.join(base_dir, "md")
@@ -27,7 +27,7 @@ class MM_calculator(object):
     def move_dir(self, base_dir):
         """ Move to the base directory
 
-            :param string base_dir: base directory
+            :param string base_dir: Base directory
         """
         os.chdir(base_dir)
 

@@ -5,13 +5,13 @@ from misc import call_name
 class TeraChem(QM_calculator):
     """ Class for common parts of TeraChem program
 
-        :param string basis_set: basis set information
-        :param string functional: functional in the calculations
-        :param string precision: precision in the calculations
-        :param string qm_path: path for QM binary
-        :param integer ngpus: number of GPUs
+        :param string basis_set: Basis set information
+        :param string functional: Exchange-correlation functional information
+        :param string precision: Precision in the calculations
+        :param string qm_path: Path for QM binary
+        :param integer ngpus: Number of GPUs
         :param string gpu_id: ID of used GPUs
-        :param string version: version of TeraChem program
+        :param string version: Version of TeraChem program
     """
     def __init__(self, functional, basis_set, qm_path, ngpus, \
         gpu_id, precision, version):

@@ -7,21 +7,21 @@ import numpy as np
 class Tinker(MM_calculator):
     """ Class for Tinker program
 
-        :param object molecule: molecule object
-        :param string scheme: type of QM/MM scheme; subtractive, additive
-        :param string embedding: charge embedding options; electrostatic, mechanical
-        :param string vdw: van der Walls interactions; lennardjones
-        :param boolean periodic: use periodicity in the calculations
-        :param double,list cell_par: cell lattice parameters (lengths and angles)
-        :param string xyz_file: initial tinker.xyz file
-        :param string key_file: initial tinker.key file
-        :param string mm_path: path for MM binary
-        :param integer nthreads: number of threads in the calculations
-        :param double version: version of Tinker program
+        :param object molecule: Molecule object
+        :param string scheme: Type of QM/MM scheme
+        :param string embedding: Charge embedding options
+        :param string vdw: Van der Walls interactions
+        :param boolean periodic: Use periodicity in the calculations
+        :param double,list cell_par: Cell lattice parameters (lengths and angles)
+        :param string xyz_file: Initial tinker.xyz file
+        :param string key_file: Initial tinker.key file
+        :param string mm_path: Path for MM binary
+        :param integer nthreads: Number of threads in the calculations
+        :param string version: Version of Tinker program
     """
     def __init__(self, molecule, scheme=None, embedding=None, vdw=None, periodic=False, \
         cell_par=[0., 0., 0., 0., 0., 0.], xyz_file="./tinker.xyz", key_file="./tinker.key",
-        mm_path="./", nthreads=1, version=8.7):
+        mm_path="./", nthreads=1, version="8.7"):
         # Save name of MM calculator
         super().__init__()
 
@@ -51,7 +51,7 @@ class Tinker(MM_calculator):
         self.nthreads = nthreads
         self.version = version
 
-        if (not self.version == 8.7):
+        if (not self.version == "8.7"):
             raise ValueError (f"( {self.mm_prog}.{call_name()} ) Other version not implemented! {self.version}")
 
         if (self.embedding == "electrostatic"):
@@ -116,11 +116,11 @@ class Tinker(MM_calculator):
     def get_data(self, molecule, base_dir, bo_list, istep, calc_force_only):
         """ Extract energy and gradient from Tinker
 
-            :param object molecule: molecule object
-            :param string base_dir: base directory
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param integer istep: current MD step
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param string base_dir: Base directory
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param integer istep: Current MD step
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         super().get_data(base_dir, calc_force_only)
         if (not calc_force_only):
@@ -132,7 +132,7 @@ class Tinker(MM_calculator):
     def get_input(self, molecule):
         """ Generate Tinker input files: tinker.xyz, tinker.key
 
-            :param object molecule: molecule object
+            :param object molecule: Molecule object
         """
         # Copy xyz file to currect directory
         if (os.path.isfile(self.xyz_file)):
@@ -397,8 +397,8 @@ class Tinker(MM_calculator):
     def run_MM(self, base_dir, istep):
         """ Run Tinker calculation and save the output files to MMlog directory
 
-            :param string base_dir: base directory
-            :param integer istep: current MD step
+            :param string base_dir: Base directory
+            :param integer istep: Current MD step
         """
         # Set correct binary for Tinker calculation
         binary1 = os.path.join(self.mm_path, "testgrad")
@@ -436,9 +436,9 @@ class Tinker(MM_calculator):
     def extract_MM(self, molecule, bo_list, calc_force_only):
         """ Read the output files to get MM information
 
-            :param object molecule: molecule object
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         if (not calc_force_only):
             # Energy; initialize the energy at MM level
