@@ -91,6 +91,8 @@ class CT(MQC):
                 self.get_phase(itraj)
 
                 self.write_md_output(itraj, unixmd_dirs[itraj], self.istep)
+                
+                self.print_traj(self.istep, itraj)
 
             self.calculate_qmom(self.istep, unixmd_dirs)
 
