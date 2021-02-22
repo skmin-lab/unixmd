@@ -154,7 +154,7 @@ class CT(MQC):
         # Delete scratch directory
         if (not save_scr):
             for itraj in range(self.ntrajs):
-                tmp_dir = os.path.join(unixmd_dirs, "scr_qm")
+                tmp_dir = os.path.join(unixmd_dirs[itraj], "scr_qm")
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
 
