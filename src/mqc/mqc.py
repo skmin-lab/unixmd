@@ -239,7 +239,11 @@ class MQC(object):
             print (restart_info, flush=True)
 
         # Print self.mol information: coordinate, velocity
-        self.mol.print_init(mm)
+        if (self.md_type != "CT"):
+            self.mol.print_init(mm)
+        else:
+            for itraj, mol in enumerate(self.mols):
+                mol.print_init(mm)
 
         # Print dynamics information
         dynamics_info = textwrap.dedent(f"""\
