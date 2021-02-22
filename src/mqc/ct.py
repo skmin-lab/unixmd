@@ -72,8 +72,7 @@ class CT(MQC):
         bo_list = [ist for ist in range(self.nst)]
         qm.calc_coupling = True
 
-        # TODO: output control
-        #self.print_init()
+        self.print_init(qm, mm, restart)
 
         if (restart == None):
             # Calculate initial input geometry for all trajectories at t = 0.0 s
@@ -95,8 +94,7 @@ class CT(MQC):
 
             self.calculate_qmom(self.istep, unixmd_dirs)
 
-            # TODO: output control
-            #self.print_step(self.istep)
+            self.print_step(self.istep)
 
         #TODO: restart
         else: 
@@ -136,7 +134,7 @@ class CT(MQC):
 
                 if ((istep + 1) % self.out_freq == 0):
                     self.write_md_output(itraj, unixmd_dirs[itraj], istep)
-                    #self.print_traj(istep)
+                    self.print_traj(istep, itraj)
                 if (istep == self.nsteps - 1):
                     self.write_final_xyz(unixmd_dirs[itraj], istep)
 
@@ -148,8 +146,7 @@ class CT(MQC):
 
             self.calculate_qmom(istep, unixmd_dirs)
 
-            # TODO: output control
-            #self.print_step(istep)
+            self.print_step(istep)
 
         # Delete scratch directory
         if (not save_scr):
@@ -457,26 +454,70 @@ class CT(MQC):
                     "".join([f'{self.phase[itrajectory, ist, iat, isp]:15.8f}' for isp in range(self.nsp)]) for iat in range(self.nat)])
                 typewriter(tmp, unixmd_dir, f"PHASE_{ist}", "a")
 
-    def print_init(self):
+    def print_init(self, qm, mm, restart):
         """ Routine to print the initial information of dynamics
-        """
-        pass
 
-    def print_traj(self):
+            :param object qm: qm object containing on-the-fly calculation infomation
+            :param object mm: mm object containing MM calculation infomation
+        """
+        # Print initial information about molecule, qm, mm and thermostat
+        super().print_init(qm, mm, restart)
+
+        # Print dynamics information for start line
+        dynamics_step_info = textwrap.dedent(f"""\
+
+        {"-" * 118}
+        {"Start Dynamics":>65s}
+        {"-" * 118}
+        """)
+
+        # Print INIT for each trajectory at each step
+        INIT = f" #INFO_TRAJ{'STEP':>8s}{'Kinetic(H)':>15s}{'Potential(H)':>15s}{'Total(H)':>13s}{'Temperature(K)':>17s}{'norm':>8s}"
+        dynamics_step_info += INIT
+
+        # Print INIT for averaged quantity at each step
+        DEBUG1 = f" #INFO_AVG{'STEP':>9s}"
+        for ist in range(self.nst):
+            DEBUG1 += f"{'BOPOP_':>13s}{ist}"
+
+        for ist in range(self.nst):
+            for jst in range(ist + 1, self.nst):
+                DEBUG1 += f"{'BOCOH_':>13s}{ist}_{jst}"
+
+        dynamics_step_info += "\n" + DEBUG1
+
+        print (dynamics_step_info, flush=True)
+
+    def print_traj(self, istep, itrajectory):
         """ Routine to print each trajectory infomation at each step about dynamics
         """
-        pass
+        ctemp = self.mol.ekin * 2. / float(self.mol.dof) * au_to_K
+        norm = 0.
+        for ist in range(self.mol.nst):
+            norm += self.mol.rho.real[ist, ist]
+
+        # Print INFO for each step
+        INFO = f" INFO_{itrajectory+1}{istep + 1:>9d}"
+        INFO += f"{self.mol.ekin:14.8f}{self.mol.epot:15.8f}{self.mol.etot:15.8f}"
+        INFO += f"{ctemp:13.6f}"
+        INFO += f"{norm:11.5f}"
+        print (INFO, flush=True)
 
     def print_step(self, istep):
         """ Routine to print each steps infomation about dynamics
 
             :param integer istep: Current MD step
         """
-        rho = np.zeros((self.nst, self.nst), dtype=np.complex_)
+        rho = np.zeros((self.nst, self.nst))
         for itraj in range(self.ntrajs):
             for ist in range(self.nst):
                 for jst in range(ist, self.nst):
-                    rho[ist, jst] += self.mols[itraj].rho[ist, jst]
+                    if (ist == jst):
+                        rho[ist, jst] += self.mols[itraj].rho[ist, jst].real
+                    else:
+                        rho[ist, jst] += self.mols[itraj].rho[ist, ist].real * self.mols[itraj].rho[jst, jst].real
         rho /= self.ntrajs
 
-        print(f'RHO{istep+1:8d}{rho[0, 0].real:15.8f}{rho[1, 1].real:15.8f}', flush=True)
+        DEBUG1 = f" INFO_AVG{istep + 1:9d}" + "".join([f'{rho[ist, ist]:15.8f}' for ist in range(self.nst)])
+        DEBUG1 += "".join([f'{rho[ist, jst]:15.8f}' for ist in range(self.nst) for jst in range(ist + 1, self.nst)])
+        print(DEBUG1, flush=True)
