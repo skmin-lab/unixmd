@@ -10,8 +10,9 @@ class CT(MQC):
     """ Class for coupled-trajectory mixed quantum-classical (CTMQC) dynamics
     """
     def __init__(self, molecules, thermostat=None, istates=None, dt=0.5, nsteps=1000, nesteps=20, \
-        threshold=0.01, propagation="coefficient", solver="rk4", l_pop_print=False, l_adjnac=True, \
-        coefficients=None, unit_dt="fs", out_freq=1, verbosity=2):
+        rho_threshold=0.01, propagation="coefficient", solver="rk4", dist_threshold=0.25, dist_cutoff=0.5, \
+        dist_parameter=10., sigma=0.3, l_pop_print=False, l_adjnac=True, coefficients=None, unit_dt="fs", \
+        out_freq=1, verbosity=2):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -59,8 +60,14 @@ class CT(MQC):
         self.qmom = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.nsp))
         self.K_lk = np.zeros((self.ntrajs, self.nst, self.nst))
 
-        self.upper_th = 1. - threshold
-        self.lower_th = threshold
+        self.upper_th = 1. - rho_threshold
+        self.lower_th = rho_threshold
+        
+        self.dist_threshold = dist_threshold
+        self.dist_cutoff = dist_cutoff
+
+        self.dist_parameter = dist_parameter
+        self.sigma = sigma
 
         self.dotpopd = np.zeros(self.nst)
 
@@ -180,7 +187,12 @@ class CT(MQC):
             for jst in range(self.nst):
                 ctforce += 0.5 * self.K_lk[itrajectory, ist, jst] * \
                     (self.phase[itrajectory, jst] - self.phase[itrajectory, ist]) * \
-                    self.mol.rho.real[ist, ist]  * self.mol.rho.real[jst, jst]
+                    self.mol.rho.real[ist, ist]  * self.mol.rho.real[jst, jst] * \
+                    (self.mol.rho.real[ist, ist] + self.mol.rho.real[jst, jst])
+                
+                #ctforce += 0.5 * self.K_lk[itrajectory, ist, jst] * \
+                #    (self.phase[itrajectory, jst] - self.phase[itrajectory, ist]) * \
+                #    self.mol.rho.real[ist, ist]  * self.mol.rho.real[jst, jst]
 
         # Finally, force is Ehrenfest force + CT force
         self.rforce += ctforce
@@ -213,15 +225,21 @@ class CT(MQC):
             :param integer istep: Current MD step
             :param string dirs: Output directory name
         """
-        #TODO: parameter
+        #TODO: default value of parameter
+        #TODO: test
         smooth_factor = 2.
+        # dist_cutoff = 0.5 in sh_tddft_utils.mod.F90 
+        # threshold = 0.25
+        # It use when nntraj is counted.
         M_parameter = 10.
         sigma = np.ones((self.nat, self.nsp)) * 0.3
+        # The value of M_parameter * sigma is used when determine quantum momentum center.
 
         # _lk means state_pair dependency.
         # i and j are trajectory index.
         # -------------------------------------------------------------------
-        # 1. Calculate sigma for each trajectory
+        # 1. Calculate variances for each trajectory
+        # TODO: method to calculate sigma
         sigma_lk = np.ones((self.ntrajs, self.nst_pair, self.nat, self.nsp)) # TODO: state-pair
         for itraj in range(self.ntrajs):
             # Variable to determine how many trajecories are in cutoff.
@@ -323,6 +341,7 @@ class CT(MQC):
                     index_lk += 1
                     for iat in range(self.nat):
                         for isp in range(self.nsp):
+                            # state-pair
                             numer_lk[itraj, index_lk, iat, isp] = rho_i[itraj, ist] * rho_i[itraj, jst] * (rho_i[itraj, ist] + rho_i[itraj, jst]) * \
                                 self.mols[itraj].pos[iat, isp] * (self.phase[itraj, ist, iat, isp] - self.phase[itraj, jst, iat, isp]) * \
                                 slope_i[itraj, iat, isp]
@@ -461,6 +480,7 @@ class CT(MQC):
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
+            :param string restart: option for controlling dynamics restarting
         """
         # Print initial information about molecule, qm, mm and thermostat
         super().print_init(qm, mm, restart)
@@ -492,6 +512,9 @@ class CT(MQC):
 
     def print_traj(self, istep, itrajectory):
         """ Routine to print each trajectory infomation at each step about dynamics
+
+            :param integer istep: Current MD step
+            :param integer itrajectory: Current trajectory
         """
         ctemp = self.mol.ekin * 2. / float(self.mol.dof) * au_to_K
         norm = 0.
