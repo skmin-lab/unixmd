@@ -20,12 +20,12 @@ sys.path.insert(0, os.path.abspath('../../src'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'UNI-xMD'
-copyright = '2020, mingroup'
+project = 'PyUNIxMD'
+copyright = '2021, mingroup'
 author = 'mingroup'
 
 # The short X.Y version
-version = '20.1'
+version = '21.1'
 # The full version, including alpha/beta/rc tags
 release = ''
 

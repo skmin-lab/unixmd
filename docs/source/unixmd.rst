@@ -3,9 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-UNI-xMD documentation
+PyUNIxMD documentation
 ===========================================
-This is a documentation page for UNIversal eXcited state Molecular Dynamics (UNI-xMD) program.
+This is a documentation page for a Python-based UNIversal eXcited state Molecular Dynamics (PyUNIxMD) program.
 
 
 
