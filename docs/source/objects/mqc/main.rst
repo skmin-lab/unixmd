@@ -57,7 +57,6 @@ md subclass of :class:`MQC`, not :class:`MQC` itself.
 Further information of individual MD objects is listed in each section.
 
 **Ex.** Making an MD object with FSSH method.
-        Making molecule and QM objects are omitted in this sample code, but they must be declared to use run method in advance.
 
 .. code-block:: python
 
@@ -66,6 +65,9 @@ Further information of individual MD objects is listed in each section.
    md = mqc.SH(molecule=mol, nsteps=1000, dt=0.125, istate=1, propagation="density")
 
    md.run(qm=qm, input_dir="./TRAJ.sh", save_scr=True, save_qm_log=False)
+
+.. note:: Making molecule and QM objects are omitted in this sample code,
+   but they must be declared to use run method in advance.
 
 **Ex.** Restarting a dynamics simulation.
 
