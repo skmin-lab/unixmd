@@ -14,6 +14,7 @@ MQC methods implemented in PyUNIxMD are listed in the following.
 .. toctree::
     :glob:
     :maxdepth: 1
+    :titlesonly:
 
     *
 
@@ -38,7 +39,7 @@ md subclass of :class:`MQC`, not :class:`MQC` itself.
 | **mm**                      | MM object containing MM calculation information | *None*   |
 | (:class:`MM_calculator`)    |                                                 |          |
 +-----------------------------+-------------------------------------------------+----------+
-| **input_dir**               | Location of input directory                     | *'./'*   |
+| **input_dir**               | Name of directory where outputs to be saved     | *'./'*   |
 | *(string)*                  |                                                 |          |
 +-----------------------------+-------------------------------------------------+----------+
 | **save_qm_log**             | Logical for saving QM calculation log           | *False*  |
@@ -87,8 +88,13 @@ Further information of individual MD objects is listed in each section.
    # The new output files are written.
    md.run(qm=qm, restart='write')
 
-Detailed description of arguments
-''''''''''''''''''''''''''''''''''''
+
+.. Detailed description of arguments
+.. """"""""""""""""""""""""""""""""""""
+
+.. raw:: html
+
+   <h2>Detailed description of arguments</h2>
 
 - **input_dir** *(string)* - Default: *'./'*
 
@@ -122,7 +128,7 @@ Detailed description of arguments
   Otherwise, 'RESTART.bin' is read and a dynamics simulation is restarted from the image read from the file without initialization of objects.
 
   + *'write'*: The dynamics simulation is restarted at resetting the time step to zero and writing new MD output files.
-  + *'append'*: The dynamics simulation is continued from the image appending the existing MD output files. 
+  + *'append'*: The dynamics simulation is continued from the image appending the existing MD output files.
 
 \
 
