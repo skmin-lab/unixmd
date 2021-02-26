@@ -22,6 +22,10 @@ input file 'run.py'. When users select their dynamics method, they have to make 
 :class:`MQC` class such as :class:`SH` (:class:`mqc.SH`), and a run method (``md.run``) to run that md object. In the md object, basic dynamics
 parameters such as number of steps are given as arguments. Besides, the run method includes overall dynamics condition as arguments.
 
+PyUNIxMD saves the objects for MQC and QM in a binary formatted file ('RESTART.bin') under **input_dir** directory using the 'pickle' package at every time step.
+The 'RESTART.bin' file is overwritten at every successful MD step, therefore the file contains the information of a trajectory at the last successful MD step.
+You can restart the dynamics simulation by reading the 'RESTART.bin' file using 'pickle' package.
+
 Arguments for run method are listed below. The important point is that run method is included in each
 md subclass of :class:`MQC`, not :class:`MQC` itself.
 
@@ -63,14 +67,32 @@ Further information of individual MD objects is listed in each section.
 
    md.run(qm=qm, input_dir="./TRAJ.sh", save_scr=True, save_qm_log=False)
 
+**Ex.** Restarting a dynamics simulation.
 
+.. code-block:: python
+   
+   import pickle
+   
+   # Read the binary file and load the information 
+   with open('./md/RESTART.bin', 'rb') as f_restart:
+       restart = pickle.load(f_restart)
+   qm = restart["qm"]
+   md = restart["md"]
+   
+   # The dynamics is continued from the last step stored in the 'RESTART.bin' file.
+   # The output files are appended with the restarted dynamics, therefore the MD output files should exist.
+   md.run(qm=qm, restart='append')
+   
+   # The time is set to zero and restart a new dynamics from the information in the 'RESTART.bin' file.
+   # The new output files are written.
+   md.run(qm=qm, restart='write')
 
 Detailed description of arguments
 ''''''''''''''''''''''''''''''''''''
 
 - **input_dir** *(string)* - Default: *'./'*
 
-  This argument designates directory for dynamics output. All subdirectories (MD output, QM/MM logs) will be saved under **input_dir**.
+  This argument designates directory for dynamics output. All subdirectories ('md', 'qm_log', and 'mm_log') for output files will be generated under **input_dir**.
   If the subdirectories are already present, old subdirectories will be renamed with '_old' and new subdirectories will be made.
 
 \
@@ -96,11 +118,11 @@ Detailed description of arguments
 
 - **restart** *(string)* - Default: *None*
 
-  This argument determines writting options for restarting dynamics from halted trajectory. 
-  If this argument is *None*, the dynamics will be start from a new point. If not, it will read 'RESTART.bin' to continue a dynamics.
+  If this argument is not set (*None*), all objects will be initialized for a new dynamics simulation.
+  Otherwise, 'RESTART.bin' is read and a dynamics simulation is restarted from the image read from the file without initialization of objects.
 
-  + *'write'*: Write a new output, starting from halted timestep.
-  + *'append'*: Write a output continually starting from a halted timestep.
+  + *'write'*: The dynamics simulation is restarted at resetting the time step to zero and writing new MD output files.
+  + *'append'*: The dynamics simulation is continued from the image appending the existing MD output files. 
 
 \
 
