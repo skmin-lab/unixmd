@@ -55,10 +55,10 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **threshold**              | Electronic density threshold for decoherence term    | *0.01*       |
-| *(double)*                 |                                                      |              |
+| *(double)*                 | calculation                                          |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **wsigma**                 | Width of nuclear wave packet of auxiliary trajectory | *None*       |
-| *(double/(double, list))*  | for auxiliary trajectories                           |              |
+| *(double/(double, list))*  |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **coefficient**            | Initial BO coefficient                               | *None*       |
 | *(double/complex, list)*   |                                                      |              |
