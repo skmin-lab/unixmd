@@ -15,10 +15,6 @@ in addition to Eherenfest term, i.e.
 
 Detailed description of DISH-XF method is in :cite:`Ha2018`
 
-.. note:: For **wsigma** variable, it reads a float number or a list consisted of elements
-   equal to the number of atoms. The former use a uniform value for the width, while the latter
-   uses atom-resolved sigma values for the width.
-
 +----------------------------+------------------------------------------------------+--------------+
 | Keywords (type)            | Work                                                 | Default      |
 +============================+======================================================+==============+
@@ -86,7 +82,7 @@ Detailed description of the arguments
 
 - **istate** *(integer)* - Default: *0* (Ground state)
   
-  This argument specifies the initial running state. The possible range of the argument is from *0* to ``molecule.nstate-1``.
+  This argument specifies the initial running state. The possible range of the argument is from *0* to ``molecule.nst-1``.
    
 \
 
