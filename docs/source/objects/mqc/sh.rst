@@ -50,7 +50,7 @@ trajectories will be transit to that state in stochastical behavior.
 | **nsteps**                 | Total step of nuclear propagation                | *1000*         |
 | *(integer)*                |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
-| **nesteps**                | Total step of electronic propagation             | *10000*        |
+| **nesteps**                | Total step of electronic propagation             | *20*           |
 | *(integer)*                |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
 | **propagation**            | Propagation scheme                               | *'density'*    |
@@ -65,7 +65,7 @@ trajectories will be transit to that state in stochastical behavior.
 | **l_adjnac**               | Adjust nonadiabatic coupling to align the phases | *True*         |
 | *(boolean)*                |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
-| **vel_rescale**            | Velocity rescaling method after successful hop   | *'momentum'*   |
+| **vel_rescale**            | Velocity rescaling method after successful hop   | *'augment'*    |
 | *(string)*                 |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
 | **vel_reject**             | Velocity rescaling method after frustrated hop   | *'reverse'*    |
@@ -81,7 +81,7 @@ trajectories will be transit to that state in stochastical behavior.
 | *(double)*                 | in edc                                           |                |
 +----------------------------+--------------------------------------------------+----------------+
 | **unit_dt**                | Unit of time interval                            | *'fs'*         |
-| *(double)*                 |                                                  |                |
+| *(string)*                 |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
 | **out_freq**               | Frequency of printing output                     | *1*            |
 | *(integer)*                |                                                  |                |
@@ -151,7 +151,7 @@ Detailed description of the arguments
 
 \
 
-- **vel_rescale** *(string)* - Default: *'momentum'*
+- **vel_rescale** *(string)* - Default: *'augment'*
 
   This argument determines the direction of the momentum to be adjusted after a hop to conserve the total energy.
   If there is not enough kinetic energy in this direction, the hop is rejected and the running state is switched back to the original state.

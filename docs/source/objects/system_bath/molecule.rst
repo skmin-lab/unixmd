@@ -41,8 +41,8 @@ The keywords to specify the molecule are below.
 | **natoms_mm** | Number of atoms in MM region                         | *None*    |
 | *(integer)*   |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **dof**       | Degrees of freedom (if **model** is *False*,         | *None*    |
-| *(integer)*   | the molecular DoF is given.)                         |           |
+| **dof**       | Degrees of freedom                                   | *None*    |
+| *(integer)*   |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
 | **unit_pos**  | Unit of atomic position                              | *'A'*     |
 | *(string)*    |                                                      |           |
@@ -50,8 +50,8 @@ The keywords to specify the molecule are below.
 | **unit_vel**  | Unit of atomic velocity                              | *'au'*    |
 | *(string)*    |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **charge**    | Total charge of the system                           | *0*       |
-| *(integer)*   |                                                      |           |
+| **charge**    | Total charge of the system                           | *0.0*     |
+| *(double)*    |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
 | **model**     | Is the system a model system?                        | *False*   |
 | *(boolean)*   |                                                      |           |
@@ -61,9 +61,10 @@ The keywords to specify the molecule are below.
 Detailed description of the arguments
 """"""""""""""""""""""""""""""""""""""""""
 
-- **geometry** *(string)* - Default: *None*
+- **geometry** *(string)*
 
   **geometry** string contains information of the structure of the system. The structure of this string is the following.
+  This argument does not have default, thus user must be put the string variable including structures into **geometry**.
 
   1. the number of atoms
 
@@ -130,7 +131,7 @@ Detailed description of the arguments
 
 \
 
-- **charge** *(integer)* - Default: *0*
+- **charge** *(double)* - Default: *0.0*
 
   This argument specifies the total charge of the system 
 

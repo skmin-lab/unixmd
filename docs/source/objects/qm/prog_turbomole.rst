@@ -106,7 +106,7 @@ Detailed description of arguments
 - **qm_path** *(string)* - Default: *'./'*
 
   This argument designates path for QM binary file for the Turbomole.
-  The `$TURBODIR` environment variable determines the directory where Turbomole is installed, not the binary files themselves (For example, `$TURBODIR` is '/my_disk/my_name/TURBOMOLE').
+  The `$TURBODIR` environment variable determines the directory where Turbomole is installed, not the binary files themselves (For example, `$TURBODIR` is '/my_disk/my_name/TURBOMOLE/').
   Thus, **qm_path** must be a *'`$TURBODIR`'*, not a *'`$TURBODIR`/define'*. 
 
 \
