@@ -460,7 +460,6 @@ Detailed description of arguments
   The *'read'* option with DFTB/SSR method is supported in 20.2 version (or newer).
 
   + *'h0'*: Initial guess orbitals for DFTB/SSR method are generated from the diagonalization of non-SCC Hamiltonian.
-  + *'read'*: Use orbitals calculated at the previous time step as the initial guess for the DFTB/SSR calculation.
   + *'read'*: Initial guess orbitals are read from the 'eigenvec.bin' file which contains the orbitals calculated at the previous time step.
 
 \

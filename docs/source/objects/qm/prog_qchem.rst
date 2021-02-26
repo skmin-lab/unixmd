@@ -24,7 +24,7 @@ Q-Chem :cite:`qchem2015` is a comprehensive ab initio quantum chemistry software
 | **basis_set**         | Basis set information                          | *'sto-3g'*   |
 | *(string)*            |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **memory**            | Allocatable memory in the calculation          | *'2000'*     |
+| **memory**            | Allocatable memory in the calculation          | *2000*       |
 | *(integer)*           |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
 | **nthreads**          | Number of threads in the calculation           | *1*          |

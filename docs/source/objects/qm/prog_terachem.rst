@@ -52,7 +52,7 @@ determined from the **state_interactions** argument.
 | **precision**           | Precision in the calculations               | *'dynamic'* |
 | *(string)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
-| **scf_rho_tol**         | Wavefunction convergence for SCF iterations | *1E-2**     |
+| **scf_rho_tol**         | Wavefunction convergence for SCF iterations | *1E-2*      |
 | *(double)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
 | **scf_max_iter**        | Maximum number of SCF iterations            | *300*       |
