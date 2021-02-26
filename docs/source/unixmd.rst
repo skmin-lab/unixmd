@@ -7,48 +7,18 @@ UNI-xMD documentation
 ===========================================
 This is a documentation page for UNIversal eXcited state Molecular Dynamics (UNI-xMD) program.
 
-Features
----------------------------
-| This is features.
-| UNI-xMD program includes adiabatic, Ehrenfest, surface hopping and especially DISH-XF dynamics method.
-| This package includes several scripts that interface the dynamics modules with some quantum chemistry calculation program such as Molpro, DFTB+, etc..
 
-Authors
---------------------------
-This is authors.
-
-
-Acknowledgement
----------------------------
-This is acknowledgement.
 
 Contents
 =============================
 .. toctree::
    :glob:
-   :caption: Getting Started
+   :numbered: 1
    :maxdepth: 1
 
-   getting_started/getstarted
-
-.. toctree::
-   :glob:
-   :caption: Keywords
-   :maxdepth: 1
-
-   keywords/main
-
-.. toctree::
-   :glob:
-   :caption: Modules
-   :maxdepth: 1
-
+   overview
+   build
+   quick_start
+   objects/main
    modules/main
-
-.. toctree::
-   :glob:
-   :caption: References
-   :maxdepth: 1
-
    references/main
-

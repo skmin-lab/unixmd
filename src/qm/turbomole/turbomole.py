@@ -6,12 +6,12 @@ import os
 class Turbomole(QM_calculator):
     """ Class for common parts of Turbomole program
 
-        :param string functional: xc functional information
-        :param string basis_set: basis set information
-        :param string memory: allocatable memory in the calculations
-        :param string qm_path: path for QM
-        :param integer nthreads: number of threads in the calculations
-        :param double version: version of Turbomole program
+        :param string functional: Exchange-correlation functional information
+        :param string basis_set: Basis set information
+        :param string memory: Allocatable memory in the calculations
+        :param string qm_path: Path for QM binary
+        :param integer nthreads: Number of threads in the calculations
+        :param string version: Version of Turbomole program
     """
     def __init__(self, functional, basis_set, memory, qm_path, nthreads, version):
         # Save name of QM calculator and its method
@@ -35,6 +35,6 @@ class Turbomole(QM_calculator):
             os.environ["PARNODES"] = f"{self.nthreads}"
             self.qm_bin_path = os.path.join(self.qm_path, "bin/em64t-unknown-linux-gnu_smp/")
 
-        if (self.version != 6.4):
+        if (self.version != "6.4"):
             raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")
 

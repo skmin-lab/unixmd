@@ -6,8 +6,8 @@ import numpy as np
 class State(object):
     """ Class for BO states
 
-        :param integer nsp: dimension of space where the molecule is
-        :param integer nat: number of atoms
+        :param integer nsp: Dimension of space
+        :param integer nat: Number of atoms
     """
     def __init__(self, nsp, nat):
         # Initialize variables
@@ -21,16 +21,16 @@ class State(object):
 class Molecule(object):
     """ Class for a molecule object including State objects
 
-        :param string geometry: initial cartesian coordinates for position and velocities in the extended xyz format
-        :param integer nsp: dimension of space where the molecule is
-        :param integer nstates: number of BO states
-        :param boolean qmmm: use QMMM scheme for the calculation of large systems
-        :param integer natoms_mm: number of atoms in MM region
-        :param integer dof: degrees of freedom (if model is False, molecular dof is given)
-        :param string unit_pos: unit of position (A = angstrom, au = atomic unit [bohr])
-        :param string unit_vel: unit of velocity (au = atomic unit, A/ps = angstrom per ps, A/fs = angstromm per fs)
-        :param double charge: total charge of the system
-        :param boolean model: is the system a model system?
+        :param string geometry: A string containing atomic position and velocity
+        :param integer nsp: Dimension of space
+        :param integer nstates: Number of BO states
+        :param boolean qmmm: Use QMMM scheme for the calculation of large systems
+        :param integer natoms_mm: Number of atoms in MM region
+        :param integer dof: Degrees of freedom (if model is False, the molecular DoF is given.)
+        :param string unit_pos: Unit of atomic position
+        :param string unit_vel: Unit of atomic velocity
+        :param double charge: Total charge of the system
+        :param boolean model: Is the system a model system?
     """
     def __init__(self, geometry, nsp=3, nstates=3, qmmm=False, natoms_mm=None, dof=None, \
         unit_pos='A', unit_vel='au', charge=0., model=False):
@@ -127,8 +127,8 @@ class Molecule(object):
             self.read_geometry(geometry)
 
             :param string geometry: Cartesian coordinates for position and initial velocity in the extended xyz format
-            :param string unit_pos: unit of position (A = angstrom, au = atomic unit [bohr])
-            :param string unit_vel: unit of velocity (au = atomic unit, A/ps = angstrom per ps, A/fs = angstromm per fs)
+            :param string unit_pos: Unit of position (A = angstrom, au = atomic unit [bohr])
+            :param string unit_vel: Unit of velocity (au = atomic unit, A/ps = angstrom per ps, A/fs = angstromm per fs)
         """
         f = geometry.split('\n')
 
@@ -232,7 +232,7 @@ class Molecule(object):
     def reset_bo(self, calc_coupling):
         """ Reset BO energies, forces and nonadiabatic couplings
 
-            :param boolean calc_coupling: check whether the dynamics includes coupling calculation
+            :param boolean calc_coupling: Check whether the dynamics includes coupling calculation
         """
         for states in self.states:
             states.energy = 0.
@@ -265,9 +265,9 @@ class Molecule(object):
     def get_coefficient(self, coef, istate):
         """ Get initial coefficient
             
-            :param coefficient: initial BO coefficient
+            :param coefficient: Initial BO coefficient
             :type coefficient: double, list or complex, list
-            :param integer istate: initial adiabatic state
+            :param integer istate: Initial adiabatic state
         """
         if (coef == None):
             self.states[istate].coef = 1. + 0.j
@@ -291,7 +291,7 @@ class Molecule(object):
     def print_init(self, mm):
         """ Print initial information about molecule.py
 
-            :param object mm: mm object containing MM calculation infomation
+            :param object mm: MM object containing MM calculation infomation
         """
         geom_info = textwrap.dedent(f"""\
         {"-" * 68}

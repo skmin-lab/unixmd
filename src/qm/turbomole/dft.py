@@ -7,21 +7,21 @@ import numpy as np
 class DFT(Turbomole):
     """ Class for (TD)DFT method of Turbomole program
 
-        :param object molecule: molecule object
-        :param string functional: level of DFT theory
-        :param string basis_set: basis set information
-        :param integer memory: allocatable memory in the calculations
-        :param integer scf_max_iter: maximum number of SCF iterations
-        :param integer scf_en_tol: energy convergence for SCF iterations
-        :param integer cis_max_iter: maximum number of CIS iterations
-        :param integer cis_en_tol: energy convergence for CIS iterations
-        :param string qm_path: path for QM turbomole
-        :param integer nthreads: number of threads in the calculations
-        :param double version: version of Turbomole program
+        :param object molecule: Molecule object
+        :param string functional: Exchange-correlation functional information
+        :param string basis_set: Basis set information
+        :param integer memory: Allocatable memory in the calculations
+        :param integer scf_max_iter: Maximum number of SCF iterations
+        :param integer scf_en_tol: Energy convergence for SCF iterations
+        :param integer cis_max_iter: Maximum number of CIS iterations
+        :param integer cis_en_tol: Energy convergence for CIS iterations
+        :param string qm_path: Path for QM binary
+        :param integer nthreads: Number of threads in the calculations
+        :param string version: Version of Turbomole program
     """
     def __init__(self, molecule, functional="b-lyp", basis_set="SV(P)", memory=50, \
         scf_max_iter=50, scf_en_tol=6, cis_max_iter=25, cis_en_tol=6, \
-        qm_path="./", nthreads=1, version=6.4):
+        qm_path="./", nthreads=1, version="6.4"):
         # Initialize Turbomole common variables
         super(DFT, self).__init__(functional, basis_set, memory, qm_path, nthreads, version)
 
@@ -42,12 +42,12 @@ class DFT(Turbomole):
     def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from (TD)DFT method
 
-            :param object molecule: molecule object
-            :param string base_dir: base directory
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param double dt: time interval
-            :param integer istep: current MD step
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param string base_dir: Base directory
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param double dt: Time interval
+            :param integer istep: Current MD step
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         super().get_data(base_dir, calc_force_only)
         self.write_xyz(molecule)
@@ -60,8 +60,8 @@ class DFT(Turbomole):
     def get_input(self, molecule, bo_list):
         """ Generate Turbomole input files: define.in, control, etc
 
-            :param object molecule: molecule object
-            :param integer,list bo_list: list of BO states for BO calculation
+            :param object molecule: Molecule object
+            :param integer,list bo_list: List of BO states for BO calculation
         """
         if (self.calc_coupling):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) BOMD is only valid! {self.calc_coupling}")
@@ -180,10 +180,10 @@ class DFT(Turbomole):
     def run_QM(self, molecule, base_dir, istep, bo_list):
         """ Run (TD)DFT calculation and save the output files to QMlog directory
 
-            :param object molecule: molecule object
-            :param string base_dir: base directory
-            :param integer istep: current MD step
-            :param integer,list bo_list: list of BO states for BO calculation
+            :param object molecule: Molecule object
+            :param string base_dir: Base directory
+            :param integer istep: Current MD step
+            :param integer,list bo_list: List of BO states for BO calculation
         """
         # Run dscf
         scf_command = os.path.join(self.qm_bin_path, "dscf")
@@ -217,8 +217,8 @@ class DFT(Turbomole):
     def extract_QM(self, molecule, bo_list):
         """ Read the output files to get BO information
 
-            :param object molecule: molecule object
-            :param integer,list bo_list: list of BO states for BO calculation
+            :param object molecule: Molecule object
+            :param integer,list bo_list: List of BO states for BO calculation
         """
         file_name = "gradient"
         with open(file_name, "r") as f:
