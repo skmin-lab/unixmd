@@ -9,7 +9,7 @@ import pickle
 class Auxiliary_Molecule(object):
     """ Class for auxiliary molecule that is used for the calculation of decoherence term
 
-        :param object molecule: molecule object
+        :param object molecule: Molecule object
     """
     def __init__(self, molecule, one_dim):
         # Initialize auxiliary molecule
@@ -38,27 +38,27 @@ class Auxiliary_Molecule(object):
 class SHXF(MQC):
     """ Class for DISH-XF dynamics
 
-        :param object molecule: molecule object
-        :param object thermostat: thermostat type
-        :param integer istate: initial adiabatic state
-        :param double dt: time interval
-        :param integer nsteps: nuclear step
-        :param integer nesteps: electronic step
-        :param string propagation: propagation scheme
-        :param string solver: propagation solver
-        :param boolean l_pop_print: logical to print BO population and coherence
-        :param boolean l_adjnac: logical to adjust nonadiabatic coupling
-        :param string vel_rescale: velocity rescaling method after successful hop
-        :param string vel_reject: velocity rescaling method after frustrated hop
-        :param double threshold: electronic density threshold for decoherence term calculation
-        :param wsigma: width of nuclear wave packet of auxiliary trajectory
+        :param object molecule: Molecule object
+        :param object thermostat: Thermostat object
+        :param integer istate: Initial state
+        :param double dt: Time interval
+        :param integer nsteps: Total step of nuclear propagation
+        :param integer nesteps: Total step of electronic propagation
+        :param string propagation: Propagation scheme
+        :param string solver: Propagation solver
+        :param boolean l_pop_print: Logical to print BO population and coherence
+        :param boolean l_adjnac: Adjust nonadiabatic coupling to align the phases
+        :param string vel_rescale: Velocity rescaling method after successful hop
+        :param string vel_reject: Velocity rescaling method after frustrated hop
+        :param double threshold: Electronic density threshold for decoherence term calculation
+        :param wsigma: Width of nuclear wave packet of auxiliary trajectory
         :type wsigma: double or double,list
-        :param coefficient: initial BO coefficient
+        :param coefficient: Initial BO coefficient
         :type coefficient: double, list or complex, list
-        :param boolean l_state_wise: logical to use state-wise total energies for auxiliary trajectories
-        :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
-        :param integer out_freq: frequency of printing output
-        :param integer verbosity: verbosity of output
+        :param boolean l_state_wise: Logical to use state-wise total energies for auxiliary trajectories
+        :param string unit_dt: Unit of time interval
+        :param integer out_freq: Frequency of printing output
+        :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, vel_rescale="augment", \
@@ -137,13 +137,13 @@ class SHXF(MQC):
     def run(self, qm, mm=None, input_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         """ Run MQC dynamics according to decoherence-induced surface hopping dynamics
 
-            :param object qm: qm object containing on-the-fly calculation infomation
-            :param object mm: mm object containing MM calculation infomation
-            :param string input_dir: location of input directory
-            :param boolean save_qm_log: logical for saving QM calculation log
-            :param boolean save_mm_log: logical for saving MM calculation log
-            :param boolean save_scr: logical for saving scratch directory
-            :param string restart: option for controlling dynamics restarting
+            :param object qm: QM object containing on-the-fly calculation infomation
+            :param object mm: MM object containing MM calculation infomation
+            :param string input_dir: Name of directory where outputs to be saved.
+            :param boolean save_qm_log: Logical for saving QM calculation log
+            :param boolean save_mm_log: Logical for saving MM calculation log
+            :param boolean save_scr: Logical for saving scratch directory
+            :param string restart: Option for controlling dynamics restarting
         """
         # Initialize UNI-xMD
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
@@ -262,7 +262,7 @@ class SHXF(MQC):
     def hop_prob(self, istep):
         """ Routine to calculate hopping probabilities
 
-            :param integer istep: current MD step
+            :param integer istep: Current MD step
         """
         # Reset surface hopping variables
         self.rstate_old = self.rstate
@@ -299,7 +299,7 @@ class SHXF(MQC):
     def hop_check(self, bo_list):
         """ Routine to check hopping occurs with random number
 
-            :param integer,list bo_list: list of BO states for BO calculation
+            :param integer,list bo_list: List of BO states for BO calculation
         """
         self.rand = random.random()
         for ist in range(self.mol.nst):
@@ -313,8 +313,8 @@ class SHXF(MQC):
     def evaluate_hop(self, bo_list, istep):
         """ Routine to evaluate hopping and velocity rescaling
 
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param integer istep: current MD step
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param integer istep: Current MD step
         """
         if (self.l_hop):
             # Calculate potential difference between hopping states
@@ -473,7 +473,7 @@ class SHXF(MQC):
     def set_decoherence(self, one_st):
         """ Routine to reset coefficient/density if the state is decohered
 
-            :param integer one_st: state index that its population is one
+            :param integer one_st: State index that its population is one
         """
         self.phase = np.zeros((self.mol.nst, self.aux.nat, self.aux.nsp))
         self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex_)
@@ -560,8 +560,8 @@ class SHXF(MQC):
     def write_md_output(self, unixmd_dir, istep):
         """ Write output files
 
-            :param string unixmd_dir: unixmd directory
-            :param integer istep: current MD step
+            :param string unixmd_dir: PyUNIxMD directory
+            :param integer istep: Current MD step
         """
         # Write the common part
         super().write_md_output(unixmd_dir, istep)
@@ -575,8 +575,8 @@ class SHXF(MQC):
     def write_sh(self, unixmd_dir, istep):
         """ Write hopping-related quantities into files
 
-            :param string unixmd_dir: unixmd directory
-            :param integer istep: current MD step
+            :param string unixmd_dir: PyUNIxMD directory
+            :param integer istep: Current MD step
         """
         # Write SHSTATE file
         tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
@@ -589,8 +589,8 @@ class SHXF(MQC):
     def write_deco(self, unixmd_dir, istep):
         """ Write XF-based decoherence information
 
-            :param string unixmd_dir: unixmd directory
-            :param integer istep: current MD step
+            :param string unixmd_dir: PyUNIxMD directory
+            :param integer istep: Current MD step
         """
         # Write time-derivative density matrix elements in DOTPOTD
         tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopd])
@@ -623,8 +623,8 @@ class SHXF(MQC):
     def print_init(self, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
-            :param object qm: qm object containing on-the-fly calculation infomation
-            :param object mm: mm object containing MM calculation infomation
+            :param object qm: QM object containing on-the-fly calculation infomation
+            :param object mm: MM object containing MM calculation infomation
         """
         # Print initial information about molecule, qm, mm and thermostat
         super().print_init(qm, mm, restart)
@@ -658,7 +658,7 @@ class SHXF(MQC):
     def print_step(self, istep):
         """ Routine to print each steps infomation about dynamics
 
-            :param integer istep: current MD step
+            :param integer istep: Current MD step
         """
         if (istep == -1):
             max_prob = 0.

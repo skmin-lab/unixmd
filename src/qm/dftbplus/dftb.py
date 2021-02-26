@@ -9,36 +9,36 @@ import numpy as np
 class DFTB(DFTBplus):
     """ Class for (TD)DFTB method of DFTB+ program
 
-        :param object molecule: molecule object
-        :param boolean scc: include self-consistent charge (SCC) scheme
-        :param double scc_tol: energy convergence for SCC iterations
-        :param integer scc_max_iter: maximum number of SCC iterations
-        :param boolean ocdftb: include onsite correction to SCC term
-        :param boolean lcdftb: include long-range corrected functional
-        :param string lc_method: algorithms for LC-DFTB
-        :param boolean sdftb: include spin-polarisation scheme
-        :param double unpaired_elec: number of unpaired electrons
-        :param string guess: initial guess method for SCC scheme
-        :param string guess_file: initial guess file for charges
-        :param double elec_temp: electronic temperature in Fermi-Dirac scheme
-        :param string mixer: charge mixing method used in DFTB
-        :param string ex_symmetry: symmetry of excited state in TDDFTB
-        :param double e_window: energy window for TDDFTB. Increases efficiency of NACME calculation.
-        :param integer,list k_point: number of k-point samplings
-        :param boolean periodic: use periodicity in the calculations
-        :param double,list cell_length: the lattice vectors of periodic unit cell
-        :param string sk_path: path for slater-koster files
-        :param string install_path: path for DFTB+ install directory
-        :param boolean mpi: use MPI parallelization
-        :param string mpi_path: path for MPI binary
-        :param integer nthreads: number of threads in the calculations
-        :param double version: version of DFTB+ program
+        :param object molecule: Molecule object
+        :param boolean scc: Include self-consistent charge (SCC) scheme
+        :param double scc_tol: Stopping criteria for the SCC iterations
+        :param integer scc_max_iter: Maximum number of SCC iterations
+        :param boolean ocdftb: Include onsite correction to SCC term
+        :param boolean lcdftb: Include long-range corrected functional
+        :param string lc_method: Algorithms for LC-DFTB
+        :param boolean sdftb: Include spin-polarisation scheme
+        :param double unpaired_elec: Number of unpaired electrons
+        :param string guess: Initial guess method for SCC scheme
+        :param string guess_file: Initial guess file for charges
+        :param double elec_temp: Electronic temperature in Fermi-Dirac scheme
+        :param string mixer: Charge mixing method used in DFTB
+        :param string ex_symmetry: Symmetry of excited state in TDDFTB
+        :param double e_window: Energy window for TDDFTB. Increases efficiency of NACME calculation.
+        :param integer,list k_point: Number of k-point samplings
+        :param boolean periodic: Use periodicity in the calculations
+        :param double,list cell_length: The lattice vectors of periodic unit cell
+        :param string sk_path: Path for slater-koster files
+        :param string install_path: Path for DFTB+ install directory
+        :param boolean mpi: Use MPI parallelization
+        :param string mpi_path: Path for MPI binary
+        :param integer nthreads: Number of threads in the calculations
+        :param string version: Version of DFTB+ program
     """
     def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=100, ocdftb=False, \
         lcdftb=False, lc_method="MatrixBased", sdftb=False, unpaired_elec=0., guess="h0", \
         guess_file="./charges.bin", elec_temp=0., mixer="Broyden", ex_symmetry="singlet", e_window=0., \
         k_point=[1, 1, 1], periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.,], \
-        sk_path="./", install_path="./", mpi=False, mpi_path="./", nthreads=1, version=20.1):
+        sk_path="./", install_path="./", mpi=False, mpi_path="./", nthreads=1, version="20.1"):
         # Initialize DFTB+ common variables
         super(DFTB, self).__init__(molecule, sk_path, install_path, nthreads, version)
 
@@ -158,12 +158,12 @@ class DFTB(DFTBplus):
     def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from (TD)DFTB method
 
-            :param object molecule: molecule object
-            :param string base_dir: base directory
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param double dt: time interval
-            :param integer istep: current MD step
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param string base_dir: Base directory
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param double dt: Time interval
+            :param integer istep: Current MD step
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         self.copy_files(molecule, istep, calc_force_only)
         super().get_data(base_dir, calc_force_only)
@@ -176,9 +176,9 @@ class DFTB(DFTBplus):
     def copy_files(self, molecule, istep, calc_force_only):
         """ Copy necessary scratch files in previous step
 
-            :param object molecule: molecule object
-            :param integer istep: current MD step
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param integer istep: Current MD step
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         # Copy required files for NACME
         if (self.calc_coupling and not calc_force_only and istep >= 0 and molecule.nst > 1):
@@ -202,10 +202,10 @@ class DFTB(DFTBplus):
     def get_input(self, molecule, istep, bo_list, calc_force_only):
         """ Generate DFTB+ input files: geometry.gen, dftb_in.hsd
 
-            :param object molecule: molecule object
-            :param integer istep: current MD step
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param integer istep: Current MD step
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         # Make 'geometry.gen' file
         os.system("xyz2gen geometry.xyz")
@@ -465,9 +465,9 @@ class DFTB(DFTBplus):
             input_dftb += input_excited
 
         # ParserOptions Block
-        if (self.version == 19.1):
+        if (self.version == "19.1"):
             parser_version = 7
-        elif (self.version == 20.1):
+        elif (self.version == "20.1"):
             parser_version = 8
 
         input_parseroptions = textwrap.dedent(f"""\
@@ -530,11 +530,11 @@ class DFTB(DFTBplus):
     def run_QM(self, molecule, base_dir, istep, bo_list, calc_force_only):
         """ Run (TD)DFTB calculation and save the output files to QMlog directory
 
-            :param object molecule: molecule object
-            :param string base_dir: base directory
-            :param integer istep: current MD step
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param string base_dir: Base directory
+            :param integer istep: Current MD step
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         # Set run command
         qm_command = os.path.join(self.qm_path, "dftb+")
@@ -575,12 +575,12 @@ class DFTB(DFTBplus):
     def extract_QM(self, molecule, base_dir, istep, bo_list, dt, calc_force_only):
         """ Read the output files to get BO information
 
-            :param object molecule: molecule object
-            :param string base_dir: base directory
-            :param integer istep: current MD step
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param double dt: time interval
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param string base_dir: Base directory
+            :param integer istep: Current MD step
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param double dt: Time interval
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         # Read 'detailed.out' file
         # TODO: the qmmm information is written in this file
@@ -627,9 +627,9 @@ class DFTB(DFTBplus):
         """ Read the necessary files and calculate NACME from tdnac.c routine,
             note that only reading of several files is required in this method
 
-            :param object molecule: molecule object
-            :param integer istep: current MD step
-            :param double dt: time interval
+            :param object molecule: Molecule object
+            :param integer istep: Current MD step
+            :param double dt: Time interval
         """
         # Read upper right block of 'oversqr.dat' file (< t | t+dt >)
         file_name_in = "oversqr.dat"

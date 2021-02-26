@@ -8,20 +8,20 @@ import numpy as np
 class DFT(Gaussian09):
     """ Class for the (TD)DFT method of Gaussian09 program
 
-        :param object molecule: molecule object
-        :param integer nthreads: number of threads in the calculations
-        :param string memory: allocatable memory in the calculations
-        :param string functional: level of DFT theory
-        :param string basis_set: basis set information
-        :param string guess: initial guess type
-        :param string guess_file: initial guess file
-        :param string g09_root_path: path for Gaussian09 root
-        :param string version: version of Gaussian09 program
+        :param object molecule: Molecule object
+        :param string functional: Exchange-correlation functional information
+        :param string basis_set: Basis set information
+        :param string memory: Allocatable memory
+        :param string guess: Initial guess for SCF iterations
+        :param string guess_file: Initial guess file
+        :param string g09_root_path: Path for Gaussian 09 root
+        :param integer nthreads: Number of threads in the calculations
+        :param string version: Version of Gaussian 09 program
     """
     def __init__(self, molecule, nthreads=1, memory="1gb", \
         functional="BLYP", basis_set="STO-3G", \
         guess="Harris", guess_file="./g09.chk", \
-        g09_root_path="/opt/gaussian/", version="Revision A.02"):
+        g09_root_path="./", version="Revision A.02"):
         # Initialize Gaussian09 common variables
         super(DFT, self).__init__(basis_set, memory, nthreads, g09_root_path, version)
 
@@ -64,12 +64,12 @@ class DFT(Gaussian09):
     def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient from (TD)DFT method
 
-            :param object molecule: molecule object
-            :param string base_dir: base directory
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param double dt: time interval
-            :param integer istep: current MD step
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param string base_dir: Base directory
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param double dt: Time interval
+            :param integer istep: Current MD step
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         self.copy_files(molecule, istep, calc_force_only)
         super().get_data(base_dir, calc_force_only)
@@ -81,9 +81,9 @@ class DFT(Gaussian09):
     def copy_files(self, molecule, istep, calc_force_only):
         """ Copy necessary scratch files in previous step
 
-            :param object molecule: molecule object
-            :param integer istep: current MD step
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param integer istep: Current MD step
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         # Copy required files for NACME
         if (molecule.nst > 1 and not calc_force_only and istep >= 0):
@@ -100,10 +100,10 @@ class DFT(Gaussian09):
     def get_input(self, molecule, istep, bo_list, calc_force_only):
         """ Generate Gaussian09 input files: g09.inp
 
-            :param object molecule: molecule object
-            :param integer istep: current MD step
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param integer istep: Current MD step
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         # Read check-point file from previous step
         if (self.guess == "read"):
@@ -227,9 +227,9 @@ class DFT(Gaussian09):
     def run_QM(self, base_dir, istep, bo_list):
         """ Run (TD)DFT calculation and save the output files to QMlog directory
 
-            :param string base_dir: base directory
-            :param integer istep: current MD step
-            :param integer,list bo_list: list of BO states for BO calculation
+            :param string base_dir: Base directory
+            :param integer istep: Current MD step
+            :param integer,list bo_list: List of BO states for BO calculation
         """
         # Set environment variables
         if (istep == -1):
@@ -257,11 +257,11 @@ class DFT(Gaussian09):
     def extract_QM(self, molecule, istep, bo_list, dt, calc_force_only):
         """ Read the output files to get BO information
 
-            :param object molecule: molecule object
-            :param integer istep: current MD step
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param double dt: time interval
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param integer istep: Current MD step
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param double dt: Time interval
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         file_name = "log"
         with open(file_name, "r") as f:
@@ -306,7 +306,7 @@ class DFT(Gaussian09):
     def init_buffer(self, molecule):
         """ Initialize buffer variables to get NACME
 
-            :param object molecule: molecule object
+            :param object molecule: Molecule object
         """
         file_name = "log"
         with open(file_name, "r") as f:
@@ -333,9 +333,9 @@ class DFT(Gaussian09):
         """ Read the necessary files and calculate NACME from tdnac.c routine
             note that only reading of several files is required in this method
 
-            :param object molecule: molecule object
-            :param integer istep: current MD step
-            :param double dt: time interval
+            :param object molecule: Molecule object
+            :param integer istep: Current MD step
+            :param double dt: Time interval
         """
         path_rwfdump = os.path.join(self.g09_root_path, "g09/rwfdump")
  
@@ -360,8 +360,8 @@ class DFT(Gaussian09):
     def read_ao_overlap(self, path_rwfdump, fn_rwf):
         """ Read a rwf file to obtain ao_overlap data
 
-            :param string path_rwfdump: the path for rwfdump binary
-            :param string fn_rwf: the name of the rwf file
+            :param string path_rwfdump: The path for rwfdump binary
+            :param string fn_rwf: The name of the rwf file
         """
         os.system(path_rwfdump + f" {fn_rwf} ao_overlap.dat 514R")
 
@@ -387,8 +387,8 @@ class DFT(Gaussian09):
     def read_mo_coef(self, path_rwfdump, fn_rwf):
         """ Read a rwf file to obtain mo_coef data
 
-            :param string path_rwfdump: the path for rwfdump binary
-            :param string fn_rwf: the name of the rwf file
+            :param string path_rwfdump: The path for rwfdump binary
+            :param string fn_rwf: The name of the rwf file
         """
         os.system(path_rwfdump + f" {fn_rwf} mo_coef.dat 524R")
 
@@ -405,9 +405,9 @@ class DFT(Gaussian09):
     def read_xy_coef(self, molecule, path_rwfdump, fn_rwf):
         """ Read a rwf file to obtain xy_coef data
 
-            :param object molecule: molecule object
-            :param string path_rwfdump: the path for rwfdump binary
-            :param string fn_rwf: the name of the rwf file
+            :param object molecule: Molecule object
+            :param string path_rwfdump: The path for rwfdump binary
+            :param string fn_rwf: The name of the rwf file
         """
         os.system(path_rwfdump + f" {fn_rwf} xy_coef.dat 635R")
 

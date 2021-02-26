@@ -6,11 +6,11 @@ import os
 class DFTBplus(QM_calculator):
     """ Class for common parts of DFTB+ program
 
-        :param object molecule: molecule object
-        :param string sk_path: path for slater-koster files
-        :param string install_path: path for DFTB+ install directory
-        :param integer nthreads: number of threads in the calculations
-        :param double version: version of DFTB+ program
+        :param object molecule: Molecule object
+        :param string sk_path: Path for slater-koster files
+        :param string install_path: Path for DFTB+ install directory
+        :param integer nthreads: Number of threads in the calculations
+        :param string version: Version of DFTB+ program
     """
     def __init__(self, molecule, sk_path, install_path, nthreads, version):
         # Save name of QM calculator and its method
@@ -24,7 +24,7 @@ class DFTBplus(QM_calculator):
         self.version = version
 
         # Environmental variable setting for python scripts such as xyz2gen used in DFTB+
-        if (self.version == 19.1 or self.version == 20.1):
+        if (self.version == "19.1" or self.version == "20.1"):
             self.qm_path = os.path.join(self.install_path, "bin")
             # Note that the python version can be changed according to the users setting
             lib_dir = os.path.join(self.install_path, "lib/python3.6/site-packages")

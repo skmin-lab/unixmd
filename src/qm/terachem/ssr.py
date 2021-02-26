@@ -7,30 +7,30 @@ import numpy as np
 class SSR(TeraChem):
     """ Class for SSR method of TeraChem program
 
-        :param object molecule: molecule object
-        :param string basis_set: basis set information
-        :param string functional: level of DFT theory
-        :param string precision: precision in the calculations
-        :param double scf_rho_tol: wavefunction convergence for SCF iterations
-        :param integer scf_max_iter: maximum number of SCF iterations
-        :param boolean ssr22: use REKS(2,2) calculation?
-        :param string guess: initial guess for REKS SCF iterations
-        :param string guess_file: initial guess file
-        :param double reks_rho_tol: DIIS error for REKS SCF iterations
-        :param integer reks_max_iter: maximum number of REKS SCF iterations
-        :param double shift: level shifting value in REKS SCF iterations
-        :param boolean use_ssr_state: calculate SSR state, if not, treat SA-REKS
-        :param double cpreks_grad_tol: gradient tolerance for CP-REKS equations
-        :param integer cpreks_max_iter: maximum number of CP-REKS iterations
-        :param string qm_path: path for QM binary
-        :param integer ngpus: number of GPUs
+        :param object molecule: Molecule object
+        :param string basis_set: Basis set information
+        :param string functional: Exchange-correlation functional information
+        :param string precision: Precision in the calculations
+        :param double scf_rho_tol: Wavefunction convergence for SCF iterations
+        :param integer scf_max_iter: Maximum number of SCF iterations
+        :param boolean ssr22: Use SSR(2,2) calculation?
+        :param string guess: Initial guess for REKS SCF iterations
+        :param string guess_file: Initial guess file
+        :param double reks_rho_tol: wavefunction error for REKS SCF iterations
+        :param integer reks_max_iter: Maximum number of REKS SCF iterations
+        :param double shift: Level shifting value in REKS SCF iterations
+        :param boolean state_interactions: Include state-interaction terms to SA-REKS
+        :param double cpreks_grad_tol: Gradient tolerance for CP-REKS equations
+        :param integer cpreks_max_iter: Maximum number of CP-REKS iterations
+        :param string qm_path: Path for QM binary
+        :param integer ngpus: Number of GPUs
         :param string gpu_id: ID of used GPUs
-        :param double version: version of TeraChem program
+        :param string version: Version of TeraChem program
     """
     def __init__(self, molecule, ngpus=1, gpu_id="1", precision="dynamic", \
-        version=1.93, functional="hf", basis_set="sto-3g", scf_rho_tol=1E-2, \
+        version="1.93", functional="hf", basis_set="sto-3g", scf_rho_tol=1E-2, \
         scf_max_iter=300, ssr22=True, guess="dft", guess_file="./c0", \
-        reks_rho_tol=1E-6, reks_max_iter=1000, shift=0.3, use_ssr_state=True, \
+        reks_rho_tol=1E-6, reks_max_iter=1000, shift=0.3, state_interactions=False, \
         cpreks_grad_tol=1E-6, cpreks_max_iter=1000, qm_path="./"):
         # Initialize TeraChem common variables
         super(SSR, self).__init__(functional, basis_set, qm_path, ngpus, \
@@ -47,7 +47,7 @@ class SSR(TeraChem):
             self.reks_rho_tol = reks_rho_tol
             self.reks_max_iter = reks_max_iter
             self.shift = shift
-            self.use_ssr_state = use_ssr_state
+            self.state_interactions = state_interactions
 
             # Set initial guess for REKS SCF iterations
             self.guess = guess
@@ -70,12 +70,12 @@ class SSR(TeraChem):
     def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from SSR method
 
-            :param object molecule: molecule object
-            :param string base_dir: base directory
-            :param integer,list bo_list: list of BO states for BO calculation
-            :param double dt: time interval
-            :param integer istep: current MD step
-            :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object molecule: Molecule object
+            :param string base_dir: Base directory
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param double dt: Time interval
+            :param integer istep: Current MD step
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         self.copy_files(istep)
         super().get_data(base_dir, calc_force_only)
@@ -88,7 +88,7 @@ class SSR(TeraChem):
     def copy_files(self, istep):
         """ Copy necessary scratch files in previous step
 
-            :param integer istep: current MD step
+            :param integer istep: Current MD step
         """
         # Copy required files to read initial guess
         if (self.guess == "read" and istep >= 0):
@@ -99,9 +99,9 @@ class SSR(TeraChem):
     def get_input(self, molecule, istep, bo_list):
         """ Generate TeraChem input files: input.tcin
 
-            :param object molecule: molecule object
-            :param integer istep: current MD step
-            :param integer,list bo_list: list of BO states for BO calculation
+            :param object molecule: Molecule object
+            :param integer istep: Current MD step
+            :param integer,list bo_list: List of BO states for BO calculation
         """
         # Make 'input.tcin' file
         input_terachem = ""
@@ -172,7 +172,7 @@ class SSR(TeraChem):
             if (molecule.nst == 1):
                 sa_reks = 0
             elif (molecule.nst == 2):
-                if (self.use_ssr_state):
+                if (self.state_interactions):
                     sa_reks = 2
                 else:
                     sa_reks = 1
@@ -222,9 +222,9 @@ class SSR(TeraChem):
     def run_QM(self, base_dir, istep, bo_list):
         """ Run SSR calculation and save the output files to QMlog directory
 
-            :param string base_dir: base directory
-            :param integer istep: current MD step
-            :param integer,list bo_list: list of BO states for BO calculation
+            :param string base_dir: Base directory
+            :param integer istep: Current MD step
+            :param integer,list bo_list: List of BO states for BO calculation
         """
         # Run TeraChem method
         qm_command = os.path.join(self.qm_path, "terachem")
@@ -241,8 +241,8 @@ class SSR(TeraChem):
     def extract_QM(self, molecule, bo_list):
         """ Read the output files to get BO information
 
-            :param object molecule: molecule object
-            :param integer,list bo_list: list of BO states for BO calculation
+            :param object molecule: Molecule object
+            :param integer,list bo_list: List of BO states for BO calculation
         """
         # Read 'log' file
         file_name = "log"
@@ -258,7 +258,7 @@ class SSR(TeraChem):
             energy = energy.astype(float)
             molecule.states[0].energy = energy[0]
         else:
-            if (self.use_ssr_state):
+            if (self.state_interactions):
                 # SSR state
                 energy = re.findall('SSR state\s\d\s+([-]\S+)', log_out)
                 energy = np.array(energy)
@@ -303,7 +303,7 @@ class SSR(TeraChem):
         if (self.nac == "Yes"):
 
             # 1.99 version do not show H vector
-            if (self.version == 1.99):
+            if (self.version == "1.99"):
                 # Zeroing for G, h and H vectors
                 Gvec = np.zeros((molecule.nat, molecule.nsp))
                 hvec = np.zeros((molecule.nat, molecule.nsp))
@@ -330,7 +330,7 @@ class SSR(TeraChem):
                 molecule.nac[0, 1] = Hvec
                 molecule.nac[1, 0] = - Hvec
 
-            elif (self.version == 1.93):
+            elif (self.version == "1.93"):
                 kst = 0
                 for ist in range(molecule.nst):
                     for jst in range(ist + 1, molecule.nst):
