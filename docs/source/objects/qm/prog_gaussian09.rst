@@ -50,8 +50,8 @@ Gaussian 09 :cite:`Frisch2009` has been a standard program for electronic struct
 | *(string)*            |                                             |                   |
 +-----------------------+---------------------------------------------+-------------------+
 
-Detailed description of the arguments
-""""""""""""""""""""""""""""""""""""""""""
+Detailed description of arguments
+'''''''''''''''''''''''''''''''''''''
 
 - **functional** *(string)* - Default: *'BLYP'*
 
