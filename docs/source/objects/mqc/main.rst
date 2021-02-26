@@ -74,7 +74,7 @@ Further information of individual MD objects is listed in each section.
    import pickle
    
    # Read the binary file and load the information 
-   with open('./md/RESTART.bin', 'rb') as f_restart:
+   with open('./RESTART.bin', 'rb') as f_restart:
        restart = pickle.load(f_restart)
    qm = restart["qm"]
    md = restart["md"]
