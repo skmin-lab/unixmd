@@ -191,19 +191,18 @@ Detailed description of arguments
 
 - **guess** *(string)* - Default: *'h0'*
 
-  This argument determines initial guess method for SCC-DFTB method.
+  This argument determines initial guess method for SCC-DFTB calculations.
 
-  + *'h0'*: Initial charges for SCC-DFTB method are set to zero for every MD step.
-  + *'read'*: Use charges calculated at the previous time step as the initial guess for the SCC-DFTB calculation.
+  + *'h0'*: Initial guess charges for SCC-DFTB calculations are set to zeros.
+  + *'read'*: Initial guess charges are read from the 'charges.bin' file which contains the charges calculated at the previous time step.
 
 \
 
 - **guess_file** *(string)* - Default: *'./charges.bin'*
 
-  The **guess_file** determines the name of file containing orbitals for
-  the initial guess of orbitals for the SCC-DFTB calculation at the first MD step.
+  The **guess_file** determines the name of the file containing orbitals for the initial guess of orbitals for the SCC-DFTB calculation at the first MD step.
   This argument is effective only if **guess** = *'read'*.
-  If the file does not exist, *'h0'* option is requested for the initial guess for the SCC-DFTB calculation.
+  If the file does not exist, the *'h0'* option is applied for the initial guess for the SCC-DFTB calculation at the first MD step.
 
 \
 
@@ -460,17 +459,17 @@ Detailed description of arguments
   This argument determines initial guess method for DFTB/SSR method.
   The *'read'* option with DFTB/SSR method is supported in 20.2 version (or newer).
 
-  + *'h0'*: Initial orbitals for DFTB/SSR method are generated from the diagonalization of non-SCC Hamiltonian.
+  + *'h0'*: Initial guess orbitals for DFTB/SSR method are generated from the diagonalization of non-SCC Hamiltonian.
   + *'read'*: Use orbitals calculated at the previous time step as the initial guess for the DFTB/SSR calculation.
+  + *'read'*: Initial guess orbitals are read from the 'eigenvec.bin' file which contains the orbitals calculated at the previous time step.
 
 \
 
 - **guess_file** *(string)* - Default: *'./eigenvec.bin'*
 
-  The **guess_file** determines the name of file containing orbitals for
-  the initial guess of orbitals for the DFTB/SSR calculation at the first MD step.
+  The **guess_file** determines the name of the file containing orbitals for the initial guess of orbitals for the DFTB/SSR calculation at the first MD step.
   This argument is effective only if **guess** = *'read'*.
-  If the file does not exist, *'h0'* option is requested for the initial guess for the DFTB/SSR calculation.
+  If the file does not exist, *'h0'* option is applied for the initial guess for the DFTB/SSR calculation at the first MD step.
 
 \
 

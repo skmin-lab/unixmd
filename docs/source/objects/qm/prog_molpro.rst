@@ -97,18 +97,18 @@ Detailed description of the arguments
 
 - **guess** *(string)* - Default: *'hf'*
 
-  The **guess** determines the initial guess for a (SA-)CASSCF calculations.
+  This argument determines initial guess method for (SA-)CASSCF calculations. 
 
-  + *'hf'*: Use HF orbitals as the initial guess of orbitals for the (SA-)CASSCF calculation.
-  + *'read'*: Use wave functions calculated at the previous time step as the initial guess for the (SA-)CASSCF calculation.
+  + *'hf'*: Initial guess orbitals for (SA-)CASSCF calculations are generated from the HF calculations.
+  + *'read'*: Initial guesses of orbitals and CI coefficients are read from the 'wf.wfu' file which contains the orbitals and CI coefficients calculated at the previous time step.
 
 \
 
 - **guess_file** *(string)* - Default: *'./wf.wfu'*
    
-  The **guess_file** determines the name of file containing orbitals for the initial guess of orbitals for the (SA-)CASSCF calculation at the first time step.
+  The **guess_file** determines the name of the file containing orbitals for the initial guess of orbitals for the (SA-)CASSCF calculation at the first MD step.
   This argument is effective only if **guess** = *'read'*.
-  If the file does not exist, HF calculation is requested for the initial guess for the (SA-)CASSCF calculation.
+  If the file does not exist, *'hf'* option is applied for the initial guess for the (SA-)CASSCF calculation at the first MD step.
 
 \
 

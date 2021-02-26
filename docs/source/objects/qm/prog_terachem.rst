@@ -148,19 +148,18 @@ Detailed description of arguments
 
 - **guess** *(string)* - Default: *'dft'*
 
-  This argument determines initial guess method for SSR method.
+  This argument determines initial guess method for SSR calculations.
 
-  + *'dft'*: Initial orbitals for SSR method are generated from the DFT calculation with **scf_rho_tol** tolerance.
-  + *'read'*: Use orbitals calculated at the previous time step as the initial guess for the SSR calculation.
+  + *'dft'*: Initial guess orbitals for SSR calculations are generated from the DFT calculations.
+  + *'read'*: Initial guess orbitals are read from the 'c0' file which contains the orbitals calculated at the previous time step.
 
 \
 
 - **guess_file** *(string)* - Default: *'./c0'*
 
-  The **guess_file** determines the name of file containing orbitals for
-  the initial guess of orbitals for the SSR calculation at the first MD step.
+  The **guess_file** determines the name of the file containing orbitals for the initial guess of orbitals for the SSR calculation at the first MD step.
   This argument is effective only if **guess** = *'read'*.
-  If the file does not exist, *'dft'* option is requested for the initial guess for the SSR calculation.
+  If the file does not exist, *'dft'* option is requested for the initial guess for the SSR calculation at the first MD step.
 
 \
 

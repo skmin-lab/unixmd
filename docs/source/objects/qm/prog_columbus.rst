@@ -87,19 +87,18 @@ Detailed description of arguments
 
 - **guess** *(string)* - Default: *'hf'*
 
-  This argument determines initial guess method for (SA-)CASSCF method. 
+  This argument determines initial guess method for (SA-)CASSCF calculations. 
 
-  + *'hf'*: Initial orbitals for (SA-)CASSCF method are generated from the HF calculation.
-  + *'read'*: Reads 'mocoef' file generated from previous step as initial guess.
-    At first MD step, **guess_file** will be used as initial guess.
+  + *'hf'*: Initial guess orbitals for (SA-)CASSCF calculations are generated from the HF calculations.
+  + *'read'*: Initial guess orbitals are read from the 'mocoef' file which contains the orbitals calculated at the previous time step.
 
 \
 
 - **guess_file** *(string)* - Default: *'./mocoef'*
 
-  This argument designates initial molecular orbital file for (SA-)CASSCF method. It is valid when **guess** = *'read'*.
-  It will be used as initial guess for the (SA-)CASSCF calculation in first MD step.
-  If the file does not exist, HF calculation is requested for the initial guess for the (SA-)CASSCF calculation.
+  The **guess_file** determines the name of the file containing orbitals for the initial guess of orbitals for the (SA-)CASSCF calculation at the first MD step.
+  This argument is effective only if **guess** = *'read'*.
+  If the file does not exist, *'hf'* option is applied for the initial guess for the (SA-)CASSCF calculation at the first MD step.
 
 \
 
