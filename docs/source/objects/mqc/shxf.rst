@@ -48,7 +48,7 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **l_adjnac**               | Adjust nonadiabatic coupling to align the phases     | *True*       |
 | *(boolean)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **vel_rescale**            | Velocity rescaling method after successful hop       | *'momentum'* |
+| **vel_rescale**            | Velocity rescaling method after successful hop       | *'augment'*  |
 | *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **vel_reject**             | Velocity rescaling method after frustrated hop       | *'reverse'*  |
@@ -137,7 +137,7 @@ Detailed description of the arguments
 
 \
 
-- **vel_rescale** *(string)* - Default: *'momentum'*
+- **vel_rescale** *(string)* - Default: *'augment'*
 
   This argument determines the direction of the momentum to be adjusted after a hop to conserve the total energy.
   If there is not enough kinetic energy in this direction, the hop is rejected and the running state is switched back to the original state.

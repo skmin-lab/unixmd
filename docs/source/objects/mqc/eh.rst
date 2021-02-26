@@ -35,7 +35,7 @@ where :math:`d_{ij}` is nonadiabatic couping between :math:`i`-th and :math:`j`-
 | **nsteps**                 | Total step of nuclear propagation              | *1000*      |
 | *(integer)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **nesteps**                | Total step of electronic propagation           | *10000*     |
+| **nesteps**                | Total step of electronic propagation           | *20*        |
 | *(integer)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
 | **propagation**            | Propagation scheme                             | *'density'* |
