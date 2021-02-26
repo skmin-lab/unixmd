@@ -14,7 +14,6 @@ MQC methods implemented in PyUNIxMD are listed in the following.
 .. toctree::
     :glob:
     :maxdepth: 1
-    :titlesonly:
 
     *
 
@@ -88,9 +87,6 @@ Further information of individual MD objects is listed in each section.
    # The new output files are written.
    md.run(qm=qm, restart='write')
 
-
-.. Detailed description of arguments
-.. """"""""""""""""""""""""""""""""""""
 
 .. raw:: html
 
