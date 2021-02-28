@@ -1,14 +1,10 @@
 MQC
 -------------------------------------------
 
-Mixed quantum-classical (MQC) dynamics is general method for explaining the variation of molecule including
-electronic state through time propagation. This can be exactly solved by time-dependent Schrodinger equation
-for all particles, but this solution requires enormous cost for numerical calculation so it is restricted for
-very small system. To overcome this limit, MQC tried to describe larger system by considering nuclei as classical 
-particles which follow classical equation of motion.
+Mixed quantum-classical (MQC) dynamics is one of theoretical tools to simulate nonadiabatic processes in molecular or extended systems. This method is characterized by propagating the electrons through quantum mechanics but nuclear dynamics through classical trajectories, to overcome the computational cost of calculating the correlated systems.
 
-PyUNIxMD mainly targeted on MQC, and whole dynamics implemented in current version of PyUNIxMD are subclass of
-MQC class. In the MQC class, there are functions to update classical properties of nuclei.
+PyUNIxMD provides a variety of MQC methods, and they are implemented as subclasses of
+MQC class. In the MQC class, the common properties and methods are defined such as functions to update classical properties of nuclei.
 MQC methods implemented in PyUNIxMD are listed in the following.
 
 .. toctree::
@@ -17,16 +13,15 @@ MQC methods implemented in PyUNIxMD are listed in the following.
 
     *
 
-Far more insights about treating MQC in terms of code structure, the overall modules are controlled in fundamental
-input file 'run.py'. When users select their dynamics method, they have to make md object from the subclass of
-:class:`MQC` class such as :class:`SH` (:class:`mqc.SH`), and a run method (``md.run``) to run that md object. In the md object, basic dynamics
-parameters such as number of steps are given as arguments. Besides, the run method includes overall dynamics condition as arguments.
+In the running script 'run.py', you need to specify the dynamics you want to run by making an md object from the subclasses of
+:class:`MQC` class such as :class:`SH` (:class:`mqc.SH`). After setting the dynamics method, you use run method (``md.run``) to perform the dynamics.
+When making an md object, basic dynamics parameters such as the number of steps are needed to be specified. Also, the run method takes various arguments such as a QM object, thermostat, etc.
 
 PyUNIxMD saves the objects for MQC and QM in a binary formatted file ('RESTART.bin') under **input_dir** directory using the 'pickle' package at every time step.
 The 'RESTART.bin' file is overwritten at every successful MD step, therefore the file contains the information of a trajectory at the last successful MD step.
 You can restart the dynamics simulation by reading the 'RESTART.bin' file using 'pickle' package.
 
-Arguments for run method are listed below. The important point is that run method is included in each
+Arguments for the run method are listed below. The important point is that the run method is included in each
 md subclass of :class:`MQC`, not :class:`MQC` itself.
 
 +-----------------------------+-------------------------------------------------+----------+
