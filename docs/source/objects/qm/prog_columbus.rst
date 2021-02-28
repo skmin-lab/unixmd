@@ -74,7 +74,7 @@ Detailed description of arguments
 - **basis_set** *(string)* - Default: *'6-31g\*'*
 
   This argument specifies a basis set used in the Columbus calculation.
-  Not all basis sets are supported, so it is recommended to check a Columbus manual for the compatibility with PyUNIxMD.
+  Not all basis sets are supported, so it is recommended to check the Columbus manual for the compatibility with PyUNIxMD.
   In PyUNIxMD, currently 10 basis sets are supported; {*'cc-pvdz'*, *'cc-pvtz'*, *'cc-pvqz'*, *'3-21g\*'*, *'3-21+g\*'*, *'6-31g'*, *'6-31g\*'*, *'6-31+g\*'*, *'6-311g\*'*, *'6-311+g\*'*}.
 
 \
