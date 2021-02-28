@@ -24,34 +24,34 @@ Code Overview
 Program Structure
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The overall code structure is displayed in next figure.
+The overall code structure is displayed in the next figure.
 
 .. image:: ./unixmd_structure.png
    :width: 400pt
 
-UNI-xMD is mainly based on object-oriented programming, which is structured by
+PyUNIxMD is mainly based on object-oriented programming, which is structured by
 several classes closely connected with each other.
-Central modules of UNI-xMD can be divided into followings.
+Central modules of UNI-xMD are divided into the following.
 
-- Molecule : Describes overall molecule objects, including state objects.
+- Molecule: a class for describing overall molecule objects, including state objects.
 
-- MQC : Class for dynamics propagation. Contains subclasses for each method such as Ehrenfest or surface hopping.
+- MQC: a class for dynamics propagation. Contains subclasses for each nonadiabatic dynamics such as Ehrenfest, surface hopping, etc.
 
-- QM : Class for calculating dynamics properties using external software such as Molpro or DFTB+.
+- QM: a class for QM calculation of dynamics properties using external softwares such as Molpro, Gaussian 09, DFTB+, etc.
 
-- MM : Class for calculating dynamics properties using external software such as Tinker.
+- MM: a class for MM calculation using external software such as Tinker.
 
-- Thermostat : Class for a component which controls the temperature of a physical system.
+- Thermostat: a class for controlling the temperature of a physical system.
 
 Subclasses of MQC, QM and MM classes are organized in inheritance structure.
-This helps to simplify codes by inheriting common arguments to the subclasses.
+This helps to simplify the codes by inheriting common arguments to the subclasses.
 
 For the detailed information of each module, check each section in below.
 
 Working Process
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To run UNI-xMD, it requires creating some objects in running script.
+To run PyUNIxMD, it requires creating some objects in your running script.
 A straightfoward way to perform a UNI-xMD calculation is as follows:
 
 **1. First of all, you should add the corresponding directory to your python path.**
@@ -69,8 +69,8 @@ A straightfoward way to perform a UNI-xMD calculation is as follows:
    from thermostat import *
    from misc import data
 
-**3. To run UNI-xMD, you should create several objects in your running script. The important
-thing is that the object inherited from** ``Molecule`` **class is created in the first place.**
+**3. To run PyUNIxMD, you should create several objects in your running script. The important
+thing is that the object inherited from** ``Molecule`` **class must be created in the first place.**
 
 - Define molecular infomation.
 
@@ -84,17 +84,17 @@ thing is that the object inherited from** ``Molecule`` **class is created in the
 
    mol = Molecule(geometry=geom, ARGUMENTS)
 
-.. note:: ``mol`` object should be already created before creating another objects which describe QM, MQC and thermostat.
+.. note:: ``mol`` object must be created before creating another objects which describe QM, MQC and thermostat.
 
-- Determine electronic structure calculation program and method to get energy, force and nonadiabatic coupling vector.
+- Determine an electronic structure calculation program and a method to get the energy, force and the nonadiabatic coupling vector.
 
 .. code-block:: python
 
    qm = qm.QM_prog.QM_method(molecule=mol, ARGUMENTS)
 
-**QM_prog** and **QM_method** are electronic structure calculation program and theory, respectively. They are listed in ???.
+**QM_prog** and **QM_method** stand for an electronic structure calculation program and a theory, respectively. They are listed in ???.
 
-- Determine method for dynamics propagation.
+- Determine a method for dynamics propagation.
 
 .. code-block:: python
 
@@ -103,7 +103,7 @@ thing is that the object inherited from** ``Molecule`` **class is created in the
 **MDTYPE** can be replaced by BOMD, SH, Eh or SHXF which mean Born-Opphenhimer molecular dynamics, surface hopping,
 Ehrenfest dynamics and decoherence induced surface hopping based on exact factorization, respectively.
 
-- Choose a thermostat type. Currently, there are three types for thermostat.
+- Choose a thermostat type. Currently, there are three types for a thermostat.
 
 .. code-block:: python
 

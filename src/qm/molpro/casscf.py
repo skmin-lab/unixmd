@@ -5,7 +5,7 @@ import os, shutil, re, textwrap
 import numpy as np
 
 class CASSCF(Molpro):
-    """ Class for CASSCF method of Molpro program
+    """ Class for CASSCF method of Molpro
 
         :param object molecule: Molecule object
         :param string basis_set: Basis set information
@@ -24,7 +24,7 @@ class CASSCF(Molpro):
         :param double cpscf_grad_tol: Gradient convergence threshold for CP-CASSCF equations
         :param string qm_path: Path for QM binary
         :param integer nthreads: Number of threads in the calculations
-        :param string version: Version of Molpro program
+        :param string version: Version of Molpro
     """
     def __init__(self, molecule, basis_set="sto-3g", memory="500m", \
         guess="hf", guess_file="./wf.wfu", scf_max_iter=20, scf_en_tol=1E-8, scf_rho_tol=1E-6, \

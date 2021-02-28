@@ -5,7 +5,7 @@ import os, shutil, re, textwrap, subprocess
 import numpy as np
 
 class DFT(QChem):
-    """ Class for DFT method of Q-Chem5.2 program
+    """ Class for DFT method of Q-Chem 5.2
 
         :param object molecule: Molecule object
         :param string basis_set: Basis set information

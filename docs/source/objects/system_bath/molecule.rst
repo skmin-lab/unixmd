@@ -2,7 +2,7 @@
 Molecule
 -------------------------------------------
 
-At the very first stage of dynamics calculations, users need to make
+At the very first stage of dynamics calculations, you need to make
 a molecule object to be investigated. 
 
 **Ex.** Making a water molecule object
@@ -21,7 +21,7 @@ a molecule object to be investigated.
 
    mol = Molecule(geometry=geometry, nstates=2)
 
-The keywords to specify the molecule are below.
+The keywords to specify a molecule are below.
 
 +---------------+------------------------------------------------------+-----------+
 | Keywords      | Work                                                 | Default   |
@@ -64,15 +64,15 @@ Detailed description of the arguments
 - **geometry** *(string)*
 
   **geometry** string contains information of the structure of the system. The structure of this string is the following.
-  This argument does not have default, thus user must be put the string variable including structures into **geometry**.
+  This argument does not have default, thus user must put a proper string into **geometry** having the following structure.
 
-  1. the number of atoms
+  1. The number of atoms
 
-  2. comment line
+  2. Comment line
 
-  3. specification of the molecule (atomic symbol, positions, velocities)
+  3. Specification of the molecule (atomic symbol, positions, velocities)
 
-  When QMMM scheme is used (**qmmm** = *True*), information of MM atoms is followed by QM atoms.
+  When QM/MM scheme is used (**qmmm** = *True*), information of MM atoms is followed by QM atoms.
 
 \
 
@@ -90,7 +90,7 @@ Detailed description of the arguments
 
 - **qmmm** *(boolean)* - Default: *False*
 
-  This argument determines whether QMMM scheme is used.
+  This argument determines whether QM/MM scheme is used.
 
 \
 
@@ -114,7 +114,7 @@ Detailed description of the arguments
 
 - **unit_pos** *(string)* - Default: *'A'*
 
-  This argument specifies the unit of atomic position.
+  This argument specifies the unit of the atomic positions.
 
   + *'A'*: Angstrom
   + *'au'*: Atomic unit
@@ -123,7 +123,7 @@ Detailed description of the arguments
 
 - **unit_vel** *(string)* - Default: *'au'*
 
-  This argument specifies the unit of atomic velocity.
+  This argument specifies the unit of the atomic velocities.
 
   + *'au'*: Atomic unit
   + *'A/ps'*: Angstrom per picosecond

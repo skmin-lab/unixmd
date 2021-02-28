@@ -7,7 +7,7 @@ import os, shutil, re, textwrap
 import numpy as np
 
 class DFTB(DFTBplus):
-    """ Class for (TD)DFTB method of DFTB+ program
+    """ Class for (TD)DFTB method of DFTB+
 
         :param object molecule: Molecule object
         :param boolean scc: Include self-consistent charge (SCC) scheme
@@ -32,7 +32,7 @@ class DFTB(DFTBplus):
         :param boolean mpi: Use MPI parallelization
         :param string mpi_path: Path for MPI binary
         :param integer nthreads: Number of threads in the calculations
-        :param string version: Version of DFTB+ program
+        :param string version: Version of DFTB+
     """
     def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=100, ocdftb=False, \
         lcdftb=False, lc_method="MatrixBased", sdftb=False, unpaired_elec=0., guess="h0", \

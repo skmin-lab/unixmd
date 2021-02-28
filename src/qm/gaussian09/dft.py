@@ -6,7 +6,7 @@ import os, shutil, re, textwrap, subprocess
 import numpy as np
 
 class DFT(Gaussian09):
-    """ Class for the (TD)DFT method of Gaussian09 program
+    """ Class for the (TD)DFT method of Gaussian 09
 
         :param object molecule: Molecule object
         :param string functional: Exchange-correlation functional information
@@ -16,7 +16,7 @@ class DFT(Gaussian09):
         :param string guess_file: Initial guess file
         :param string g09_root_path: Path for Gaussian 09 root
         :param integer nthreads: Number of threads in the calculations
-        :param string version: Version of Gaussian 09 program
+        :param string version: Version of Gaussian 09
     """
     def __init__(self, molecule, nthreads=1, memory="1gb", \
         functional="BLYP", basis_set="STO-3G", \

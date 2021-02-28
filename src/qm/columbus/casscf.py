@@ -5,7 +5,7 @@ import os, shutil, re, textwrap
 import numpy as np
 
 class CASSCF(Columbus):
-    """ Class for CASSCF method of Columbus program
+    """ Class for CASSCF method of Columbus
 
         :param object molecule: Molecule object
         :param string basis_set: Basis set information
@@ -21,7 +21,7 @@ class CASSCF(Columbus):
         :param integer active_elec: Number of electrons in active space
         :param integer active_orb: Number of orbitals in active space
         :param string qm_path: Path for QM binary
-        :param string version: Version of Columbus program
+        :param string version: Version of Columbus
     """
     def __init__(self, molecule, basis_set="6-31g*", memory=500, \
         guess="hf", guess_file="./mocoef", scf_en_tol=9, scf_max_iter=40, \

@@ -2,13 +2,13 @@
 Columbus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Columbus :cite:`Lischka2011` is one of open-source software for high-level ab initio
+Columbus :cite:`Lischka2011` is one of open-source softwares for high-level ab initio
 quantum calculation. It is designed primarily for extended multi-reference (MR) calculations
 on electronic ground and excited states of atoms and molecules.
 In the current version of PyUNIxMD, only (SA-)CASSCF method is available.
 
-- (SA-)CASSCF is state-averaged complete active space self-consistent field method. It provides analytical gradients as
-  well as nonadiabatic couplings, thus it can be used for excited state molecular dynamics.
+- (SA-)CASSCF is the state-averaged complete active space self-consistent field method. It provides analytical gradients as
+  well as nonadiabatic couplings, thus it can be used for nonadiabatic molecular dynamics.
 
 +-------------+------+--------+----+-----+
 |             | BOMD | SH(XF) | Eh | nac |
@@ -64,7 +64,7 @@ In the current version of PyUNIxMD, only (SA-)CASSCF method is available.
 | **qm_path**            | Path for QM binary                                  | *'./'*         |
 | *(string)*             |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **version**            | Version of Columbus program                         | *'7.0'*        |
+| **version**            | Version of Columbus                                 | *'7.0'*        |
 | *(string)*             |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
 
@@ -73,7 +73,7 @@ Detailed description of arguments
 
 - **basis_set** *(string)* - Default: *'6-31g\*'*
 
-  This argument specifies a basis set used in Columbus calculation.
+  This argument specifies a basis set used in the Columbus calculation.
   Not all basis sets are supported, so it is recommended to check a Columbus manual for the compatibility with PyUNIxMD.
   In PyUNIxMD, currently 10 basis sets are supported; {*'cc-pvdz'*, *'cc-pvtz'*, *'cc-pvqz'*, *'3-21g\*'*, *'3-21+g\*'*, *'6-31g'*, *'6-31g\*'*, *'6-31+g\*'*, *'6-311g\*'*, *'6-311+g\*'*}.
 
@@ -81,13 +81,13 @@ Detailed description of arguments
 
 - **memory** *(integer)* - Default: *500*
 
-  This argument determines how much memory will be allocated in a QM calculation. The unit is MB.
+  This argument determines how much memory will be allocated in the QM calculation. The unit is MB.
 
 \
 
 - **guess** *(string)* - Default: *'hf'*
 
-  This argument determines initial guess method for (SA-)CASSCF calculations. 
+  This argument determines the initial guess method for (SA-)CASSCF calculations. 
 
   + *'hf'*: Initial guess orbitals for (SA-)CASSCF calculations are generated from the HF calculations.
   + *'read'*: Initial guess orbitals are read from the 'mocoef' file which contains the orbitals calculated at the previous time step.
@@ -110,7 +110,7 @@ Detailed description of arguments
 
 - **scf_max_iter** *(integer)* - Default: *40*
 
-  This argument determines maximum number of SCF iterations.
+  This argument determines the maximum number of SCF iterations.
 
 \
 
@@ -122,7 +122,7 @@ Detailed description of arguments
 
 - **mcscf_max_iter** *(integer)* - Default: *100*
 
-  This argument determines maximum number of (SA-)CASSCF iterations.
+  This argument determines the maximum number of (SA-)CASSCF iterations.
 
 \
 
@@ -134,33 +134,33 @@ Detailed description of arguments
 
 - **cpscf_max_iter** *(integer)* - Default: *100*
 
-  This argument determines maximum number of iterations for CP-CASSCF equations.
+  This argument determines the maximum number of iterations for CP-CASSCF equations.
 
 \
 
 - **active_elec** *(integer)* - Default: *2*
 
-  This argument determines number of electrons included in active space. Currently, only closed shell system is supported. 
+  This argument determines the number of electrons included in the active space. Currently, only closed shell system is supported. 
 
 \
 
 - **active_orb** *(integer)* - Default: *2*
 
-  This argument determines number of orbitals in active space.
+  This argument determines the number of orbitals in the active space.
 
 \
 
 - **qm_path** *(string)* - Default: *'./'*
 
-  This argument designates a path for QM binary files for the Columbus.
+  This argument designates a path for QM binary files for Columbus.
   The `$COLUMBUS` environment variable determines the directory where Columbus is installed, not the binary files themselves (For example, `$COLUMBUS` is '/my_disk/my_name/Columbus7.0/Columbus/').
-  Thus, **qm_path** must be a *'`$COLUMBUS`'*, not a *'`$COLUMBUS`/runc'*.
+  Thus, **qm_path** must be *'`$COLUMBUS`'*, not *'`$COLUMBUS`/runc'*.
 
 \
 
 - **version** *(string)* - Default: *'7.0'*
 
-  This argument determines version of Columbus program. PyUNIxMD is currently based on 7.0 version.
+  This argument determines the version of Columbus. PyUNIxMD is currently based on version 7.0.
 
 \
 

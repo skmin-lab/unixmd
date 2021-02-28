@@ -96,27 +96,27 @@ Further information of individual MD objects is listed in each section.
 
 - **input_dir** *(string)* - Default: *'./'*
 
-  This argument designates directory for dynamics output. All subdirectories ('md', 'qm_log', and 'mm_log') for output files will be generated under **input_dir**.
+  This argument designates the directory for dynamics output. All subdirectories ('md', 'qm_log', and 'mm_log') for output files will be generated under **input_dir**.
   If the subdirectories are already present, old subdirectories will be renamed with '_old' and new subdirectories will be made.
 
 \
 
 - **save_qm_log** *(boolean)* - Default: *False*
 
-  This argument determines saving QM calculation logs. Logs will be saved in '**input_dir**/qm_log/'.
+  This argument determines whether to save QM calculation logs. Logs will be saved in '**input_dir**/qm_log/'.
  
 \
 
 - **save_mm_log** *(boolean)* - Default: *False*
 
-  This argument determines saving MM calculation logs. Logs will be saved in '**input_dir**/mm_log/'.
+  This argument determines whether to save MM calculation logs. Logs will be saved in '**input_dir**/mm_log/'.
   If **MM** = *None*, this argument will be ignored.
 
 \
 
 - **save_scr** *(boolean)* - Default: *True*
 
-  This argument determines saving scratch output directory in '**input_dir**/md/scr_qm/' after QM calculation, and '**input_dir**/md/scr_mm/' after MM calculation.
+  This argument determines whether to save scratch output directory in '**input_dir**/md/scr_qm/' after QM calculation, and '**input_dir**/md/scr_mm/' after MM calculation.
 
 \
 

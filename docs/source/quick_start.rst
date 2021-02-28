@@ -2,7 +2,7 @@
 Quick Start
 ==========================
 
-Here, we provide executable running script file, which contains:
+Here, we provide an executable running script file, which contains:
 
 .. code-block:: python
 
@@ -27,7 +27,7 @@ Here, we provide executable running script file, which contains:
 
    md.run(molecule=mol, theory=qm, thermostat=bathT, input_dir=INPUT_DIR)
 
-If you execute this script, you can get output files listed in table:
+If you execute this script, you can get output files listed in the following table:
 
 +-----------+------+--------+----+
 |           | BOMD | SH(XF) | Eh |
@@ -52,7 +52,7 @@ If you execute this script, you can get output files listed in table:
 .. note:: \* If you set propagation="density", UNI-xMD provides **BOCOH** and **BOPOP**.
    However, if you set propagation="coefficient", UNI-xMD provides **BOCOEF** rather than **BOCOH** and **BOPOP**.
 
-- MDENERGY : energy which contains kinetic energy, potential energy of each adiabatic state and total energy
+- MDENERGY : energies which contains kinetic energy, potential energy of each adiabatic state and total energy
 
 .. code-block:: bash
 
@@ -64,31 +64,31 @@ If you execute this script, you can get output files listed in table:
 
    Here is data
 
-- FINAL.xyz : geometry at final step
+- FINAL.xyz : geometry at the final step
 
 .. code-block:: bash
 
    Here is data
 
-- BOCOH : off-diagonal term of adiabatic density matrix
+- BOCOH : off-diagonal terms of the adiabatic density matrix
 
 .. code-block:: bash
 
    Here is data
 
-- BOPOP : adiabatic population
+- BOPOP : adiabatic populations
 
 .. code-block:: bash
 
    Here is data
 
-- NACME : nonadiabatic coupling matrix element
+- NACME : nonadiabatic coupling matrix elements
 
 .. code-block:: bash
 
    Here is data
 
-- SHPROB : hopping probability between the adiabatic states
+- SHPROB : hopping probabilities between the adiabatic states
 
 .. code-block:: bash
 

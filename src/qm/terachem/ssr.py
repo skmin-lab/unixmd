@@ -5,7 +5,7 @@ import os, shutil, re, textwrap
 import numpy as np
 
 class SSR(TeraChem):
-    """ Class for SSR method of TeraChem program
+    """ Class for SSR method of TeraChem
 
         :param object molecule: Molecule object
         :param string basis_set: Basis set information
@@ -25,7 +25,7 @@ class SSR(TeraChem):
         :param string qm_path: Path for QM binary
         :param integer ngpus: Number of GPUs
         :param string gpu_id: ID of used GPUs
-        :param string version: Version of TeraChem program
+        :param string version: Version of TeraChem
     """
     def __init__(self, molecule, ngpus=1, gpu_id="1", precision="dynamic", \
         version="1.93", functional="hf", basis_set="sto-3g", scf_rho_tol=1E-2, \

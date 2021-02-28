@@ -42,7 +42,7 @@ charge penetration effects, and HIPPO (Hydrogen-like Interatomic Polarizable POt
 | **nthreads**           | Number of threads in the calculations          | *1*                 |
 | *(integer)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| **version**            | Version of Tinker program                      | *'8.7'*             |
+| **version**            | Version of Tinker                              | *'8.7'*             |
 | *(string)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
 
@@ -88,7 +88,7 @@ Detailed description of arguments
   This argument specifies type of van der Waals interactions between the inner and outer regions.
   Current version of PyUNIxMD supports one type of van der Waals interaction,
   which is the Lennard-Jones interaction. The other types of van der Waals
-  interactions provided in the Tinker program are not currently interfaced with PyUNIxMD.
+  interactions provided in Tinker are not currently interfaced with PyUNIxMD.
   If this argument is *None*, the van der Waals interactions are not included in QM/MM calculation.
 
   + *'lennardjones'*: The Lennard-Jones interactions are used for van der Waals interactions.
@@ -98,7 +98,7 @@ Detailed description of arguments
 - **periodic** *(boolean)* - Default: *False*
 
   When **periodic** is set to *True*, a periodicity is considered in the calculation.
-  Only :math:`\Gamma`-point sampling is supported with Tinker program when the periodicity is considered.
+  Only :math:`\Gamma`-point sampling is supported with Tinker when the periodicity is considered.
 
 \
 
@@ -120,7 +120,7 @@ Detailed description of arguments
 
 - **key_file** *(string)* - Default: *'./tinker.key'*
 
-  This argument specifies initial 'tinker.key' file used in the calculations. The keywords of the Tinker program
+  This argument specifies initial 'tinker.key' file used in the calculations. The keywords of Tinker
   except **embedding**, **vdw**, and the periodicity can be included in this file.
   For example, if you want to add some constraints to the systems, then
   the related keywords can be added to the 'tinker.key' file.
@@ -140,12 +140,12 @@ Detailed description of arguments
 - **nthreads** *(integer)* - Default: *1*
 
   This argument specifies number of threads in the calculation. To use this option, you must check
-  that your binaries of the Tinker program supports OpenMP parallelization.
+  that your binaries of Tinker supports OpenMP parallelization.
 
 \
 
 - **version** *(string)* - Default: *'8.7'*
 
-  This argument determines version of Tinker program.
-  PyUNIxMD is currently based on 8.7 version of Tinker program.
+  This argument determines version of Tinker.
+  PyUNIxMD is currently based on 8.7 version of Tinker.
 

@@ -73,7 +73,7 @@ methods. Among them, the state-averaged complete active space self consistent fi
 | **nthreads**         | Number of threads in the calculations                          | *1*            |
 | *(integer)*          |                                                                |                |
 +----------------------+----------------------------------------------------------------+----------------+
-| **version**          | Version of Molpro program                                      | *'2015.1'*     |
+| **version**          | Version of Molpro                                              | *'2015.1'*     |
 | *(string)*           |                                                                |                |
 +----------------------+----------------------------------------------------------------+----------------+
 
@@ -81,7 +81,7 @@ methods. Among them, the state-averaged complete active space self consistent fi
 Detailed description of the arguments
 ''''''''''''''''''''''''''''''''''''''''''
 
-.. note:: Please refer Molpro (2015.1 version) manual for available options and more detailed descripttion about the input of the Molpro program.
+.. note:: Please refer Molpro (version 2015.1) manual for available options and more detailed descripttion about the input of Molpro.
 
 - **basis_set** *(string)* - Default: *'sto-3g'*
 
@@ -91,13 +91,13 @@ Detailed description of the arguments
 
 - **memory** *(string)* - Default: *'500m'*
 
-  This argument determines the memory to be allocated for Molpro calculation.
+  This argument determines the memory to be allocated for the Molpro calculation.
 
 \
 
 - **guess** *(string)* - Default: *'hf'*
 
-  This argument determines initial guess method for (SA-)CASSCF calculations. 
+  This argument determines the initial guess method for the (SA-)CASSCF calculations. 
 
   + *'hf'*: Initial guess orbitals for (SA-)CASSCF calculations are generated from the HF calculations.
   + *'read'*: Initial guesses of orbitals and CI coefficients are read from the 'wf.wfu' file which contains the orbitals and CI coefficients calculated at the previous time step.
@@ -174,7 +174,7 @@ Detailed description of the arguments
 
 - **qm_path** *(string)* - Default: *'./'*
   
-  This argument determines a path to be searched by  PyUNIxMD for the Molpro executable file, 'molpro' for the (SA-)CASSCF calculations.
+  This argument determines the path to be searched by PyUNIxMD for the Molpro executable file, 'molpro' for the (SA-)CASSCF calculations.
 
 \
 
@@ -187,5 +187,5 @@ Detailed description of the arguments
 - **version** *(string)* - Default: *'2015.1'*
   
   This argument indicates the version of Molpro to be executed.
-  Currently, only 2015.1 version is interfaced.
+  Currently, only version 2015.1 is interfaced.
 
