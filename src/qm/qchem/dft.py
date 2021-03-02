@@ -193,7 +193,7 @@ class DFT(QChem):
         # Run Q-Chem
         os.system(qm_exec_command)
 
-        tmp_dir = os.path.join(base_dir, "QMlog")
+        tmp_dir = os.path.join(base_dir, "qm_log")
         if (os.path.exists(tmp_dir)):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
             shutil.copy("log", os.path.join(tmp_dir, log_step))
