@@ -22,17 +22,24 @@ class MRCI(Columbus):
 #        mcscf_en_tol=8, mcscf_max_iter=100, cpscf_grad_tol=6, cpscf_max_iter=100, \
 #        active_elec=2, active_orb=2, qm_path="./", version="7.0"):
     def __init__(self, molecule, basis_set="6-31g*", memory=500, \
-        guess="mcscf", guess_file="./mocoef", \
+        guess="hf", guess_file="./mocoef", skip_mcscf=False, \
         active_elec=2, active_orb=2, qm_path="./", version="7.0"):
         # Initialize Columbus common variables
         super(MRCI, self).__init__(molecule, basis_set, memory, qm_path, version)
 
         # Initialize Columbus MRCI variables
         # Set initial guess for MRCI calculation
+        # read: Read MCSCF orbitals -> MCSCF -> MRCI
+        # hf: Start HF orbitals -> MCSCF -> MRCI
         self.guess = guess
         self.guess_file = guess_file
-        if not (self.guess in ["hf", "mcscf", "read"]):
+        if not (self.guess in ["hf", "read"]):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
+
+        # MRCI calculation is done by using HF orbitals
+        self.skip_mcscf = skip_mcscf
+        if (self.skip_mcscf and not self.guess == "hf"):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Skip MCSCF calculation is possible when initial guess is HF! {self.skip_mcscf} and {self.guess}")
 
         # HF calculation for initial guess of CASSCF calculation
 #        self.scf_en_tol = scf_en_tol
@@ -95,6 +102,7 @@ class MRCI(Columbus):
         if (self.guess == "read" and istep >= 0):
             # After T = 0.0 s
             # TODO : should I use mocoef_mcscf as initial guess of mrci?
+            # TODO : or mocoef_scf as initial guess of mrci?
             shutil.copy(os.path.join(self.scr_qm_dir, "./MOCOEFS/mocoef_mc.sp"), \
                 os.path.join(self.scr_qm_dir, "../mocoef"))
 
@@ -121,32 +129,45 @@ class MRCI(Columbus):
         with open(file_name, "w") as f:
             f.write(geom)
 
-#        # Scratch Block
-#        if (self.guess == "read"):
-#            if (istep == -1):
-#                if (os.path.isfile(self.guess_file)):
-#                    # Copy guess file to currect directory
-#                    shutil.copy(self.guess_file, os.path.join(self.scr_qm_dir, "mocoef"))
-#                    restart = 1
-#                    hf = False
-#                else:
-#                    restart = 0
-#                    hf = True
-#            elif (istep >= 0):
-#                # Move previous file to currect directory
-#                os.rename("../mocoef", os.path.join(self.scr_qm_dir, "mocoef"))
-#                restart = 1
-#                hf = False
-#        elif (self.guess == "hf"):
-#            restart = 0
-#            hf = True
-#
-#        if (calc_force_only and self.guess == "hf"):
-#            shutil.copy(os.path.join(self.scr_qm_dir, "./MOCOEFS/mocoef_mc.sp"), \
-#                os.path.join(self.scr_qm_dir, "mocoef"))
-#            restart = 1
-#            hf = False
-#
+        # Scratch Block
+        hf = False
+        mcscf = False
+        if (self.guess == "read"):
+            if (istep == -1):
+                if (os.path.isfile(self.guess_file)):
+                    # Copy guess file to currect directory
+                    shutil.copy(self.guess_file, os.path.join(self.scr_qm_dir, "mocoef"))
+                    restart = 1
+                    mcscf = True
+                else:
+                    restart = 0
+                    hf = True
+                    mcscf = True
+            elif (istep >= 0):
+                # Move previous file to currect directory
+                os.rename("../mocoef", os.path.join(self.scr_qm_dir, "mocoef"))
+                restart = 1
+                mcscf = True
+        elif (self.guess == "hf"):
+            restart = 0
+            hf = True
+            mcscf = True
+            if (self.skip_mcscf):
+                mcscf = False
+
+        # TODO : test must be needed for SH
+        # TODO : maybe, we do not need to run ciudg -> directly go to gradient calculation step?
+        if (calc_force_only):
+            restart = 1
+            hf = False
+            mcscf = False
+            if (self.skip_mcscf):
+                shutil.copy(os.path.join(self.scr_qm_dir, "./MOCOEFS/mocoef_scf.sp"), \
+                    os.path.join(self.scr_qm_dir, "mocoef"))
+            else:
+                shutil.copy(os.path.join(self.scr_qm_dir, "./MOCOEFS/mocoef_mc.sp"), \
+                    os.path.join(self.scr_qm_dir, "mocoef"))
+
 #        # Generate new prepinp script
 #        shutil.copy(os.path.join(self.qm_path, "prepinp"), "prepinp_copy")
 #
