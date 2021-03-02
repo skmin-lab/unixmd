@@ -255,8 +255,8 @@ class CT(MQC):
                 for iat in range(self.nat):
                     distance = np.sqrt(pos_diff2[iat]) # Distance between i-th atom in itraj and jtraj
                     if (distance <= smooth_factor):
-                        R_tmp += self.mols[jtraj].pos # Dimension = (self.nat, self.nsp)
-                        R2_tmp += self.mols[jtraj].pos * self.mols[jtraj].pos # Dimension = (self.nat, self.nsp)
+                        R_tmp[iat] += self.mols[jtraj].pos[iat] # Dimension = (self.nat, self.nsp)
+                        R2_tmp[iat] += self.mols[jtraj].pos[iat] * self.mols[jtraj].pos[iat] # Dimension = (self.nat, self.nsp)
                         nntraj[iat] += 1
 
             tmp= f'{istep+1:8d}' + \
