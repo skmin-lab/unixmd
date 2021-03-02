@@ -37,7 +37,7 @@ target state is provided with an external electronic structure
 package or a customized Hamiltonian, and nuclear propagation is done by the Velocity-Verlet algorithm.
 
 +------------------------+------------------------------------------------+------------+
-| Keywords               | Work                                           | Default    |
+| Parameters             | Work                                           | Default    |
 +========================+================================================+============+
 | **molecule**           | Molecule object                                |            |
 | (:class:`Molecule`)    |                                                |            |
@@ -65,31 +65,31 @@ package or a customized Hamiltonian, and nuclear propagation is done by the Velo
 +------------------------+------------------------------------------------+------------+
 
 
-Detailed description of the arguments
+Detailed description of the parameters
 """"""""""""""""""""""""""""""""""""""""""
 
 - **istate** *(integer)* - Default: *0* (Ground state)
   
-  This argument specifies the adiabatic state which provides the potential energy surface nuclei follow. The possible range of the argument is from *0* to ``molecule.nst-1``.
+  This parameter specifies the adiabatic state which provides the potential energy surface nuclei follow. The possible range is from *0* to ``molecule.nst - 1``.
    
 \
 
 - **dt** *(double)* - Default: *0.5*
 
-  This argument determines the time interval of the nuclear time steps.
-  You can select the unit of time for the dynamics with the argument **unit_dt**.
+  This parameter determines the time interval of the nuclear time steps.
+  You can select the unit of time for the dynamics with the **unit_dt** parameter.
 
 \
 
 - **nsteps** *(integer)* - Default: *1000*
 
-  This argument determines the total number of the nuclear time steps.
+  This parameter determines the total number of the nuclear time steps.
 
 \
 
 - **unit_dt** *(string)* - Default: *'fs'*
 
-  This argument determines the unit of time for the simulation.
+  This parameter determines the unit of time for the simulation.
   
   + *'fs'*: Femtosecond
   + *'au'*: Atomic unit
@@ -104,7 +104,7 @@ Detailed description of the arguments
 
 - **verbosity** *(integer)* - Default: *0*
 
-  It determines the verbosity of the output files and stream.
+  This parameter determines the verbosity of the output files and stream.
 
   + **verbosity** :math:`\geq` *1*: Prints potential energy of all BO states.
 

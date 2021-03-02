@@ -16,7 +16,7 @@ Q-Chem :cite:`qchem2015` is a comprehensive ab initio quantum chemistry software
 """""""""""""""""""""""""""""""""""""
 
 +-----------------------+------------------------------------------------+--------------+
-| Keywords              | Work                                           | Default      |
+| Parameters            | Work                                           | Default      |
 +=======================+================================================+==============+
 | **molecule**          | Molecule object                                |              |  
 | (:class:`Molecule`)   |                                                |              |
@@ -58,38 +58,38 @@ Q-Chem :cite:`qchem2015` is a comprehensive ab initio quantum chemistry software
 | *(string)*            |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
 
-Detailed description of arguments
+Detailed description of parameters
 ''''''''''''''''''''''''''''''''''''
 
 - **basis_set** *(string)* - Default: *'sto-3g'*
 
-  This argument specifies the basis set to be used in the calculation.
+  This parameter specifies the basis set to be used in the calculation.
   If you want to know the detailed list for basis sets, see the manual of the Q-Chem.
 
 \
 
 - **memory** *(integer)* - Default : *2000*
 
-  This argument determines how much memory will be allocated in the calculation. The unit is MB.
+  This parameter determines how much memory will be allocated in the calculation. The unit is MB.
 
 \
 
 - **nthreads** *(integer)* - Default : *1*
 
-  This argument specifies the number of threads in calculation.
+  This parameter specifies the number of threads in calculation.
 
 \
 
 - **functional** *(string)* - Default : *'blyp'*
 
-  This argument specifies the exchange-correlation functional to be used in the calculation.
-  If you want to know the detailed list for exchane-correlation functional, see the manual of the Q-Chem.
+  This parameter specifies the exchange-correlation functional to be used in the calculation.
+  If you want to know the detailed list for exchange-correlation functional, see the manual of the Q-Chem.
 
 \
 
 - **scf_max_iter** *(integer)* - Default : *50*
 
-  This argument determines the maximum number of SCF iterations.
+  This parameter determines the maximum number of the SCF iterations.
 
 \
 
@@ -101,7 +101,7 @@ Detailed description of arguments
 
 - **cis_max_iter** *(integer)* - Default : *30*
 
-  This argument determines the maximum number of CIS iterations.
+  This parameter determines the maximum number of CIS iterations.
 
 \
 
@@ -113,7 +113,7 @@ Detailed description of arguments
 
 - **cpscf_max_iter** *(integer)* - Default : *30*
 
-  This argument determines the maximum number of CPSCF iterations.
+  This parameter determines the maximum number of the CPSCF iterations.
 
 \
 
@@ -125,7 +125,7 @@ Detailed description of arguments
 
 - **qm_path** *(string)* - Default : *'./'*
 
-  This argument designates the path for the Q-Chem install directory. 
+  This parameter designates the path for the Q-Chem install directory. 
   To execute Q-Chem binary file, the environment variables for Q-Chem are assigned by executing 'qcenv.sh' in the Q-Chem install directory.
   Hence, You must set **qm_path** to *'/my_disk/my_name/qchem/'* not *'/my_disk/my_name/qchem/bin/'*.
 
@@ -133,4 +133,4 @@ Detailed description of arguments
 
 - **version** *(string)* - Default : *'5.2'*
 
-  This argument determines the version of Q-Chem. PyUNIxMD is currently based on version 5.2.
+  This parameter determines the version of Q-Chem. PyUNIxMD is currently based on version 5.2.

@@ -2,7 +2,7 @@
 Ehrenfest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Ehrenfest dynamics :cite:`Prezhdo1999`, which is mean-field dynamics, evolves nuclei on averaging potential energy surfaces,
+Ehrenfest dynamics :cite:`Prezhdo1999`, which is mean-field dynamics, evolves nuclei on averaged potential energy surfaces,
 
 .. math::
 
@@ -18,7 +18,7 @@ the driving force is given by:
 where :math:`d_{ij}` is nonadiabatic couping between :math:`i`-th and :math:`j`-th adiabatic state.
 
 +----------------------------+------------------------------------------------+-------------+
-| Keywords                   | Work                                           | Default     |
+| Parameters                 | Work                                           | Default     |
 +============================+================================================+=============+
 | **molecule**               | Molecule object                                |             |
 | (:class:`Molecule`)        |                                                |             |
@@ -63,30 +63,30 @@ where :math:`d_{ij}` is nonadiabatic couping between :math:`i`-th and :math:`j`-
 | *(integer)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
 
-Detailed description of arguments
+Detailed description of parameters
 ''''''''''''''''''''''''''''''''''''
 
 - **istate** *(integer)* - Default: *0* (Ground state)
 
-  This argument specifies the initial running state. The possible range of the argument is from *0* to ``molecule.nst-1``.
+  This parameter specifies the initial running state. The possible range is from *0* to ``molecule.nst - 1``.
 
 \
 
 - **dt** *(double)* - Default: *0.5*
 
-  This argument determines the time interval of the nuclear time steps.
-  You can select the unit of time for the dynamics with the argument **unit_dt**.
+  This parameter determines the time interval of the nuclear time steps.
+  You can select the unit of time for the dynamics with the **unit_dt** parameter.
 \
 
 - **nsteps** *(integer)* - Default: *1000*
 
-  This argument determines the total number of the nuclear time steps.
+  This parameter determines the total number of the nuclear time steps.
 
 \
 
 - **nesteps** *(integer)* - Default: *20*
 
-  This argument determines the number of electronic time steps between one nuclear time step for the integration of the electronic equation of motion.
+  This parameter determines the number of electronic time steps between one nuclear time step for the integration of the electronic equation of motion.
   The electronic equation of motion is more sensitive to the time interval than the nuclear equation of motion since the electrons are much lighter than the nuclei.
   Therefore, the nuclear time step is further divided and electronic equation of motion is integrated with smaller time step.
 
@@ -94,7 +94,7 @@ Detailed description of arguments
 
 - **propagation** *(string)* - Default: *'density'*
 
-  The **propagation** argument determines the representation for the electronic state.
+  The **propagation** parameter determines the representation for the electronic state.
 
   + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}\}`
   + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}\}`
@@ -103,36 +103,36 @@ Detailed description of arguments
 
 - **solver** *(string)* - Default: *'rk4'*
 
-  This argument determines the numerical integration method for the electronic equation of motion.
+  This parameter determines the numerical integration method for the electronic equation of motion.
   Currently, only the RK4 algorithm (*'rk4'*) is available.
 
 \
 
 - **l_pop_print** *(boolean)* - Default: *False*
 
-  This argument determines whether to write output files for density matrix elements ('BOPOP', 'BOCOH') or not.
+  This parameter determines whether to write output files for the density matrix elements ('BOPOP', 'BOCOH') or not.
   If this option is set to *True*, then the 'BOPOP' and 'BOCOH' files are written during the dynamics.
-  This option is effective only if the argument **propagation** is set to *'coefficient'* or ignored otherwise.
+  This option is effective only if the parameter **propagation** is set to *'coefficient'* or ignored otherwise.
 
 \
 
 - **l_adjnac** *(boolean)* - Default: *True*
 
-  If this argument is set to *True*, the signs of the NACVs are adjusted to match the phases to the previous time step during the dynamics.
+  If this parameter is set to *True*, the signs of the NACVs are adjusted to match the phases to the previous time step during the dynamics.
 
 \
 
 - **coefficient** *(double/complex, list)* - Default: *None*
 
-  This argument defines the initial BO coefficients.
+  This parameter defines the initial BO coefficients.
   The elements can be either real or complex values.
-  If the argument is not given, the BO coefficients and density matrix are initialized according to **istate**.
+  If the parameter is not given, the BO coefficients and the density matrix are initialized according to **istate**.
 
 \
 
 - **unit_dt** *(string)* - Default: *'fs'*
 
-  This argument determines the unit of time for the simulation.
+  This parameter determines the unit of time for the simulation.
 
   + *'fs'*: femtosecond
   + *'au'*: atomic unit
@@ -147,7 +147,7 @@ Detailed description of arguments
 
 - **verbosity** *(integer)* - Default: *0*
 
-  This argument determines the verbosity of the output files and stream.  
+  This parameter determines the verbosity of the output files and stream.  
 
   + **verbosity** :math:`\geq` *1*: Prints potential energy of all BO states.
   + **verbosity** :math:`\geq` *2*: Writes the NACVs ('NACV\_\ :math:`i`\_\ :math:`j`').

@@ -5,8 +5,8 @@ TeraChem
 TeraChem :cite:`Ufimtsev2008_1,Ufimtsev2009_1,Ufimtsev2009_2,Ufimtsev2008_2,Titov2013,Song2016` is general
 purpose quantum chemistry software designed to run on NVIDIA GPU
 architectures under a 64-bit Linux operating system. It includes many functionalities
-such as DFT or wave function based methods. Among them, SSR method is interfaced with
-current version of PyUNIxMD.
+such as DFT or wave function based methods. Among them, the SSR method is interfaced with
+the current version of PyUNIxMD.
 
 - In general, spin-restricted ensemble-referenced Kohn-Sham (REKS) method can be classified
   as single-state REKS, state-averaged REKS (SA-REKS) and state-interaction SA-REKS (SSR).
@@ -30,15 +30,15 @@ SSR
 """""""""""""""""""""""""""""""""""""
 
 PyUNIxMD automatically determines single-state REKS as BO interfaces for ground state BOMD.
-When we include the excited states, SA-REKS or SSR methods can be exploited and these are
-determined from the **state_interactions** argument.
+When we include the excited states, the SA-REKS or SSR methods can be exploited and these are
+determined from the **state_interactions** parameter.
 
-.. note:: In the case of SSR method, the calculation is possible only when the number
+.. note:: In the case of the SSR method, the calculation is possible only when the number
    of states (``molecule.nst``) is smaller than 4 due to the limited active space.
    If you want to treat more excited states, then increase the active space.
 
 +-------------------------+---------------------------------------------+-------------+
-| Keywords                | Work                                        | Default     |
+| Parameters              | Work                                        | Default     |
 +=========================+=============================================+=============+
 | **molecule**            | Molecule object                             |             |  
 | (:class:`Molecule`)     |                                             |             |
@@ -98,29 +98,29 @@ determined from the **state_interactions** argument.
 | *(string)*              |                                             |             |
 +-------------------------+---------------------------------------------+-------------+
 
-Detailed description of arguments
+Detailed description of parameters
 ''''''''''''''''''''''''''''''''''''
 
 - **basis_set** *(string)* - Default: *'sto-3g'*
 
-  This argument specifies the basis set used in TeraChem.
-  The available options of this argument are the same as the original arguments of TeraChem.
+  This parameter specifies the basis set used in TeraChem.
+  The available options of this parameter are the same as the original ones of TeraChem.
   It is recommended to check a TeraChem manual for the detailed list of **basis_set**.
 
 \
 
 - **functional** *(string)* - Default: *'hf'*
 
-  This argument specifies the exchange-correlation functional used in TeraChem.
-  The available options of this argument are same as the original arguments of TeraChem.
+  This parameter specifies the exchange-correlation functional used in TeraChem.
+  The available options of this parameter are same as the original ones of TeraChem.
   It is recommended to check a TeraChem manual for the detailed list of **functional**.
 
 \
 
 - **precision** *(string)* - Default: *'dynamic'*
 
-  This argument specifies a method to determine the accuracy of the evaluation of the integrals.
-  The available options of this argument are same as the original arguments of TeraChem.
+  This parameter specifies a method to determine the accuracy of the evaluation of the integrals.
+  The available options of this parameter are same as the original ones of TeraChem.
   It is recommended to check a TeraChem manual for the detailed list of **precision**.
 
 \
@@ -133,24 +133,24 @@ Detailed description of arguments
 
 - **scf_max_iter** *(integer)* - Default: *300*
 
-  This argument determines the maximum number of SCF iterations.
+  This parameter determines the maximum number of SCF iterations.
 
 \
 
 - **ssr22** *(boolean)* - Default: *False*
 
-  When **ssr22** is set to *True*, SSR(2,2) calculation is carried out, and detailed types of the REKS calculation are
-  automatically determined from ``molecule.nst`` and **state_interactions** arguments. If ``molecule.nst`` is one,
-  the single-state REKS calculation is carried out. When ``molecule.nst`` is larger than one,
-  the SA-REKS or SI-SA-REKS calculation is executed according to the **state_interactions** argument.
+  When **ssr22** is set to *True*, the SSR(2,2) calculation is carried out, and detailed types of the REKS calculation are
+  automatically determined from ``molecule.nst`` and **state_interactions** parameters. If ``molecule.nst`` is *1*,
+  the single-state REKS calculation is carried out. When ``molecule.nst`` is larger than *1*,
+  the SA-REKS or the SI-SA-REKS calculation is executed according to the **state_interactions** parameter.
 
 \
 
 - **guess** *(string)* - Default: *'dft'*
 
-  This argument determines the initial guess method for SSR calculations.
+  This parameter determines the initial guess method for the SSR calculations.
 
-  + *'dft'*: Initial guess orbitals for SSR calculations are generated from the DFT calculations.
+  + *'dft'*: Initial guess orbitals for the SSR calculations are generated from the DFT calculations.
   + *'read'*: Initial guess orbitals are read from the 'c0' file which contains the orbitals calculated at the previous time step.
 
 \
@@ -158,33 +158,33 @@ Detailed description of arguments
 - **guess_file** *(string)* - Default: *'./c0'*
 
   The **guess_file** determines the name of the file containing orbitals for the initial guess of orbitals for the SSR calculation at the first MD step.
-  This argument is effective only if **guess** = *'read'*.
+  This parameter is effective only if **guess** = *'read'*.
   If the file does not exist, *'dft'* option is requested for the initial guess for the SSR calculation at the first MD step.
 
 \
 
 - **reks_rho_tol** *(double)* - Default: *1E-6*
 
-  REKS SCF cycles are considered converged when the wavefunction error is less than **reks_rho_tol**.
+  The REKS SCF cycles are considered converged when the wavefunction error is less than **reks_rho_tol**.
 
 \
 
 - **reks_max_iter** *(integer)* - Default: *1000*
 
-  This argument determines the maximum number of REKS SCF iterations.
+  This parameter determines the maximum number of the REKS SCF iterations.
 
 \
 
 - **shift** *(double)* - Default: *0.3*
 
-  This argument specifies the level shifting value used in REKS SCF iterations. It can be helpful to increase **shift** when
+  This parameter specifies the level shifting value used in the REKS SCF iterations. It can be helpful to increase **shift** when
   it is hard to converge the SCC iterations.
 
 \
 
 - **state_interactions** *(boolean)* - Default: *False*
 
-  When **state_interactions** is set to *True*, state-interaction terms are included so that SI-SA-REKS states are generated.
+  When **state_interactions** is set to *True*, state-interaction terms are included so that the SI-SA-REKS states are generated.
   Otherwise, the SA-REKS states are obtained. It is valid when ``molecule.nst`` is larger
   than one. In general, it generates more reliable adiabatic states.
 
@@ -192,7 +192,7 @@ Detailed description of arguments
 
 - **cpreks_grad_tol** *(double)* - Default: *1E-6*
 
-  This argument determines the tolerance used in the conjugate-gradient based algorithm for solving the CP-REKS equations.
+  This parameter determines the tolerance used in the conjugate-gradient based algorithm for solving the CP-REKS equations.
   Sometimes, it can be helpful to use slightly loose tolerance for the stable molecular dynamics.
   In this case, *4E-6* is recommended for **cpreks_grad_tol**.
 
@@ -200,13 +200,13 @@ Detailed description of arguments
 
 - **cpreks_max_iter** *(integer)* - Default: *1000*
 
-  This argument determines the maximum number of CP-REKS iterations.
+  This parameter determines the maximum number of the CP-REKS iterations.
 
 \
 
 - **qm_path** *(string)* - Default: *'./'*
 
-  This argument determines the path for QM binary file for TeraChem. The `$TeraChem` environment
+  This parameter determines the path for QM binary file for TeraChem. The `$TeraChem` environment
   variable determines the directory where the licensing file can be found, i.e. '`$TeraChem`/license.dat'
   (For example, `$TeraChem` is '/my_disk/my_name/TeraChem/').
   Thus, **qm_path** must be *'`$TeraChem`/bin/'*, not *'`$TeraChem`/'*.
@@ -215,19 +215,19 @@ Detailed description of arguments
 
 - **ngpus** *(integer)* - Default: *1*
 
-  This argument determines the number of GPUs used in TeraChem.
+  This parameter determines the number of GPUs used in TeraChem.
 
 \
 
 - **gpu_id** *(string)* - Default: *'1'*
 
-  This argument specifies the ID of used GPUs. If you want to use 2 GPUs with ID of 0 and 1,
+  This parameter specifies the ID of used GPUs. If you want to use 2 GPUs with ID of 0 and 1,
   then put *'0 1'* into **gpu_id**.
 
 \
 
 - **version** *(string)* - Default: *'1.93'*
 
-  This argument determines the version of TeraChem.
+  This parameter determines the version of TeraChem.
   PyUNIxMD is currently based on version 1.93 and 1.99 of TeraChem.
 

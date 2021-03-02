@@ -19,7 +19,7 @@ Rescale1
 The target temperature and the number of MD steps between rescalings can be specified.
 
 +---------------------+----------------------------------------------------+-----------+
-| Keywords            | Work                                               | Default   |
+| Parameters          | Work                                               | Default   |
 +=====================+====================================================+===========+
 | **temperature**     | Target temperature (K) of the thermostat           | *300.0*   |
 | *(double)*          |                                                    |           |
@@ -28,18 +28,18 @@ The target temperature and the number of MD steps between rescalings can be spec
 | *(integer)*         |                                                    |           |
 +---------------------+----------------------------------------------------+-----------+
 
-Detailed description of arguments
+Detailed description of parameters
 ''''''''''''''''''''''''''''''''''''
 
 - **temperature** *(double)* - Default: *300.0*
 
-  This argument specifies the target temperature. The unit is K.
+  This parameter specifies the target temperature. The unit is K.
 
 \
 
 - **nrescale** *(integer)* - Default: *20*
 
-  This argument specifies the period to rescale the velocities, that is,
+  This parameter specifies the period to rescale the velocities, that is,
   the velocities are rescaled at each **nrescale** step.
 
 Rescale2
@@ -48,7 +48,7 @@ Rescale2
 beyond a specified threshold. The temperature difference threshold can be specified.
 
 +------------------+----------------------------------------------------+-----------+
-| Keywords         | Work                                               | Default   |
+| Parameters       | Work                                               | Default   |
 +==================+====================================================+===========+
 | **temperature**  | Target temperature (K) of the thermostat           | *300.0*   |
 | *(double)*       |                                                    |           |
@@ -57,18 +57,18 @@ beyond a specified threshold. The temperature difference threshold can be specif
 | *(double)*       |                                                    |           |
 +------------------+----------------------------------------------------+-----------+
 
-Detailed description of arguments
+Detailed description of parameters
 ''''''''''''''''''''''''''''''''''''
 
 - **temperature** *(double)* - Default: *300.0*
 
-  This argument specifies the target temperature in unit of K.
+  This parameter specifies the target temperature in unit of K.
 
 \
 
 - **dtemperature** *(double)* - Default: *100.0*
 
-  This argument specifies the deviation to rescale the velocities, that is,
+  This parameter specifies the deviation to rescale the velocities, that is,
   the velocities are rescaled when the temperature difference exceeds **dtemperature**. The unit is K.
 
 Berendsen
@@ -84,7 +84,7 @@ where :math:`dt` and :math:`\tau` is the MD step and the coupling parameter, res
 The coupling parameter determines how strongly the system and the bath have coupling.
 
 +------------------------+----------------------------------------------------+-----------+
-| Keywords               | Work                                               | Default   |
+| Parameters             | Work                                               | Default   |
 +========================+====================================================+===========+
 | **temperature**        | Target temperature (K) of the thermostat           | *300.0*   |
 | *(double)*             |                                                    |           |
@@ -96,12 +96,12 @@ The coupling parameter determines how strongly the system and the bath have coup
 | *(double)*             |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
 
-Detailed description of arguments
+Detailed description of parameters
 ''''''''''''''''''''''''''''''''''''
 
 - **temperature** *(double)* - Default: *300.0*
 
-  This argument specifies the target temperature in the unit of K.
+  This parameter specifies the target temperature in the unit of K.
 
 \
 
@@ -115,7 +115,7 @@ Detailed description of arguments
 
 - **coupling_strength** *(double)* - Default: *None*
 
-  Dimensionless coupling strength, **coupling_strength**, for the thermostat is given by :math:`\frac{dt}{\tau}`, 
+  This parameter is the dimensionless coupling strength, **coupling_strength**, for the thermostat given by :math:`\frac{dt}{\tau}`, 
   where :math:`dt` is the time interval of the dynamics and :math:`\tau` is **coupling_parameter**.
   Either **coupling_parameter** or **coupling_strength** should be set and only **coupling_parameter** or **coupling_strength** can be set.
 
@@ -124,7 +124,7 @@ NHC
 :class:`NHC` thermostat, which is Nosé-Hoover chain thermostat :cite:`NHC`, rescales the velocities by using a friction factor which comes from imaginary particles. 
 
 +------------------------+----------------------------------------------------+-----------+
-| Keywords               | Work                                               | Default   |
+| Parameters             | Work                                               | Default   |
 +========================+====================================================+===========+
 | **temperature**        | Target temperature (K) of the thermostat           | *300.0*   |
 | *(double)*             |                                                    |           |
@@ -145,18 +145,18 @@ NHC
 | *(integer)*            |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
 
-Detailed description of arguments
+Detailed description of parameters
 ''''''''''''''''''''''''''''''''''''
 
 - **temperature** *(double)* - Default: *300.0*
 
-  This argument specifies the target temperature in the unit of K.
+  This parameter specifies the target temperature in the unit of K.
 
 \
 
 - **coupling_strength** *(double)* - Default: *None*
 
-  This argument specifies the coupling strength which indicates the oscillation frequency of the bath particles.
+  This parameter specifies the coupling strength which indicates the oscillation frequency of the bath particles.
   The coupling strength is typically related to the highest vibrational mode frequency of a given system. The unit is cm :sup:`-1`.
   **coupling_strength** or **time_scale** should be set and only **coupling_strength** or **time_scale** can be set.
 
@@ -164,7 +164,7 @@ Detailed description of arguments
 
 - **time_scale** *(double)* - Default: *None*
 
-  This argument specifies the coupling time scale in the unit of fs.
+  This parameter specifies the coupling time scale in the unit of fs.
   When **time_scale** is given as :math:`t`, **coupling_strength** set to :math:`1/t`.
   **coupling_strength** or **time_scale** should be set and only **coupling_strength** or **time_scale** can be set.
 
@@ -172,17 +172,17 @@ Detailed description of arguments
 
 - **chain_length** *(integer)* - Default: *3*
 
-  This argument specifies the number of imaginary particles in the thermostat chain is used in the dynamics.
+  This parameter specifies the number of imaginary particles in the thermostat chain is used in the dynamics.
 
 \
 
 - **order** *(integer)* - Default: *3*
 
-  This argument specifies the order of the evolution operator. 
+  This parameter specifies the order of the evolution operator. 
   **order** should be *3* or *5*.
 
 \
 
 - **nsteps** *(integer)* - Default: *1*
 
-  This argument specifies the propagation step in the NHC thermostat.
+  This parameter specifies the propagation step in the NHC thermostat.

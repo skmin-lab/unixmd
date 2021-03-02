@@ -33,7 +33,7 @@ running state. If coupling is strong enough to transit to other state, the proba
 trajectories will be transit to that state in stochastical behavior.
 
 +----------------------------+--------------------------------------------------+----------------+
-| Keywords                   | Work                                             | Default        |
+| Parameters                 | Work                                             | Default        |
 +============================+==================================================+================+
 | **molecule**               | Molecule object                                  |                |
 | (:class:`Molecule`)        |                                                  |                |
@@ -91,31 +91,31 @@ trajectories will be transit to that state in stochastical behavior.
 +----------------------------+--------------------------------------------------+----------------+
 
 
-Detailed description of the arguments
+Detailed description of the parameters
 """"""""""""""""""""""""""""""""""""""""""
 
 - **istate** *(integer)* - Default: *0* (Ground state)
   
-  This argument specifies the initial running state. The possible range of the argument is from *0* to ``molecule.nst-1``.
+  This parameter specifies the initial running state. The possible range is from *0* to ``molecule.nst - 1``.
    
 \
 
 - **dt** *(double)* - Default: *0.5*
   
-  This argument determines the time interval of the nuclear time steps.
-  You can select the unit of time for the dynamics with the argument **unit_dt**.
+  This parameter determines the time interval of the nuclear time steps.
+  You can select the unit of time for the dynamics with the **unit_dt** parameter.
 
 \
 
 - **nsteps** *(integer)* - Default: *1000*
 
-  This argument determines the total number of the nuclear time steps.
+  This parameter determines the total number of the nuclear time steps.
 
 \
 
 - **nesteps** *(integer)* - Default: *20*
   
-  This argument determines the number of electronic time steps between one nuclear time step for the integration of the electronic equation of motion.
+  This parameter determines the number of electronic time steps between one nuclear time step for the integration of the electronic equation of motion.
   The electronic equation of motion is more sensitive to the time interval than the nuclear equation of motion since the electrons are much lighter than the nuclei.
   Therefore, the nuclear time step is further divided and electronic equation of motion is integrated with smaller time step.
 
@@ -123,7 +123,7 @@ Detailed description of the arguments
 
 - **propagation** *(string)*- Default: *'density'*
   
-  The **propagation** argument determines the representation for the electronic state.
+  The **propagation** parameter determines the representation for the electronic state.
    
   + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}\}`
   + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}\}`
@@ -132,28 +132,28 @@ Detailed description of the arguments
 
 - **solver** *(string)* - Default: *'rk4'*
 
-  This argument determines the numerical integration method for the electronic equation of motion.
+  This parameter determines the numerical integration method for the electronic equation of motion.
   Currently, only the RK4 algorithm (*'rk4'*) is available.
 
 \
 
 - **l_pop_print** *(boolean)* - Default: *False*
   
-  This argument determines whether to write output files for density matrix elements ('BOPOP', 'BOCOH') or not.
+  This parameter determines whether to write output files for the density matrix elements ('BOPOP', 'BOCOH') or not.
   If this option is set to *True*, then the 'BOPOP' and 'BOCOH' files are written during the dynamics.
-  This option is effective only if the argument **propagation** is set to *'coefficient'* or ignored otherwise.
+  This option is effective only if the **propagation** parameter is set to *'coefficient'* or ignored otherwise.
 
 \
 
 - **l_adjnac** *(boolean)* - Default: *True* 
 
-  If this argument is set to *True*, the signs of the NACVs are adjusted to match the phases to the previous time step during the dynamics.
+  If this parameter is set to *True*, the signs of the NACVs are adjusted to match the phases to the previous time step during the dynamics.
 
 \
 
 - **vel_rescale** *(string)* - Default: *'augment'*
 
-  This argument determines the direction of the momentum to be adjusted after a hop to conserve the total energy.
+  This parameter determines the direction of the momentum to be adjusted after a hop to conserve the total energy.
   If there is not enough kinetic energy in this direction, the hop is rejected and the running state is switched back to the original state.
   
   + *'energy'*: Simply rescale the nuclear velocities.
@@ -165,7 +165,7 @@ Detailed description of the arguments
    
 - **vel_reject** *(string)* - Default: *'reverse'*
   
-  This argument determines the momentum rescaling method when a hop is rejected.
+  This parameter determines the momentum rescaling method when a hop is rejected.
   
   + *'keep'*: Do nothing, keeps the nuclear velocities.
   + *'reverse'*: Reverse the momentum along the NACV.
@@ -174,15 +174,15 @@ Detailed description of the arguments
 
 - **coefficient** *(double/complex, list)* - Default: *None*
 
-  This argument defines the initial BO coefficients.
+  This parameter defines the initial BO coefficients.
   The elements can be either real or complex values.
-  If the argument is not given, the BO coefficients and density matrix are initialized according to the initial running state.
+  If the parameter is not given, the BO coefficients and the density matrix are initialized according to the initial running state.
 
 \
 
 - **deco_correction** *(string)* - Default: *None*
 
-  This argument determines the simple decoherence correction method.
+  This parameter determines the simple decoherence correction method.
 
   + *'edc'*: Energy based decoherence correction (EDC) scheme of Granucci et al :cite:`Granucci2010`. 
   + *'idc'*: Instantaneous decoherence correction scheme
@@ -191,13 +191,13 @@ Detailed description of the arguments
 
 - **edc_parameter** *(double)* - Default: *0.1*
 
-  This argument defines the energy parameter in the EDC equation.
+  This parameter defines the energy parameter in the EDC equation.
 
 \
 
 - **unit_dt** *(string)* - Default: *'fs'*
 
-  This argument determines the unit of time for the simulation.
+  This parameter determines the unit of time for the simulation.
   
   + *'fs'*: Femtosecond
   + *'au'*: Atomic unit
@@ -212,7 +212,7 @@ Detailed description of the arguments
 
 - **verbosity** *(integer)* - Default: *0*
 
-  This argument determines the verbosity of the output files and stream.
+  This parameter determines the verbosity of the output files and stream.
 
   + **verbosity** :math:`\geq` *1*: Prints potential energy of all BO states.
   + **verbosity** :math:`\geq` *2*: Prints accumulated hopping probabilities and writes the NACVs ('NACV\_\ :math:`i`\_\ :math:`j`').

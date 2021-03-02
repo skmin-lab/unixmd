@@ -20,7 +20,7 @@ methods. Among them, the state-averaged complete active space self consistent fi
 """""""""""""""""""""""""""""""""""""
 
 +----------------------+----------------------------------------------------------------+----------------+
-| Keywords             | Work                                                           | Default        |
+| Parameters           | Work                                                           | Default        |
 +======================+================================================================+================+
 | **molecule**         | Molecule object                                                |                |  
 | (:class:`Molecule`)  |                                                                |                |
@@ -78,7 +78,7 @@ methods. Among them, the state-averaged complete active space self consistent fi
 +----------------------+----------------------------------------------------------------+----------------+
 
 
-Detailed description of the arguments
+Detailed description of the parameters
 ''''''''''''''''''''''''''''''''''''''''''
 
 .. note:: Please refer Molpro (version 2015.1) manual for available options and more detailed descripttion about the input of Molpro.
@@ -91,15 +91,15 @@ Detailed description of the arguments
 
 - **memory** *(string)* - Default: *'500m'*
 
-  This argument determines the memory to be allocated for the Molpro calculation.
+  This parameter determines the memory to be allocated for the Molpro calculation.
 
 \
 
 - **guess** *(string)* - Default: *'hf'*
 
-  This argument determines the initial guess method for the (SA-)CASSCF calculations. 
+  This parameter determines the initial guess method for the (SA-)CASSCF calculations. 
 
-  + *'hf'*: Initial guess orbitals for (SA-)CASSCF calculations are generated from the HF calculations.
+  + *'hf'*: Initial guess orbitals for the (SA-)CASSCF calculations are generated from the HF calculations.
   + *'read'*: Initial guesses of orbitals and CI coefficients are read from the 'wf.wfu' file which contains the orbitals and CI coefficients calculated at the previous time step.
 
 \
@@ -107,85 +107,85 @@ Detailed description of the arguments
 - **guess_file** *(string)* - Default: *'./wf.wfu'*
    
   The **guess_file** determines the name of the file containing orbitals for the initial guess of orbitals for the (SA-)CASSCF calculation at the first MD step.
-  This argument is effective only if **guess** = *'read'*.
+  This parameter is effective only if **guess** = *'read'*.
   If the file does not exist, *'hf'* option is applied for the initial guess for the (SA-)CASSCF calculation at the first MD step.
 
 \
 
 - **scf_max_iter** *(integer)* - Default: *20*
 
-  This argument determines the maximum number of the HF iterations.
+  This parameter determines the maximum number of the HF iterations.
   
 \
 
 - **scf_en_tol** *(double)* - Default: *1E-8*
 
-  This argument determines the convergence threshold for the HF energy.
+  This parameter determines the convergence threshold for the HF energy.
   
 \
 
 - **scf_rho_tol** *(double)* - Default: *1E-6*
 
-  This argument determines the convergence threshold for the HF density matrix.
+  This parameter determines the convergence threshold for the HF density matrix.
   
 \
 
 - **mcscf_max_iter** *(integer)* - Default: *20*
 
-  This argument determines the maximum number of the (SA-)CASSCF interations.
+  This parameter determines the maximum number of the (SA-)CASSCF interations.
   
 \
 
 - **mcscf_en_tol** *(integer)* - Default: *1E-8*
 
-  This argument determines the convergence threshold for the (SA-)CASSCF energy.
+  This parameter determines the convergence threshold for the (SA-)CASSCF energy.
   
 \
 
 - **mcscf_grad_tol** *(integer)* - Default: *1E-6*
 
-  This argument determines the convergence threshold for the (SA-)CASSCF gradient.
+  This parameter determines the convergence threshold for the (SA-)CASSCF gradient.
   
 \
 
 - **mcscf_step_tol** *(integer)* - Default: *1E-2*
 
-  This argument determines the convergence threshold for (SA-)CASSCF step length.
+  This parameter determines the convergence threshold for (SA-)CASSCF step length.
   
 \
 
 - **active_elec** *(integer)* - Default: *2*
 
-  This argument determines the number of electrons to be included in the active space of the (SA-)CASSCF calculations.
+  This parameter determines the number of electrons to be included in the active space of the (SA-)CASSCF calculations.
 
 \
 
 - **active_orb** *(integer)* - Default: *2*
   
-  This argument determines the number of orbitals to be included in the active space of the (SA-)CASSCF calculations.
+  This parameter determines the number of orbitals to be included in the active space of the (SA-)CASSCF calculations.
 
 \
 
 - **cpscf_grad_tol** *(double)*  - Default: *1E-7*
 
-  This argument determines the convergence threshold for the accuracy of the CP-MCSCF equations for the analytical gradients and NACVs of the (SA-)CASSCF states.
+  This parameter determines the convergence threshold for the accuracy of the CP-MCSCF equations for the analytical gradients and NACVs of the (SA-)CASSCF states.
 
 \
 
 - **qm_path** *(string)* - Default: *'./'*
   
-  This argument determines the path to be searched by PyUNIxMD for the Molpro executable file, 'molpro' for the (SA-)CASSCF calculations.
+  This parameter determines the path to be searched by PyUNIxMD for the Molpro executable file, 'molpro' for the (SA-)CASSCF calculations.
 
 \
 
 - **nthreads** *(integer)* - Default: *1*
   
-  This argument determines the number of thread for parallel execution of Molpro.
+  This parameter determines the number of thread for parallel execution of Molpro.
 
 \
 
 - **version** *(string)* - Default: *'2015.1'*
   
-  This argument indicates the version of Molpro to be executed.
+  This parameter indicates the version of Molpro to be executed.
   Currently, only version 2015.1 is interfaced.
 
