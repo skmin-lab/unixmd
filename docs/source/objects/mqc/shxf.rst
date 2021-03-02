@@ -8,10 +8,10 @@ in addition to Eherenfest term, i.e.
 
 .. math::
 
-    \dot C^{(I)}_K(t) =& -\frac{i}{\hbar}E^{(I)}_K(t)C^{(I)}_K(t)
-    - \sum_J\sum_\nu{\bf d}^{(I)}_{KJ\nu}(t)\cdot\dot{\bf R}^{(I)}_\nu(t)C^{(I)}_J(t) \nonumber\\
-    &+\sum_J\sum_\nu\frac{1}{M_\nu}\frac{\nabla_\nu|\chi|}{|\chi|}\Bigg|_{\underline{\underline{\bf R}}^{(I)}(t)}
-    \cdot\left\{{\bf f}^{(I)}_{J\nu}(t)-{\bf f}^{(I)}_{K\nu}(t)\right\}|C^{(I)}_J(t)|^2 C^{(I)}_K(t)
+    \dot C^{(I)}_k(t) =& -\frac{i}{\hbar}E^{(I)}_k(t)C^{(I)}_k(t)
+    - \sum_j\sum_\nu{\bf d}^{(I)}_{kj\nu}(t)\cdot\dot{\bf R}^{(I)}_\nu(t)C^{(I)}_j(t) \nonumber\\
+    &+\sum_j\sum_\nu\frac{1}{M_\nu}\frac{\nabla_\nu|\chi|}{|\chi|}\Bigg|_{\underline{\underline{\bf R}}^{(I)}(t)}
+    \cdot\left\{{\bf f}^{(I)}_{j\nu}(t)-{\bf f}^{(I)}_{k\nu}(t)\right\}|C^{(I)}_j(t)|^2 C^{(I)}_k(t)
 
 Detailed description of DISH-XF method is in :cite:`Ha2018`
 
@@ -111,8 +111,8 @@ Detailed description of the parameters
   
   The **propagation** parameter determines the representation for the electronic state.
    
-  + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}\}`
-  + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}\}`
+  + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}^{(I)}(t)\}`
+  + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}^{(I)}(t)\}`
 
 \
 

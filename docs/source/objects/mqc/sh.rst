@@ -2,35 +2,29 @@
 Surface Hopping
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Surface hopping dynamics, often called as Tully's fewest switches surface hopping dynamics (FSSH) is basic method
-for propagate of artificial wavepackets through time. It was introduced by Tully, J. C. in 1990 :cite:`Tully1990`, and many other
-augmented has been introduced up to now. The basic algorithm of FSSH has been implemented in the UNI-xMD with
-following equations.
+Surface hopping dynamics, often called as Tully's fewest switches surface hopping dynamics (FSSH) is one of the most popular MQC methods.
+It was introduced by Tully, J. C. in 1990 :cite:`Tully1990`, and has been augmented in various ways so far. The propagation of electrons and nuclei is done as follows.
 
 .. math::
 
-   M_{v}\ddot{R}^{(I)}_{v}(t) = -\nabla_{v}E^{(I)}_{L}
-
-Nuclear equation of motion is expressed by Newtonian equation, F = ma. It is expressed fully with classical.
-However, the electronic degrees of freedom are represented just as follows.
+   M_{\nu}\ddot{\mathbf{R}}^{(I)}_{\nu}(t) = -\nabla_{\nu}E^{(I)}_{r}(t),
 
 .. math::
 
-   \dot{C}^{(I)}_{K}(t) = -{{i}\over{\hbar}}E^{(I)}_K(t)C^{(I)}_{K}(t)-\sum_{J}\sum_{v}d^{(I)}_{KJv}\cdot\dot{R}^{(I)}
-   _v(t)C^{(I)}_J(t)
+   \dot{C}^{(I)}_{k}(t) = -{{i}\over{\hbar}}E^{(I)}_k(t)C^{(I)}_{k}(t)-\sum_{k}\sum_{\nu}\mathbf{d}^{(I)}_{kj\nu}\cdot\dot{\bf R}^{(I)}
+   _{\nu}(t)C^{(I)}_j(t)
 
-BO coefficient for electronic propagator is derived from force acting on each surface and nonadiabatic coupling
-vector d. Using this coefficient we can structure hopping probability express as follows.
+The electronic propagation is still an Ehrenfest-type evolution, but the nuclei follow a *fixed* BO potential energy surface denoted by :math:`E^{(I)}_{r}(t)`. The corresponding BO state is called a running state (force state).
+The running state is chosen probabilistically at every MD step. The probabilities governing this process are called hopping probabilities naturally depending on the adiabatic population and the nonadiabatic couplings:
 
 .. math::
 
-   P^{(I)}_{L{\rightarrow}K}[t,t+{\Delta}t] = {{2\Re[\rho^{(I)}_{LK}(t)\sum_vd^{(I)}_{LKv}\cdot\dot{R}^{(I)}_v(t)]
-   {\Delta}t}\over{\rho^{(I)}_{LL}(t)}}, \rho^{(I)}_{LK}=C^{(I)}_L{\cdot}C^{(I)}_K
+   P^{(I)}_{j{\rightarrow}k}[t,t+{\Delta}t] = {{2\Re[\rho^{(I)}_{jk}(t)\sum_\nu \mathbf{d}^{(I)}_{jk\nu}(t)\cdot\dot{\bf R}^{(I)}_\nu(t)]
+   {\Delta}t}\over{\rho^{(I)}_{jj}(t)}}, \rho^{(I)}_{jk}(t)=C^{(I)}_j(t) C^{(I)}_k(t)
 
-:math:`{\rho}` represents electronic density matrix. In this algorithm, hopping probability
-to running state to all other states are considered (including running state) and roll a random dice to select next
-running state. If coupling is strong enough to transit to other state, the probability will be increase, and the overall
-trajectories will be transit to that state in stochastical behavior.
+:math:`{\rho}(t)` represents the electronic density matrix. In this algorithm, the hopping probabilities
+from the "current" running state to the others are considered and a random number is called to select the next
+running state. If the coupling with an adiabatic state is strong enough, the probability will increase, so the running state is likely to transit to that state.
 
 +----------------------------+--------------------------------------------------+----------------+
 | Parameters                 | Work                                             | Default        |
@@ -125,8 +119,8 @@ Detailed description of the parameters
   
   The **propagation** parameter determines the representation for the electronic state.
    
-  + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}\}`
-  + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}\}`
+  + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}^{(I)}(t)\}`
+  + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}^{(I)}(t)\}`
 
 \
 

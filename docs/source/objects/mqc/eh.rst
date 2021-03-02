@@ -2,20 +2,26 @@
 Ehrenfest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Ehrenfest dynamics :cite:`Prezhdo1999`, which is mean-field dynamics, evolves nuclei on averaged potential energy surfaces,
+In Ehrenfest dynamics :cite:`Prezhdo1999`, which is mean-field dynamics, evolves nuclei on an averaged potential energy surface,
 
 .. math::
 
-   E(\underline{\underline{\bf R}}(t))=\sum_{i}\vert c_i \vert^2E_i,
+   E(\underline{\underline{\bf R}}^{(I)}(t))=\sum_{i}\vert C_{i}^{(I)}(t) \vert^2E_{i}^{(I)}(t),
 
-where :math:`E_i` is :math:`i`-th adiabatic energy and
-the driving force is given by:
+where :math:`C_{i}^{(I)}(t)` and :math:`E_{i}^{(I)}(t)` is the :math:`i`-th BO coefficient and the adiabatic energy respectively from the :math:`I`-th trajectory. The equations of the electronic coefficients are given by introducing the BO basis expansion, :math:`\Phi^{(I)}(t)=\sum_{i}C_{i}^{(I)}(t)\Phi_{i}^{(I)}(t)`, to the electronic Schroedinger equation, :math:`i \hbar \partial_{t} \Phi^{(I)}(t)=\hat{H}_{\mathrm{BO}}\Phi^{(I)}(t)`:
 
 .. math::
 
-   \vec{F}=\sum_{i} \vec{F}_i + \sum_{i\neq j} c_ic_j(E_i-E_j)d_{ij},
+    \dot C^{(I)}_k(t) = -\frac{i}{\hbar}E^{(I)}_k(t)C^{(I)}_k(t)
+    - \sum_j\sum_{\nu}{\bf d}^{(I)}_{kj\nu}(t)\cdot\dot{\bf R}^{(I)}_\nu(t)C^{(I)}_j(t).
 
-where :math:`d_{ij}` is nonadiabatic couping between :math:`i`-th and :math:`j`-th adiabatic state.
+Thus, the driving force is given by
+
+.. math::
+
+   \mathbf{F}_{\nu}^{(I)}=-\sum_{i} \nabla_{\nu}\mathbf{E}_{i}^{(I)}(t) + \sum_{i\neq j} C_{i}^{(I)}(t)C_{j}^{(I)}(t)(E_{i}^{(I)}(t)-E_{j}^{(I)}(t))\mathbf{d}_{ij\nu}^{(I)}(t),
+
+where :math:`\mathbf{d}_{ij\nu}^{(I)}(t) = \int d \underline{\underline{\mathbf{r}}}\Phi_{i}(\underline{\underline{\mathbf{r}}};\underline{\underline{\mathbf{R}}}^{(I)}(t))\nabla_{\nu}\Phi_{j}(\underline{\underline{\mathbf{r}}};\underline{\underline{\mathbf{R}}}^{(I)}(t))` is the nonadiabatic couping vector between the :math:`i`-th and the :math:`j`-th adiabatic state.
 
 +----------------------------+------------------------------------------------+-------------+
 | Parameters                 | Work                                           | Default     |
@@ -96,8 +102,8 @@ Detailed description of parameters
 
   The **propagation** parameter determines the representation for the electronic state.
 
-  + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}\}`
-  + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}\}`
+  + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}^{(I)}(t)\}`
+  + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}^{(I)}(t)\}`
 
 \
 
