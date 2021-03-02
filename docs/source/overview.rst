@@ -31,7 +31,7 @@ The overall code structure is displayed in the next figure.
 
 PyUNIxMD is mainly based on object-oriented programming, which is structured by
 several classes closely connected with each other.
-Central modules of UNI-xMD are divided into the following.
+Central modules of PyUNIxMD are divided into the following.
 
 - Molecule: a class for describing overall molecule objects, including state objects.
 
@@ -52,7 +52,7 @@ Working Process
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To run PyUNIxMD, it requires creating some objects in your running script.
-A straightfoward way to perform a UNI-xMD calculation is as follows:
+A straightfoward way to perform a PyUNIxMD calculation is as follows:
 
 **1. First of all, you should add the corresponding directory to your python path.**
 

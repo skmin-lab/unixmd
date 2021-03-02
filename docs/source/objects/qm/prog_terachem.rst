@@ -133,7 +133,7 @@ Detailed description of arguments
 
 - **scf_max_iter** *(integer)* - Default: *300*
 
-  This argument determinesi the maximum number of SCF iterations.
+  This argument determines the maximum number of SCF iterations.
 
 \
 
