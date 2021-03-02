@@ -68,7 +68,7 @@ several modules closely connected with each other:
 
 - Thermostat: a class for controlling the temperature of a physical system.
 
-PyUNIxMD take advantage of the inheritance feature to simplify the codes by sharing the common parameters and methods.
+PyUNIxMD takes advantage of the inheritance feature to simplify the codes by sharing the common parameters and methods.
 
 For the detailed information of each module, check each section in below.
 

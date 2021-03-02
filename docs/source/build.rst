@@ -2,8 +2,8 @@
 Build
 ==========================
 
-UNI-xMD is python based program with a little C code for time-consuming
-electronic propagation part interfaced via Cython, therefore compilation is needed.
+PyUNIxMD is a python based program with a little C code for time-consuming
+electronic propagation parts interfaced via Cython, therefore compilation is needed.
 
 Requirements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -14,7 +14,7 @@ Numpy
 
 Cython https://cython.org
 
-If you don't have numpy or Cython, you can install them using pip command.
+If you don't have Numpy or Cython, you can install them using pip command.
 
 .. code-block:: bash
 
@@ -23,8 +23,8 @@ If you don't have numpy or Cython, you can install them using pip command.
 Compilation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can compile electronic propagation routine by typing following
-command in root directory of the program which contains setup.py file.
+You can compile the C routines by typing the following
+command in the root directory of the program which contains setup.py file.
 
 .. code-block:: bash
 
