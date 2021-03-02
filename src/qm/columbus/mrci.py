@@ -7,47 +7,46 @@ from qm.columbus.columbus import Columbus
 class MRCI(Columbus):
     """ Class for MRCI method of Columbus program
 
-#        :param object molecule: Molecule object
-#        :param string basis_set: Basis set information
-#        :param integer memory: Allocatable memory in the calculations
-#        :param string guess: Initial guess for (SA-)CASSCF method
-#        :param string guess_file: Initial guess file
-#        :param integer scf_en_tol: Energy convergence for SCF iterations
-#        :param integer scf_max_iter: Maximum number of SCF iterations
-#        :param integer mcscf_en_tol: Energy convergence for (SA-)CASSCF iterations
-#        :param integer mcscf_max_iter: Maximum number of (SA-)CASSCF iterations
-#        :param integer cpscf_grad_tol: Gradient tolerance for CP-CASSCF equations
-#        :param integer cpscf_max_iter: Maximum number of iterations for CP-CASSCF equations
-#        :param integer active_elec: Number of electrons in active space
-#        :param integer active_orb: Number of orbitals in active space
-#        :param string qm_path: Path for QM binary
-#        :param string version: Version of Columbus program
+        :param object molecule: Molecule object
+        :param string basis_set: Basis set information
+        :param integer memory: Allocatable memory in the calculations
+        :param string guess: Initial guess for MRCI method
+        :param string guess_file: Initial guess file
+        :param integer active_elec: Number of electrons in active space
+        :param integer active_orb: Number of orbitals in active space
+        :param string qm_path: Path for QM binary
+        :param string version: Version of Columbus program
     """
+#    def __init__(self, molecule, basis_set="6-31g*", memory=500, \
+#        guess="hf", guess_file="./mocoef", scf_en_tol=9, scf_max_iter=40, \
+#        mcscf_en_tol=8, mcscf_max_iter=100, cpscf_grad_tol=6, cpscf_max_iter=100, \
+#        active_elec=2, active_orb=2, qm_path="./", version="7.0"):
     def __init__(self, molecule, basis_set="6-31g*", memory=500, \
-        guess="hf", guess_file="./mocoef", scf_en_tol=9, scf_max_iter=40, \
-        mcscf_en_tol=8, mcscf_max_iter=100, cpscf_grad_tol=6, cpscf_max_iter=100, \
+        guess="mcscf", guess_file="./mocoef", \
         active_elec=2, active_orb=2, qm_path="./", version="7.0"):
         # Initialize Columbus common variables
-        super(CASSCF, self).__init__(molecule, basis_set, memory, qm_path, version)
+        super(MRCI, self).__init__(molecule, basis_set, memory, qm_path, version)
 
-        # Initialize Columbus CASSCF variables
-        # Set initial guess for CASSCF calculation
+        # Initialize Columbus MRCI variables
+        # Set initial guess for MRCI calculation
         self.guess = guess
         self.guess_file = guess_file
-        if (not (self.guess == "hf" or self.guess == "read")):
+        if not (self.guess in ["hf", "mcscf", "read"]):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
 
         # HF calculation for initial guess of CASSCF calculation
-        self.scf_en_tol = scf_en_tol
-        self.scf_max_iter = scf_max_iter
+#        self.scf_en_tol = scf_en_tol
+#        self.scf_max_iter = scf_max_iter
 
         # CASSCF calculation
-        self.mcscf_en_tol = mcscf_en_tol
-        self.mcscf_max_iter = mcscf_max_iter
+#        self.mcscf_en_tol = mcscf_en_tol
+#        self.mcscf_max_iter = mcscf_max_iter
         self.active_elec = active_elec
         self.active_orb = active_orb
-        self.cpscf_grad_tol = cpscf_grad_tol
-        self.cpscf_max_iter = cpscf_max_iter
+#        self.cpscf_grad_tol = cpscf_grad_tol
+#        self.cpscf_max_iter = cpscf_max_iter
+
+
 
         # Calculate number of frozen, closed and occ orbitals in CASSCF method
         # Note that there is no positive frozen core orbitals in CASSCF
@@ -55,14 +54,17 @@ class MRCI(Columbus):
         self.closed_orb = int((int(molecule.nelec) - self.active_elec) / 2)
         self.docc_orb = int(int(molecule.nelec) / 2)
 
+
+
+
         # Check the closed shell for systems
         if (not int(molecule.nelec) % 2 == 0):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) Only closed shell configuration implemented! {int(molecule.nelec)}")
 
         # Set 'l_nacme' with respect to the computational method
-        # CASSCF can produce NACs, so we do not need to get NACME from CIoverlap
-        # CASSCF can compute the gradient of several states simultaneously,
-        #        but self.re_calc is set to be true to reduce cost.
+        # MRCI can produce NACs, so we do not need to get NACME from CIoverlap
+        # MRCI can compute the gradient of several states simultaneously,
+        #      but self.re_calc is set to be true to reduce cost.
         molecule.l_nacme = False
         self.re_calc = True
 
@@ -99,14 +101,16 @@ class MRCI(Columbus):
     def get_input(self, molecule, istep, bo_list, calc_force_only):
         """ Generate Columbus input files: geom, prepin, stdin, mcscfin, transmomin, etc
 
-#            :param object molecule: Molecule object
+            :param object molecule: Molecule object
 #            :param integer istep: Current MD step
 #            :param integer,list bo_list: List of BO states for BO calculation
 #            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         # Generate 'geom' file used in Columbus
         geom = ""
-        for iat in range(molecule.nat):
+        # TODO : original code uses molecule.nat
+#        for iat in range(molecule.nat):
+        for iat in range(molecule.nat_qm):
             atom_num = list(data.keys()).index(f"{molecule.symbols[iat]}")
             tmp_atom = f' {molecule.symbols[iat]:5s}{atom_num:7.2f}' \
                 + "".join([f'{molecule.pos[iat, isp]:15.8f}' for isp in range(molecule.nsp)]) \
