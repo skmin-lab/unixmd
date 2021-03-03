@@ -246,8 +246,8 @@ class CASSCF(Molpro):
         command = f"{qm_command} -m {self.memory} -I int -W wfu --no-xml-output -d int -o log -g -s molpro.inp > tmp_log"
         os.system(command)
         os.remove("tmp_log")
-        # Copy the output file to 'QMlog' directory
-        tmp_dir = os.path.join(base_dir, "QMlog")
+        # Copy the output file to 'qm_log' directory
+        tmp_dir = os.path.join(base_dir, "qm_log")
         if (os.path.exists(tmp_dir)):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
             shutil.copy("log", os.path.join(tmp_dir, log_step))

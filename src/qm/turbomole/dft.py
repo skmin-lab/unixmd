@@ -203,8 +203,8 @@ class DFT(Turbomole):
             command = f"{egrad_command} >& egrad.out"
             os.system(command)
 
-        # Copy the output file to 'QMlog' directory
-        tmp_dir = os.path.join(base_dir, "QMlog")
+        # Copy the output file to 'qm_log' directory
+        tmp_dir = os.path.join(base_dir, "qm_log")
         if (os.path.exists(tmp_dir)):
             shutil.copy("dscf.out", os.path.join(tmp_dir, f"dscf.out.{istep + 1}"))
             if (bo_list[0] == 0):

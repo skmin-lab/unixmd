@@ -564,8 +564,8 @@ class DFTB(DFTBplus):
         file_name = f"detailed.out.{bo_list[0]}"
         shutil.copy("detailed.out", file_name)
 
-        # Copy the output file to 'QMlog' directory
-        tmp_dir = os.path.join(base_dir, "QMlog")
+        # Copy the output file to 'qm_log' directory
+        tmp_dir = os.path.join(base_dir, "qm_log")
         if (os.path.exists(tmp_dir)):
             detailed_out_step = f"detailed.out.{istep + 1}.{bo_list[0]}"
             shutil.copy("detailed.out", os.path.join(tmp_dir, detailed_out_step))
