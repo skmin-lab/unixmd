@@ -131,27 +131,23 @@ class MRCI(Columbus):
 
         # Scratch Block
         hf = False
-        mcscf = False
+        mcscf = True
         if (self.guess == "read"):
             if (istep == -1):
                 if (os.path.isfile(self.guess_file)):
                     # Copy guess file to currect directory
                     shutil.copy(self.guess_file, os.path.join(self.scr_qm_dir, "mocoef"))
                     restart = 1
-                    mcscf = True
                 else:
                     restart = 0
                     hf = True
-                    mcscf = True
             elif (istep >= 0):
                 # Move previous file to currect directory
                 os.rename("../mocoef", os.path.join(self.scr_qm_dir, "mocoef"))
                 restart = 1
-                mcscf = True
         elif (self.guess == "hf"):
             restart = 0
             hf = True
-            mcscf = True
             if (self.skip_mcscf):
                 mcscf = False
 
@@ -210,14 +206,10 @@ class MRCI(Columbus):
             else:
                 stdin = f"\ny\n1\nn\nno\n"
 
-#        # MCSCF input setting in colinp script of Columbus
-#        if (calc_force_only):
-#            # Here, y in MCSCF setting means skip of writting DRT table
-#            # Here, y in MCSCF setting means overwritting of 'cigrdin' file
-#            stdin += f"3\nn\n3\ny\n" + "\t" * 14 + "\ny\n"
-#        else:
-#            stdin += f"3\nn\n3\n1\n{int(molecule.nelec)}\n1\n1\n0\n0\n{self.closed_orb}\n{self.active_orb}\nn\n" + "\t" * 14 + "\n"
-#
+        # MCSCF input setting in colinp script of Columbus
+        if (mcscf):
+            stdin += f"3\nn\n3\n1\n{int(molecule.nelec)}\n1\n1\n0\n0\n{self.closed_orb}\n{self.active_orb}\nn\n" + "\t" * 14 + "\n"
+
 #        # Job control setting in colinp script of Columbus
 #        if (calc_force_only):
 #            # Start from 'mocoef' file
