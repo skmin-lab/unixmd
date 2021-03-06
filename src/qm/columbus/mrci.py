@@ -23,13 +23,14 @@ class MRCI(Columbus):
 #        active_elec=2, active_orb=2, qm_path="./", version="7.0"):
     def __init__(self, molecule, basis_set="6-31g*", memory=500, \
         guess="hf", guess_file="./mocoef", skip_mcscf=False, \
-        active_elec=2, active_orb=2, qm_path="./", version="7.0"):
+        active_elec=2, active_orb=2, frozen_core_orb=0, frozen_virt_orb=0, \
+        qm_path="./", version="7.0"):
         # Initialize Columbus common variables
         super(MRCI, self).__init__(molecule, basis_set, memory, qm_path, version)
 
         # Initialize Columbus MRCI variables
         # Set initial guess for MRCI calculation
-        # read: Read MCSCF orbitals -> MCSCF -> MRCI
+        # read: Read MCSCF orbitals obtained from previous step -> MCSCF -> MRCI
         # hf: Start HF orbitals -> MCSCF -> MRCI
         self.guess = guess
         self.guess_file = guess_file
@@ -45,7 +46,8 @@ class MRCI(Columbus):
 #        self.scf_en_tol = scf_en_tol
 #        self.scf_max_iter = scf_max_iter
 
-        # CASSCF calculation
+        # CASSCF/MRCI calculation
+        # TODO : Currently, same active space is applied to the CASSCF and MRCI calculations
 #        self.mcscf_en_tol = mcscf_en_tol
 #        self.mcscf_max_iter = mcscf_max_iter
         self.active_elec = active_elec
@@ -53,16 +55,15 @@ class MRCI(Columbus):
 #        self.cpscf_grad_tol = cpscf_grad_tol
 #        self.cpscf_max_iter = cpscf_max_iter
 
+        self.frozen_core_orb = frozen_core_orb
+        self.frozen_virt_orb = frozen_virt_orb
 
-
-        # Calculate number of frozen, closed and occ orbitals in CASSCF method
-        # Note that there is no positive frozen core orbitals in CASSCF
-        self.frozen_orb = 0
-        self.closed_orb = int((int(molecule.nelec) - self.active_elec) / 2)
+        # Calculate number of doubly occuplied, closed, and internal orbitals in HF, CASSCF, and MRCI method
+        # Note that there is positive frozen core orbitals in MRCI
+        #           and the number of auxiliary internal orbitals is set to zero
         self.docc_orb = int(int(molecule.nelec) / 2)
-
-
-
+        self.closed_orb = int((int(molecule.nelec) - self.active_elec) / 2)
+        self.internal_orb = self.closed_orb + self.active_orb + 0 - self.frozen_core_orb
 
         # Check the closed shell for systems
         if (not int(molecule.nelec) % 2 == 0):
@@ -208,7 +209,12 @@ class MRCI(Columbus):
 
         # MCSCF input setting in colinp script of Columbus
         if (mcscf):
-            stdin += f"3\nn\n3\n1\n{int(molecule.nelec)}\n1\n1\n0\n0\n{self.closed_orb}\n{self.active_orb}\nn\n" + "\t" * 14 + "\n"
+            stdin += f"3\nn\n1\n1\n{int(molecule.nelec)}\n1\n1\n0\n0\n{self.closed_orb}\n{self.active_orb}\nn\n" + "\t" * 14 + "\n"
+
+        # MRCI input setting in colinp script of Columbus
+        if (.not. calc_force_only):
+            stdin += f"4\n\n2\ny\nn\n1\n{int(molecule.nelec)}\n1\n{self.frozen_core_orb}\n{self.frozen_virt_orb}\n" + \
+                "{self.internal_orb}\n{self.internal_orb - self.active_orb}\n0\n2\ny\n\nn\n1\n" + "\t" * 17 + "\n"
 
 #        # Job control setting in colinp script of Columbus
 #        if (calc_force_only):
