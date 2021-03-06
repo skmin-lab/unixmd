@@ -197,14 +197,19 @@ class MRCI(Columbus):
 
         os.system("./prepinp_fix < prepin > prepout")
 
-#        # Generate 'stdin' file used in colinp script of Columbus
-#        # DALTON, SCF input setting in colinp script of Columbus
-#        if (hf):
-#            stdin = f"\ny\n1\nn\nno\n2\nyes\n{self.docc_orb}\nyes\nyes\n{self.scf_max_iter}\n{self.scf_en_tol}\nno\n1\n\n"
-#        else:
-#            # Here, n in DALTON means no change of basis set
+        # Generate 'stdin' file used in colinp script of Columbus
+        # DALTON, SCF input setting in colinp script of Columbus
+        if (hf):
+            stdin = f"\ny\n1\nn\nno\n2\nyes\n{self.docc_orb}\nyes\nyes\n{self.scf_max_iter}\n{self.scf_en_tol}\nno\n1\n\n"
+        else:
+            # Here, n in DALTON means no change of basis set; this choice appears when 'control.run' file exists
+            # TODO : this part must be checked. last 'n' is essential?
 #            stdin = f"\ny\n1\nn\nno\nn\n"
-#
+            if (calc_force_only):
+                stdin = f"\ny\n1\nn\nno\nn\n"
+            else:
+                stdin = f"\ny\n1\nn\nno\n"
+
 #        # MCSCF input setting in colinp script of Columbus
 #        if (calc_force_only):
 #            # Here, y in MCSCF setting means skip of writting DRT table
