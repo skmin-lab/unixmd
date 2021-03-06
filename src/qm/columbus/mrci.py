@@ -168,35 +168,35 @@ class MRCI(Columbus):
                 shutil.copy(os.path.join(self.scr_qm_dir, "./MOCOEFS/mocoef_mc.sp"), \
                     os.path.join(self.scr_qm_dir, "mocoef"))
 
-#        # Generate new prepinp script
-#        shutil.copy(os.path.join(self.qm_path, "prepinp"), "prepinp_copy")
-#
-#        file_name = "prepinp_copy"
-#        with open(file_name, "r") as f:
-#            prepinp = f.read()
-#            prepinp = prepinp.replace("( keys %sumformula )", "(sort keys %sumformula )", 1)
-#
-#        file_name = "prepinp_fix"
-#        with open(file_name, "w") as f:
-#            f.write(prepinp)
-#        os.chmod("prepinp_fix", 0o755)
-#
-#        # Generate 'prepin' file used in prepinp script of Columbus
-#        if (calc_force_only):
-#            # Here, y means overwritting of 'inpcol' file
-#            prepin = "1\ny\nc1\ngeom\n\n"
-#        else:
-#            prepin = "1\nc1\ngeom\n\n"
-#
-#        prepin += self.basis_nums
-#        prepin += "\ny\n\n"
-#
-#        file_name = "prepin"
-#        with open(file_name, "w") as f:
-#            f.write(prepin)
-#
-#        os.system("./prepinp_fix < prepin > prepout")
-#
+        # Generate new prepinp script
+        shutil.copy(os.path.join(self.qm_path, "prepinp"), "prepinp_copy")
+
+        file_name = "prepinp_copy"
+        with open(file_name, "r") as f:
+            prepinp = f.read()
+            prepinp = prepinp.replace("( keys %sumformula )", "(sort keys %sumformula )", 1)
+
+        file_name = "prepinp_fix"
+        with open(file_name, "w") as f:
+            f.write(prepinp)
+        os.chmod("prepinp_fix", 0o755)
+
+        # Generate 'prepin' file used in prepinp script of Columbus
+        if (calc_force_only):
+            # Here, y means overwritting of 'inpcol' file
+            prepin = "1\ny\nc1\ngeom\n\n"
+        else:
+            prepin = "1\nc1\ngeom\n\n"
+
+        prepin += self.basis_nums
+        prepin += "\ny\n\n"
+
+        file_name = "prepin"
+        with open(file_name, "w") as f:
+            f.write(prepin)
+
+        os.system("./prepinp_fix < prepin > prepout")
+
 #        # Generate 'stdin' file used in colinp script of Columbus
 #        # DALTON, SCF input setting in colinp script of Columbus
 #        if (hf):
