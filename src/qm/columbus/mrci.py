@@ -273,22 +273,22 @@ class MRCI(Columbus):
             with open(file_name, "w") as f:
                 f.write(new_mcscf)
 
-#        # Modify 'transmomin' files
-#        transmomin = "MCSCF\n"
-#        # Gradient part
-#        for ist in bo_list:
-#            transmomin += f"1  {ist + 1}  1  {ist + 1}\n"
-#
-#        # NAC part
-#        if (not calc_force_only):
-#            for i in range(molecule.nst):
-#                for j in range(i):
-#                    transmomin += f"1  {i + 1}  1  {j + 1}\n"
-#
-#        file_name = "transmomin"
-#        with open(file_name, "w") as f:
-#            f.write(transmomin)
-#
+        # Write 'transmomin' files
+        transmomin = "CI\n"
+        # Gradient part
+        for ist in bo_list:
+            transmomin += f"1  {ist + 1}  1  {ist + 1}\n"
+
+        # NAC part
+        if (not calc_force_only):
+            for i in range(molecule.nst):
+                for j in range(i + 1, molecule.nst):
+                    transmomin += f"1  {i + 1}  1  {j + 1}\n"
+
+        file_name = "transmomin"
+        with open(file_name, "w") as f:
+            f.write(transmomin)
+
 #        # Manually modify input files
 #        # Modify 'cigrdin' files
 #        file_name = "cigrdin"
