@@ -90,7 +90,7 @@ class MRCI(Columbus):
         super().get_data(base_dir, calc_force_only)
         self.write_xyz(molecule)
         self.get_input(molecule, istep, bo_list, calc_force_only)
-#        self.run_QM(base_dir, istep, bo_list)
+        self.run_QM(base_dir, istep, bo_list)
 #        self.extract_QM(molecule, bo_list, calc_force_only)
 #        self.move_dir(base_dir)
 
@@ -102,8 +102,7 @@ class MRCI(Columbus):
         # Copy required files to read initial guess
         if (self.guess == "read" and istep >= 0):
             # After T = 0.0 s
-            # TODO : should I use mocoef_mcscf as initial guess of mrci?
-            # TODO : or mocoef_scf as initial guess of mrci?
+            # The MCSCF orbitals from previous step are used as initial guess
             shutil.copy(os.path.join(self.scr_qm_dir, "./MOCOEFS/mocoef_mc.sp"), \
                 os.path.join(self.scr_qm_dir, "../mocoef"))
 
@@ -111,9 +110,9 @@ class MRCI(Columbus):
         """ Generate Columbus input files: geom, prepin, stdin, mcscfin, transmomin, etc
 
             :param object molecule: Molecule object
-#            :param integer istep: Current MD step
-#            :param integer,list bo_list: List of BO states for BO calculation
-#            :param boolean calc_force_only: Logical to decide whether calculate force only
+            :param integer istep: Current MD step
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         # Generate 'geom' file used in Columbus
         geom = ""
@@ -312,26 +311,27 @@ class MRCI(Columbus):
         # Copy 'daltcomm' files
         shutil.copy("daltcomm", "daltcomm.new")
 
-#    def run_QM(self, base_dir, istep, bo_list):
-#        """ Run CASSCF calculation and save the output files to QMlog directory
-#
-#            :param string base_dir: Base directory
-#            :param integer istep: Current MD step
-#            :param integer,list bo_list: List of BO states for BO calculation
-#        """
-#        # Run Columbus method
-#        qm_command = os.path.join(self.qm_path, "runc")
-#        command = f"{qm_command} -m {self.memory} > runls"
-#        os.system(command)
-#        # Copy the output file to 'QMlog' directory
-#        tmp_dir = os.path.join(base_dir, "QMlog")
-#        if (os.path.exists(tmp_dir)):
-#            log_step = f"runls.{istep + 1}.{bo_list[0]}"
-#            shutil.copy("runls", os.path.join(tmp_dir, log_step))
-#        # Remove scratch 'WORK' directory
-#        tmp_dir = os.path.join(self.scr_qm_dir, "WORK")
-#        if (os.path.exists(tmp_dir)):
-#            shutil.rmtree(tmp_dir)
+    def run_QM(self, base_dir, istep, bo_list):
+        """ Run MRCI calculation and save the output files to qm_log directory
+
+            :param string base_dir: Base directory
+            :param integer istep: Current MD step
+            :param integer,list bo_list: List of BO states for BO calculation
+        """
+        # Run Columbus method
+        qm_command = os.path.join(self.qm_path, "runc")
+        command = f"{qm_command} -m {self.memory} > runls"
+        os.system(command)
+        # Copy the output file to 'qm_log' directory
+        tmp_dir = os.path.join(base_dir, "qm_log")
+        if (os.path.exists(tmp_dir)):
+            log_step = f"runls.{istep + 1}.{bo_list[0]}"
+            shutil.copy("runls", os.path.join(tmp_dir, log_step))
+        # Remove scratch 'WORK' directory
+        # TODO : should I delete WORK for all cases?
+        tmp_dir = os.path.join(self.scr_qm_dir, "WORK")
+        if (os.path.exists(tmp_dir)):
+            shutil.rmtree(tmp_dir)
 
 #    def extract_QM(self, molecule, bo_list, calc_force_only):
 #        """ Read the output files to get BO information
