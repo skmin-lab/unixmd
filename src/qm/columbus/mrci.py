@@ -420,7 +420,7 @@ class MRCI(Columbus):
             tmp_e += '\n number of'
             energy = re.findall(tmp_e, log_out)
             energy = np.array(energy)
-            energy = energy.astype(float)
+            energy = energy[0].astype(float)
             for ist in range(molecule.nst):
                 molecule.states[ist].energy = energy[ist]
 
@@ -444,7 +444,7 @@ class MRCI(Columbus):
             for ist in range(molecule.nst):
                 for jst in range(ist + 1, molecule.nst):
                     # Read 'cartgrd.nad.drt1.state?.drt1.state?.sp' file
-                    file_name = f"GRADIENTS/cartgrd.nad.drt1.state{jst + 1}.drt1.state{ist + 1}.sp"
+                    file_name = f"GRADIENTS/cartgrd.nad.drt1.state{ist + 1}.drt1.state{jst + 1}.sp"
                     with open(file_name, "r") as f:
                         log_out = f.read()
 
