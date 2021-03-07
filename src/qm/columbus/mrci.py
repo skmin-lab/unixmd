@@ -91,8 +91,8 @@ class MRCI(Columbus):
         self.write_xyz(molecule)
         self.get_input(molecule, istep, bo_list, calc_force_only)
         self.run_QM(base_dir, istep, bo_list)
-#        self.extract_QM(molecule, bo_list, calc_force_only)
-#        self.move_dir(base_dir)
+        self.extract_QM(molecule, bo_list, calc_force_only)
+        self.move_dir(base_dir)
 
     def copy_files(self, istep):
         """ Copy necessary scratch files in previous step
@@ -333,58 +333,59 @@ class MRCI(Columbus):
         if (os.path.exists(tmp_dir)):
             shutil.rmtree(tmp_dir)
 
-#    def extract_QM(self, molecule, bo_list, calc_force_only):
-#        """ Read the output files to get BO information
-#
-#            :param object molecule: Molecule object
-#            :param integer,list bo_list: List of BO states for BO calculation
-#            :param boolean calc_force_only: Logical to decide whether calculate force only
-#        """
-#        # Energy
-#        if (not calc_force_only):
-#            # Read 'mcscfsm.sp' file
-#            file_name = "LISTINGS/mcscfsm.sp"
-#            with open(file_name, "r") as f:
-#                log_out = f.read()
-#
-#            tmp_e = 'total\senergy[=]\s*([-]\S+)[,]'
-#            energy = re.findall(tmp_e, log_out)
-#            energy = np.array(energy)
-#            energy = energy.astype(float)
-#            for ist in range(molecule.nst):
-#                molecule.states[ist].energy = energy[ist]
-#
-#        # Force
-#        for ist in bo_list:
-#            # Read 'cartgrd.drt1.state?.sp' file
-#            file_name = f"GRADIENTS/cartgrd.drt1.state{ist + 1}.sp"
-#            with open(file_name, "r") as f:
-#                log_out = f.read()
-#                log_out = log_out.replace("D", "E", molecule.nat * molecule.nsp)
-#
-#            tmp_f ='\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat
-#            force = re.findall(tmp_f, log_out)
-#            force = np.array(force[0])
-#            force = force.astype(float)
-#            force = force.reshape(molecule.nat, 3, order='C')
-#            molecule.states[ist].force = - np.copy(force)
-#
-#        # NAC
-#        if (not calc_force_only and self.calc_coupling):
-#            for ist in range(molecule.nst):
-#                for jst in range(ist + 1, molecule.nst):
-#                    # Read 'cartgrd.nad.drt1.state?.drt1.state?.sp' file
-#                    file_name = f"GRADIENTS/cartgrd.nad.drt1.state{jst + 1}.drt1.state{ist + 1}.sp"
-#                    with open(file_name, "r") as f:
-#                        log_out = f.read()
-#                        log_out = log_out.replace("D", "E", molecule.nat * molecule.nsp)
-#
-#                    tmp_c =  '\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat
-#                    nac = re.findall(tmp_c, log_out)
-#                    nac = np.array(nac[0])
-#                    nac = nac.astype(float)
-#                    nac = nac.reshape(molecule.nat, 3, order='C')
-#                    molecule.nac[ist, jst] = nac
-#                    molecule.nac[jst, ist] = - nac
+    def extract_QM(self, molecule, bo_list, calc_force_only):
+        """ Read the output files to get BO information
+
+            :param object molecule: Molecule object
+            :param integer,list bo_list: List of BO states for BO calculation
+            :param boolean calc_force_only: Logical to decide whether calculate force only
+        """
+        # Energy
+        if (not calc_force_only):
+            # Read 'ciudgsm.sp' file
+            file_name = "LISTINGS/ciudgsm.sp"
+            with open(file_name, "r") as f:
+                log_out = f.read()
+
+            tmp_e = ' mr-sdci [#]\s*\S+\s+\S+\s+([-]\S+)\s+[-]*\S+\s+[-]*\S+\s+[-]*\S+\s+[-]*\S+\s+\n'
+                * molecule.nst
+            tmp_e += '\n number of'
+            energy = re.findall(tmp_e, log_out)
+            energy = np.array(energy)
+            energy = energy.astype(float)
+            for ist in range(molecule.nst):
+                molecule.states[ist].energy = energy[ist]
+
+        # Force
+        for ist in bo_list:
+            # Read 'cartgrd.drt1.state?.sp' file
+            file_name = f"GRADIENTS/cartgrd.drt1.state{ist + 1}.sp"
+            with open(file_name, "r") as f:
+                log_out = f.read()
+                log_out = log_out.replace("D", "E", molecule.nat * molecule.nsp)
+
+            tmp_f ='\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat
+            force = re.findall(tmp_f, log_out)
+            force = np.array(force[0])
+            force = force.astype(float)
+            force = force.reshape(molecule.nat, 3, order='C')
+            molecule.states[ist].force = - np.copy(force)
+
+        # NAC
+        if (not calc_force_only and self.calc_coupling):
+            for ist in range(molecule.nst):
+                for jst in range(ist + 1, molecule.nst):
+                    # Read 'cartgrd.nad.drt1.state?.drt1.state?.sp' file
+                    file_name = f"GRADIENTS/cartgrd.nad.drt1.state{jst + 1}.drt1.state{ist + 1}.sp"
+                    with open(file_name, "r") as f:
+                        log_out = f.read()
+
+                    tmp_c =  '\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat
+                    nac = re.findall(tmp_c, log_out)
+                    nac = np.array(nac[0])
+                    nac = nac.astype(float)
+                    nac = nac.reshape(molecule.nat, 3, order='C')
+                    molecule.nac[ist, jst] = nac
+                    molecule.nac[jst, ist] = - nac
 
 
