@@ -1,8 +1,8 @@
 from __future__ import division
 from qm.columbus.columbus import Columbus
-#from misc import data, au_to_A, A_to_au, amu_to_au, call_name
-#import os, shutil, re, textwrap
-#import numpy as np
+from misc import data, amu_to_au, call_name
+import os, shutil, re
+import numpy as np
 
 class MRCI(Columbus):
     """ Class for MRCI method of Columbus program
@@ -211,7 +211,7 @@ class MRCI(Columbus):
             stdin += f"3\nn\n1\n1\n{int(molecule.nelec)}\n1\n1\n0\n0\n{self.closed_orb}\n{self.active_orb}\nn\n" + "\t" * 14 + "\n"
 
         # MRCI input setting in colinp script of Columbus
-        if (.not. calc_force_only):
+        if (not calc_force_only):
             stdin += f"4\n\n2\ny\nn\n1\n{int(molecule.nelec)}\n1\n{self.frozen_core_orb}\n{self.frozen_virt_orb}\n" + \
                 "{self.internal_orb}\n{self.internal_orb - self.active_orb}\n0\n2\ny\n\nn\n1\n" + "\t" * 17 + "\n"
 
@@ -347,7 +347,7 @@ class MRCI(Columbus):
             with open(file_name, "r") as f:
                 log_out = f.read()
 
-            tmp_e = ' mr-sdci [#]\s*\S+\s+\S+\s+([-]\S+)\s+[-]*\S+\s+[-]*\S+\s+[-]*\S+\s+[-]*\S+\s+\n'
+            tmp_e = ' mr-sdci [#]\s*\S+\s+\S+\s+([-]\S+)\s+[-]*\S+\s+[-]*\S+\s+[-]*\S+\s+[-]*\S+\s+\n' \
                 * molecule.nst
             tmp_e += '\n number of'
             energy = re.findall(tmp_e, log_out)
