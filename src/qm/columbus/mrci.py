@@ -212,8 +212,9 @@ class MRCI(Columbus):
 
         # MRCI input setting in colinp script of Columbus
         if (not calc_force_only):
+            print ("this routine")
             stdin += f"4\n\n2\ny\nn\n1\n{int(molecule.nelec)}\n1\n{self.frozen_core_orb}\n{self.frozen_virt_orb}\n" + \
-                "{self.internal_orb}\n{self.internal_orb - self.active_orb}\n0\n2\ny\n\nn\n1\n" + "\t" * 17 + "\n"
+                f"{self.internal_orb}\n{self.internal_orb - self.active_orb}\n0\n2\ny\n\nn\n1\n" + "\t" * 17 + "\n"
 
         # Job control setting in colinp script of Columbus
         if (calc_force_only):
@@ -270,6 +271,41 @@ class MRCI(Columbus):
             file_name = "mcscfin"
             with open(file_name, "w") as f:
                 f.write(new_mcscf)
+
+        # Manually modify input files
+        # Modify 'ciudgin' files
+        file_name = "ciudgin"
+        with open(file_name, "r") as f:
+            ciudgin = f.readlines()
+
+        ciudg_length = len(ciudgin)
+
+        new_ciudg = ""
+        for i in range(ciudg_length):
+#            if ("niter" in ciudgin[i]):
+#                new_ciudg += f"  niter={self.mcscf_max_iter},\n"
+            if ("NROOT" in ciudgin[i]):
+                new_ciudg += f" NROOT = {molecule.nst}\n"
+            elif ("RTOLBK" in ciudgin[i]):
+                new_ciudg += " RTOLBK = "
+                for i in range(molecule.nst):
+                    new_ciudg += "1e-4,\n"
+                new_ciudg += "\n"
+            elif ("RTOLCI" in ciudgin[i]):
+                new_ciudg += " RTOLCI = "
+                for i in range(molecule.nst):
+                    new_ciudg += "1e-4,\n"
+                new_ciudg += "\n"
+#            elif ("tol(1)" in ciudgin[i]):
+#                new_ciudg += f"  tol(1)=1.e-{self.mcscf_en_tol},\n"
+            else:
+                new_ciudg += ciudgin[i]
+
+        os.rename("ciudgin", "ciudgin.old")
+
+        file_name = "ciudgin"
+        with open(file_name, "w") as f:
+                f.write(new_ciudg)
 
         # Write 'transmomin' files
         transmomin = "CI\n"
