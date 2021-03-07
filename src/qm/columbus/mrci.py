@@ -216,25 +216,31 @@ class MRCI(Columbus):
             stdin += f"4\n\n2\ny\nn\n1\n{int(molecule.nelec)}\n1\n{self.frozen_core_orb}\n{self.frozen_virt_orb}\n" + \
                 "{self.internal_orb}\n{self.internal_orb - self.active_orb}\n0\n2\ny\n\nn\n1\n" + "\t" * 17 + "\n"
 
-#        # Job control setting in colinp script of Columbus
-#        if (calc_force_only):
-#            # Start from 'mocoef' file
-#            # Here, y in job control setting means discard of already existing 'control.run' file
-#            stdin += "5\n1\ny\n1\n3\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
-#        else:
-#            if (restart == 1):
-#                # Start from MCSCF calculation
-#                stdin += "5\n1\n1\n3\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
-#            else:
-#                # Start from SCF calculation
-#                stdin += "5\n1\n1\n2\n3\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
-#
-#        file_name = "stdin"
-#        with open(file_name, "w") as f:
-#            f.write(stdin)
-#
-#        os.system(f"{self.qm_path}/colinp < stdin > stdout")
-#
+        # Job control setting in colinp script of Columbus
+        if (calc_force_only):
+            # Start from 'mocoef' file
+            # Here, y in job control setting means discard of already existing 'control.run' file
+            stdin += "5\n1\ny\n1\n5\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
+            # TODO : should we run MRCI calculation when the results already exist?
+#            stdin += "5\n1\ny\n1\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
+        else:
+            if (restart == 1):
+                # Start from MCSCF calculation
+                stdin += "5\n1\n1\n3\n5\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
+            else:
+                if (self.skip_mcscf):
+                    # Start from SCF calculation, and do not run MCSCF
+                    stdin += "5\n1\n1\n2\n5\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
+                else:
+                    # Start from SCF calculation
+                    stdin += "5\n1\n1\n2\n3\n5\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
+
+        file_name = "stdin"
+        with open(file_name, "w") as f:
+            f.write(stdin)
+
+        os.system(f"{self.qm_path}/colinp < stdin > stdout")
+
 #        # Manually modify input files
 #        # Modify 'mcscfin' files
 #        file_name = "mcscfin"
