@@ -212,7 +212,6 @@ class MRCI(Columbus):
 
         # MRCI input setting in colinp script of Columbus
         if (not calc_force_only):
-            print ("this routine")
             stdin += f"4\n\n2\ny\nn\n1\n{int(molecule.nelec)}\n1\n{self.frozen_core_orb}\n{self.frozen_virt_orb}\n" + \
                 f"{self.internal_orb}\n{self.internal_orb - self.active_orb}\n0\n2\ny\n\nn\n1\n" + "\t" * 17 + "\n"
 
@@ -289,12 +288,12 @@ class MRCI(Columbus):
             elif ("RTOLBK" in ciudgin[i]):
                 new_ciudg += " RTOLBK = "
                 for i in range(molecule.nst):
-                    new_ciudg += "1e-4,\n"
+                    new_ciudg += "1e-4,"
                 new_ciudg += "\n"
             elif ("RTOLCI" in ciudgin[i]):
                 new_ciudg += " RTOLCI = "
                 for i in range(molecule.nst):
-                    new_ciudg += "1e-4,\n"
+                    new_ciudg += "1e-4,"
                 new_ciudg += "\n"
 #            elif ("tol(1)" in ciudgin[i]):
 #                new_ciudg += f"  tol(1)=1.e-{self.mcscf_en_tol},\n"
@@ -306,6 +305,26 @@ class MRCI(Columbus):
         file_name = "ciudgin"
         with open(file_name, "w") as f:
                 f.write(new_ciudg)
+
+        # Modify 'cidenin' files
+        file_name = "cidenin"
+        with open(file_name, "r") as f:
+            cidenin = f.readlines()
+
+        ciden_length = len(cidenin)
+
+        new_ciden = ""
+        for i in range(ciden_length):
+            if ("lroot" in cidenin[i]):
+                new_ciden += f"  lroot = {molecule.nst}\n"
+            else:
+                new_ciden += cidenin[i]
+
+        os.rename("cidenin", "cidenin.old")
+
+        file_name = "cidenin"
+        with open(file_name, "w") as f:
+                f.write(new_ciden)
 
         # Write 'transmomin' files
         transmomin = "CI\n"
