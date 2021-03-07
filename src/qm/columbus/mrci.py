@@ -295,7 +295,7 @@ class MRCI(Columbus):
             elif ("RTOLCI" in ciudgin[i]):
                 new_ciudg += " RTOLCI = "
                 for i in range(molecule.nst):
-                    new_ciudg += "1e-{self.mrci_en_tol},"
+                    new_ciudg += f"1e-{self.mrci_en_tol},"
                 new_ciudg += "\n"
             else:
                 new_ciudg += ciudgin[i]
