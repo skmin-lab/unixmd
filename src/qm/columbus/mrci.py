@@ -17,10 +17,9 @@ class MRCI(Columbus):
         :param string qm_path: Path for QM binary
         :param string version: Version of Columbus program
     """
-#        mcscf_en_tol=8, mcscf_max_iter=100, cpscf_grad_tol=6, cpscf_max_iter=100, \
     def __init__(self, molecule, basis_set="6-31g*", memory=500, \
         guess="hf", guess_file="./mocoef", scf_en_tol=9, scf_max_iter=40, skip_mcscf=False, \
-        mcscf_en_tol=8, mcscf_max_iter=100, \
+        mcscf_en_tol=8, mcscf_max_iter=100, cpscf_grad_tol=6, cpscf_max_iter=100, \
         active_elec=2, active_orb=2, frozen_core_orb=0, frozen_virt_orb=0, \
         qm_path="./", version="7.0"):
         # Initialize Columbus common variables
@@ -52,12 +51,12 @@ class MRCI(Columbus):
         # CASSCF calculation
         self.mcscf_en_tol = mcscf_en_tol
         self.mcscf_max_iter = mcscf_max_iter
-#        self.cpscf_grad_tol = cpscf_grad_tol
-#        self.cpscf_max_iter = cpscf_max_iter
 
         # MRCI calculation
         self.frozen_core_orb = frozen_core_orb
         self.frozen_virt_orb = frozen_virt_orb
+        self.cpscf_grad_tol = cpscf_grad_tol
+        self.cpscf_max_iter = cpscf_max_iter
 
         # Calculate number of doubly occuplied, closed, and internal orbitals in HF, CASSCF, and MRCI method
         # Note that there is positive frozen core orbitals in MRCI
@@ -289,29 +288,29 @@ class MRCI(Columbus):
         with open(file_name, "w") as f:
             f.write(transmomin)
 
-#        # Manually modify input files
-#        # Modify 'cigrdin' files
-#        file_name = "cigrdin"
-#        with open(file_name, "r") as f:
-#            cigrdin = f.readlines()
-#
-#        new_cigrd = ""
-#        for line in cigrdin:
-#            if ("nmiter" in line):
-#                new_cigrd += f" nmiter= {self.cpscf_max_iter}, print=0, fresdd=1,\n"
-#            elif ("rtol" in line):
-#                new_cigrd += f" rtol=1e-{self.cpscf_grad_tol}, dtol=1e-6,\n"
-#            else:
-#                new_cigrd += line
-#
-#        os.rename("cigrdin", "cigrdin.old")
-#
-#        file_name = "cigrdin"
-#        with open(file_name, "w") as f:
-#            f.write(new_cigrd)
-#
-#        # Copy 'daltcomm' files
-#        shutil.copy("daltcomm", "daltcomm.new")
+        # Manually modify input files
+        # Modify 'cigrdin' files
+        file_name = "cigrdin"
+        with open(file_name, "r") as f:
+            cigrdin = f.readlines()
+
+        new_cigrd = ""
+        for line in cigrdin:
+            if ("nmiter" in line):
+                new_cigrd += f" nmiter= {self.cpscf_max_iter}, print=0, fresdd=1,\n"
+            elif ("rtol" in line):
+                new_cigrd += f" rtol=1e-{self.cpscf_grad_tol}, dtol=1e-6,\n"
+            else:
+                new_cigrd += line
+
+        os.rename("cigrdin", "cigrdin.old")
+
+        file_name = "cigrdin"
+        with open(file_name, "w") as f:
+            f.write(new_cigrd)
+
+        # Copy 'daltcomm' files
+        shutil.copy("daltcomm", "daltcomm.new")
 
 #    def run_QM(self, base_dir, istep, bo_list):
 #        """ Run CASSCF calculation and save the output files to QMlog directory
