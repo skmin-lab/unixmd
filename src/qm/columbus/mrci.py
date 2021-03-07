@@ -17,12 +17,10 @@ class MRCI(Columbus):
         :param string qm_path: Path for QM binary
         :param string version: Version of Columbus program
     """
-#    def __init__(self, molecule, basis_set="6-31g*", memory=500, \
-#        guess="hf", guess_file="./mocoef", scf_en_tol=9, scf_max_iter=40, \
 #        mcscf_en_tol=8, mcscf_max_iter=100, cpscf_grad_tol=6, cpscf_max_iter=100, \
-#        active_elec=2, active_orb=2, qm_path="./", version="7.0"):
     def __init__(self, molecule, basis_set="6-31g*", memory=500, \
-        guess="hf", guess_file="./mocoef", skip_mcscf=False, \
+        guess="hf", guess_file="./mocoef", scf_en_tol=9, scf_max_iter=40, skip_mcscf=False, \
+        mcscf_en_tol=8, mcscf_max_iter=100, \
         active_elec=2, active_orb=2, frozen_core_orb=0, frozen_virt_orb=0, \
         qm_path="./", version="7.0"):
         # Initialize Columbus common variables
@@ -42,19 +40,22 @@ class MRCI(Columbus):
         if (self.skip_mcscf and not self.guess == "hf"):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) Skip MCSCF calculation is possible when initial guess is HF! {self.skip_mcscf} and {self.guess}")
 
-        # HF calculation for initial guess of CASSCF calculation
-#        self.scf_en_tol = scf_en_tol
-#        self.scf_max_iter = scf_max_iter
+        # HF calculation for initial guess of CASSCF or MRCI calculations
+        self.scf_en_tol = scf_en_tol
+        self.scf_max_iter = scf_max_iter
 
         # CASSCF/MRCI calculation
         # TODO : Currently, same active space is applied to the CASSCF and MRCI calculations
-#        self.mcscf_en_tol = mcscf_en_tol
-#        self.mcscf_max_iter = mcscf_max_iter
         self.active_elec = active_elec
         self.active_orb = active_orb
+
+        # CASSCF calculation
+        self.mcscf_en_tol = mcscf_en_tol
+        self.mcscf_max_iter = mcscf_max_iter
 #        self.cpscf_grad_tol = cpscf_grad_tol
 #        self.cpscf_max_iter = cpscf_max_iter
 
+        # MRCI calculation
         self.frozen_core_orb = frozen_core_orb
         self.frozen_virt_orb = frozen_virt_orb
 
@@ -241,39 +242,37 @@ class MRCI(Columbus):
 
         os.system(f"{self.qm_path}/colinp < stdin > stdout")
 
-#        # Manually modify input files
-#        # Modify 'mcscfin' files
-#        file_name = "mcscfin"
-#        with open(file_name, "r") as f:
-#            mcscfin = f.readlines()
-#
-#        mcscf_length = len(mcscfin)
-#        if (calc_force_only):
-#            target_line = mcscf_length
-#        else:
-#            target_line = mcscf_length - 3
-#
-#        new_mcscf = ""
-#        for i in range(target_line):
-#            if ("niter" in mcscfin[i]):
-#                new_mcscf += f"  niter={self.mcscf_max_iter},\n"
-#            elif ("tol(1)" in mcscfin[i]):
-#                new_mcscf += f"  tol(1)=1.e-{self.mcscf_en_tol},\n"
-#            else:
-#                new_mcscf += mcscfin[i]
-#
-#        if (not calc_force_only):
-#            new_mcscf += f"  NAVST(1) = {molecule.nst},\n"
-#            for i in range(molecule.nst):
-#                new_mcscf += f"  WAVST(1,{i + 1})=1 ,\n"
-#            new_mcscf += " &end\n"
-#
-#        os.rename("mcscfin", "mcscfin.old")
-#
-#        file_name = "mcscfin"
-#        with open(file_name, "w") as f:
-#            f.write(new_mcscf)
-#
+        if (not calc_force_only):
+
+            # Manually modify input files
+            # Modify 'mcscfin' files
+            file_name = "mcscfin"
+            with open(file_name, "r") as f:
+                mcscfin = f.readlines()
+
+            mcscf_length = len(mcscfin)
+            target_line = mcscf_length - 3
+
+            new_mcscf = ""
+            for i in range(target_line):
+                if ("niter" in mcscfin[i]):
+                    new_mcscf += f"  niter={self.mcscf_max_iter},\n"
+                elif ("tol(1)" in mcscfin[i]):
+                    new_mcscf += f"  tol(1)=1.e-{self.mcscf_en_tol},\n"
+                else:
+                    new_mcscf += mcscfin[i]
+
+            new_mcscf += f"  NAVST(1) = {molecule.nst},\n"
+            for i in range(molecule.nst):
+                new_mcscf += f"  WAVST(1,{i + 1})=1 ,\n"
+            new_mcscf += " &end\n"
+
+            os.rename("mcscfin", "mcscfin.old")
+
+            file_name = "mcscfin"
+            with open(file_name, "w") as f:
+                f.write(new_mcscf)
+
 #        # Modify 'transmomin' files
 #        transmomin = "MCSCF\n"
 #        # Gradient part
