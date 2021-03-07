@@ -19,7 +19,7 @@ class MRCI(Columbus):
     """
     def __init__(self, molecule, basis_set="6-31g*", memory=500, \
         guess="hf", guess_file="./mocoef", scf_en_tol=9, scf_max_iter=40, skip_mcscf=False, \
-        mcscf_en_tol=8, mcscf_max_iter=100, cpscf_grad_tol=6, cpscf_max_iter=100, \
+        mcscf_en_tol=8, mcscf_max_iter=100, mrci_en_tol=4, mrci_max_iter=30, cpscf_grad_tol=6, cpscf_max_iter=100, \
         active_elec=2, active_orb=2, frozen_core_orb=0, frozen_virt_orb=0, \
         qm_path="./", version="7.0"):
         # Initialize Columbus common variables
@@ -55,6 +55,8 @@ class MRCI(Columbus):
         # MRCI calculation
         self.frozen_core_orb = frozen_core_orb
         self.frozen_virt_orb = frozen_virt_orb
+        self.mrci_en_tol = mrci_en_tol
+        self.mrci_max_iter = mrci_max_iter
         self.cpscf_grad_tol = cpscf_grad_tol
         self.cpscf_max_iter = cpscf_max_iter
 
@@ -281,8 +283,6 @@ class MRCI(Columbus):
 
         new_ciudg = ""
         for i in range(ciudg_length):
-#            if ("niter" in ciudgin[i]):
-#                new_ciudg += f"  niter={self.mcscf_max_iter},\n"
             if ("NROOT" in ciudgin[i]):
                 new_ciudg += f" NROOT = {molecule.nst}\n"
             elif ("RTOLBK" in ciudgin[i]):
@@ -290,13 +290,13 @@ class MRCI(Columbus):
                 for i in range(molecule.nst):
                     new_ciudg += "1e-4,"
                 new_ciudg += "\n"
+            elif ("NITER" in ciudgin[i]):
+                new_ciudg += f" NITER = {self.mrci_max_iter}\n"
             elif ("RTOLCI" in ciudgin[i]):
                 new_ciudg += " RTOLCI = "
                 for i in range(molecule.nst):
-                    new_ciudg += "1e-4,"
+                    new_ciudg += "1e-{self.mrci_en_tol},"
                 new_ciudg += "\n"
-#            elif ("tol(1)" in ciudgin[i]):
-#                new_ciudg += f"  tol(1)=1.e-{self.mcscf_en_tol},\n"
             else:
                 new_ciudg += ciudgin[i]
 
