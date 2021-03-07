@@ -281,10 +281,14 @@ class MRCI(Columbus):
 
         ciudg_length = len(ciudgin)
 
+        # For 'NVBKMN', 'NVCIMN', 'NVCIMX', 'NVRFMX', 'NVBKMX', these variables affect
+        # the iteration process, so the default values are used.
         new_ciudg = ""
         for i in range(ciudg_length):
             if ("NROOT" in ciudgin[i]):
                 new_ciudg += f" NROOT = {molecule.nst}\n"
+            elif ("NVBKMN" in ciudgin[i]):
+                new_ciudg += f" NVBKMN = {molecule.nst}\n"
             elif ("RTOLBK" in ciudgin[i]):
                 new_ciudg += " RTOLBK = "
                 for i in range(molecule.nst):
@@ -292,11 +296,19 @@ class MRCI(Columbus):
                 new_ciudg += "\n"
             elif ("NITER" in ciudgin[i]):
                 new_ciudg += f" NITER = {self.mrci_max_iter}\n"
+            elif ("NVCIMN" in ciudgin[i]):
+                new_ciudg += f" NVCIMN = {molecule.nst + 2}\n"
             elif ("RTOLCI" in ciudgin[i]):
                 new_ciudg += " RTOLCI = "
                 for i in range(molecule.nst):
                     new_ciudg += f"1e-{self.mrci_en_tol},"
                 new_ciudg += "\n"
+            elif ("NVCIMX" in ciudgin[i]):
+                new_ciudg += f" NVCIMX = {molecule.nst + 5}\n"
+            elif ("NVRFMX" in ciudgin[i]):
+                new_ciudg += f" NVRFMX = {molecule.nst + 5}\n"
+            elif ("NVBKMX" in ciudgin[i]):
+                new_ciudg += f" NVBKMX = {molecule.nst + 5}\n"
             else:
                 new_ciudg += ciudgin[i]
 
@@ -307,6 +319,7 @@ class MRCI(Columbus):
                 f.write(new_ciudg)
 
         # Modify 'cidenin' files
+        # TODO : Is this change essential?
         file_name = "cidenin"
         with open(file_name, "r") as f:
             cidenin = f.readlines()
