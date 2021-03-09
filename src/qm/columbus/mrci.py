@@ -230,7 +230,7 @@ class MRCI(Columbus):
         if (calc_force_only):
             # Start from 'mocoef' file
             # Here, y in job control setting means discard of already existing 'control.run' file
-            stdin += "5\n1\ny\n1\n5\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
+            stdin += "5\n1\ny\n1\n3\n5\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
             # TODO : should we run MRCI calculation when the results already exist?
 #            stdin += "5\n1\ny\n1\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
         else:
@@ -282,69 +282,93 @@ class MRCI(Columbus):
             with open(file_name, "w") as f:
                 f.write(new_mcscf)
 
-        # Manually modify input files
-        # Modify 'ciudgin' files
-        file_name = "ciudgin"
-        with open(file_name, "r") as f:
-            ciudgin = f.readlines()
+            # Manually modify input files
+            # Modify 'ciudgin' files
+            file_name = "ciudgin"
+            with open(file_name, "r") as f:
+                ciudgin = f.readlines()
 
-        ciudg_length = len(ciudgin)
+            ciudg_length = len(ciudgin)
 
-        # For 'NVBKMN', 'NVCIMN', 'NVCIMX', 'NVRFMX', 'NVBKMX', these variables affect
-        # the iteration process, so the default values are used.
-        new_ciudg = ""
-        for i in range(ciudg_length):
-            if ("NROOT" in ciudgin[i]):
-                new_ciudg += f" NROOT = {self.state_avg}\n"
-            elif ("NVBKMN" in ciudgin[i]):
-                new_ciudg += f" NVBKMN = {self.state_avg}\n"
-            elif ("RTOLBK" in ciudgin[i]):
-                new_ciudg += " RTOLBK = "
-                new_ciudg += "1e-4," * self.state_avg
-                new_ciudg += "\n"
-            elif ("NITER" in ciudgin[i]):
-                new_ciudg += f" NITER = {self.mrci_max_iter}\n"
-            elif ("NVCIMN" in ciudgin[i]):
-                new_ciudg += f" NVCIMN = {self.state_avg + 2}\n"
-            elif ("RTOLCI" in ciudgin[i]):
-                new_ciudg += " RTOLCI = "
-                new_ciudg += f"1e-{self.mrci_en_tol}," * self.state_avg
-                new_ciudg += "\n"
-            elif ("NVCIMX" in ciudgin[i]):
-                new_ciudg += f" NVCIMX = {self.state_avg + 5}\n"
-            elif ("NVRFMX" in ciudgin[i]):
-                new_ciudg += f" NVRFMX = {self.state_avg + 5}\n"
-            elif ("NVBKMX" in ciudgin[i]):
-                new_ciudg += f" NVBKMX = {self.state_avg + 5}\n"
-            else:
-                new_ciudg += ciudgin[i]
+            # For 'NVBKMN', 'NVCIMN', 'NVCIMX', 'NVRFMX', 'NVBKMX', these variables affect
+            # the iteration process, so the default values are used.
+            new_ciudg = ""
+            for i in range(ciudg_length):
+                if ("NROOT" in ciudgin[i]):
+                    new_ciudg += f" NROOT = {self.state_avg}\n"
+                elif ("NVBKMN" in ciudgin[i]):
+                    new_ciudg += f" NVBKMN = {self.state_avg}\n"
+                elif ("RTOLBK" in ciudgin[i]):
+                    new_ciudg += " RTOLBK = "
+                    new_ciudg += "1e-4," * self.state_avg
+                    new_ciudg += "\n"
+                elif ("NITER" in ciudgin[i]):
+                    new_ciudg += f" NITER = {self.mrci_max_iter}\n"
+                elif ("NVCIMN" in ciudgin[i]):
+                    new_ciudg += f" NVCIMN = {self.state_avg + 2}\n"
+                elif ("RTOLCI" in ciudgin[i]):
+                    new_ciudg += " RTOLCI = "
+                    new_ciudg += f"1e-{self.mrci_en_tol}," * self.state_avg
+                    new_ciudg += "\n"
+                elif ("NVCIMX" in ciudgin[i]):
+                    new_ciudg += f" NVCIMX = {self.state_avg + 5}\n"
+                elif ("NVRFMX" in ciudgin[i]):
+                    new_ciudg += f" NVRFMX = {self.state_avg + 5}\n"
+                elif ("NVBKMX" in ciudgin[i]):
+                    new_ciudg += f" NVBKMX = {self.state_avg + 5}\n"
+                else:
+                    new_ciudg += ciudgin[i]
 
-        os.rename("ciudgin", "ciudgin.old")
+            os.rename("ciudgin", "ciudgin.old")
 
-        file_name = "ciudgin"
-        with open(file_name, "w") as f:
-                f.write(new_ciudg)
+            file_name = "ciudgin"
+            with open(file_name, "w") as f:
+                    f.write(new_ciudg)
 
-        # Modify 'cidenin' files
-        # TODO : Is this change essential?
-        file_name = "cidenin"
-        with open(file_name, "r") as f:
-            cidenin = f.readlines()
+            # Modify 'cidenin' files
+            # TODO : Is this change essential?
+            file_name = "cidenin"
+            with open(file_name, "r") as f:
+                cidenin = f.readlines()
 
-        ciden_length = len(cidenin)
+            ciden_length = len(cidenin)
 
-        new_ciden = ""
-        for i in range(ciden_length):
-            if ("lroot" in cidenin[i]):
-                new_ciden += f"  lroot = {self.state_avg}\n"
-            else:
-                new_ciden += cidenin[i]
+            new_ciden = ""
+            for i in range(ciden_length):
+                if ("lroot" in cidenin[i]):
+                    new_ciden += f"  lroot = {self.state_avg}\n"
+                else:
+                    new_ciden += cidenin[i]
 
-        os.rename("cidenin", "cidenin.old")
+            os.rename("cidenin", "cidenin.old")
 
-        file_name = "cidenin"
-        with open(file_name, "w") as f:
-                f.write(new_ciden)
+            file_name = "cidenin"
+            with open(file_name, "w") as f:
+                    f.write(new_ciden)
+
+            # Manually modify input files
+            # Modify 'cigrdin' files
+            file_name = "cigrdin"
+            with open(file_name, "r") as f:
+                cigrdin = f.readlines()
+
+            new_cigrd = ""
+            for line in cigrdin:
+                if ("nmiter" in line):
+                    new_cigrd += f" nmiter= {self.cpscf_max_iter}, print=0, fresdd=1,\n"
+                elif ("rtol" in line):
+                    new_cigrd += f" rtol=1e-{self.cpscf_grad_tol}, dtol=1e-6,\n"
+                else:
+                    new_cigrd += line
+
+            os.rename("cigrdin", "cigrdin.old")
+
+            file_name = "cigrdin"
+            with open(file_name, "w") as f:
+                f.write(new_cigrd)
+
+            # Copy 'daltcomm' files
+            shutil.copy("daltcomm", "daltcomm.new")
 
         # Write 'transmomin' files
         transmomin = "CI\n"
@@ -361,30 +385,6 @@ class MRCI(Columbus):
         file_name = "transmomin"
         with open(file_name, "w") as f:
             f.write(transmomin)
-
-        # Manually modify input files
-        # Modify 'cigrdin' files
-        file_name = "cigrdin"
-        with open(file_name, "r") as f:
-            cigrdin = f.readlines()
-
-        new_cigrd = ""
-        for line in cigrdin:
-            if ("nmiter" in line):
-                new_cigrd += f" nmiter= {self.cpscf_max_iter}, print=0, fresdd=1,\n"
-            elif ("rtol" in line):
-                new_cigrd += f" rtol=1e-{self.cpscf_grad_tol}, dtol=1e-6,\n"
-            else:
-                new_cigrd += line
-
-        os.rename("cigrdin", "cigrdin.old")
-
-        file_name = "cigrdin"
-        with open(file_name, "w") as f:
-            f.write(new_cigrd)
-
-        # Copy 'daltcomm' files
-        shutil.copy("daltcomm", "daltcomm.new")
 
     def run_QM(self, base_dir, istep, bo_list):
         """ Run MRCI calculation and save the output files to qm_log directory
