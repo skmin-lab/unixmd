@@ -19,7 +19,7 @@ class MRCI(Columbus):
         :param string version: Version of Columbus program
     """
     def __init__(self, molecule, basis_set="6-31g*", memory=500, \
-        guess="hf", guess_file="./mocoef", scf_en_tol=9, scf_max_iter=40, skip_mcscf=False, \
+        guess="hf", guess_file="./mocoef", scf_en_tol=9, scf_max_iter=40, \
         mcscf_en_tol=8, mcscf_max_iter=100, mrci_en_tol=4, mrci_max_iter=30, cpscf_grad_tol=6, cpscf_max_iter=100, \
         active_elec=2, active_orb=2, state_avg=None, frozen_core_orb=0, frozen_virt_orb=0, \
         qm_path="./", version="7.0"):
@@ -34,11 +34,6 @@ class MRCI(Columbus):
         self.guess_file = guess_file
         if not (self.guess in ["hf", "read"]):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
-
-        # MRCI calculation is done by using HF orbitals
-        self.skip_mcscf = skip_mcscf
-        if (self.skip_mcscf and not self.guess == "hf"):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Skip MCSCF calculation is possible when initial guess is HF! {self.skip_mcscf} and {self.guess}")
 
         # HF calculation for initial guess of CASSCF or MRCI calculations
         self.scf_en_tol = scf_en_tol
@@ -159,21 +154,13 @@ class MRCI(Columbus):
         elif (self.guess == "hf"):
             restart = 0
             hf = True
-            if (self.skip_mcscf):
-                mcscf = False
 
-        # TODO : test must be needed for SH
-        # TODO : maybe, we do not need to run ciudg -> directly go to gradient calculation step?
         if (calc_force_only):
             restart = 1
             hf = False
             mcscf = False
-            if (self.skip_mcscf):
-                shutil.copy(os.path.join(self.scr_qm_dir, "./MOCOEFS/mocoef_scf.sp"), \
-                    os.path.join(self.scr_qm_dir, "mocoef"))
-            else:
-                shutil.copy(os.path.join(self.scr_qm_dir, "./MOCOEFS/mocoef_mc.sp"), \
-                    os.path.join(self.scr_qm_dir, "mocoef"))
+            shutil.copy(os.path.join(self.scr_qm_dir, "./MOCOEFS/mocoef_mc.sp"), \
+                os.path.join(self.scr_qm_dir, "mocoef"))
 
         # Generate new prepinp script
         shutil.copy(os.path.join(self.qm_path, "prepinp"), "prepinp_copy")
@@ -231,12 +218,8 @@ class MRCI(Columbus):
                 # Start from MCSCF calculation
                 stdin += "5\n1\n1\n3\n5\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
             else:
-                if (self.skip_mcscf):
-                    # Start from SCF calculation, and do not run MCSCF
-                    stdin += "5\n1\n1\n2\n5\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
-                else:
-                    # Start from SCF calculation
-                    stdin += "5\n1\n1\n2\n3\n5\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
+                # Start from SCF calculation
+                stdin += "5\n1\n1\n2\n3\n5\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
 
         file_name = "stdin"
         with open(file_name, "w") as f:
@@ -319,7 +302,6 @@ class MRCI(Columbus):
                     f.write(new_ciudg)
 
             # Modify 'cidenin' files
-            # TODO : Is this change essential?
             file_name = "cidenin"
             with open(file_name, "r") as f:
                 cidenin = f.readlines()
@@ -396,7 +378,6 @@ class MRCI(Columbus):
             log_step = f"runls.{istep + 1}.{bo_list[0]}"
             shutil.copy("runls", os.path.join(tmp_dir, log_step))
         # Remove scratch 'WORK' directory
-        # TODO : should I delete WORK for all cases?
         tmp_dir = os.path.join(self.scr_qm_dir, "WORK")
         if (os.path.exists(tmp_dir)):
             shutil.rmtree(tmp_dir)
