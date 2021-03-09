@@ -4,6 +4,7 @@ from misc import data, amu_to_au, call_name
 import os, shutil, re
 import numpy as np
 
+# TODO : comments must be added
 class MRCI(Columbus):
     """ Class for MRCI method of Columbus program
 
@@ -20,7 +21,7 @@ class MRCI(Columbus):
     def __init__(self, molecule, basis_set="6-31g*", memory=500, \
         guess="hf", guess_file="./mocoef", scf_en_tol=9, scf_max_iter=40, skip_mcscf=False, \
         mcscf_en_tol=8, mcscf_max_iter=100, mrci_en_tol=4, mrci_max_iter=30, cpscf_grad_tol=6, cpscf_max_iter=100, \
-        active_elec=2, active_orb=2, frozen_core_orb=0, frozen_virt_orb=0, \
+        active_elec=2, active_orb=2, state_avg=None, frozen_core_orb=0, frozen_virt_orb=0, \
         qm_path="./", version="7.0"):
         # Initialize Columbus common variables
         super(MRCI, self).__init__(molecule, basis_set, memory, qm_path, version)
@@ -47,6 +48,14 @@ class MRCI(Columbus):
         # TODO : Currently, same active space is applied to the CASSCF and MRCI calculations
         self.active_elec = active_elec
         self.active_orb = active_orb
+
+        self.state_avg = state_avg
+        if (self.state_avg == None):
+            # Set number of state-averaging to number of states
+            self.state_avg = molecule.nst
+        else:
+            if (self.state_avg < molecule.nst):
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) Too small number of state-averaging! {self.state_avg}")
 
         # CASSCF calculation
         self.mcscf_en_tol = mcscf_en_tol
@@ -262,8 +271,8 @@ class MRCI(Columbus):
                 else:
                     new_mcscf += mcscfin[i]
 
-            new_mcscf += f"  NAVST(1) = {molecule.nst},\n"
-            for i in range(molecule.nst):
+            new_mcscf += f"  NAVST(1) = {self.state_avg},\n"
+            for i in range(self.state_avg):
                 new_mcscf += f"  WAVST(1,{i + 1})=1 ,\n"
             new_mcscf += " &end\n"
 
@@ -286,29 +295,27 @@ class MRCI(Columbus):
         new_ciudg = ""
         for i in range(ciudg_length):
             if ("NROOT" in ciudgin[i]):
-                new_ciudg += f" NROOT = {molecule.nst}\n"
+                new_ciudg += f" NROOT = {self.state_avg}\n"
             elif ("NVBKMN" in ciudgin[i]):
-                new_ciudg += f" NVBKMN = {molecule.nst}\n"
+                new_ciudg += f" NVBKMN = {self.state_avg}\n"
             elif ("RTOLBK" in ciudgin[i]):
                 new_ciudg += " RTOLBK = "
-                for i in range(molecule.nst):
-                    new_ciudg += "1e-4,"
+                new_ciudg += "1e-4," * self.state_avg
                 new_ciudg += "\n"
             elif ("NITER" in ciudgin[i]):
                 new_ciudg += f" NITER = {self.mrci_max_iter}\n"
             elif ("NVCIMN" in ciudgin[i]):
-                new_ciudg += f" NVCIMN = {molecule.nst + 2}\n"
+                new_ciudg += f" NVCIMN = {self.state_avg + 2}\n"
             elif ("RTOLCI" in ciudgin[i]):
                 new_ciudg += " RTOLCI = "
-                for i in range(molecule.nst):
-                    new_ciudg += f"1e-{self.mrci_en_tol},"
+                new_ciudg += f"1e-{self.mrci_en_tol}," * self.state_avg
                 new_ciudg += "\n"
             elif ("NVCIMX" in ciudgin[i]):
-                new_ciudg += f" NVCIMX = {molecule.nst + 5}\n"
+                new_ciudg += f" NVCIMX = {self.state_avg + 5}\n"
             elif ("NVRFMX" in ciudgin[i]):
-                new_ciudg += f" NVRFMX = {molecule.nst + 5}\n"
+                new_ciudg += f" NVRFMX = {self.state_avg + 5}\n"
             elif ("NVBKMX" in ciudgin[i]):
-                new_ciudg += f" NVBKMX = {molecule.nst + 5}\n"
+                new_ciudg += f" NVBKMX = {self.state_avg + 5}\n"
             else:
                 new_ciudg += ciudgin[i]
 
@@ -329,7 +336,7 @@ class MRCI(Columbus):
         new_ciden = ""
         for i in range(ciden_length):
             if ("lroot" in cidenin[i]):
-                new_ciden += f"  lroot = {molecule.nst}\n"
+                new_ciden += f"  lroot = {self.state_avg}\n"
             else:
                 new_ciden += cidenin[i]
 
@@ -415,8 +422,12 @@ class MRCI(Columbus):
             with open(file_name, "r") as f:
                 log_out = f.read()
 
-            tmp_e = ' mr-sdci [#]\s*\S+\s+\S+\s+([-]\S+)\s+[-]*\S+\s+[-]*\S+\s+[-]*\S+\s+[-]*\S+\s+\n' \
-                * molecule.nst
+            tmp_e = ''
+            for ist in range(self.state_avg):
+                if (ist < molecule.nst):
+                    tmp_e += ' mr-sdci [#]\s*\S+\s+\S+\s+([-]\S+)\s+[-]*\S+\s+[-]*\S+\s+[-]*\S+\s+[-]*\S+\s+\n'
+                else:
+                    tmp_e += ' mr-sdci [#]\s*\S+\s+\S+\s+[-]\S+\s+[-]*\S+\s+[-]*\S+\s+[-]*\S+\s+[-]*\S+\s+\n'
             tmp_e += '\n number of'
             energy = re.findall(tmp_e, log_out)
             energy = np.array(energy)
