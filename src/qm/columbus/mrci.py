@@ -209,13 +209,8 @@ class MRCI(Columbus):
         if (hf):
             stdin = f"\ny\n1\nn\nno\n2\nyes\n{self.docc_orb}\nyes\nyes\n{self.scf_max_iter}\n{self.scf_en_tol}\nno\n1\n\n"
         else:
-            # Here, n in DALTON means no change of basis set; this choice appears when 'control.run' file exists
-            # TODO : this part must be checked. last 'n' is essential?
-#            stdin = f"\ny\n1\nn\nno\nn\n"
-            if (calc_force_only):
-                stdin = f"\ny\n1\nn\nno\nn\n"
-            else:
-                stdin = f"\ny\n1\nn\nno\n"
+            # Here, n in DALTON means no change of basis set; this choice appears when 'control.run' or 'mocoef' file exists
+            stdin = f"\ny\n1\nn\nno\nn\n"
 
         # MCSCF input setting in colinp script of Columbus
         if (mcscf):
@@ -231,8 +226,6 @@ class MRCI(Columbus):
             # Start from 'mocoef' file
             # Here, y in job control setting means discard of already existing 'control.run' file
             stdin += "5\n1\ny\n1\n3\n5\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
-            # TODO : should we run MRCI calculation when the results already exist?
-#            stdin += "5\n1\ny\n1\n11\n1\nn\n3\nn\n8\n4\n7\n\n"
         else:
             if (restart == 1):
                 # Start from MCSCF calculation
