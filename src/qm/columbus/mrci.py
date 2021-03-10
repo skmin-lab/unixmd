@@ -30,7 +30,7 @@ class MRCI(Columbus):
     """
     def __init__(self, molecule, basis_set="6-31g*", memory=500, \
         guess="hf", guess_file="./mocoef", scf_en_tol=9, scf_max_iter=40, \
-        mcscf_en_tol=8, mcscf_max_iter=100, mrci_en_tol=4, mrci_max_iter=30, \
+        mcscf_en_tol=8, mcscf_max_iter=100, mrci_en_tol=4, mrci_max_iter=None, \
         state_avg=None, active_elec=2, active_orb=2, frozen_core_orb=0, frozen_virt_orb=0, \
         cpscf_grad_tol=6, cpscf_max_iter=100, qm_path="./", version="7.0"):
         # Initialize Columbus common variables
@@ -69,8 +69,13 @@ class MRCI(Columbus):
         # MRCI calculation
         self.frozen_core_orb = frozen_core_orb
         self.frozen_virt_orb = frozen_virt_orb
+
         self.mrci_en_tol = mrci_en_tol
         self.mrci_max_iter = mrci_max_iter
+        if (self.mrci_max_iter == None):
+            # Set maximum number of MRCI iterations
+            self.mrci_max_iter = 30 * self.state_avg
+
         self.cpscf_grad_tol = cpscf_grad_tol
         self.cpscf_max_iter = cpscf_max_iter
 
