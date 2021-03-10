@@ -4,7 +4,6 @@ from misc import data, amu_to_au, call_name
 import os, shutil, re
 import numpy as np
 
-# TODO : comments must be added
 class MRCI(Columbus):
     """ Class for MRCI method of Columbus program
 
@@ -13,16 +12,27 @@ class MRCI(Columbus):
         :param integer memory: Allocatable memory in the calculations
         :param string guess: Initial guess for MRCI method
         :param string guess_file: Initial guess file
+        :param integer scf_en_tol: Energy convergence for SCF iterations
+        :param integer scf_max_iter: Maximum number of SCF iterations
+        :param integer mcscf_en_tol: Energy convergence for (SA-)CASSCF iterations
+        :param integer mcscf_max_iter: Maximum number of (SA-)CASSCF iterations
+        :param integer mrci_en_tol: Energy convergence for MRCI iterations
+        :param integer mrci_max_iter: Maximum number of MRCI iterations
+        :param integer state_avg: Number of averaged state for (SA-)CASSCF and MRCI
         :param integer active_elec: Number of electrons in active space
         :param integer active_orb: Number of orbitals in active space
+        :param integer frozen_core_orb: Number of frozen core orbitals in doubly occupied space
+        :param integer frozen_virt_orb: Number of frozen virtual orbitals in highest unoccupied space
+        :param integer cpscf_grad_tol: Gradient tolerance for CP-MRCI equations
+        :param integer cpscf_max_iter: Maximum number of iterations for CP-MRCI equations
         :param string qm_path: Path for QM binary
         :param string version: Version of Columbus program
     """
     def __init__(self, molecule, basis_set="6-31g*", memory=500, \
         guess="hf", guess_file="./mocoef", scf_en_tol=9, scf_max_iter=40, \
-        mcscf_en_tol=8, mcscf_max_iter=100, mrci_en_tol=4, mrci_max_iter=30, cpscf_grad_tol=6, cpscf_max_iter=100, \
-        active_elec=2, active_orb=2, state_avg=None, frozen_core_orb=0, frozen_virt_orb=0, \
-        qm_path="./", version="7.0"):
+        mcscf_en_tol=8, mcscf_max_iter=100, mrci_en_tol=4, mrci_max_iter=30, \
+        state_avg=None, active_elec=2, active_orb=2, frozen_core_orb=0, frozen_virt_orb=0, \
+        cpscf_grad_tol=6, cpscf_max_iter=100, qm_path="./", version="7.0"):
         # Initialize Columbus common variables
         super(MRCI, self).__init__(molecule, basis_set, memory, qm_path, version)
 
