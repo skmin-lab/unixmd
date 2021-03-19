@@ -87,12 +87,12 @@ The contents list for each tagged line is written when the dynamics information 
     INFO       16    1    0.00000 (1->0)    0.38161    0.00002046    -0.17273222    -0.17271176    12.922694    1.00000
     (...)
 
-Also, you may obtain the following output files:
+Also, you will obtain the following output files:
 
 - MDENERGY
 
-This file contains the kinetic energy, potential energy, total energy and energies of the adiabatic states.
-There are two energy values for the adiabatic states, E(0) and E(1) because you put nstates=2.
+This file shows MD energies and energies of adiabatic states.
+There are only two energy values for the adiabatic states, E(0) and E(1) because you put nstates=2.
 
 .. code-block:: bash
 
@@ -120,7 +120,7 @@ There are two energy values for the adiabatic states, E(0) and E(1) because you 
           20     0.00003197    -0.17274373    -0.17271176    -0.21360671    -0.17274373
    (...)
 
-If you plot a energy-step graph with the potential energy and the adiabatic potential energy, it looks like the following.
+If you plot a energy-step graph with the values, it looks like the following.
 
 .. image:: diagrams/ptraj.png
    :width: 400pt
@@ -129,7 +129,7 @@ The potential energy shows a "hop" near the avoided crossing, while the total MD
 
 - MOVIE.xyz
 
-This file gives the position and the velocity of the particle at each step.
+This file contains the position and the velocity of the particle at each step.
 
 .. code-block:: bash
 
@@ -152,7 +152,7 @@ This file gives the position and the velocity of the particle at each step.
 
 - FINAL.xyz
 
-This file gives the position and the velocity of the final step.
+This file contains the position and the velocity of the final step.
 
 .. code-block:: bash
 
@@ -162,7 +162,7 @@ This file gives the position and the velocity of the final step.
 
 - BOPOP
 
-This file gives the adiabatic populations.
+This file shows the adiabatic populations.
 
 .. code-block:: bash
 
@@ -211,7 +211,8 @@ If you plot them as a function of MD steps, it looks like the following.
 
 - BOCOH
 
-This file gives the off-diagonal terms of the adiabatic density matrix.
+This file shows off-diagonal elements of the density matrix, 
+so there are only two columns for real and imaginary components of the one off-diagonal element when nstates=2. 
 
 .. code-block:: bash
 
@@ -251,7 +252,7 @@ This file gives the off-diagonal terms of the adiabatic density matrix.
         2889     0.00372624     0.00055990
         2890     0.00370853     0.00033293
 
-You can consider (de)coherence indicators given as the magnitude squares of the off-diagonal component.
+You can consider (de)coherence indicators given as the magnitude squares of the off-diagonal element.
 If you plot them as a function of MD steps, it looks like the following.
 
 .. image:: diagrams/pcoh.png
@@ -259,7 +260,7 @@ If you plot them as a function of MD steps, it looks like the following.
 
 - NACME
 
-This file gives the nonadiabatic coupling matrix elements.
+This file shows the nonadiabatic coupling matrix elements.
 You can check that there are finite values when the particle passes the avoided crossing.
 
 .. code-block:: bash
@@ -360,7 +361,7 @@ This file shows the running state at each time step.
 
 - DOTPOPD
 
-This file gives the time-derivative populations by decoherence at each time step.
+This file shows the time-derivative populations by decoherence at each time step.
 The decoherence correction turns on when there are finite populations of the two adiabatic states.
 Due to the correction, decoherence occurs in the off-coupling region and
 eventually electronic wave function collapses to the running state (the ground state, in this case).
