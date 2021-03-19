@@ -48,7 +48,7 @@ Program Structure
 ---------------------------
 The overall code structure is displayed in the next figure.
 
-.. image:: ./pyunixmd_structure.png
+.. image:: diagrams/pyunixmd_structure.png
    :width: 400pt
 
 PyUNIxMD is an object-oriented program consisting of

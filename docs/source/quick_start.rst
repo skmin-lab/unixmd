@@ -122,7 +122,7 @@ There are two energy values for the adiabatic states, E(0) and E(1) because you 
 
 If you plot a energy-step graph with the potential energy and the adiabatic potential energy, it looks like the following.
 
-.. image:: ./ptraj.png
+.. image:: diagrams/ptraj.png
    :width: 400pt
 
 The potential energy shows a "hop" near the avoided crossing, while the total MD energy is conserved.
@@ -206,7 +206,7 @@ The population changes when the particle passes the avoided crossing
 and eventually collapse to the ground state due to the decoherence.
 If you plot them as a function of MD steps, it looks like the following.
 
-.. image:: ./ppop.png
+.. image:: diagrams/ppop.png
    :width: 400pt
 
 - BOCOH
@@ -254,7 +254,7 @@ This file gives the off-diagonal terms of the adiabatic density matrix.
 You can consider (de)coherence indicators given as the magnitude squares of the off-diagonal component.
 If you plot them as a function of MD steps, it looks like the following.
 
-.. image:: ./pcoh.png
+.. image:: diagrams/pcoh.png
    :width: 400pt
 
 - NACME
@@ -291,7 +291,7 @@ You can check that there are finite values when the particle passes the avoided 
 
 If you plot them as a function of MD steps, it looks like the following.
 
-.. image:: ./pnacme.png
+.. image:: diagrams/pnacme.png
    :width: 400pt
 
 - SHPROB
@@ -404,7 +404,7 @@ eventually electronic wave function collapses to the running state (the ground s
    
 If you plot them as a function of MD steps, it looks like the following.
 
-.. image:: ./pdotpopd.png
+.. image:: diagrams/pdotpopd.png
    :width: 400pt
 
 You can check the effect of the decoherence by performing a FSSH calculation
@@ -417,6 +417,6 @@ by replacing the MD method name in the above running script:
 
 Then the populations and the coherence will be shown like this.
 
-.. image:: ./pcomp.png
+.. image:: diagrams/pcomp.png
    :width: 400pt
 
