@@ -6,7 +6,7 @@ First of all, you need to add the path of PyUNIxMD package to your Python path.
 
 .. code-block:: bash
 
-   $ export PYTHONPATH=$UNIXMDHOME/src:$PYTHONPATH
+   $ export PYTHONPATH=$PYUNIXMDHOME/src:$PYTHONPATH
 
 You can invoke this line in your '.bashrc' file. In that case, you need to reload the terminal for applying the change. 
 
