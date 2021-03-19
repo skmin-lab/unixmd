@@ -6,9 +6,9 @@ It is mainly for studying the nonadiabatic dynamics of excited molecules.
 
 Requirements
 ============
- - Python 3.6 or later
- - Numpy
- - Cython https://cython.org
+* Python 3.6 or later
+* Numpy
+* Cython https://cython.org
         
 You can easily install the latest Numpy and Cython via Python's pip command.      
 command::        
@@ -26,9 +26,9 @@ Test
 ====
 Without the aid of external QM programs, You can test the PyUNIxMD package with model systems.
 The corresponding examples are:
- - $PYUNIXMDHOME/examples/qm/Eh-Shin_Metiu
- - $PYUNIXMDHOME/examples/qm/SHXF-SAC
- - $PYUNIXMDHOME/examples/qm/SHXF-Shin_Metiu
+* $PYUNIXMDHOME/examples/qm/Eh-Shin_Metiu
+* $PYUNIXMDHOME/examples/qm/SHXF-SAC
+* $PYUNIXMDHOME/examples/qm/SHXF-Shin_Metiu
 
 In each directory, you can find the running script named run.py
 
