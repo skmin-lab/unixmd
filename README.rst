@@ -26,8 +26,11 @@ Test
 ====
 Without the aid of external QM programs, You can test the PyUNIxMD package with model systems.
 The corresponding examples are:
+
 * $PYUNIXMDHOME/examples/qm/Eh-Shin_Metiu
+
 * $PYUNIXMDHOME/examples/qm/SHXF-SAC
+
 * $PYUNIXMDHOME/examples/qm/SHXF-Shin_Metiu
 
 In each directory, you can find the running script named run.py
