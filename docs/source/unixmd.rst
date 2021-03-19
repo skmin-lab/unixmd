@@ -19,6 +19,7 @@ Contents
 
    overview
    build
+   workflow
    quick_start
    objects/main
    modules/main

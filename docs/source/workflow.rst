@@ -1,0 +1,110 @@
+==========================
+Workflow
+==========================
+Here, we explain how to run MD calculations with PyUNIxMD.
+First of all, you need to add the path of PyUNIxMD package to your Python path. 
+
+.. code-block:: bash
+
+   $ export PYTHONPATH=$UNIXMDHOME/src:$PYTHONPATH
+
+You can invoke this line in your '.bashrc' file. In that case, you need to reload the terminal for applying the change. 
+
+After this, you will make a running script for the MD calculation you want to perform. In your running script, you will create PyUNIxMD objects successively.
+A typical template of the running script is the following:
+
+.. code-block:: python
+   :linenos:
+
+   from molecule import Molecule
+   import qm, mqc
+   from thermostat import *
+   from misc import data
+
+   geom = """
+   NUMBER_OF_ATOMS
+   TITLE
+   SYMBOL  COORDINATES  VELOCITIES
+   """
+
+   mol = Molecule(geometry=geom, nstates=NSTATES)
+
+   qm = qm.QM_PROG.QM_METHOD(ARGUMENTS)
+
+   md = mqc.MDTYPE(ARGUMENTS)
+
+   bathT = THERMOSTAT(ARGUMENTS)
+
+   md.run(molecule=mol, theory=qm, thermostat=bathT, input_dir=INPUT_DIR)
+
+**Line 1-4** import the PyUNIxMD packages for the below jobs.
+
+**Line 6-12** set a target system you are interested in.
+You need to prepare a string as an argument to specify initial geometry and velocities.
+NSTATES means the number of adiabatic states considered in the dynamics calculations.
+See Section ? for the list of parameters.
+
+.. note:: The ``mol`` object must be created first because it will be used for making other objects.
+
+**Line 14** determines an electronic structure calculation program and its method to obtain QM information such as energies, forces, and nonadiabatic coupling vectors.
+QM_PROG and QM_METHOD stand for the name of a QM program and a QM method. See Section ? for the list.
+
+**Line 16** determines a dynamics method you want to use. The option for MDTYPE are BOMD, Eh, SH, and SHXF. See Section ? for the details.
+
+**Line 18** sets a thermostat. THERMOSTAT stands for its name. See Section ? for the list. 
+
+**Line 20** runs the dynamics calculation. 
+
+Finally, you will execute your running script.
+
+.. code-block:: bash
+
+   $ python3 running_script.py
+
+Running MD calculations with PyUNIxMD, you will obtains the following output file according to the chosen MD method.
+
++-----------+------+----+----+------+
+|           | BOMD | Eh | SH | SHXF |
++===========+======+====+====+======+
+| MDENERGY  | o    | o  | o  | o    |
++-----------+------+----+----+------+
+| MOVIE.xyz | o    | o  | o  | o    |
++-----------+------+----+----+------+
+| FINAL.xyz | o    | o  | o  | o    |
++-----------+------+----+----+------+
+| BOCOH *   | x    | o  | o  | o    |
++-----------+------+----+----+------+
+| BOPOP *   | x    | o  | o  | o    |
++-----------+------+----+----+------+
+| NACME     | x    | o  | o  | o    |
++-----------+------+----+----+------+
+| SHPROB    | x    | x  | o  | o    |
++-----------+------+----+----+------+
+| SHSTATE   | x    | x  | o  | o    |
++-----------+------+----+----+------+
+| DOTPOPD   | x    | x  | x  | o    |
++-----------+------+----+----+------+
+
+.. note:: If you put **propagation** = *"density"* when setting the MD method, PyUNIxMD provides 'BOCOH' and 'BOPOP'.
+   However, if you put **propagation** = *"coefficient"* when setting the MD method, PyUNIxMD provides 'BOCOEF' rather than 'BOCOH' and 'BOPOP'.
+
+- MDENERGY : energies which contains kinetic energy, potential energy, total energy and energies of adiabatic states
+
+- MOVIE.xyz : geometries at each time step
+
+- FINAL.xyz : geometry at the final step
+
+- BOPOP : adiabatic populations at each time step
+
+- BOCOH : off-diagonal terms of the adiabatic density matrix at each time step
+
+- NACME : nonadiabatic coupling matrix elements at each time step
+
+- SHPROB : hopping probabilities between the adiabatic states at each time step
+
+- SHSTATE : running state at each time step
+
+- DOTPOPD : time-derivative populations by decoherence at each time step
+
+For a quick test of PyUNIxMD, see the next section. Also, you can refer to scripts and log files in 'examples/' directory for practical calculations.
+
