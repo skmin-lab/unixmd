@@ -139,5 +139,5 @@ Detailed description of the parameters
 
 - **model** *(boolean)* - Default: *False*
 
-  This parameter determines whether the system is a model system or not. About model systems provided by PyUNIxMD, see the Model Systems part of the :class:`QM_calculator` section.
+  This parameter determines whether the system is a model system or not. About model systems provided by PyUNIxMD, see the Model Systems part of the QM_calculator part of Section 5.
 

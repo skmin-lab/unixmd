@@ -12,9 +12,9 @@ and the forces in QM/MM calculation. PyUNIxMD interfaces with the following in t
     prog_tinker
 
 Only one MM program is supported in the current version of PyUNIxMD.
-If you want to add other programs such as Gromacs, refer "Tinker" section.
-The MM interfaces in PyUNIxMD proceed with ``get_data`` method in each object.
-Detailed explanation of the ``get_data`` method is given in *modules* section.
+If you want to add an interface of other programs such as Gromacs, you can refer to the Tinker interface.
+The key method of the MM interface is **get_data** method which makes input files, executes calculations and extracts information at every MD step. 
+Detailed description of the ``get_data`` method is given in mm part of Section 6.
 
 **Ex.** Making an MM object with Tinker
 
