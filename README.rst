@@ -10,15 +10,17 @@ Requirements
 * Numpy
 * Cython https://cython.org
         
-You can easily install the latest Numpy and Cython via Python's pip command.      
-command::        
+You can easily install the latest Numpy and Cython via Python's pip command.
+
+::
         
   $ pip install --upgrade numpy Cython
     
 Build
 =====
 You can build PyUNIxMD by the following command.
-command:: 
+
+:: 
 
   $ python3 setup.py build_ext -b ./src/build
 
@@ -36,19 +38,22 @@ The corresponding examples are:
 In each directory, you can find the running script named run.py
 
 Before running test jobs, add the path of the PyUNIxMD package to your Python path.
-command::
+
+::
 
   $ export PYTHONPATH=$PYUNIXMDHOME/src:$PYTHONPATH
 
 Then execute run.py as follows.
-command::
+
+::
 
   $ python3 run.py >& log
 
 Documentation
 =============
 If you have Sphinx, you can locally build the manual of PyUNIxMD by the following command.
-command::
+
+::
 
   $ cd docs
   $ make html
