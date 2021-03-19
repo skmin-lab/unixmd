@@ -11,7 +11,7 @@ case that no thermostating process is needed). The following are the options.
 
    from thermostat import *
 
-   bathT = rescale1(temperature=300.0, nrescale=20) # velocity rescaling thermostat
+   bathT = Rescale1(temperature=300.0, nrescale=20) # velocity rescaling thermostat
 
 Rescale1
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

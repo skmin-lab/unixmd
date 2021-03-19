@@ -82,6 +82,7 @@ Detailed description of parameters
 
   This parameter determines the time interval of the nuclear time steps.
   You can select the unit of time for the dynamics with the **unit_dt** parameter.
+
 \
 
 - **nsteps** *(integer)* - Default: *1000*

@@ -13,16 +13,38 @@ MQC methods implemented in PyUNIxMD are listed in the following.
 
     *
 
-In the running script 'run.py', you need to specify the dynamics you want to run by making an md object from the subclasses of
-:class:`MQC` class such as :class:`SH` (:class:`mqc.SH`). After setting the dynamics method, you use run method (``md.run``) to perform the dynamics.
-When making an md object, basic dynamics parameters such as the number of steps are needed to be specified. Also, the run method takes various parameters such as a QM object, thermostat, etc.
+In your running script, you need to specify the MQC method you want to use by making an object of it.
+In PyUNIxMD, MQC methods are provided in the form of Python classes under :class:`MQC` class.
+The name of each classes are tabulated below.
 
-PyUNIxMD saves the objects for MQC and QM in a binary formatted file ('RESTART.bin') under **input_dir** directory using the 'pickle' package at every time step.
++----------------+----------------+
+| MQC methods    | Class names    |
++================+================+
+| BOMD           | BOMD           |
++----------------+----------------+
+| Ehrenfest      | Eh             |
++----------------+----------------+
+| FSSH           | SH             |
++----------------+----------------+
+| DISH-XF        | SHXF           |
++----------------+----------------+
+
+For example, an MD object of the FSSH method can be created as follows.
+
+.. code-block:: python
+
+   import mqc
+ 
+   md = mqc.SH(...)
+
+The parameters for the initialization are different for each MQC method. For the detailed list of these parameters, see the subsections.
+
+All classes specifying an MQC method have their own ``run`` method. The ``run`` method is used to perform the dynamics at the end of your running script.
+Parameters for the run method are listed below.
+
+Plus, The ``run`` method deals with restarting option of dynamics calculations. PyUNIxMD saves the objects for MQC and QM in a binary formatted file ('RESTART.bin') under **input_dir** directory using the 'pickle' package at every time step.
 The 'RESTART.bin' file is overwritten at every successful MD step, therefore the file contains the information of a trajectory at the last successful MD step.
 You can restart the dynamics simulation by reading the 'RESTART.bin' file using 'pickle' package.
-
-Parameters for the run method are listed below. The important point is that the run method is included in each
-md subclass of :class:`MQC`, not :class:`MQC` itself.
 
 +-----------------------------+-------------------------------------------------+----------+
 | Parameters                  | Work                                            | Default  |
@@ -49,9 +71,7 @@ md subclass of :class:`MQC`, not :class:`MQC` itself.
 | *(string)*                  |                                                 |          |
 +-----------------------------+-------------------------------------------------+----------+
 
-Further information of individual MD objects is listed in each section.
-
-**Ex.** Making an MD object with FSSH method.
+**Ex.** Running FSSH dynamics with an MD object of the FSSH method.
 
 .. code-block:: python
 

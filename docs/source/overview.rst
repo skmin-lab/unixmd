@@ -23,7 +23,7 @@ The features of PyUNIxMD are as follows.
 - Accessible interface to external QM programs and built-in model Hamiltonians
 
   -  COLUMBUS: SA-CASSCF
-  -  MOLPRO: SA-CASSCF
+  -  Molpro: SA-CASSCF
   -  Gaussian 09: TDDFT
   -  Q-Chem: TDDFT
   -  TURBOMOLE: TDDFT

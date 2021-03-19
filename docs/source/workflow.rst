@@ -35,7 +35,7 @@ A typical template of the running script is the following:
 
    bathT = THERMOSTAT(ARGUMENTS)
 
-   md.run(molecule=mol, theory=qm, thermostat=bathT, input_dir=INPUT_DIR)
+   md.run(molecule=mol, theory=qm, thermostat=bathT)
 
 **Line 1-4** import the PyUNIxMD packages for the below jobs.
 
@@ -47,11 +47,11 @@ See Section ? for the list of parameters.
 .. note:: The ``mol`` object must be created first because it will be used for making other objects.
 
 **Line 14** determines an electronic structure calculation program and its method to obtain QM information such as energies, forces, and nonadiabatic coupling vectors.
-QM_PROG and QM_METHOD stand for the name of a QM program and a QM method. See Section ? for the list.
+QM_PROG is the directory name where the QM interface package is. QM_METHOD is the name of the Python class specifying one of QM methods provided with that interface package. See Section ? for the list.
 
-**Line 16** determines a dynamics method you want to use. The option for MDTYPE are BOMD, Eh, SH, and SHXF. See Section ? for the details.
+**Line 16** determines a dynamics method you want to use. MDTYPE is the name of Python class specifying MQC methods. See Section ? for the list.
 
-**Line 18** sets a thermostat. THERMOSTAT stands for its name. See Section ? for the list. 
+**Line 18** sets a thermostat. THERMOSTAT is one of the options. See Section ? for the list. 
 
 **Line 20** runs the dynamics calculation. 
 
@@ -61,7 +61,7 @@ Finally, you will execute your running script.
 
    $ python3 running_script.py
 
-Running MD calculations with PyUNIxMD, you will obtains the following output file according to the chosen MD method.
+Running MD calculations with PyUNIxMD, you will obtains the following output file according to the MD method.
 
 +-----------+------+----+----+------+
 |           | BOMD | Eh | SH | SHXF |

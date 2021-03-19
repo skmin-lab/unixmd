@@ -66,6 +66,7 @@ Detailed description of parameters
   This parameter specifies the basis set used in the Gaussian 09 calculation.
   The available options for the parameter is same as the original ones of Gaussian 09.
   It is recommended to check a Gaussian 09 manual for the detailed list of **basis_set**.
+
 \
 
 - **memory** *(string)* - Default: *'1gb'*
