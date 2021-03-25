@@ -18,7 +18,7 @@ Contents
    :maxdepth: 1
 
    overview
-   build
+   install
    workflow
    quick_start
    objects/main
