@@ -28,9 +28,9 @@ The features of PyUNIxMD are as follows.
   -  TURBOMOLE :cite:`Ahlrichs1989`: TDDFT
   -  TeraChem :cite:`Ufimtsev2008_1,Ufimtsev2009_1,Ufimtsev2009_2`: SI-SA-REKS (SSR)
   -  DFTB+ :cite:`Hourahine2020`: TDDFTB, DFTB/SSR
-  -  Model Hamiltonians: Tully :cite:`Tully1990`, Shin-Metiu :cite:`Shin1990`
+  -  Model Hamiltonians: Tully :cite:`Tully1990`, Shin-Metiu :cite:`Shin1995`
 
-- Numerical calculation of nonadiabatic couplings
+- Numerical calculation of nonadiabatic couplings :cite:`Ryabinkin2015`
 - QM/MM functionalities
 - Utility scripts in Python
 
