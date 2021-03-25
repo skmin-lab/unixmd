@@ -35,7 +35,7 @@ The corresponding examples are:
 
 * $PYUNIXMDHOME/examples/qm/SHXF-Shin_Metiu
 
-In each directory, you can find the running script named run.py
+In each directory, you can find the running script named run.py.
 
 Before running test jobs, add the path of the PyUNIxMD package to your Python path.
 
@@ -43,11 +43,22 @@ Before running test jobs, add the path of the PyUNIxMD package to your Python pa
 
   $ export PYTHONPATH=$PYUNIXMDHOME/src:$PYTHONPATH
 
+$PYUNIXMDHOME is the top-level directory where this file belongs to.
+
 Then execute run.py as follows.
 
 ::
 
   $ python3 run.py >& log
+
+Utility
+=======
+PyUNIxMD provides other Python scripts to analyse results of dynamics calculations.
+To use the scripts, you need to add the path of the scripts.
+
+::
+
+  $ export PYTHONPATH=$PYUNIXMDHOME/util:$PYTHONPATH
 
 Documentation
 =============
