@@ -1,6 +1,6 @@
-***********************************
-Compile PyUNIxMD Manual with Sphinx
-***********************************
+***************************************
+Compile the PyUNIxMD Manual with Sphinx
+***************************************
 
 Requirements
 ============
