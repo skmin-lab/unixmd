@@ -31,7 +31,7 @@ A typical template of the running script is the following:
 
    bathT = THERMOSTAT(ARGUMENTS)
 
-   md.run(molecule=mol, theory=qm, thermostat=bathT)
+   md.run(theory=qm, thermostat=bathT)
 
 **Line 1-4** import the PyUNIxMD packages for the below jobs.
 
@@ -45,7 +45,7 @@ See :ref:`PyUNIxMD Objects <Objects Molecule>` for the list of parameters.
 **Line 14** determines an electronic structure calculation program and its method to obtain QM information such as energies, forces, and nonadiabatic coupling vectors.
 QM_PROG is the directory name where the QM interface package is. QM_METHOD is the name of the Python class specifying one of QM methods provided with that interface package. See :ref:`PyUNIxMD Objects <Objects QM_calculator>` for the list.
 
-**Line 16** determines a dynamics method you want to use. MDTYPE is the name of Python class specifying MQC methods. See :ref:`PyUNIxMD Objects <Objects MQC>` for the list.
+**Line 16** determines a dynamics method you want to use. MDTYPE is the name of Python class specifying one of MQC methods (BOMD, Eh, SH, SHXF). See :ref:`PyUNIxMD Objects <Objects MQC>` for the details.
 
 **Line 18** sets a thermostat. THERMOSTAT is one of the options. See :ref:`PyUNIxMD Objects <Objects Thermostat>` for the list. 
 
@@ -57,7 +57,7 @@ Finally, you will execute your running script.
 
    $ python3 running_script.py
 
-Running MD calculations with PyUNIxMD, you will obtains the following output file according to the MD method.
+Running MD calculations with PyUNIxMD, you will obtain the following output files according to the MD method.
 
 +-----------+------+----+----+------+
 |           | BOMD | Eh | SH | SHXF |
@@ -81,8 +81,8 @@ Running MD calculations with PyUNIxMD, you will obtains the following output fil
 | DOTPOPD   | x    | x  | x  | o    |
 +-----------+------+----+----+------+
 
-.. note:: If you put **propagation** = *"density"* when setting the MD method, PyUNIxMD provides 'BOCOH' and 'BOPOP'.
-   However, if you put **propagation** = *"coefficient"* when setting the MD method, PyUNIxMD provides 'BOCOEF' rather than 'BOCOH' and 'BOPOP'.
+.. note:: If you put **propagation** = *"density"* when setting an MD method, PyUNIxMD provides 'BOCOH' and 'BOPOP'.
+   However, if you put **propagation** = *"coefficient"* when setting an MD method, PyUNIxMD provides 'BOCOEF' rather than 'BOCOH' and 'BOPOP'.
 
 - MDENERGY
 
@@ -96,8 +96,8 @@ This file shows MD energies and energies of adiabatic states
 
 - MOVIE.xyz
 
-This file contains positions and velocities at each time step.
-For the ease of visualization, those information are written successively in the extended XYZ format.
+This file contains positions and velocities at each MD step (a trajectory).
+For the ease of visualization, those snapshots are written chronically in the extended XYZ format.
 
 .. code-block:: bash
 
@@ -127,7 +127,7 @@ This file contains the final position and velocity of an MD calculation.
 
 - BOPOP
 
-This file shows the adiabatic populations (diagonal elements of the density matrix) at each time step.
+This file shows the adiabatic populations (diagonal elements of the density matrix) at each MD step.
 
 .. code-block:: bash
 
@@ -137,7 +137,7 @@ This file shows the adiabatic populations (diagonal elements of the density matr
 
 - BOCOH 
 
-This file shows off-diagonal elements of the density matrix at each time step. Only the upper triangular portions are given because of hermiticity. The real and imaginary part of each element are written alternately.
+This file shows off-diagonal elements of the density matrix at each MD step. Only the upper triangular portions are given because of hermiticity. The real and imaginary part of each element are written alternately.
 
 .. code-block:: bash
 
@@ -147,7 +147,7 @@ This file shows off-diagonal elements of the density matrix at each time step. O
 
 - NACME
 
-This file shows nonadiabatic coupling matrix elements at each time step. Only the upper triangular portions are given because of antihermiticity.
+This file shows nonadiabatic coupling matrix elements at each MD step. Only the upper triangular portions are given because of antihermiticity.
 
 .. code-block:: bash
 
@@ -157,7 +157,7 @@ This file shows nonadiabatic coupling matrix elements at each time step. Only th
 
 - SHPROB
 
-This file shows hopping probabilities from the running state of each time step.
+This file shows hopping probabilities from the running state to the others at each MD step.
 
 .. code-block:: bash
 
@@ -167,7 +167,7 @@ This file shows hopping probabilities from the running state of each time step.
 
 - SHSTATE
 
-This file shows the running state at each time step.
+This file shows the running state at each MD step.
 
 .. code-block:: bash
 
@@ -177,7 +177,7 @@ This file shows the running state at each time step.
 
 - DOTPOPD
 
-This file shows time-derivative populations by decoherence at each time step.
+This file shows time-derivative populations by decoherence at each MD step.
 
 .. code-block:: bash
 

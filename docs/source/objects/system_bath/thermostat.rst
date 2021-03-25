@@ -6,7 +6,7 @@ Thermostat
 A thermostat object should be provided to set temperature conditions of the dynamics (even in the
 case that no thermostating process is needed). The following are the options.
 
-**Ex.** Making thermostat object
+**Ex.** Making a thermostat object
 
 .. code-block:: python
 

@@ -42,10 +42,10 @@ The running script is the following.
 **Line 5** sets the mass of a fictitious particle of the model.
 
 **Line 6-7** set the random seed. This is for you to reproduce the same results here.
-DISH-XF is based on FSSH, so the results of a single trajectory are probabilistic. You can also comment out this part to check if the number varies.
+DISH-XF is based on FSSH, so the results of a single trajectory are probabilistic. You can also comment out this part to check if the numbers vary.
 
 **Line 9-15** set the system. The position and velocity of the X1 particle is given as -4.0 au and 0.0 au respectively.
-The dynamics propagates on 1D space, and two adiabatic states (ground and 1st excited states) are considered.
+The dynamics propagates on 1D space, and two adiabatic states (the ground and the 1st excited states) are considered.
 
 **Line 17** sets the QM method. We chose the Shin-Metiu model among model systems.
 
@@ -61,11 +61,12 @@ Preparing the above running script, run the dynamics.
 
 Invoking the command, you will see the standard output.
 It shows a summary of the calculation setting you put in the running script, and dynamics information at every time step.
-Each printout has its own name tag (INFO, DEBUG1, etc.) so that you can easily use 'grep' command.
-The contents list for each tagged line is written when the dynamics information part begins.
+Each printout has its own name tag (INFO, DEBUG1, etc.) so that you can easily use :code:`grep` command.
+The meaning of columns of each tagged line is written when the dynamics information part begins.
 
 .. code-block:: bash
 
+   (...)
    ----------------------------------------------------------------------------------------------------------------------
                                                       Start Dynamics
    ----------------------------------------------------------------------------------------------------------------------
@@ -122,7 +123,7 @@ There are only two energy values for the adiabatic states, E(0) and E(1) because
           20     0.00003197    -0.17274373    -0.17271176    -0.21360671    -0.17274373
    (...)
 
-If you plot a energy-step graph with the values, it looks like the following.
+If you plot a energy-MD step graph with the values, it looks like the following.
 
 .. image:: diagrams/ptraj.png
    :width: 400pt
@@ -131,7 +132,7 @@ The potential energy shows a "hop" near the avoided crossing, while the total MD
 
 - MOVIE.xyz
 
-This file contains the position and the velocity of the particle at each step.
+This file contains the position and the velocity of the particle at each MD step.
 
 .. code-block:: bash
 
@@ -154,7 +155,7 @@ This file contains the position and the velocity of the particle at each step.
 
 - FINAL.xyz
 
-This file contains the position and the velocity of the final step.
+This file contains the position and the velocity of the final MD step.
 
 .. code-block:: bash
 
@@ -205,7 +206,9 @@ This file shows the adiabatic populations.
         2890     0.99998614     0.00001386
 
 The population changes when the particle passes the avoided crossing
-and eventually collapse to the ground state due to the decoherence.
+and the electronic state eventually collapses to the ground state due to the decoherence correction.
+The electronic coefficients are to be reset when the density matrix becomes diagonal, that is, an adiabatic state is recovered during the dynamics.
+In this case, the reset happened near Step 2000.
 If you plot them as a function of MD steps, it looks like the following.
 
 .. image:: diagrams/ppop.png
@@ -299,8 +302,7 @@ If you plot them as a function of MD steps, it looks like the following.
 
 - SHPROB
 
-This file shows the hopping probabilities between the adiabatic states.
-The starting adiabatic state is the running state at the time step.
+This file shows the hopping probabilities from the running state to the others at each MD step.
 You can check the running state from 'SHSTATE' file.
 
 .. code-block:: bash
@@ -332,7 +334,7 @@ You can check the running state from 'SHSTATE' file.
 
 - SHSTATE
 
-This file shows the running state at each time step.
+This file shows the running state at each MD step.
 
 .. code-block:: bash
    
@@ -363,10 +365,10 @@ This file shows the running state at each time step.
 
 - DOTPOPD
 
-This file shows the time-derivative populations by decoherence at each time step.
+This file shows the time-derivative populations by decoherence at each MD step.
 The decoherence correction turns on when there are finite populations of the two adiabatic states.
 Due to the correction, decoherence occurs in the off-coupling region and
-eventually electronic wave function collapses to the running state (the ground state, in this case).
+eventually the electronic state collapses to the running state (the ground state, in this case).
 
 .. code-block:: bash
 
@@ -411,7 +413,7 @@ If you plot them as a function of MD steps, it looks like the following.
    :width: 400pt
 
 You can check the effect of the decoherence by performing a FSSH calculation
-by replacing the MD method name in the above running script:
+by changing the MD setting in the above running script:
 
 .. code-block:: python
 

@@ -65,7 +65,6 @@ Detailed description of the parameters
 - **geometry** *(string)*
 
   The **geometry** string contains information of the structure of the system. The structure of this string is the following.
-  This parameter does not have default, thus user must put a proper string into **geometry** having the following structure.
 
   1. The number of atoms
 
@@ -73,6 +72,7 @@ Detailed description of the parameters
 
   3. Specification of the molecule (atomic symbol, positions, velocities)
 
+  This parameter does not have default, thus user must put a proper string into **geometry** having the following structure.
   When the QM/MM scheme is used (**qmmm** = *True*), information of the MM atoms is followed by the QM atoms.
 
 \

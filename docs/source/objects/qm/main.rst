@@ -14,8 +14,7 @@ forces and nonadiabatic couplings. PyUNIxMD interfaces with the following QM pro
    prog*
    model
 
-Not all QM methods of a QM program is available even though PyUNIxMD provides the interface for that program.
-For example, the current version of PyUNIxMD does not provide CASPT2.
+Not all QM methods of a QM program is available even though PyUNIxMD provides the interface for that program (for example, CASPT2 implemented in Molpro).
 If there is no QM interface for some QM programs or QM methods in PyUNIxMD, you can make your own interface by refering to other interfaces.
 The key method of each QM interface is **get_data** method which makes input files, executes calculations and extracts information at every MD step. 
 Detailed description of **get_data** method is given in :ref:`Module <Module QM>`.

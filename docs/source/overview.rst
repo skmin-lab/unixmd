@@ -19,7 +19,6 @@ The features of PyUNIxMD are as follows.
   -  Decoherence induced surface hopping based on exact factorization (DISH-XF)
   -  Coupled-trajectory mixed quantum/classical (CTMQC) method
 
-- Numerical calculation of nonadiabatic couplings
 - Accessible interface to external QM programs and built-in model Hamiltonians
 
   -  COLUMBUS: SA-CASSCF
@@ -31,6 +30,7 @@ The features of PyUNIxMD are as follows.
   -  DFTB+: TDDFTB, DFTB/SSR
   -  Model Hamiltonians: Tully, Shin-Metiu
 
+- Numerical calculation of nonadiabatic couplings
 - QM/MM functionalities
 - Utility scripts in Python
 
@@ -60,7 +60,7 @@ several key classes closely connected with each other:
 
 - :class:`QM_calculator` interfaces several QM programs (Molpro, Gaussian 09, DFTB+, etc.) and methodologies to perform electronic structure calculations.
 
-- :class:`MM_calculator` enables QM/MM calculations using external software such as Tinker.
+- :class:`MM_calculator` enables QM/MM calculations using external softwares such as Tinker.
 
 - :class:`Thermostat` controls temperature of a target system.
 

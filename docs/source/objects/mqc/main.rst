@@ -5,9 +5,7 @@ MQC
 
 Mixed quantum-classical (MQC) dynamics is one of theoretical tools to simulate nonadiabatic processes in molecular or extended systems. This method is characterized by propagating the electrons through quantum mechanics but nuclear dynamics through classical trajectories, to overcome the computational cost of calculating the correlated systems.
 
-PyUNIxMD provides a variety of MQC methods and they are implemented as subclasses of
-MQC class. In the MQC class, the common properties and methods are defined such as functions to update classical properties of nuclei.
-MQC methods implemented in PyUNIxMD are listed in the following.
+PyUNIxMD provides a variety of MQC methods:
 
 .. toctree::
     :glob:
@@ -17,7 +15,7 @@ MQC methods implemented in PyUNIxMD are listed in the following.
 
 In your running script, you need to specify the MQC method you want to use by making an object of it.
 In PyUNIxMD, MQC methods are provided in the form of Python classes under :class:`MQC` class.
-The name of each classes are tabulated below.
+The class names are tabulated below.
 
 +----------------+----------------+
 | MQC methods    | Class names    |
@@ -44,7 +42,7 @@ The parameters for the initialization are different for each MQC method. For the
 All classes specifying an MQC method have their own ``run`` method. The ``run`` method is used to perform the dynamics at the end of your running script.
 Parameters for the run method are listed below.
 
-Plus, The ``run`` method deals with restarting option of dynamics calculations. PyUNIxMD saves the objects for MQC and QM in a binary formatted file ('RESTART.bin') under **input_dir** directory using the 'pickle' package at every time step.
+Plus, The ``run`` method deals with restart options of dynamics calculations. PyUNIxMD saves the objects for MQC and QM in a binary formatted file ('RESTART.bin') under **input_dir** directory using the 'pickle' package at every time step.
 The 'RESTART.bin' file is overwritten at every successful MD step, therefore the file contains the information of a trajectory at the last successful MD step.
 You can restart the dynamics simulation by reading the 'RESTART.bin' file using 'pickle' package.
 
@@ -84,7 +82,7 @@ You can restart the dynamics simulation by reading the 'RESTART.bin' file using 
    md.run(qm=qm, input_dir="./TRAJ.sh", save_scr=True, save_qm_log=False)
 
 .. note:: Making molecule and QM objects are omitted in this sample code,
-   but they must be declared to use run method in advance.
+   but they must be declared to use a run method in advance.
 
 **Ex.** Restarting a dynamics simulation.
 
