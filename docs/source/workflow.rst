@@ -2,15 +2,8 @@
 Workflow
 ==========================
 Here, we explain how to run MD calculations with PyUNIxMD.
-First of all, you need to add the path of PyUNIxMD package to your Python path. 
 
-.. code-block:: bash
-
-   $ export PYTHONPATH=$PYUNIXMDHOME/src:$PYTHONPATH
-
-You can invoke this line in your '.bashrc' file. In that case, you need to reload the terminal for applying the change. 
-
-After this, you will make a running script for the MD calculation you want to perform. In your running script, you will create PyUNIxMD objects successively.
+You will make a running script for the MD calculation you want to perform. In your running script, you will create PyUNIxMD objects successively.
 A typical template of the running script is the following:
 
 .. code-block:: python
