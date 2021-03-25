@@ -1,8 +1,8 @@
 ==========================
-Build
+Installation
 ==========================
 
-PyUNIxMD is a python based program with a little C code for time-consuming
+PyUNIxMD is a Python based program with a little C code for time-consuming
 electronic propagation parts interfaced via Cython, therefore compilation is needed.
 
 Requirements
@@ -30,4 +30,4 @@ command in the root directory of the program which contains setup.py file.
 
    $ python3 setup.py build_ext -b ./src/build
 
-
+You need to add the source directory(:code:`$PYUNIXMDHOME/src`) to your Python path, where :code:`$PYUNIXMDHOME` is the top-level directory where this file belongs.

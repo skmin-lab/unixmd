@@ -43,7 +43,7 @@ Before running test jobs, add the path of the PyUNIxMD package to your Python pa
 
   $ export PYTHONPATH=$PYUNIXMDHOME/src:$PYTHONPATH
 
-$PYUNIXMDHOME is the top-level directory where this file belongs to.
+$PYUNIXMDHOME is the top-level directory where this file belongs.
 
 Then execute run.py as follows.
 
