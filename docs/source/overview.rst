@@ -66,5 +66,5 @@ several key classes closely connected with each other:
 
 PyUNIxMD takes advantage of the inheritance feature to organize functionalities and simplify the codes by sharing the common parameters and methods.
 
-For detailed information of each class, see Section 5. 
+For detailed information of each class, see :ref:`PyUNIxMD Objects <Objects>`. 
 

@@ -1,3 +1,4 @@
+.. _Objects Thermostat:
 
 Thermostat
 -------------------------------------------

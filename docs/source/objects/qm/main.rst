@@ -1,3 +1,5 @@
+.. _Objects QM_calculator:
+
 QM_calculator
 -------------------------------------------
 
@@ -16,7 +18,7 @@ Not all QM methods of a QM program is available even though PyUNIxMD provides th
 For example, the current version of PyUNIxMD does not provide CASPT2.
 If there is no QM interface for some QM programs or QM methods in PyUNIxMD, you can make your own interface by refering to other interfaces.
 The key method of each QM interface is **get_data** method which makes input files, executes calculations and extracts information at every MD step. 
-Detailed description of **get_data** method is given in qm part in Section 6.
+Detailed description of **get_data** method is given in :ref:`Module <Module QM>`.
 
 In your running script, You need to access a specific QM interface where QM methods are provided in the form of Python classes.
 The names of directories where the interface packages are and the classes of methods are tabulated below.
