@@ -167,7 +167,14 @@ Detailed description of the parameters
 
 - **wsigma** *(double/(double, list))* - Default: *None*
 
-  This parameter defines the width of the frozen gaussian wave packet on the auxiliary trajectories.
+  This parameter defines the width (:math:`\sigma_\nu`) of the frozen Gaussian nuclear densities (:math:`|\chi_k|^2`) 
+  on the auxiliary trajectories (:math:`\underline{\underline{\textbf{R}}}_{k}`) where 
+  the total nuclear denisity (:math:`|\chi|^2`) is a linear combination of the densities on the auxiliary trajectories as follows,
+
+  .. math::
+     |\chi|^2 = \sum_{k}|\chi_{k}|^2 = \sum_{k}N_{k}\prod^{N_{atom}}_\nu 
+              \exp\left(-\dfrac{|\textbf{R}^{(I)}_\nu-\textbf{R}_{k,\nu}|^2}{2\sigma^2_{\nu}}\right).
+
   If a scalar value is given, all nuclei share the same width.
   Or, if a list with the length of the number of the atoms is given, atom-wise width is used.
   In this case, the order of the atoms is same as the order of the xyz format string when the molecule object is created (``molecule.symbols``).
