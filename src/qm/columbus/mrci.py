@@ -137,8 +137,6 @@ class MRCI(Columbus):
         """
         # Generate 'geom' file used in Columbus
         geom = ""
-        # TODO : original code uses molecule.nat
-#        for iat in range(molecule.nat):
         for iat in range(molecule.nat_qm):
             atom_num = list(data.keys()).index(f"{molecule.symbols[iat]}")
             tmp_atom = f' {molecule.symbols[iat]:5s}{atom_num:7.2f}' \

@@ -73,7 +73,7 @@ class DFT(QChem):
         {int(molecule.charge)}  1
         """)
 
-        for iat in range(molecule.nat):
+        for iat in range(molecule.nat_qm):
             input_molecule += f"{molecule.symbols[iat]}"\
                 + "".join([f"{i:15.8f}" for i in molecule.pos[iat]]) + "\n"
         input_molecule += "$end\n\n"
@@ -228,12 +228,12 @@ class DFT(QChem):
 
         # Adiabatic force 
         tmp_f = "Gradient of\D*\s*" 
-        num_line = int(molecule.nat / 6)
+        num_line = int(molecule.nat_qm / 6)
         if (num_line >= 1):
             tmp_f += ("\s*\d*\s*\d*\s*\d*\s*\d*\s*\d*\s*\d*"
                  + ("\s*\d?\s*" + "([-]*\S*)\s*" * 6) * 3) * num_line
 
-        dnum = molecule.nat % 6
+        dnum = molecule.nat_qm % 6
         tmp_f += "\s*\d*" * dnum
         tmp_f += ("\s*\d?\s*" + "([-]*\S*)\s*" * dnum) * 3
 
@@ -263,7 +263,7 @@ class DFT(QChem):
 
         # NACs
         if (not calc_force_only and self.calc_coupling):
-            tmp_nac = "with ETF[:]*\s*Atom\s*X\s*Y\s*Z\s*[-]*" + ("\s*\d*\s*" + "([-]*\S*)\s*"*3) * molecule.nat
+            tmp_nac = "with ETF[:]*\s*Atom\s*X\s*Y\s*Z\s*[-]*" + ("\s*\d*\s*" + "([-]*\S*)\s*"*3) * molecule.nat_qm
             nac = re.findall(tmp_nac, log)
             nac = np.array(nac)
             nac = nac.astype(float)
@@ -271,7 +271,7 @@ class DFT(QChem):
             kst = 0
             for ist in range(molecule.nst):
                 for jst in range(ist + 1, molecule.nst):
-                    molecule.nac[ist, jst] = nac[kst].reshape(molecule.nat, 3, order='C')
+                    molecule.nac[ist, jst] = nac[kst].reshape(molecule.nat_qm, 3, order='C')
                     molecule.nac[jst, ist] = - molecule.nac[ist, jst]
                     kst += 1
 
