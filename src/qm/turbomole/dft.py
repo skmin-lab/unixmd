@@ -238,7 +238,7 @@ class DFT(Turbomole):
         grad = re.findall(find_grad, bo_out)
         grad = np.array(grad)
         grad = grad.astype(float)
-        grad = grad.reshape(molecule.nat, 3, order='C')
+        grad = grad.reshape(molecule.nat_qm, 3, order='C')
         molecule.states[bo_list[0]].force = - np.copy(grad)
 
         # Energy of other states (except running state)

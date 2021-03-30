@@ -216,7 +216,7 @@ class DFTB(DFTBplus):
             first_row = True
             for row in file_be:
                 if (first_row):
-                    row = f'{molecule.nat} S\n'
+                    row = f'{molecule.nat_qm} S\n'
                     first_row = False
                 file_af.write(row)
             # Add gamma-point and cell lattice information
@@ -246,7 +246,7 @@ class DFTB(DFTBplus):
             first_row = True
             for row in file_be:
                 if (first_row):
-                    row = f'{molecule.nat * 2}\n'
+                    row = f'{molecule.nat_qm * 2}\n'
                     first_row = False
                 file_af.write(row)
             file_be.close()
@@ -435,9 +435,9 @@ class DFTB(DFTBplus):
 
             # Set number of excitations in TDDFTB
             # This part can be modified by users
-            if (molecule.nat <= 5):
+            if (molecule.nat_qm <= 5):
                 num_ex = molecule.nst + 2
-            elif (molecule.nat > 5 and molecule.nat <= 15):
+            elif (molecule.nat_qm > 5 and molecule.nat_qm <= 15):
                 num_ex = 2 * molecule.nst + 2
             else:
                 num_ex = 3 * molecule.nst + 2
@@ -611,11 +611,11 @@ class DFTB(DFTBplus):
                     molecule.states[ist].energy = molecule.states[0].energy + energy[ist - 1]
 
         # Force
-        tmp_f = 'Total Forces' + '\n\s+\d*\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
+        tmp_f = 'Total Forces' + '\n\s+\d*\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
         force = re.findall(tmp_f, detailed_out)
         force = np.array(force[0])
         force = force.astype(float)
-        force = force.reshape(molecule.nat, 3, order='C')
+        force = force.reshape(molecule.nat_qm, 3, order='C')
         molecule.states[bo_list[0]].force = np.copy(force)
 
         # NACME

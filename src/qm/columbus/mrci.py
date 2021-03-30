@@ -137,8 +137,6 @@ class MRCI(Columbus):
         """
         # Generate 'geom' file used in Columbus
         geom = ""
-        # TODO : original code uses molecule.nat
-#        for iat in range(molecule.nat):
         for iat in range(molecule.nat_qm):
             atom_num = list(data.keys()).index(f"{molecule.symbols[iat]}")
             tmp_atom = f' {molecule.symbols[iat]:5s}{atom_num:7.2f}' \
@@ -430,13 +428,13 @@ class MRCI(Columbus):
             file_name = f"GRADIENTS/cartgrd.drt1.state{ist + 1}.sp"
             with open(file_name, "r") as f:
                 log_out = f.read()
-                log_out = log_out.replace("D", "E", molecule.nat * molecule.nsp)
+                log_out = log_out.replace("D", "E", molecule.nat_qm * molecule.nsp)
 
-            tmp_f ='\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat
+            tmp_f ='\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat_qm
             force = re.findall(tmp_f, log_out)
             force = np.array(force[0])
             force = force.astype(float)
-            force = force.reshape(molecule.nat, 3, order='C')
+            force = force.reshape(molecule.nat_qm, 3, order='C')
             molecule.states[ist].force = - np.copy(force)
 
         # NAC
@@ -448,11 +446,11 @@ class MRCI(Columbus):
                     with open(file_name, "r") as f:
                         log_out = f.read()
 
-                    tmp_c =  '\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat
+                    tmp_c =  '\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat_qm
                     nac = re.findall(tmp_c, log_out)
                     nac = np.array(nac[0])
                     nac = nac.astype(float)
-                    nac = nac.reshape(molecule.nat, 3, order='C')
+                    nac = nac.reshape(molecule.nat_qm, 3, order='C')
                     molecule.nac[ist, jst] = nac
                     molecule.nac[jst, ist] = - nac
 
