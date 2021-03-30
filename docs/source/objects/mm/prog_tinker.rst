@@ -113,7 +113,7 @@ Detailed description of parameters
 
 - **xyz_file** *(string)* - Default: *'./tinker.xyz'*
 
-  This parameter specifies initial 'tinker.xyz' file with tinker xyz format.
+  This parameter specifies initial 'tinker.xyz' file with tinker XYZ format.
   The 'tinker.xyz' file must include correct atom types and bonding information.
 
 \

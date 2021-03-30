@@ -176,8 +176,8 @@ Detailed description of the parameters
               \exp\left(-\dfrac{|\textbf{R}^{(I)}_\nu-\textbf{R}_{k,\nu}|^2}{2\sigma^2_{\nu}}\right).
 
   If a scalar value is given, all nuclei share the same width.
-  Or, if a list with the length of the number of the atoms is given, atom-wise width is used.
-  In this case, the order of the atoms is same as the order of the xyz format string when the molecule object is created (``molecule.symbols``).
+  Or, if a list of values with the length of the number of the atoms is given, an atom-wise width is used.
+  In this case, the order of the atoms is the same as the order of the XYZ format string when the molecule object is created (``molecule.symbols``).
 
 \
 
