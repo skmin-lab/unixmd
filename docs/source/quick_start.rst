@@ -49,7 +49,7 @@ The dynamics propagates on 1D space, and two adiabatic states (the ground and th
 
 **Line 17** sets the QM method. We chose the Shin-Metiu model among model systems.
 
-**Line 19-20** determine the MD method. DISH-XF method is selected. Initially the particle is on the 1st excited state denoted by istate=1.
+**Line 19-20** determine the MD method. DISH-XF method is selected. Initially the particle is on the 1st excited state denoted by **istate** = *1*.
 
 **Line 22** runs the dynamics calculation.
 
@@ -95,7 +95,7 @@ Also, you will obtain the following output files:
 - MDENERGY
 
 This file shows MD energies and energies of adiabatic states.
-There are only two energy values for the adiabatic states, E(0) and E(1) because you put nstates=2.
+There are only two energy values for the adiabatic states, E(0) and E(1) because you put **nstates** = *2*.
 
 .. code-block:: bash
 
@@ -217,7 +217,7 @@ If you plot them as a function of MD steps, it looks like the following.
 - BOCOH
 
 This file shows off-diagonal elements of the density matrix, 
-so there are only two columns for real and imaginary components of the one off-diagonal element when nstates=2. 
+so there are only two columns for real and imaginary components of the one off-diagonal element when **nstates** = *2*. 
 
 .. code-block:: bash
 
