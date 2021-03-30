@@ -38,16 +38,16 @@ A typical template of the running script is the following:
 **Line 6-12** set a target system you are interested in.
 You need to prepare a string as an argument to specify initial geometry and velocities in extended XYZ format.
 NSTATES means the number of adiabatic states considered in the dynamics calculations.
-See :ref:`PyUNIxMD Objects <Objects Molecule>` for the list of parameters.
+See :ref:`Molecule <Objects Molecule>` for the list of parameters.
 
 .. note:: The ``mol`` object must be created first because it will be used for making other objects.
 
 **Line 14** determines an electronic structure calculation program and its method to obtain QM information such as energies, forces, and nonadiabatic coupling vectors.
-QM_PROG is the directory name where the QM interface package is. QM_METHOD is a name of Python class specifying one of QM methods provided with that interface package. See :ref:`PyUNIxMD Objects <Objects QM_calculator>` for the list.
+QM_PROG is the directory name where the QM interface package is. QM_METHOD is a name of Python class specifying one of QM methods provided with that interface package. See :ref:`QM_calculator <Objects QM_calculator>` for the list.
 
-**Line 16** determines a dynamics method you want to use. MDTYPE is a name of Python class specifying one of MQC methods (BOMD, Eh, SH, SHXF). See :ref:`PyUNIxMD Objects <Objects MQC>` for the details.
+**Line 16** determines a dynamics method you want to use. MDTYPE is a name of Python class specifying one of MQC methods (BOMD, Eh, SH, SHXF). See :ref:`MQC <Objects MQC>` for the details.
 
-**Line 18** sets a thermostat. THERMO_TYPE is a name of Python class specifying how to control temperature. See :ref:`PyUNIxMD Objects <Objects Thermostat>` for the list. 
+**Line 18** sets a thermostat. THERMO_TYPE is a name of Python class specifying how to control temperature. See :ref:`Thermostat <Objects Thermostat>` for the list. 
 
 **Line 20** runs the dynamics calculation. 
 

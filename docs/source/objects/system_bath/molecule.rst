@@ -140,5 +140,5 @@ Detailed description of the parameters
 
 - **model** *(boolean)* - Default: *False*
 
-  This parameter determines whether the system is a model system or not. About model systems provided by PyUNIxMD, see :ref:`PyUNIxMD Objects <Model Systems>`.
+  This parameter determines whether the system is a model system or not. About model systems provided by PyUNIxMD, see :ref:`Model Systems <Model Systems>`.
 
