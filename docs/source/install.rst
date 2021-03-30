@@ -24,10 +24,10 @@ Compilation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can compile the C routines by typing the following
-command in the root directory of the program which contains setup.py file.
+command in the top-level directory of the program which contains setup.py file.
 
 .. code-block:: bash
 
    $ python3 setup.py build_ext -b ./src/build
 
-You need to add the source directory(:code:`$PYUNIXMDHOME/src`) to your Python path, where :code:`$PYUNIXMDHOME` is the top-level directory where this file belongs.
+You will need to add the source directory(:code:`$PYUNIXMDHOME/src`) to your Python path, where :code:`$PYUNIXMDHOME` is an enviroment variable for the top-level directory.
