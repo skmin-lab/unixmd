@@ -36,7 +36,7 @@ speed. (TD)DFTB and SSR methods are interfaced with the current version of PyUNI
 
 .. note:: To use the DFTB+ interface, the information about the highest maximum angular momentum for each atom type is
    needed. In the current version of PyUNIxMD, the values for the maximum angular momenta are included
-   in **max_l** dictionary variable in '`$PYUNIXMD`/src/qm/dftb/dftbpar.py' file.
+   in **max_l** dictionary variable in '`$PYUNIXMDHOME`/src/qm/dftb/dftbpar.py' file.
    You can add or modify the **max_l** variable, see the following example.
 
 .. code-block:: python

@@ -8,11 +8,11 @@ electronic propagation parts interfaced via Cython, therefore compilation is nee
 Requirements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Python 3.6 (or later)
+-  Python 3.6 (or later)
 
-Numpy
+-  Numpy
 
-Cython https://cython.org
+-  Cython https://cython.org
 
 If you don't have Numpy or Cython, you can install them using :code:`pip` command.
 

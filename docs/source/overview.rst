@@ -8,7 +8,7 @@ The features of PyUNIxMD are as follows.
 
 - Conventional (non)adiabatic dynamics
 
-  - Born-Oppenheimer molecular dynamics (BOMD)
+  -  Born-Oppenheimer molecular dynamics (BOMD)
 
   -  Ehrenfest dynamics :cite:`Ehrenfest1927`
 
@@ -17,7 +17,7 @@ The features of PyUNIxMD are as follows.
 - Decoherence based on exact factorization
 
   -  Decoherence induced surface hopping based on exact factorization (DISH-XF) :cite:`Ha2018`
-  -  Coupled-trajectory mixed quantum/classical (CTMQC) method :cite:`Agostini2016`
+  -  Coupled-trajectory mixed quantum-classical (CTMQC) method :cite:`Agostini2016`
 
 - Accessible interface to external QM programs and built-in model Hamiltonians
 
@@ -30,7 +30,7 @@ The features of PyUNIxMD are as follows.
   -  DFTB+ :cite:`Hourahine2020`: TDDFTB, DFTB/SSR
   -  Model Hamiltonians: Tully :cite:`Tully1990`, Shin-Metiu :cite:`Shin1995`
 
-- Numerical calculation of nonadiabatic couplings :cite:`Ryabinkin2015`
+- Numerical calculation of time-derivative nonadiabatic couplings :cite:`Ryabinkin2015`
 - QM/MM functionalities
 - Utility scripts in Python
 
