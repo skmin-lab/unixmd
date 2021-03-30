@@ -26,6 +26,37 @@ The running state is chosen probabilistically at every MD step. The probabilitie
 from the "current" running state to the others are considered and a random number is called to select the next
 running state. If the coupling with an adiabatic state is strong enough, the probability will increase, so the running state is likely to transit to that state.
 
+In :class:`SH` class, two ad hoc decoherence correction schemes are implemented.
+One is instantaneous decoherence correction (IDC).
+In the IDC algorithm, the electronic state immediately collapses to a running state whenever a hop occurs or is rejected.
+The other is energy-based decoherence correction (EDC) :cite:`Granucci2010` which rescales BO coefficients based on the running state :math:`r` and energies of a target system as the following equations:
+
+.. math::
+   :nowrap:   
+  
+   \[
+   C'^{(I)}_{k}(t)= 
+   \left\{
+   \begin{array}{
+     @{}% no padding
+     l@{\quad}% some padding
+     r@{}% no padding
+     >{{}}r@{}% no padding
+     >{{}}l@{}% no padding
+   }
+     C^{(I)}_{k}(t)e^{-\Delta t/\tau_{k}(t)}   & \text{if}\ k\neq r \\
+     C^{(I)}_{k}(t)\left[\dfrac{1-\sum_{j\neq r}|C'^{(I)}_{j}(t)|^2}{|C^{(I)}_{k}(t)|^2}\right]^{\frac{1}{2}}  & \text{if}\ k = r
+   \end{array}
+   \right.
+   \]
+
+and
+
+.. math::
+   
+   \tau_{k}(t) = \dfrac{\hbar}{|E_k(t)-E_r(t)|}\left(1+\dfrac{C}{E_{kin}(t)}\right).
+
+
 +----------------------------+--------------------------------------------------+----------------+
 | Parameters                 | Work                                             | Default        |
 +============================+==================================================+================+
