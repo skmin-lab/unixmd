@@ -57,36 +57,24 @@ Finally, you will execute your running script.
 
    $ python3 running_script.py
 
-Running MD calculations with PyUNIxMD, you will obtain the following output files according to the MD method.
+Running MD calculations with PyUNIxMD, you will obtain output files under the following file tree.
 
-+-----------+------+----+----+------+
-|           | BOMD | Eh | SH | SHXF |
-+===========+======+====+====+======+
-| MDENERGY  | o    | o  | o  | o    |
-+-----------+------+----+----+------+
-| MOVIE.xyz | o    | o  | o  | o    |
-+-----------+------+----+----+------+
-| FINAL.xyz | o    | o  | o  | o    |
-+-----------+------+----+----+------+
-| BOCOH *   | x    | o  | o  | o    |
-+-----------+------+----+----+------+
-| BOPOP *   | x    | o  | o  | o    |
-+-----------+------+----+----+------+
-| NACME     | x    | o  | o  | o    |
-+-----------+------+----+----+------+
-| SHPROB    | x    | x  | o  | o    |
-+-----------+------+----+----+------+
-| SHSTATE   | x    | x  | o  | o    |
-+-----------+------+----+----+------+
-| DOTPOPD   | x    | x  | x  | o    |
-+-----------+------+----+----+------+
+.. image:: diagrams/pyunixmd_file_tree.png
+   :width: 400pt
+
+The blue and light green boxes represent directories and files, respectively. The purple shades distinguish output files that vary according to the MQC methods.
+
+'md/' collects MD outputs, and 'qm_log/' and 'mm_log/' have logs of QM and MM calculations, respectively
+(The latter two directories are optional). 'RESTART.bin' is a binary used to restart a dynamics calculation. See :ref:`MQC<Objects MQC>` for the details.
 
 .. note:: If you put **propagation** = *"density"* when setting an MD method, PyUNIxMD provides 'BOCOH' and 'BOPOP'.
    However, if you put **propagation** = *"coefficient"* when setting an MD method, PyUNIxMD provides 'BOCOEF' rather than 'BOCOH' and 'BOPOP'.
 
+Details of the MD output files and their formats are the following.
+
 - MDENERGY
 
-This file shows MD energies and energies of adiabatic states
+This file shows MD energies and energies of adiabatic states.
 
 .. code-block:: bash
 
