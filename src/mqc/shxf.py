@@ -16,7 +16,7 @@ class Auxiliary_Molecule(object):
         if (one_dim):
 
             self.nat = 1
-            self.nsp = 1
+            self.ndim = 1
             self.symbols = ['XX']
 
             self.mass = np.zeros((self.nat))
@@ -25,13 +25,13 @@ class Auxiliary_Molecule(object):
         else:
 
             self.nat = molecule.nat_qm
-            self.nsp = molecule.nsp
+            self.ndim = molecule.ndim
             self.symbols = np.copy(molecule.symbols[0:molecule.nat_qm])
 
             self.mass = np.copy(molecule.mass[0:molecule.nat_qm])
 
-        self.pos = np.zeros((molecule.nst, self.nat, self.nsp))
-        self.vel = np.zeros((molecule.nst, self.nat, self.nsp))
+        self.pos = np.zeros((molecule.nst, self.nat, self.ndim))
+        self.vel = np.zeros((molecule.nst, self.nat, self.ndim))
         self.vel_old = np.copy(self.vel)
 
 
@@ -124,12 +124,12 @@ class SHXF(MQC):
 
         # Initialize auxiliary molecule object
         self.aux = Auxiliary_Molecule(self.mol, self.one_dim)
-        self.pos_0 = np.zeros((self.aux.nat, self.aux.nsp))
-        self.phase = np.array(np.zeros((self.mol.nst, self.aux.nat, self.aux.nsp)))
+        self.pos_0 = np.zeros((self.aux.nat, self.aux.ndim))
+        self.phase = np.array(np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim)))
 
         # Debug variables
         self.dotpopd = np.zeros(self.mol.nst)
-        self.qmom = np.zeros((self.aux.nat, self.aux.nsp))
+        self.qmom = np.zeros((self.aux.nat, self.aux.ndim))
 
         # Initialize event to print
         self.event = {"HOP": [], "DECO": []}
@@ -473,7 +473,7 @@ class SHXF(MQC):
 
             :param integer one_st: State index that its population is one
         """
-        self.phase = np.zeros((self.mol.nst, self.aux.nat, self.aux.nsp))
+        self.phase = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
         self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex_)
         self.mol.rho[one_st, one_st] = 1. + 0.j
 
@@ -495,7 +495,7 @@ class SHXF(MQC):
             if (self.l_coh[ist]):
                 if (self.l_first[ist]):
                     if (self.one_dim):
-                        self.aux.pos[ist] = np.zeros((self.aux.nat, self.aux.nsp))
+                        self.aux.pos[ist] = np.zeros((self.aux.nat, self.aux.ndim))
                     else:
                         self.aux.pos[ist] = self.mol.pos[0:self.aux.nat]
                 else:
@@ -599,7 +599,7 @@ class SHXF(MQC):
             # Write quantum momenta
             tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum (au)' + \
                 "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
-                "".join([f'{self.qmom[iat, isp]:15.8f}' for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
+                "".join([f'{self.qmom[iat, isp]:15.8f}' for isp in range(self.aux.ndim)]) for iat in range(self.aux.nat)])
             typewriter(tmp, unixmd_dir, f"QMOM", "a")
 
             # Write auxiliary variables
@@ -608,14 +608,14 @@ class SHXF(MQC):
                     # Write auxiliary phase
                     tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum (au)' + \
                         "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
-                        "".join([f'{self.phase[ist, iat, isp]:15.8f}' for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
+                        "".join([f'{self.phase[ist, iat, isp]:15.8f}' for isp in range(self.aux.ndim)]) for iat in range(self.aux.nat)])
                     typewriter(tmp, unixmd_dir, f"AUX_PHASE_{ist}", "a")
 
                     # Write auxiliary trajectory movie files
                     tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
                         "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
-                        "".join([f'{self.aux.pos[ist, iat, isp] * au_to_A:15.8f}' for isp in range(self.aux.nsp)]) + \
-                        "".join([f"{self.aux.vel[ist, iat, isp]:15.8f}" for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
+                        "".join([f'{self.aux.pos[ist, iat, isp] * au_to_A:15.8f}' for isp in range(self.aux.ndim)]) + \
+                        "".join([f"{self.aux.vel[ist, iat, isp]:15.8f}" for isp in range(self.aux.ndim)]) for iat in range(self.aux.nat)])
                     typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz", "a")
 
     def print_init(self, qm, mm, restart):
@@ -665,7 +665,7 @@ class SHXF(MQC):
             max_prob = max(self.prob)
             hstate = np.where(self.prob == max_prob)[0][0]
 
-        ctemp = self.mol.ekin * 2. / float(self.mol.dof) * au_to_K
+        ctemp = self.mol.ekin * 2. / float(self.mol.ndof) * au_to_K
         norm = 0.
         for ist in range(self.mol.nst):
             norm += self.mol.rho.real[ist, ist]

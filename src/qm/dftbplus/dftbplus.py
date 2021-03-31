@@ -7,7 +7,7 @@ class DFTBplus(QM_calculator):
     """ Class for common parts of DFTB+
 
         :param object molecule: Molecule object
-        :param string sk_path: Path for slater-koster files
+        :param string sk_path: Path for Slater-Koster files
         :param string install_path: Path for DFTB+ install directory
         :param integer nthreads: Number of threads in the calculations
         :param string version: Version of DFTB+

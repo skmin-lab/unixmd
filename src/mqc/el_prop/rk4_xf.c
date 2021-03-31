@@ -7,36 +7,36 @@
 #include "derivs_xf.h"
 
 // Routine for coefficient propagation scheme in rk4 solver
-static void rk4_coef(int nat, int nsp, int nst, int nesteps, double dt, int *l_coh,
+static void rk4_coef(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
     double *mass, double *energy, double *energy_old, double *wsigma, double **nacme,
     double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *coef,
     int verbosity, double *dotpopd);
 
 // Routine for density propagation scheme in rk4 solver
-static void rk4_rho(int nat, int nsp, int nst, int nesteps, double dt, int *l_coh,
+static void rk4_rho(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
     double *mass, double *energy, double *energy_old, double *wsigma, double **nacme,
     double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex **rho,
     int verbosity, double *dotpopd);
 
 // Interface routine for propagation scheme in rk4 solver
-static void rk4(int nat, int nsp, int nst, int nesteps, double dt, char *propagation, int *l_coh,
+static void rk4(int nat, int ndim, int nst, int nesteps, double dt, char *propagation, int *l_coh,
     double *mass, double *energy, double *energy_old, double *wsigma, double **nacme, double **nacme_old,
     double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *coef, double complex **rho,
     int verbosity, double *dotpopd){
 
     if(strcmp(propagation, "coefficient") == 0){
-        rk4_coef(nat, nsp, nst, nesteps, dt, l_coh, mass, energy, energy_old, wsigma,
+        rk4_coef(nat, ndim, nst, nesteps, dt, l_coh, mass, energy, energy_old, wsigma,
             nacme, nacme_old, pos, qmom, aux_pos, phase, coef, verbosity, dotpopd);
     }
     else if(strcmp(propagation, "density") == 0){
-        rk4_rho(nat, nsp, nst, nesteps, dt, l_coh, mass, energy, energy_old, wsigma,
+        rk4_rho(nat, ndim, nst, nesteps, dt, l_coh, mass, energy, energy_old, wsigma,
             nacme, nacme_old, pos, qmom, aux_pos, phase, rho, verbosity, dotpopd);
     }
 
 }
 
 // Routine for coefficient propagation scheme in rk4 solver
-static void rk4_coef(int nat, int nsp, int nst, int nesteps, double dt, int *l_coh,
+static void rk4_coef(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
     double *mass, double *energy, double *energy_old, double *wsigma, double **nacme,
     double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *coef,
     int verbosity, double *dotpopd){
@@ -66,7 +66,7 @@ static void rk4_coef(int nat, int nsp, int nst, int nesteps, double dt, int *l_c
     for(iestep = 0; iestep < nesteps; iestep++){
 
         // Calculate cdot contribution originated from XF term
-        xf_cdot(nat, nsp, nst, l_coh, mass, wsigma, pos, qmom, aux_pos, phase, coef, xf_c_dot);
+        xf_cdot(nat, ndim, nst, l_coh, mass, wsigma, pos, qmom, aux_pos, phase, coef, xf_c_dot);
 
         // Interpolate energy and NACME terms between time t and t + dt
         for(ist = 0; ist < nst; ist++){
@@ -145,7 +145,7 @@ static void rk4_coef(int nat, int nsp, int nst, int nesteps, double dt, int *l_c
 }
 
 // Routine for density propagation scheme in rk4 solver
-static void rk4_rho(int nat, int nsp, int nst, int nesteps, double dt, int *l_coh,
+static void rk4_rho(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
     double *mass, double *energy, double *energy_old, double *wsigma, double **nacme,
     double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex **rho,
     int verbosity, double *dotpopd){
@@ -184,7 +184,7 @@ static void rk4_rho(int nat, int nsp, int nst, int nesteps, double dt, int *l_co
     for(iestep = 0; iestep < nesteps; iestep++){
 
         // Calculate rhodot contribution originated from XF term
-        xf_rhodot(nat, nsp, nst, l_coh, mass, wsigma, pos, qmom, aux_pos, phase, rho, xf_rho_dot);
+        xf_rhodot(nat, ndim, nst, l_coh, mass, wsigma, pos, qmom, aux_pos, phase, rho, xf_rho_dot);
 
         // Interpolate energy and NACME terms between time t and t + dt
         for(ist = 0; ist < nst; ist++){

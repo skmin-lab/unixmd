@@ -485,7 +485,7 @@ class SH(MQC):
             max_prob = max(self.prob)
             hstate = np.where(self.prob == max_prob)[0][0]
 
-        ctemp = self.mol.ekin * 2. / float(self.mol.dof) * au_to_K
+        ctemp = self.mol.ekin * 2. / float(self.mol.ndof) * au_to_K
         norm = 0.
         for ist in range(self.mol.nst):
             norm += self.mol.rho.real[ist, ist]

@@ -30,7 +30,7 @@ The parameters to specify a molecule are below.
 | **geometry**  | A string containing atomic positions and velocities  |           |
 | *(string)*    |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **nsp**       | Dimension of space                                   | *3*       |
+| **ndim**      | Dimension of space                                   | *3*       |
 | *(integer)*   |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
 | **nstates**   | Number of BO states                                  | *3*       |
@@ -42,7 +42,7 @@ The parameters to specify a molecule are below.
 | **natoms_mm** | Number of atoms in the MM region                     | *None*    |
 | *(integer)*   |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **dof**       | Degrees of freedom                                   | *None*    |
+| **ndof**      | Degrees of freedom                                   | *None*    |
 | *(integer)*   |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
 | **unit_pos**  | Unit of atomic positions                             | *'A'*     |
@@ -77,7 +77,7 @@ Detailed description of the parameters
 
 \
 
-- **nsp** *(integer)* - Default: *3*
+- **ndim** *(integer)* - Default: *3*
 
   This parameter specifies the dimension of space where the dynamics occurs. 
 
@@ -101,7 +101,7 @@ Detailed description of the parameters
 
 \
 
-- **dof** *(integer)* - Default: *None*
+- **ndof** *(integer)* - Default: *None*
 
   This parameter specifies the degrees of freedom of the system. This value will be set automatically if no specific value is given.
 
@@ -113,11 +113,11 @@ Detailed description of the parameters
 
 \
 
-- **unit_pos** *(string)* - Default: *'A'*
+- **unit_pos** *(string)* - Default: *'angs'*
 
   This parameter specifies the unit of atomic positions.
 
-  + *'A'*: Angstrom
+  + *'angs'*: Angstrom
   + *'au'*: Atomic unit
 
 \

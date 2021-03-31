@@ -68,7 +68,7 @@ class MQC(object):
 
         self.l_adjnac = l_adjnac
 
-        self.rforce = np.zeros((self.mol.nat, self.mol.nsp))
+        self.rforce = np.zeros((self.mol.nat, self.mol.ndim))
 
         self.out_freq = out_freq
         self.verbosity = verbosity
@@ -147,7 +147,7 @@ class MQC(object):
         """
         self.calculate_force()
 
-        self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.nsp)
+        self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.ndim)
         self.mol.pos += self.dt * self.mol.vel
 
     def cl_update_velocity(self):
@@ -156,14 +156,14 @@ class MQC(object):
         """
         self.calculate_force()
 
-        self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.nsp)
+        self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.ndim)
         self.mol.update_kinetic()
 
 #    def calculate_temperature(self):
 #        """ Routine to calculate current temperature
 #        """
 #        pass
-#        #self.temperature = self.mol.ekin * 2 / float(self.mol.dof) * au_to_K
+#        #self.temperature = self.mol.ekin * 2 / float(self.mol.ndof) * au_to_K
 
     def calculate_force(self):
         """ Routine to calculate the forces
@@ -342,8 +342,8 @@ class MQC(object):
         # Write MOVIE.xyz file including positions and velocities
         tmp = f'{self.mol.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
             "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
-            "".join([f'{self.mol.pos[iat, isp] * au_to_A:15.8f}' for isp in range(self.mol.nsp)]) + \
-            "".join([f"{self.mol.vel[iat, isp]:15.8f}" for isp in range(self.mol.nsp)]) for iat in range(self.mol.nat)])
+            "".join([f'{self.mol.pos[iat, isp] * au_to_A:15.8f}' for isp in range(self.mol.ndim)]) + \
+            "".join([f"{self.mol.vel[iat, isp]:15.8f}" for isp in range(self.mol.ndim)]) for iat in range(self.mol.nat)])
         typewriter(tmp, unixmd_dir, "MOVIE.xyz", "a")
 
         # Write MDENERGY file including several energy information
@@ -381,7 +381,7 @@ class MQC(object):
                     for jst in range(ist + 1, self.mol.nst):
                         tmp = f'{self.mol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV' + \
                             "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
-                            "".join([f'{self.mol.nac[ist, jst, iat, isp]:15.8f}' for isp in range(self.mol.nsp)]) for iat in range(self.mol.nat_qm)])
+                            "".join([f'{self.mol.nac[ist, jst, iat, isp]:15.8f}' for isp in range(self.mol.ndim)]) for iat in range(self.mol.nat_qm)])
                         typewriter(tmp, unixmd_dir, f"NACV_{ist}_{jst}", "a")
 
     def write_final_xyz(self, unixmd_dir, istep):
@@ -394,8 +394,8 @@ class MQC(object):
         tmp = f'{self.mol.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)'
         for iat in range(self.mol.nat):
             tmp += "\n" + f'{self.mol.symbols[iat]:5s}' + \
-                "".join([f'{self.mol.pos[iat, isp] * au_to_A:15.8f}' for isp in range(self.mol.nsp)]) \
-                + "".join([f"{self.mol.vel[iat, isp]:15.8f}" for isp in range(self.mol.nsp)])
+                "".join([f'{self.mol.pos[iat, isp] * au_to_A:15.8f}' for isp in range(self.mol.ndim)]) \
+                + "".join([f"{self.mol.vel[iat, isp]:15.8f}" for isp in range(self.mol.ndim)])
 
         typewriter(tmp, unixmd_dir, "FINAL.xyz", "w")
 

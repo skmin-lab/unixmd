@@ -125,7 +125,7 @@ class Eh(MQC):
     def calculate_force(self):
         """ Calculate the Ehrenfest force
         """
-        self.rforce = np.zeros((self.mol.nat, self.mol.nsp))
+        self.rforce = np.zeros((self.mol.nat, self.mol.ndim))
 
         for ist, istate in enumerate(self.mol.states):
             self.rforce += istate.force * self.mol.rho.real[ist, ist]
@@ -180,7 +180,7 @@ class Eh(MQC):
 
             :param integer istep: Current MD step
         """
-        ctemp = self.mol.ekin * 2. / float(self.mol.dof) * au_to_K
+        ctemp = self.mol.ekin * 2. / float(self.mol.ndof) * au_to_K
         norm = 0.
         for ist in range(self.mol.nst):
             norm += self.mol.rho.real[ist, ist]

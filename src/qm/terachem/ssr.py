@@ -305,10 +305,10 @@ class SSR(TeraChem):
             # 1.99 version do not show H vector
             if (self.version == "1.99"):
                 # Zeroing for G, h and H vectors
-                Gvec = np.zeros((molecule.nat, molecule.nsp))
-                hvec = np.zeros((molecule.nat, molecule.nsp))
+                Gvec = np.zeros((molecule.nat, molecule.ndim))
+                hvec = np.zeros((molecule.nat, molecule.ndim))
                 ssr_coef = np.zeros((molecule.nst, molecule.nst))
-                Hvec = np.zeros((molecule.nat, molecule.nsp))
+                Hvec = np.zeros((molecule.nat, molecule.ndim))
                 # Calculate G vector, G vector is difference gradient so minus sign is needed
                 Gvec = - 0.5 * (molecule.states[0].force - molecule.states[1].force)
                 # Read h vector

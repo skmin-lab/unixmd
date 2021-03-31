@@ -27,7 +27,7 @@ class DFTB(DFTBplus):
         :param integer,list k_point: Number of k-point samplings
         :param boolean periodic: Use periodicity in the calculations
         :param double,list cell_length: The lattice vectors of periodic unit cell
-        :param string sk_path: Path for slater-koster files
+        :param string sk_path: Path for Slater-Koster files
         :param string install_path: Path for DFTB+ install directory
         :param boolean mpi: Use MPI parallelization
         :param string mpi_path: Path for MPI binary

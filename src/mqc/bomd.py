@@ -150,7 +150,7 @@ class BOMD(MQC):
 
             :param integer istep: Current MD step
         """
-        ctemp = self.mol.ekin * 2. / float(self.mol.dof) * au_to_K
+        ctemp = self.mol.ekin * 2. / float(self.mol.ndof) * au_to_K
 
         # Print INFO for each step
         INFO = f" INFO{istep + 1:>9d}{self.istate:>5d} "

@@ -322,7 +322,7 @@ class DFT(Gaussian09):
         self.nvirt = int(self.nvirt[0])
         self.norb = self.nocc + self.nvirt
 
-        self.pos_old = np.zeros((molecule.nat_qm, molecule.nsp))
+        self.pos_old = np.zeros((molecule.nat_qm, molecule.ndim))
         self.ao_overlap = np.zeros((self.nbasis, self.nbasis))
         self.mo_coef_old = np.zeros((self.norb, self.nbasis))
         self.mo_coef_new = np.zeros((self.norb, self.nbasis))

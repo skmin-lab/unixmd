@@ -486,7 +486,7 @@ class Tinker(MM_calculator):
                 molecule.states[ist].energy += mm_energy * kcalmol_to_au
 
         # Force; initialize the force at MM level
-        mm_force = np.zeros((molecule.nat, molecule.nsp))
+        mm_force = np.zeros((molecule.nat, molecule.ndim))
 
         if (self.scheme == "additive"):
 

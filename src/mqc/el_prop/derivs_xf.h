@@ -4,7 +4,7 @@
 #include <math.h>
 
 // Routine to calculate cdot contribution originated from XF term
-static void xf_cdot(int nat, int nsp, int nst, int *l_coh, double *mass, double *wsigma,
+static void xf_cdot(int nat, int ndim, int nst, int *l_coh, double *mass, double *wsigma,
     double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *c, double complex *xfcdot){
 
     double **dec = malloc(nst * sizeof(double*));
@@ -14,7 +14,7 @@ static void xf_cdot(int nat, int nsp, int nst, int *l_coh, double *mass, double 
 
     // Initialize variables related to decoherence
     for(iat = 0; iat < nat; iat++){
-        for(isp = 0; isp < nsp; isp++){
+        for(isp = 0; isp < ndim; isp++){
             qmom[iat][isp] = 0.0;
         }
     }
@@ -36,7 +36,7 @@ static void xf_cdot(int nat, int nsp, int nst, int *l_coh, double *mass, double 
 
         if(l_coh[ist] == 1){
             for(iat = 0; iat < nat; iat++){
-                for(isp = 0; isp < nsp; isp++){
+                for(isp = 0; isp < ndim; isp++){
                     qmom[iat][isp] += 0.5 * rho[ist] * (pos[iat][isp] - aux_pos[ist][iat][isp])
                         / pow(wsigma[iat], 2.0) / mass[iat];
                 }
@@ -51,7 +51,7 @@ static void xf_cdot(int nat, int nsp, int nst, int *l_coh, double *mass, double 
 
             if(l_coh[ist] == 1 && l_coh[jst] == 1){
                 for(iat = 0; iat < nat; iat++){
-                    for(isp = 0; isp < nsp; isp++){
+                    for(isp = 0; isp < ndim; isp++){
                         dec[ist][jst] += qmom[iat][isp] * (phase[ist][iat][isp] - phase[jst][iat][isp]);
                     }
                 }
@@ -89,7 +89,7 @@ static void xf_print_coef(int nst, double complex *coef, double complex *xfcdot,
 }
 
 // Routine to calculate rhodot contribution originated from XF term
-static void xf_rhodot(int nat, int nsp, int nst, int *l_coh, double *mass, double *wsigma,
+static void xf_rhodot(int nat, int ndim, int nst, int *l_coh, double *mass, double *wsigma,
     double **pos, double **qmom, double ***aux_pos, double ***phase, double complex **rho, double complex **xfrhodot){
 
     double **dec = malloc(nst * sizeof(double*));
@@ -98,7 +98,7 @@ static void xf_rhodot(int nat, int nsp, int nst, int *l_coh, double *mass, doubl
 
     // Initialize variables related to decoherence
     for(iat = 0; iat < nat; iat++){
-        for(isp = 0; isp < nsp; isp++){
+        for(isp = 0; isp < ndim; isp++){
             qmom[iat][isp] = 0.0;
         }
     }
@@ -115,7 +115,7 @@ static void xf_rhodot(int nat, int nsp, int nst, int *l_coh, double *mass, doubl
 
         if(l_coh[ist] == 1){
             for(iat = 0; iat < nat; iat++){
-                for(isp = 0; isp < nsp; isp++){
+                for(isp = 0; isp < ndim; isp++){
                     qmom[iat][isp] += 0.5 * creal(rho[ist][ist]) * (pos[iat][isp] - aux_pos[ist][iat][isp])
                         / pow(wsigma[iat], 2.0) / mass[iat];
                 }
@@ -130,7 +130,7 @@ static void xf_rhodot(int nat, int nsp, int nst, int *l_coh, double *mass, doubl
 
             if(l_coh[ist] == 1 && l_coh[jst] == 1){
                 for(iat = 0; iat < nat; iat++){
-                    for(isp = 0; isp < nsp; isp++){
+                    for(isp = 0; isp < ndim; isp++){
                         dec[ist][jst] += qmom[iat][isp] * (phase[ist][iat][isp] - phase[jst][iat][isp]);
                     }
                 }

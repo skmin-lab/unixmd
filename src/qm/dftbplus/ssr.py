@@ -28,7 +28,7 @@ class SSR(DFTBplus):
         :param string embedding: Charge-charge embedding options
         :param boolean periodic: Use periodicity in the calculations
         :param double,list cell_length: The lattice vectors of periodic unit cell
-        :param string sk_path: Path for slater-koster files
+        :param string sk_path: Path for Slater-Koster files
         :param string install_path: Path for DFTB+ install directory
         :param integer nthreads: Number of threads in the calculations
         :param string version: Version of DFTB+

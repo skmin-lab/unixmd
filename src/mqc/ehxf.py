@@ -14,13 +14,13 @@ class Auxiliary_Molecule(object):
     def __init__(self, molecule):
         # Initialize auxiliary molecule
         self.nat = molecule.nat_qm
-        self.nsp = molecule.nsp
+        self.ndim = molecule.ndim
         self.symbols = np.copy(molecule.symbols[0:molecule.nat_qm])
 
         self.mass = np.copy(molecule.mass[0:molecule.nat_qm])
 
-        self.pos = np.zeros((molecule.nst, self.nat, self.nsp))
-        self.vel = np.zeros((molecule.nst, self.nat, self.nsp))
+        self.pos = np.zeros((molecule.nst, self.nat, self.ndim))
+        self.vel = np.zeros((molecule.nst, self.nat, self.ndim))
         self.vel_old = np.copy(self.vel)
 
 
@@ -83,12 +83,12 @@ class EhXF(MQC):
 
         # Initialize auxiliary molecule object
         self.aux = Auxiliary_Molecule(self.mol)
-        self.pos_0 = np.zeros((self.aux.nat, self.aux.nsp))
-        self.phase = np.zeros((self.mol.nst, self.aux.nat, self.aux.nsp))
+        self.pos_0 = np.zeros((self.aux.nat, self.aux.ndim))
+        self.phase = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
 
         # Debug variables
         self.dotpopd = np.zeros(self.mol.nst)
-        self.qmom = np.zeros((self.aux.nat, self.aux.nsp))
+        self.qmom = np.zeros((self.aux.nat, self.aux.ndim))
 
         # Initialize event to print
         self.event = {"DECO": []}
@@ -200,7 +200,7 @@ class EhXF(MQC):
     def calculate_force(self):
         """ Calculate the Ehrenfest-XF force
         """
-        self.rforce = np.zeros((self.mol.nat, self.mol.nsp))
+        self.rforce = np.zeros((self.mol.nat, self.mol.ndim))
 
         for ist, istate in enumerate(self.mol.states):
             self.rforce += istate.force * self.mol.rho.real[ist, ist]
@@ -212,7 +212,7 @@ class EhXF(MQC):
 
         if (self.l_qmom_force):
             # Calculate quantum momentum
-            qmom = np.zeros((self.aux.nat, self.mol.nsp))
+            qmom = np.zeros((self.aux.nat, self.mol.ndim))
             for ist in range(self.mol.nst):
                 for iat in range(self.aux.nat):
                     qmom[iat] += 0.5 * self.mol.rho.real[ist, ist] * (self.pos_0[iat] - self.aux.pos[ist, iat]) \
@@ -277,7 +277,7 @@ class EhXF(MQC):
 
             :param integer one_st: state index that its population is one
         """
-        self.phase = np.zeros((self.mol.nst, self.aux.nat, self.aux.nsp))
+        self.phase = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
         self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex_)
         self.mol.rho[one_st, one_st] = 1. + 0.j
 
@@ -370,7 +370,7 @@ class EhXF(MQC):
             # Write quantum momenta
             tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum (au)' + \
                 "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
-                "".join([f'{self.qmom[iat, isp]:15.8f}' for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
+                "".join([f'{self.qmom[iat, isp]:15.8f}' for isp in range(self.aux.ndim)]) for iat in range(self.aux.nat)])
             typewriter(tmp, unixmd_dir, f"QMOM", "a")
 
             # Write auxiliary variables
@@ -379,14 +379,14 @@ class EhXF(MQC):
                     # Write auxiliary phase
                     tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum (au)' + \
                         "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
-                        "".join([f'{self.phase[ist, iat, isp]:15.8f}' for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
+                        "".join([f'{self.phase[ist, iat, isp]:15.8f}' for isp in range(self.aux.ndim)]) for iat in range(self.aux.nat)])
                     typewriter(tmp, unixmd_dir, f"AUX_PHASE_{ist}", "a")
 
                     # Write auxiliary trajectory movie files
                     tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
                         "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
-                        "".join([f'{self.aux.pos[ist, iat, isp] * au_to_A:15.8f}' for isp in range(self.aux.nsp)]) + \
-                        "".join([f"{self.aux.vel[ist, iat, isp]:15.8f}" for isp in range(self.aux.nsp)]) for iat in range(self.aux.nat)])
+                        "".join([f'{self.aux.pos[ist, iat, isp] * au_to_A:15.8f}' for isp in range(self.aux.ndim)]) + \
+                        "".join([f"{self.aux.vel[ist, iat, isp]:15.8f}" for isp in range(self.aux.ndim)]) for iat in range(self.aux.nat)])
                     typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz", "a")
 
     def print_init(self, qm, mm, restart):
@@ -424,7 +424,7 @@ class EhXF(MQC):
 
             :param integer istep: current MD step
         """
-        ctemp = self.mol.ekin * 2. / float(self.mol.dof) * au_to_K
+        ctemp = self.mol.ekin * 2. / float(self.mol.ndof) * au_to_K
         norm = 0.
         for ist in range(self.mol.nst):
             norm += self.mol.rho.real[ist, ist]
