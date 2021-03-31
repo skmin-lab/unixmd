@@ -16,13 +16,13 @@ class SH(MQC):
         :param integer nsteps: Total step of nuclear propagation
         :param integer nesteps: Total step of electronic propagation
         :param string propagation: Propagation scheme
-        :param string solver: Propagation solver
-        :param boolean l_pop_print: Logical to print BO population and coherence
+        :param string propagator: Electronic propagator
+        :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adjnac: Adjust nonadiabatic coupling to align the phases
-        :param string vel_rescale: Velocity rescaling method after successful hop
+        :param string hop_rescale: Velocity rescaling method after successful hop
         :param string vel_reject: Velocity rescaling method after frustrated hop
-        :param coefficient: Initial BO coefficient
-        :type coefficient: double, list or complex, list
+        :param init_coefficient: Initial BO coefficient
+        :type init_coefficient: double, list or complex, list
         :param string deco_correction: Simple decoherence correction schemes
         :param double edc_parameter: Energy constant for rescaling coefficients in edc
         :param string unit_dt: Unit of time step 
@@ -30,12 +30,12 @@ class SH(MQC):
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
-        propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, vel_rescale="augment", \
-        vel_reject="reverse", coefficient=None, deco_correction=None, edc_parameter=0.1, \
+        propagation="density", propagator="rk4", l_print_dm=True, l_adjnac=True, hop_rescale="augment", \
+        vel_reject="reverse", init_coefficient=None, deco_correction=None, edc_parameter=0.1, \
         unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity)
+            propagation, propagator, l_print_dm, l_adjnac, init_coefficient, unit_dt, out_freq, verbosity)
 
         # Initialize SH variables
         self.rstate = istate
@@ -48,9 +48,9 @@ class SH(MQC):
         self.l_hop = False
         self.l_reject = False
 
-        self.vel_rescale = vel_rescale
-        if not (self.vel_rescale in ["energy", "velocity", "momentum", "augment"]):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_rescale'! {self.vel_rescale}")
+        self.hop_rescale = hop_rescale
+        if not (self.hop_rescale in ["energy", "velocity", "momentum", "augment"]):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'hop_rescale'! {self.hop_rescale}")
 
         self.vel_reject = vel_reject
         if not (self.vel_reject in ["keep", "reverse"]):
@@ -66,8 +66,8 @@ class SH(MQC):
         # Check error for incompatible cases
         if (self.mol.l_nacme):
             # No analytical nonadiabatic couplings exist
-            if (self.vel_rescale in ["velocity", "momentum", "augment"]):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'energy' rescaling for 'vel_rescale'! {self.vel_rescale}")
+            if (self.hop_rescale in ["velocity", "momentum", "augment"]):
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'energy' rescaling for 'hop_rescale'! {self.hop_rescale}")
             if (self.vel_reject == "reverse"):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'keep' rescaling for 'vel_reject'! {self.vel_reject}")
 
@@ -260,18 +260,18 @@ class SH(MQC):
             a = 1.
             b = 1.
             det = 1.
-            if (self.vel_rescale == "velocity"):
+            if (self.hop_rescale == "velocity"):
                 a = np.sum(self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
                 b = 2. * np.sum(self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] \
                     * self.mol.vel[0:self.mol.nat_qm], axis=1))
                 c = 2. * pot_diff
                 det = b ** 2. - 4. * a * c
-            elif (self.vel_rescale == "momentum"):
+            elif (self.hop_rescale == "momentum"):
                 a = np.sum(1. / self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
                 b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel[0:self.mol.nat_qm], axis=1))
                 c = 2. * pot_diff
                 det = b ** 2. - 4. * a * c
-            elif (self.vel_rescale == "augment"):
+            elif (self.hop_rescale == "augment"):
                 a = np.sum(1. / self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
                 b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel[0:self.mol.nat_qm], axis=1))
                 c = 2. * pot_diff
@@ -281,7 +281,7 @@ class SH(MQC):
             self.l_reject = False
 
             # Velocities cannot be adjusted when zero kinetic energy is given
-            if (self.vel_rescale == "energy" and self.mol.ekin_qm < eps):
+            if (self.hop_rescale == "energy" and self.mol.ekin_qm < eps):
                 self.l_reject = True
             # Clasically forbidden hop due to lack of kinetic energy
             if (self.mol.ekin_qm < pot_diff):
@@ -290,7 +290,7 @@ class SH(MQC):
             if (det < 0.):
                 self.l_reject = True
             # When kinetic energy is enough, velocities are always rescaled in 'augment' case
-            if (self.vel_rescale == "augment" and self.mol.ekin_qm > pot_diff):
+            if (self.hop_rescale == "augment" and self.mol.ekin_qm > pot_diff):
                 self.l_reject = False
 
             if (self.l_reject):
@@ -301,7 +301,7 @@ class SH(MQC):
                 if (self.vel_reject == "keep"):
                     self.event["HOP"].append("Reject hopping: no solution to find rescale factor, velocity is not changed")
                 elif (self.vel_reject == "reverse"):
-                    # x = - 1 when 'vel_rescale' is 'energy', otherwise x = - b / a
+                    # x = - 1 when 'hop_rescale' is 'energy', otherwise x = - b / a
                     self.event["HOP"].append("Reject hopping: no solution to find rescale factor, velocity is reversed along coupling direction")
                     x = - b / a
                 # Recover old running state
@@ -309,7 +309,7 @@ class SH(MQC):
                 self.rstate = self.rstate_old
                 bo_list[0] = self.rstate
             else:
-                if (self.vel_rescale == "energy" or (det < 0. and self.vel_rescale == "augment")):
+                if (self.hop_rescale == "energy" or (det < 0. and self.hop_rescale == "augment")):
                     if (det < 0.):
                         self.event["HOP"].append("Accept hopping: no solution to find rescale factor, but velocity is simply rescaled")
                     x = np.sqrt(1. - pot_diff / self.mol.ekin_qm)
@@ -321,17 +321,17 @@ class SH(MQC):
 
             # Rescale velocities for QM atoms
             if (not (self.vel_reject == "keep" and self.l_reject)):
-                if (self.vel_rescale == "energy"):
+                if (self.hop_rescale == "energy"):
                     self.mol.vel[0:self.mol.nat_qm] *= x
 
-                elif (self.vel_rescale == "velocity"):
+                elif (self.hop_rescale == "velocity"):
                     self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate]
 
-                elif (self.vel_rescale == "momentum"):
+                elif (self.hop_rescale == "momentum"):
                     self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate] / \
                         self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
 
-                elif (self.vel_rescale == "augment"):
+                elif (self.hop_rescale == "augment"):
                     if (det > 0. or self.mol.ekin_qm < pot_diff):
                         self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate] / \
                             self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))

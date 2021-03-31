@@ -33,7 +33,7 @@ The running script is the following.
    qm = qm.model.Shin_Metiu(molecule=mol)
    
    md = mqc.SHXF(molecule=mol, nsteps=2890, nesteps=1, dt=0.5, unit_dt='au', \
-        wsigma=0.1, istate=1, propagation="density")
+        sigma=0.1, istate=1, propagation="density")
    
    md.run(qm=qm)
 

@@ -6,7 +6,7 @@ cimport numpy as np
 
 cdef extern from "rk4_xf.c":
     void rk4(int nat, int ndim, int nst, int nesteps, double dt, char *propagation, \
-        bint *l_coh, double *mass, double *energy, double *energy_old, double *wsigma, \
+        bint *l_coh, double *mass, double *energy, double *energy_old, double *sigma, \
         double **nacme, double **nacme_old, double **pos, double **qmom, double ***aux_pos, \
         double ***phase, double complex *coef, double complex **rho, int verbosity, \
         double *dotpopd)
@@ -18,7 +18,7 @@ def el_run(md):
         double *mass
         double *energy
         double *energy_old
-        double *wsigma
+        double *sigma
         double **nacme
         double **nacme_old
         double **pos
@@ -43,7 +43,7 @@ def el_run(md):
     mass = <double*> PyMem_Malloc(aux_nat * sizeof(double))
     energy = <double*> PyMem_Malloc(nst * sizeof(double))
     energy_old = <double*> PyMem_Malloc(nst * sizeof(double))
-    wsigma = <double*> PyMem_Malloc(aux_nat * sizeof(double))
+    sigma = <double*> PyMem_Malloc(aux_nat * sizeof(double))
 
     nacme = <double**> PyMem_Malloc(nst * sizeof(double*))
     nacme_old = <double**> PyMem_Malloc(nst * sizeof(double*))
@@ -79,7 +79,7 @@ def el_run(md):
 
     for iat in range(aux_nat):
         mass[iat] = md.aux.mass[iat]
-        wsigma[iat] = md.wsigma[iat]
+        sigma[iat] = md.sigma[iat]
 
     for ist in range(nst):
         for jst in range(nst):
@@ -118,10 +118,10 @@ def el_run(md):
     py_bytes = md.propagation.encode()
     propagation_c = py_bytes
 
-    # Propagate electrons depending on the solver
-    if (md.solver == "rk4"):
+    # Propagate electrons depending on the propagator
+    if (md.propagator == "rk4"):
         rk4(aux_nat, aux_ndim, nst, nesteps, dt, propagation_c, l_coh, mass, energy, \
-            energy_old, wsigma, nacme, nacme_old, pos, qmom, aux_pos, phase, coef, rho, verbosity, dotpopd)
+            energy_old, sigma, nacme, nacme_old, pos, qmom, aux_pos, phase, coef, rho, verbosity, dotpopd)
 
     # Assign variables from C to python
     if (md.propagation == "coefficient"):
@@ -176,7 +176,7 @@ def el_run(md):
     PyMem_Free(mass)
     PyMem_Free(energy)
     PyMem_Free(energy_old)
-    PyMem_Free(wsigma)
+    PyMem_Free(sigma)
 
     PyMem_Free(nacme)
     PyMem_Free(nacme_old)

@@ -39,16 +39,16 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **propagation**            | Propagation scheme                                   | *'density'*  |
 | *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **solver**                 | Propagation solver                                   | *'rk4'*      |
+| **propagator**             | Electronic propagator                                | *'rk4'*      |
 | *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **l_pop_print**            | Logical to print BO population and coherence         | *False*      |
+| **l_print_dm**            | Logical to print BO population and coherence         | *False*      |
 | *(boolean)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **l_adjnac**               | Adjust nonadiabatic coupling to align the phases     | *True*       |
 | *(boolean)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **vel_rescale**            | Velocity rescaling method after successful hop       | *'augment'*  |
+| **hop_rescale**            | Velocity rescaling method after successful hop       | *'augment'*  |
 | *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **vel_reject**             | Velocity rescaling method after frustrated hop       | *'reverse'*  |
@@ -57,13 +57,13 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **threshold**              | Electronic density threshold for decoherence term    | *0.01*       |
 | *(double)*                 | calculation                                          |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **wsigma**                 | Width of nuclear wave packet of auxiliary trajectory | *None*       |
+| **sigma**                 | Width of nuclear wave packet of auxiliary trajectory | *None*       |
 | *(double/(double, list))*  |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **coefficient**            | Initial BO coefficient                               | *None*       |
+| **init_coefficient**       | Initial BO coefficient                               | *None*       |
 | *(double/complex, list)*   |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **l_state_wise**           | Logical to use state-wise total energies             | *False*      |
+| **l_econs_state**           | Logical to use state-wise total energies             | *False*      |
 | *(boolean)*                | for auxiliary trajectories                           |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **unit_dt**                | Unit of time interval                                | *'fs'*       |
@@ -116,14 +116,14 @@ Detailed description of the parameters
 
 \
 
-- **solver** *(string)* - Default: *'rk4'*
+- **propagator** *(string)* - Default: *'rk4'*
 
   This parameter determines the numerical integration method for the electronic equation of motion.
   Currently, only the RK4 algorithm (*'rk4'*) is available.
 
 \
 
-- **l_pop_print** *(boolean)* - Default: *False*
+- **l_print_dm** *(boolean)* - Default: *False*
   
   This parameter determines whether to write output files for density matrix elements ('BOPOP', 'BOCOH') or not.
   If this option is set to *True*, then the 'BOPOP' and 'BOCOH' files are written during the dynamics.
@@ -137,7 +137,7 @@ Detailed description of the parameters
 
 \
 
-- **vel_rescale** *(string)* - Default: *'augment'*
+- **hop_rescale** *(string)* - Default: *'augment'*
 
   This parameter determines the direction of the momentum to be adjusted after a hop to conserve the total energy.
   If there is not enough kinetic energy in this direction, the hop is rejected and the running state is switched back to the original state.
@@ -165,7 +165,7 @@ Detailed description of the parameters
 
 \
 
-- **wsigma** *(double/(double, list))* - Default: *None*
+- **sigma** *(double/(double, list))* - Default: *None*
 
   This parameter defines the width (:math:`\sigma_\nu`) of the frozen Gaussian nuclear densities (:math:`|\chi_k|^2`) 
   on the auxiliary trajectories (:math:`\underline{\underline{\textbf{R}}}_{k}`) where 
@@ -181,7 +181,7 @@ Detailed description of the parameters
 
 \
 
-- **coefficient** *(double/complex, list)* - Default: *None*
+- **init_coefficient** *(double/complex, list)* - Default: *None*
 
   This parameter defines the initial BO coefficients.
   The elements can be either real or complex values.
@@ -189,7 +189,7 @@ Detailed description of the parameters
 
 \
 
-- **l_state_wise** *(boolean)* - Default: *False*
+- **l_econs_state** *(boolean)* - Default: *False*
 
   This parameter determines whether the total energies of the auxiliary trajectories are different or identical.
   If this is set to *True*, auxiliary trajectories have differnt total energy, or they all have same total energy.

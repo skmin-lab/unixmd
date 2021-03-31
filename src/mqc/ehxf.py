@@ -34,26 +34,26 @@ class EhXF(MQC):
         :param integer nsteps: nuclear step
         :param integer nesteps: electronic step
         :param string propagation: propagation scheme
-        :param string solver: propagation solver
-        :param boolean l_pop_print: logical to print BO population and coherence
+        :param string propagator: Electronic propagator
+        :param boolean l_print_dm: logical to print BO population and coherence
         :param boolean l_adjnac: logical to adjust nonadiabatic coupling
         :param double threshold: electronic density threshold for decoherence term calculation
-        :param wsigma: width of nuclear wave packet of auxiliary trajectory
-        :type wsigma: double or double,list
-        :param coefficient: initial BO coefficient
-        :type coefficient: double, list or complex, list
-        :param boolean l_state_wise: logical to use state-wise total energies for auxiliary trajectories
+        :param sigma: width of nuclear wave packet of auxiliary trajectory
+        :type sigma: double or double,list
+        :param init_coefficient: initial BO coefficient
+        :type init_coefficient: double, list or complex, list
+        :param boolean l_econs_state: logical to use state-wise total energies for auxiliary trajectories
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
         :param integer out_freq: frequency of printing output
         :param integer verbosity: verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
-        propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
-        threshold=0.01, wsigma=None, l_qmom_force=False, coefficient=None, \
-        l_state_wise=False, unit_dt="fs", out_freq=1, verbosity=0):
+        propagation="density", propagator="rk4", l_print_dm=True, l_adjnac=True, \
+        threshold=0.01, sigma=None, l_deco_force=False, init_coefficient=None, \
+        l_econs_state=False, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity)
+            propagation, propagator, l_print_dm, l_adjnac, init_coefficient, unit_dt, out_freq, verbosity)
 
         # Initialize XF related variables
         self.l_coh = []
@@ -62,24 +62,24 @@ class EhXF(MQC):
             self.l_coh.append(False)
             self.l_first.append(False)
         self.threshold = threshold
-        self.wsigma = wsigma
+        self.sigma = sigma
 
-        if (isinstance(self.wsigma, float)):
-            # uniform value for wsigma
+        if (isinstance(self.sigma, float)):
+            # uniform value for sigma
             pass
-        elif (isinstance(self.wsigma, list)):
-            # atom-resolved values for wsigma
-            if (len(self.wsigma) != self.mol.nat_qm):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Wrong number of elements of sigma given! {self.wsigma}")
+        elif (isinstance(self.sigma, list)):
+            # atom-resolved values for sigma
+            if (len(self.sigma) != self.mol.nat_qm):
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Wrong number of elements of sigma given! {self.sigma}")
         else:
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Wrong type for sigma given! {self.wsigma}")
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Wrong type for sigma given! {self.sigma}")
 
         self.upper_th = 1. - self.threshold
         self.lower_th = self.threshold
 
-        self.l_qmom_force = l_qmom_force
+        self.l_deco_force = l_deco_force
 
-        self.l_state_wise = l_state_wise
+        self.l_econs_state = l_econs_state
 
         # Initialize auxiliary molecule object
         self.aux = Auxiliary_Molecule(self.mol)
@@ -113,7 +113,7 @@ class EhXF(MQC):
 
         if (restart == None):
             # Initialize decoherence variables
-            self.append_wsigma()
+            self.append_sigma()
 
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
@@ -210,13 +210,13 @@ class EhXF(MQC):
                 self.rforce += 2. * self.mol.nac[ist, jst] * self.mol.rho.real[ist, jst] \
                     * (self.mol.states[ist].energy - self.mol.states[jst].energy)
 
-        if (self.l_qmom_force):
+        if (self.l_deco_force):
             # Calculate quantum momentum
             qmom = np.zeros((self.aux.nat, self.mol.ndim))
             for ist in range(self.mol.nst):
                 for iat in range(self.aux.nat):
                     qmom[iat] += 0.5 * self.mol.rho.real[ist, ist] * (self.pos_0[iat] - self.aux.pos[ist, iat]) \
-                        / self.wsigma[iat] ** 2 / self.mol.mass[iat]
+                        / self.sigma[iat] ** 2 / self.mol.mass[iat]
 
             # Calculate XF force
             for ist in range(self.mol.nst):
@@ -312,7 +312,7 @@ class EhXF(MQC):
             if (self.l_coh[ist]):
                 if (self.l_first[ist]):
                     alpha = self.mol.ekin_qm
-                    if (not self.l_state_wise):
+                    if (not self.l_econs_state):
                         alpha += self.mol.epot - self.mol.states[ist].energy
                 else:
                     ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
@@ -335,13 +335,13 @@ class EhXF(MQC):
                         self.phase[ist, iat] += self.aux.mass[iat] * \
                             (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
 
-    def append_wsigma(self):
+    def append_sigma(self):
         """ Routine to append sigma values when single float number is provided
         """
         # Create a list from single float number
-        if (isinstance(self.wsigma, float)):
-            sigma = self.wsigma
-            self.wsigma = self.aux.nat * [sigma]
+        if (isinstance(self.sigma, float)):
+            sigma = self.sigma
+            self.sigma = self.aux.nat * [sigma]
 
     def write_md_output(self, unixmd_dir, istep):
         """ Write output files

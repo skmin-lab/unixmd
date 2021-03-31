@@ -69,8 +69,8 @@ def el_run(md):
     py_bytes = md.propagation.encode()
     propagation_c = py_bytes
 
-    # Propagate electrons depending on the solver
-    if (md.solver == "rk4"):
+    # Propagate electrons depending on the propagator
+    if (md.propagator == "rk4"):
         rk4(nst, nesteps, dt, propagation_c, energy, energy_old, nacme, nacme_old, coef, rho)
 
     # Assign variables from C to python

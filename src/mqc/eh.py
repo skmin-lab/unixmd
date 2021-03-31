@@ -16,21 +16,21 @@ class Eh(MQC):
         :param integer nsteps: Total step of nuclear propation
         :param integer nesteps: Total step of electronic propagation
         :param string propagation: Propagation scheme
-        :param string solver: Propagation solver
-        :param boolean l_pop_print: Logical to print BO population and coherence
+        :param string propagator: Electronic propagator
+        :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adjnac: Logical to adjust nonadiabatic coupling
-        :param coefficient: Initial BO coefficient
-        :type coefficient: Double, list or complex, list
+        :param init_coefficient: Initial BO coefficient
+        :type init_coefficient: Double, list or complex, list
         :param string unit_dt: Unit of time step (fs = femtosecond, au = atomic unit)
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
-        propagation="density", solver="rk4", l_pop_print=False, l_adjnac=True, \
-        coefficient=None, unit_dt="fs", out_freq=1, verbosity=0):
+        propagation="density", propagator="rk4", l_print_dm=True, l_adjnac=True, \
+        init_coefficient=None, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity)
+            propagation, propagator, l_print_dm, l_adjnac, init_coefficient, unit_dt, out_freq, verbosity)
 
     def run(self, qm, mm=None, input_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         """ Run MQC dynamics according to Ehrenfest dynamics

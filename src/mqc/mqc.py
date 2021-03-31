@@ -15,17 +15,17 @@ class MQC(object):
         :param integer nsteps: Nuclear step
         :param integer nesteps: Electronic step
         :param string propagation: Propagation scheme
-        :param string solver: Propagation solver
-        :param boolean l_pop_print: Logical to print BO population and coherence
+        :param string propagator: Electronic propagator
+        :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adjnac: Logical to adjust nonadiabatic coupling
-        :param coefficient: Initial BO coefficient
-        :type coefficient: Double, list or complex, list
+        :param initial_coefficient: Initial BO coefficient
+        :type initial_coefficient: Double, list or complex, list
         :param string unit_dt: Unit of time step (fs = femtosecond, au = atomic unit)
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat, istate, dt, nsteps, nesteps, \
-        propagation, solver, l_pop_print, l_adjnac, coefficient, unit_dt, out_freq, verbosity):
+        propagation, propagator, l_print_dm, l_adjnac, init_coefficient, unit_dt, out_freq, verbosity):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -60,11 +60,11 @@ class MQC(object):
         self.propagation = propagation
         if not (self.propagation in [None, "coefficient", "density"]):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'propagation'! {self.propagation}")
-        self.solver = solver
-        if not (self.solver in [None, "rk4"]):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'solver'! {self.solver}")
+        self.propagator = propagator
+        if not (self.propagator in [None, "rk4"]):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'propagator'! {self.propagator}")
 
-        self.l_pop_print = l_pop_print
+        self.l_print_dm = l_print_dm
 
         self.l_adjnac = l_adjnac
 
@@ -74,7 +74,7 @@ class MQC(object):
         self.verbosity = verbosity
 
         # Initialize coefficients and densities
-        self.mol.get_coefficient(coefficient, self.istate)
+        self.mol.get_coefficient(init_coefficient, self.istate)
 
     def run_init(self, qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart):
         """ Initialize MQC dynamics
@@ -250,34 +250,34 @@ class MQC(object):
 
         # Print surface hopping variables
         if (self.md_type == "SH" or self.md_type == "SHXF"):
-            dynamics_info += f"\n  Velocity Rescale in Hop  = {self.vel_rescale:>16s}\n"
+            dynamics_info += f"\n  Velocity Rescale in Hop  = {self.hop_rescale:>16s}\n"
             dynamics_info += f"  Rescale when Hop Reject  = {self.vel_reject:>16s}\n"
 
         # Print XF variables
         if (self.md_type == "SHXF" or self.md_type == "EhXF"):
             # Print density threshold used in decoherence term
             dynamics_info += f"\n  Density Threshold        = {self.threshold:>16.6f}"
-            if (self.md_type == "SHXF" and self.one_dim):
+            if (self.md_type == "SHXF" and self.l_xf1d):
                 # Print reduced mass
                 dynamics_info += f"\n  Reduced Mass             = {self.aux.mass[0]:16.6f}"
-            # Print wsigma values
-            if (isinstance(self.wsigma, float)):
-                dynamics_info += f"\n  Sigma                    = {self.wsigma:16.3f}\n"
-            elif (isinstance(self.wsigma, list)):
+            # Print sigma values
+            if (isinstance(self.sigma, float)):
+                dynamics_info += f"\n  Sigma                    = {self.sigma:16.3f}\n"
+            elif (isinstance(self.sigma, list)):
                 dynamics_info += f"\n  Sigma (1:N)              =\n"
                 nlines = int(self.aux.nat / 6)
                 if (self.aux.nat % 6 != 0):
                     nlines += 1
-                wsigma_info = ""
+                sigma_info = ""
                 for iline in range(nlines):
                     iline1 = iline * 6
                     iline2 = (iline + 1) * 6
                     if (iline2 > self.aux.nat):
                         iline2 = self.aux.nat
-                    wsigma_info += f"  {iline1 + 1:>3d}:{iline2:<3d};"
-                    wsigma_info += "".join([f'{sigma:7.3f}' for sigma in self.wsigma[iline1:iline2]])
-                    wsigma_info += "\n"
-                dynamics_info += wsigma_info
+                    sigma_info += f"  {iline1 + 1:>3d}:{iline2:<3d};"
+                    sigma_info += "".join([f'{sigma:7.3f}' for sigma in self.sigma[iline1:iline2]])
+                    sigma_info += "\n"
+                dynamics_info += sigma_info
 
         print (dynamics_info, flush=True)
 
@@ -308,7 +308,7 @@ class MQC(object):
             elif (self.propagation == "coefficient"):
                 tmp = f'{"#":5s} BO State Coefficients: state Re-Im; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "BOCOEF", "w")
-                if (self.l_pop_print):
+                if (self.l_print_dm):
                     tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
                     typewriter(tmp, unixmd_dir, "BOPOP", "w")
                     tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
@@ -363,7 +363,7 @@ class MQC(object):
                 tmp = f'{istep + 1:9d}' + "".join([f'{states.coef.real:15.8f}{states.coef.imag:15.8f}' \
                     for states in self.mol.states])
                 typewriter(tmp, unixmd_dir, "BOCOEF", "a")
-                if (self.l_pop_print):
+                if (self.l_print_dm):
                     tmp = f'{istep + 1:9d}' + "".join([f'{self.mol.rho.real[ist, ist]:15.8f}' for ist in range(self.mol.nst)])
                     typewriter(tmp, unixmd_dir, "BOPOP", "a")
                     tmp = f'{istep + 1:9d}' + "".join([f"{self.mol.rho.real[ist, jst]:15.8f}{self.mol.rho.imag[ist, jst]:15.8f}" \

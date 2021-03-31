@@ -47,16 +47,16 @@ where :math:`\mathbf{d}_{ij\nu}^{(I)}(t) = \int d \underline{\underline{\mathbf{
 | **propagation**            | Propagation scheme                             | *'density'* |
 | *(string)*                 |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **solver**                 | Propagation solver                             | *'rk4'*     |
+| **propagator**             | Electronic propagator                          | *'rk4'*     |
 | *(string)*                 |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **l_pop_print**            | Logical to print BO population and coherence   | *False*     |
+| **l_print_dm**            | Logical to print BO population and coherence   | *False*     |
 | *(boolean)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
 | **l_adjnac**               | Logical to adjust nonadiabatic coupling        | *True*      |
 | *(boolean)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **coefficient**            | Initial BO coefficient                         | *None*      |
+| **init_coefficient**       | Initial BO coefficient                         | *None*      |
 | *(double/complex, list)*   |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
 | **unit_dt**                | Unit of time step                              | *'fs'*      |
@@ -108,14 +108,14 @@ Detailed description of parameters
 
 \
 
-- **solver** *(string)* - Default: *'rk4'*
+- **propagator** *(string)* - Default: *'rk4'*
 
   This parameter determines the numerical integration method for the electronic equation of motion.
   Currently, only the RK4 algorithm (*'rk4'*) is available.
 
 \
 
-- **l_pop_print** *(boolean)* - Default: *False*
+- **l_print_dm** *(boolean)* - Default: *False*
 
   This parameter determines whether to write output files for the density matrix elements ('BOPOP', 'BOCOH') or not.
   If this option is set to *True*, then the 'BOPOP' and 'BOCOH' files are written during the dynamics.
@@ -129,7 +129,7 @@ Detailed description of parameters
 
 \
 
-- **coefficient** *(double/complex, list)* - Default: *None*
+- **init_coefficient** *(double/complex, list)* - Default: *None*
 
   This parameter defines the initial BO coefficients.
   The elements can be either real or complex values.

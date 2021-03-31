@@ -77,22 +77,22 @@ and
 | **propagation**            | Propagation scheme                               | *'density'*    |
 | *(string)*                 |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
-| **solver**                 | Propagation solver                               | *'rk4'*        |
+| **propagator**             | Electronic propagator                            | *'rk4'*        |
 | *(string)*                 |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
-| **l_pop_print**            | Logical to print BO population and coherence     | *False*        |
+| **l_print_dm**            | Logical to print BO population and coherence     | *False*        |
 | *(boolean)*                |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
 | **l_adjnac**               | Adjust nonadiabatic coupling to align the phases | *True*         |
 | *(boolean)*                |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
-| **vel_rescale**            | Velocity rescaling method after successful hop   | *'augment'*    |
+| **hop_rescale**            | Velocity rescaling method after successful hop   | *'augment'*    |
 | *(string)*                 |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
 | **vel_reject**             | Velocity rescaling method after frustrated hop   | *'reverse'*    |
 | *(string)*                 |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
-| **coefficient**            | Initial BO coefficient                           | *None*         |
+| **init_coefficient**       | Initial BO coefficient                           | *None*         |
 | *(double/complex, list)*   |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
 | **deco_correction**        | Simple decoherence correction schemes            | *None*         |
@@ -151,14 +151,14 @@ Detailed description of the parameters
 
 \
 
-- **solver** *(string)* - Default: *'rk4'*
+- **propagator** *(string)* - Default: *'rk4'*
 
   This parameter determines the numerical integration method for the electronic equation of motion.
   Currently, only the RK4 algorithm (*'rk4'*) is available.
 
 \
 
-- **l_pop_print** *(boolean)* - Default: *False*
+- **l_print_dm** *(boolean)* - Default: *False*
   
   This parameter determines whether to write output files for the density matrix elements ('BOPOP', 'BOCOH') or not.
   If this option is set to *True*, then the 'BOPOP' and 'BOCOH' files are written during the dynamics.
@@ -172,7 +172,7 @@ Detailed description of the parameters
 
 \
 
-- **vel_rescale** *(string)* - Default: *'augment'*
+- **hop_rescale** *(string)* - Default: *'augment'*
 
   This parameter determines the direction of the momentum to be adjusted after a hop to conserve the total energy.
   If there is not enough kinetic energy in this direction, the hop is rejected and the running state is switched back to the original state.
@@ -193,7 +193,7 @@ Detailed description of the parameters
 
 \
 
-- **coefficient** *(double/complex, list)* - Default: *None*
+- **init_coefficient** *(double/complex, list)* - Default: *None*
 
   This parameter defines the initial BO coefficients.
   The elements can be either real or complex values.
