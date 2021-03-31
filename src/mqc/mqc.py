@@ -76,12 +76,12 @@ class MQC(object):
         # Initialize coefficients and densities
         self.mol.get_coefficient(init_coefficient, self.istate)
 
-    def run_init(self, qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart):
+    def run_init(self, qm, mm, output_dir, save_qm_log, save_mm_log, save_scr, restart):
         """ Initialize MQC dynamics
 
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
-            :param string input_dir: Location of input directory
+            :param string output_dir: Location of input directory
             :param boolean save_qm_log: Logical for saving QM calculation log
             :param boolean save_mm_log: Logical for saving MM calculation log
             :param boolean save_scr: Logical for saving scratch directory
@@ -102,8 +102,8 @@ class MQC(object):
             self.check_qmmm(qm, mm)
 
         # Set directory information
-        input_dir = os.path.expanduser(input_dir)
-        base_dir = os.path.join(os.getcwd(), input_dir)
+        output_dir = os.path.expanduser(output_dir)
+        base_dir = os.path.join(os.getcwd(), output_dir)
         unixmd_dir = os.path.join(base_dir, "md")
         qm_log_dir = os.path.join(base_dir, "qm_log")
         mm_log_dir = None

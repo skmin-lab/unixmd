@@ -80,7 +80,7 @@ and
 | **propagator**             | Electronic propagator                            | *'rk4'*        |
 | *(string)*                 |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
-| **l_print_dm**            | Logical to print BO population and coherence     | *False*        |
+| **l_print_dm**             | Logical to print BO population and coherence     | *False*        |
 | *(boolean)*                |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
 | **l_adjnac**               | Adjust nonadiabatic coupling to align the phases | *True*         |

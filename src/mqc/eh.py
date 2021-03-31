@@ -32,12 +32,12 @@ class Eh(MQC):
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
             propagation, propagator, l_print_dm, l_adjnac, init_coefficient, unit_dt, out_freq, verbosity)
 
-    def run(self, qm, mm=None, input_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
+    def run(self, qm, mm=None, output_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         """ Run MQC dynamics according to Ehrenfest dynamics
 
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
-            :param string input_dir: Location of input directory
+            :param string output_dir: Location of input directory
             :param boolean save_qm_log: Logical for saving QM calculation log
             :param boolean save_mm_log: Logical for saving MM calculation log
             :param boolean save_scr: Logical for saving scratch directory
@@ -45,7 +45,7 @@ class Eh(MQC):
         """
         # Initialize UNI-xMD
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
-             self.run_init(qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
+             self.run_init(qm, mm, output_dir, save_qm_log, save_mm_log, save_scr, restart)
         bo_list = [ist for ist in range(self.mol.nst)]
         qm.calc_coupling = True
         self.print_init(qm, mm, restart)

@@ -42,7 +42,7 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **propagator**             | Electronic propagator                                | *'rk4'*      |
 | *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **l_print_dm**            | Logical to print BO population and coherence         | *False*      |
+| **l_print_dm**             | Logical to print BO population and coherence         | *False*      |
 | *(boolean)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **l_adjnac**               | Adjust nonadiabatic coupling to align the phases     | *True*       |
@@ -57,13 +57,13 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **threshold**              | Electronic density threshold for decoherence term    | *0.01*       |
 | *(double)*                 | calculation                                          |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **sigma**                 | Width of nuclear wave packet of auxiliary trajectory | *None*       |
+| **sigma**                  | Width of nuclear wave packet of auxiliary trajectory | *None*       |
 | *(double/(double, list))*  |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **init_coefficient**       | Initial BO coefficient                               | *None*       |
 | *(double/complex, list)*   |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **l_econs_state**           | Logical to use state-wise total energies             | *False*      |
+| **l_econs_state**          | Logical to use state-wise total energies             | *False*      |
 | *(boolean)*                | for auxiliary trajectories                           |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **unit_dt**                | Unit of time interval                                | *'fs'*       |

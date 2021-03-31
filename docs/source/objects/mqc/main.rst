@@ -42,7 +42,7 @@ The parameters for the initialization are different for each MQC method. For the
 All classes specifying an MQC method have their own ``run`` method. The ``run`` method is used to perform the dynamics at the end of your running script.
 Parameters for the run method are listed below.
 
-Plus, The ``run`` method deals with restart options of dynamics calculations. PyUNIxMD saves the objects for MQC and QM in a binary formatted file ('RESTART.bin') under **input_dir** directory using the 'pickle' package at every time step.
+Plus, The ``run`` method deals with restart options of dynamics calculations. PyUNIxMD saves the objects for MQC and QM in a binary formatted file ('RESTART.bin') under **output_dir** directory using the 'pickle' package at every time step.
 The 'RESTART.bin' file is overwritten at every successful MD step, therefore the file contains the information of a trajectory at the last successful MD step.
 You can restart the dynamics simulation by reading the 'RESTART.bin' file using 'pickle' package.
 
@@ -55,7 +55,7 @@ You can restart the dynamics simulation by reading the 'RESTART.bin' file using 
 | **mm**                      | MM object containing MM calculation information | *None*   |
 | (:class:`MM_calculator`)    |                                                 |          |
 +-----------------------------+-------------------------------------------------+----------+
-| **input_dir**               | Name of directory where outputs to be saved     | *'./'*   |
+| **output_dir**              | Name of directory where outputs to be saved     | *'./'*   |
 | *(string)*                  |                                                 |          |
 +-----------------------------+-------------------------------------------------+----------+
 | **save_qm_log**             | Logical for saving QM calculation log           | *False*  |
@@ -79,7 +79,7 @@ You can restart the dynamics simulation by reading the 'RESTART.bin' file using 
 
    md = mqc.SH(molecule=mol, nsteps=1000, dt=0.125, istate=1, propagation="density")
 
-   md.run(qm=qm, input_dir="./TRAJ.sh", save_scr=True, save_qm_log=False)
+   md.run(qm=qm, output_dir="./TRAJ.sh", save_scr=True, save_qm_log=False)
 
 .. note:: Making molecule and QM objects are omitted in this sample code,
    but they must be declared to use a run method in advance.
@@ -109,29 +109,29 @@ You can restart the dynamics simulation by reading the 'RESTART.bin' file using 
 
    <h2>Detailed description of parameters</h2>
 
-- **input_dir** *(string)* - Default: *'./'*
+- **output_dir** *(string)* - Default: *'./'*
 
-  This parameter designates the directory for dynamics output. All subdirectories ('md', 'qm_log', and 'mm_log') for output files will be generated under **input_dir**.
+  This parameter designates the directory for dynamics output. All subdirectories ('md', 'qm_log', and 'mm_log') for output files will be generated under **output_dir**.
   If the subdirectories are already present, old subdirectories will be renamed with '_old' and new subdirectories will be made.
 
 \
 
 - **save_qm_log** *(boolean)* - Default: *False*
 
-  This parameter determines whether to save QM calculation logs. Logs will be saved in '**input_dir**/qm_log/'.
+  This parameter determines whether to save QM calculation logs. Logs will be saved in '**output_dir**/qm_log/'.
  
 \
 
 - **save_mm_log** *(boolean)* - Default: *False*
 
-  This parameter determines whether to save MM calculation logs. Logs will be saved in '**input_dir**/mm_log/'.
+  This parameter determines whether to save MM calculation logs. Logs will be saved in '**output_dir**/mm_log/'.
   If **MM** = *None*, this parameter will be ignored.
 
 \
 
 - **save_scr** *(boolean)* - Default: *True*
 
-  This parameter determines whether to save scratch output directory in '**input_dir**/md/scr_qm/' after QM calculation, and '**input_dir**/md/scr_mm/' after MM calculation.
+  This parameter determines whether to save scratch output directory in '**output_dir**/md/scr_qm/' after QM calculation, and '**output_dir**/md/scr_mm/' after MM calculation.
 
 \
 

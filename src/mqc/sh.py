@@ -74,12 +74,12 @@ class SH(MQC):
         # Initialize event to print
         self.event = {"HOP": []}
 
-    def run(self, qm, mm=None, input_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
+    def run(self, qm, mm=None, output_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         """ Run MQC dynamics according to surface hopping dynamics
 
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
-            :param string input_dir: Name of directory where outputs to be saved.
+            :param string output_dir: Name of directory where outputs to be saved.
             :param boolean save_qm_log: Logical for saving QM calculation log
             :param boolean save_mm_log: Logical for saving MM calculation log
             :param boolean save_scr: Logical for saving scratch directory
@@ -87,7 +87,7 @@ class SH(MQC):
         """
         # Initialize UNI-xMD
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
-             self.run_init(qm, mm, input_dir, save_qm_log, save_mm_log, save_scr, restart)
+             self.run_init(qm, mm, output_dir, save_qm_log, save_mm_log, save_scr, restart)
         bo_list = [self.rstate]
         qm.calc_coupling = True
         self.print_init(qm, mm, restart)
