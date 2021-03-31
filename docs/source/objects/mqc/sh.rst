@@ -37,12 +37,7 @@ The other is energy-based decoherence correction (EDC) :cite:`Granucci2010` whic
    \[
    C'^{(I)}_{k}(t)= 
    \left\{
-   \begin{array}{
-     @{}% no padding
-     l@{\quad}% some padding
-     r@{}% no padding
-     >{{}}r@{}% no padding
-     >{{}}l@{}% no padding
+   \begin{array}{lr
    }
      C^{(I)}_{k}(t)e^{-\Delta t/\tau_{k}(t)}   & \text{if}\ k\neq r \\
      C^{(I)}_{k}(t)\left[\dfrac{1-\sum_{j\neq r}|C'^{(I)}_{j}(t)|^2}{|C^{(I)}_{k}(t)|^2}\right]^{\frac{1}{2}}  & \text{if}\ k = r
