@@ -113,7 +113,7 @@ Detailed description of parameters
 
 - **xyz_file** *(string)* - Default: *'./tinker.xyz'*
 
-  This parameter specifies the path of a TINKER Cartesian coordinates file of the initial geometry.
+  This parameter specifies a TINKER Cartesian coordinates file of the initial geometry.
   This file must include correct atom types and bonding information.
 
 \
