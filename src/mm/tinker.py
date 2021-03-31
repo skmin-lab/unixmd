@@ -421,8 +421,8 @@ class Tinker(MM_calculator):
             os.system(command)
             command = f"{mm_command} tinker.xyz.1 -k tinker.key y n n > tinker.out.1"
             os.system(command)
-        # Copy the output file to 'MMlog' directory
-        tmp_dir = os.path.join(base_dir, "MMlog")
+        # Copy the output file to 'mm_log' directory
+        tmp_dir = os.path.join(base_dir, "mm_log")
         if (os.path.exists(tmp_dir)):
             if (self.scheme == "additive"):
                 log_step = f"tinker.out.2.{istep + 1}"

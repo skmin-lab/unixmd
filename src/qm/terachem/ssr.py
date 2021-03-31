@@ -232,8 +232,8 @@ class SSR(TeraChem):
         os.environ["OMP_NUM_THREADS"] = "1"
         command = f"{qm_command} input.tcin > log"
         os.system(command)
-        # Copy the output file to 'QMlog' directory
-        tmp_dir = os.path.join(base_dir, "QMlog")
+        # Copy the output file to 'qm_log' directory
+        tmp_dir = os.path.join(base_dir, "qm_log")
         if (os.path.exists(tmp_dir)):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
             shutil.copy("log", os.path.join(tmp_dir, log_step))
@@ -283,20 +283,20 @@ class SSR(TeraChem):
             # SHXF, SH, Eh : SSR state
             for ist in range(molecule.nst):
                 tmp_f = f'Eigen state {ist + 1} gradient\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
-                    '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
+                    '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
                 force = re.findall(tmp_f, log_out)
                 force = np.array(force[0])
                 force = force.astype(float)
-                force = force.reshape(molecule.nat, 3, order='C')
+                force = force.reshape(molecule.nat_qm, 3, order='C')
                 molecule.states[ist].force = - np.copy(force)
         else:
             # BOMD : SSR state, SA-REKS state or single-state REKS
             tmp_f = 'Gradient units are Hartree/Bohr\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
-	              '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
+	              '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
             force = re.findall(tmp_f, log_out)
             force = np.array(force[0])
             force = force.astype(float)
-            force = force.reshape(molecule.nat, 3, order='C')
+            force = force.reshape(molecule.nat_qm, 3, order='C')
             molecule.states[bo_list[0]].force = - np.copy(force)
 
         # NAC
@@ -305,19 +305,21 @@ class SSR(TeraChem):
             # 1.99 version do not show H vector
             if (self.version == "1.99"):
                 # Zeroing for G, h and H vectors
-                Gvec = np.zeros((molecule.nat, molecule.ndim))
-                hvec = np.zeros((molecule.nat, molecule.ndim))
+
+                Gvec = np.zeros((molecule.nat_qm, molecule.ndim))
+                hvec = np.zeros((molecule.nat_qm, molecule.ndim))
                 ssr_coef = np.zeros((molecule.nst, molecule.nst))
-                Hvec = np.zeros((molecule.nat, molecule.ndim))
+                Hvec = np.zeros((molecule.nat_qm, molecule.ndim))
+
                 # Calculate G vector, G vector is difference gradient so minus sign is needed
                 Gvec = - 0.5 * (molecule.states[0].force - molecule.states[1].force)
                 # Read h vector
                 tmp_c = 'Coupling gradient\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
-	                  '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
+	                  '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
                 hvec = re.findall(tmp_c, log_out)
                 hvec = np.array(hvec[0])
                 hvec = hvec.astype(float)
-                hvec = hvec.reshape(molecule.nat, 3, order='C')
+                hvec = hvec.reshape(molecule.nat_qm, 3, order='C')
                 # Read coefficients of SSR state
                 ssr_coef = re.findall('SSR state\s\d\s+[-]\S+\s+([-]*\S+)\s+([-]*\S+)', log_out)
                 ssr_coef = np.array(ssr_coef)
@@ -335,11 +337,11 @@ class SSR(TeraChem):
                 for ist in range(molecule.nst):
                     for jst in range(ist + 1, molecule.nst):
                         tmp_c = '>\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
-	                          '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
+	                          '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
                         nac = re.findall(tmp_c, log_out)
                         nac = np.array(nac[kst])
                         nac = nac.astype(float)
-                        nac = nac.reshape(molecule.nat, 3, order='C')
+                        nac = nac.reshape(molecule.nat_qm, 3, order='C')
                         molecule.nac[ist, jst] = nac
                         molecule.nac[jst, ist] = - nac
                         kst += 1

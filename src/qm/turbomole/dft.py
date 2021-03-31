@@ -203,8 +203,8 @@ class DFT(Turbomole):
             command = f"{egrad_command} >& egrad.out"
             os.system(command)
 
-        # Copy the output file to 'QMlog' directory
-        tmp_dir = os.path.join(base_dir, "QMlog")
+        # Copy the output file to 'qm_log' directory
+        tmp_dir = os.path.join(base_dir, "qm_log")
         if (os.path.exists(tmp_dir)):
             shutil.copy("dscf.out", os.path.join(tmp_dir, f"dscf.out.{istep + 1}"))
             if (bo_list[0] == 0):
@@ -238,7 +238,7 @@ class DFT(Turbomole):
         grad = re.findall(find_grad, bo_out)
         grad = np.array(grad)
         grad = grad.astype(float)
-        grad = grad.reshape(molecule.nat, 3, order='C')
+        grad = grad.reshape(molecule.nat_qm, 3, order='C')
         molecule.states[bo_list[0]].force = - np.copy(grad)
 
         # Energy of other states (except running state)
