@@ -187,12 +187,7 @@ class CT(MQC):
             for jst in range(self.nst):
                 ctforce += 0.5 * self.K_lk[itrajectory, ist, jst] * \
                     (self.phase[itrajectory, jst] - self.phase[itrajectory, ist]) * \
-                    self.mol.rho.real[ist, ist]  * self.mol.rho.real[jst, jst] * \
-                    (self.mol.rho.real[ist, ist] + self.mol.rho.real[jst, jst])
-                
-                #ctforce += 0.5 * self.K_lk[itrajectory, ist, jst] * \
-                #    (self.phase[itrajectory, jst] - self.phase[itrajectory, ist]) * \
-                #    self.mol.rho.real[ist, ist]  * self.mol.rho.real[jst, jst]
+                    self.mol.rho.real[ist, ist]  * self.mol.rho.real[jst, jst]
 
         # Finally, force is Ehrenfest force + CT force
         self.rforce += ctforce
@@ -325,11 +320,8 @@ class CT(MQC):
                     index_lk += 1
                     for iat in range(self.nat):
                         for isp in range(self.nsp):
-                            deno_lk[index_lk, iat, isp] += rho_i[itraj, ist] * rho_i[itraj, jst] * (rho_i[itraj, ist] + rho_i[itraj, jst]) * \
+                            deno_lk[index_lk, iat, isp] += rho[itraj, ist] * rho[itraj, jst] * \
                                 (self.phase[itraj, ist, iat, isp] - self.phase[itraj, jst, iat, isp]) * slope_i[itraj, iat, isp]
-                            
-                            #deno_lk[index_lk, iat, isp] += rho[itraj, ist] * rho[itraj, jst] * \
-                            #    (self.phase[itraj, ist, iat, isp] - self.phase[itraj, jst, iat, isp]) * slope_i[itraj, iat, isp]
 
         # (3-2) Compute numerator
         ratio_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.nsp)) # numerator / denominator
@@ -341,13 +333,8 @@ class CT(MQC):
                     index_lk += 1
                     for iat in range(self.nat):
                         for isp in range(self.nsp):
-                            # state-pair
-                            numer_lk[itraj, index_lk, iat, isp] = rho_i[itraj, ist] * rho_i[itraj, jst] * (rho_i[itraj, ist] + rho_i[itraj, jst]) * \
-                                self.mols[itraj].pos[iat, isp] * (self.phase[itraj, ist, iat, isp] - self.phase[itraj, jst, iat, isp]) * \
-                                slope_i[itraj, iat, isp]
-
-                            #numer_lk[itraj, index_lk, iat, isp] = rho[itraj, ist] * rho[itraj, jst] * self.mols[itraj].pos[iat, isp] * \
-                            #    (self.phase[itraj, ist, iat, isp] - self.phase[itraj, jst, iat, isp]) * slope_i[itraj, iat, isp]
+                            numer_lk[itraj, index_lk, iat, isp] = rho[itraj, ist] * rho[itraj, jst] * self.mols[itraj].pos[iat, isp] * \
+                                (self.phase[itraj, ist, iat, isp] - self.phase[itraj, jst, iat, isp]) * slope_i[itraj, iat, isp]
                             if (abs(deno_lk[index_lk, iat, isp]) <= 1.0E-08):
                                 ratio_lk[itraj, index_lk, iat, isp] = 0.
                             else:
