@@ -38,7 +38,7 @@ class Rescale1(Thermostat):
         if (not (self.istep + 1) % self.nrescale == 0):
             return
 
-        ctemp = md.mol.ekin * 2 / float(md.mol.dof) * au_to_K
+        ctemp = md.mol.ekin * 2 / float(md.mol.ndof) * au_to_K
         if (ctemp < eps):
             raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Too small current temperature! {ctemp}")
 
@@ -80,7 +80,7 @@ class Rescale2(Thermostat):
 
             :param object md: MQC object, the MD theory
         """
-        ctemp = md.mol.ekin * 2 / float(md.mol.dof) * au_to_K
+        ctemp = md.mol.ekin * 2 / float(md.mol.ndof) * au_to_K
         if (ctemp < eps):
             raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Too small current temperature! {ctemp}")
 
@@ -134,7 +134,7 @@ class Berendsen(Thermostat):
         if (self.coup_prm != None):
             self.coup_str = md.dt / (self.coup_prm * fs_to_au)
 
-        ctemp = md.mol.ekin * 2 / float(md.mol.dof) * au_to_K
+        ctemp = md.mol.ekin * 2 / float(md.mol.ndof) * au_to_K
         alpha = np.sqrt(1. + self.coup_str * (self.temp / ctemp - 1.))
 
         md.mol.vel *= alpha
@@ -246,7 +246,7 @@ class NHC(Thermostat):
             coup_prm = 1 / (self.time_scale * fs_to_au)
 
         # mass of extended variables 1: q_1 = d.o.f*k*T/w_p**2
-        self.q[0] = md.mol.dof * ttemp / coup_prm ** 2
+        self.q[0] = md.mol.ndof * ttemp / coup_prm ** 2
         
         # mass of extended variables i: q_i = k*T/w_p**2, i>1
         for ipart in range(1, self.chain_length):
@@ -256,7 +256,7 @@ class NHC(Thermostat):
         akin = 2 * md.mol.ekin
 
         # update the forces
-        self.g[0] = (akin - md.mol.dof * ttemp) / self.q[0]
+        self.g[0] = (akin - md.mol.ndof * ttemp) / self.q[0]
 
         # start the multiple time step procedure
         aa = 0.
@@ -274,7 +274,7 @@ class NHC(Thermostat):
                 alpha *= aa
 
                 # update the thermostat forces 
-                self.g[0] = (alpha ** 2 * akin - ttemp * md.mol.dof) / self.q[0]
+                self.g[0] = (alpha ** 2 * akin - ttemp * md.mol.ndof) / self.q[0]
 
                 # update thermostat positions
                 for ipart in range(self.chain_length):

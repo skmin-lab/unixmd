@@ -5,7 +5,7 @@ import os, shutil, re, textwrap
 import numpy as np
 
 class SSR(TeraChem):
-    """ Class for SSR method of TeraChem program
+    """ Class for SSR method of TeraChem
 
         :param object molecule: Molecule object
         :param string basis_set: Basis set information
@@ -25,7 +25,7 @@ class SSR(TeraChem):
         :param string qm_path: Path for QM binary
         :param integer ngpus: Number of GPUs
         :param string gpu_id: ID of used GPUs
-        :param string version: Version of TeraChem program
+        :param string version: Version of TeraChem
     """
     def __init__(self, molecule, ngpus=1, gpu_id="1", precision="dynamic", \
         version="1.93", functional="hf", basis_set="sto-3g", scf_rho_tol=1E-2, \
@@ -305,10 +305,12 @@ class SSR(TeraChem):
             # 1.99 version do not show H vector
             if (self.version == "1.99"):
                 # Zeroing for G, h and H vectors
-                Gvec = np.zeros((molecule.nat_qm, molecule.nsp))
-                hvec = np.zeros((molecule.nat_qm, molecule.nsp))
+
+                Gvec = np.zeros((molecule.nat_qm, molecule.ndim))
+                hvec = np.zeros((molecule.nat_qm, molecule.ndim))
                 ssr_coef = np.zeros((molecule.nst, molecule.nst))
-                Hvec = np.zeros((molecule.nat_qm, molecule.nsp))
+                Hvec = np.zeros((molecule.nat_qm, molecule.ndim))
+
                 # Calculate G vector, G vector is difference gradient so minus sign is needed
                 Gvec = - 0.5 * (molecule.states[0].force - molecule.states[1].force)
                 # Read h vector

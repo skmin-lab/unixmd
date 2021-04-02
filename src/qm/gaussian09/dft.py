@@ -6,7 +6,7 @@ import os, shutil, re, textwrap, subprocess
 import numpy as np
 
 class DFT(Gaussian09):
-    """ Class for the (TD)DFT method of Gaussian09 program
+    """ Class for the (TD)DFT method of Gaussian 09
 
         :param object molecule: Molecule object
         :param string functional: Exchange-correlation functional information
@@ -16,7 +16,7 @@ class DFT(Gaussian09):
         :param string guess_file: Initial guess file
         :param string g09_root_path: Path for Gaussian 09 root
         :param integer nthreads: Number of threads in the calculations
-        :param string version: Version of Gaussian 09 program
+        :param string version: Version of Gaussian 09
     """
     def __init__(self, molecule, nthreads=1, memory="1gb", \
         functional="BLYP", basis_set="STO-3G", \
@@ -322,7 +322,7 @@ class DFT(Gaussian09):
         self.nvirt = int(self.nvirt[0])
         self.norb = self.nocc + self.nvirt
 
-        self.pos_old = np.zeros((molecule.nat_qm, molecule.nsp))
+        self.pos_old = np.zeros((molecule.nat_qm, molecule.ndim))
         self.ao_overlap = np.zeros((self.nbasis, self.nbasis))
         self.mo_coef_old = np.zeros((self.norb, self.nbasis))
         self.mo_coef_new = np.zeros((self.norb, self.nbasis))

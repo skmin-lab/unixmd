@@ -6,14 +6,14 @@ import numpy as np
 class State(object):
     """ Class for BO states
 
-        :param integer nsp: Dimension of space
+        :param integer ndim: Dimension of space
         :param integer nat: Number of atoms
     """
-    def __init__(self, nsp, nat):
+    def __init__(self, ndim, nat):
         # Initialize variables
         self.energy = 0.
         self.energy_old = 0.
-        self.force = np.zeros((nat, nsp))
+        self.force = np.zeros((nat, ndim))
         self.coef = 0. + 0.j
         self.multiplicity = 1
 
@@ -21,24 +21,24 @@ class State(object):
 class Molecule(object):
     """ Class for a molecule object including State objects
 
-        :param string geometry: A string containing atomic position and velocity
-        :param integer nsp: Dimension of space
+        :param string geometry: A string containing atomic positions and velocities
+        :param integer ndim: Dimension of space
         :param integer nstates: Number of BO states
-        :param boolean qmmm: Use QMMM scheme for the calculation of large systems
-        :param integer natoms_mm: Number of atoms in MM region
-        :param integer dof: Degrees of freedom (if model is False, the molecular DoF is given.)
-        :param string unit_pos: Unit of atomic position
-        :param string unit_vel: Unit of atomic velocity
+        :param boolean qmmm: Use the QM/MM scheme
+        :param integer natoms_mm: Number of atoms in the MM region
+        :param integer ndof: Degrees of freedom (if model is False, the molecular DoF is given.)
+        :param string unit_pos: Unit of atomic positions
+        :param string unit_vel: Unit of atomic velocities
         :param double charge: Total charge of the system
         :param boolean model: Is the system a model system?
     """
-    def __init__(self, geometry, nsp=3, nstates=3, qmmm=False, natoms_mm=None, dof=None, \
-        unit_pos='A', unit_vel='au', charge=0., model=False):
+    def __init__(self, geometry, ndim=3, nstates=3, qmmm=False, natoms_mm=None, ndof=None, \
+        unit_pos='angs', unit_vel='au', charge=0., model=False):
         # Save name of Molecule class
         self.mol_type = self.__class__.__name__
 
         # Initialize input values
-        self.nsp = nsp
+        self.ndim = ndim
         self.nst = nstates
         self.model = model
 
@@ -71,27 +71,27 @@ class Molecule(object):
 
         # Initialize degrees of freedom
         if (self.model):
-            if (dof == None):
-                self.dof = self.nat * self.nsp
+            if (ndof == None):
+                self.ndof = self.nat * self.ndim
             else:
-                self.dof = dof
+                self.ndof = ndof
         else:
-            if (dof == None):
+            if (ndof == None):
                 if (self.nat == 1):
                     raise ValueError (f"( {self.mol_type}.{call_name()} ) Too small number of atoms! {self.nat}")
                 elif (self.nat == 2):
                     # Diatomic molecules
-                    self.dof = 1
+                    self.ndof = 1
                 else:
                     # Non-linear molecules
-                    self.dof = self.nsp * self.nat - self.nsp * (self.nsp + 1) / 2
+                    self.ndof = self.ndim * self.nat - self.ndim * (self.ndim + 1) / 2
             else:
-                self.dof = dof
+                self.ndof = ndof
 
         # Initialize BO states
         self.states = []
         for ist in range(self.nst):
-            self.states.append(State(self.nsp, self.nat))
+            self.states.append(State(self.ndim, self.nat))
 
         # Initialize couplings
         self.nacme = np.zeros((self.nst, self.nst))
@@ -100,8 +100,8 @@ class Molecule(object):
         self.socme_old = np.zeros((self.nst, self.nst), dtype=np.complex_)
 
         # Initialize other properties
-        self.nac = np.zeros((self.nst, self.nst, self.nat_qm, self.nsp))
-        self.nac_old = np.zeros((self.nst, self.nst, self.nat_qm, self.nsp))
+        self.nac = np.zeros((self.nst, self.nst, self.nat_qm, self.ndim))
+        self.nac_old = np.zeros((self.nst, self.nst, self.nat_qm, self.ndim))
         self.rho = np.zeros((self.nst, self.nst), dtype=np.complex_)
 
         self.ekin = 0.
@@ -152,11 +152,11 @@ class Molecule(object):
                 # Read the positions and velocities
                 if (len(line.split()) == 0):
                     break
-                assert (len(line.split()) == (1 + 2 * self.nsp))
+                assert (len(line.split()) == (1 + 2 * self.ndim))
                 self.symbols.append(line.split()[0])
                 self.mass.append(data[line.split()[0]])
-                self.pos.append(list(map(float, line.split()[1:(self.nsp + 1)])))
-                self.vel.append(list(map(float, line.split()[(self.nsp + 1):])))
+                self.pos.append(list(map(float, line.split()[1:(self.ndim + 1)])))
+                self.vel.append(list(map(float, line.split()[(self.ndim + 1):])))
                 count_line += 1
         assert (self.nat == count_line - 2)
 
@@ -166,7 +166,7 @@ class Molecule(object):
         # Conversion unit
         if (unit_pos == 'au'):
             fac_pos = 1.
-        elif (unit_pos == 'A'):
+        elif (unit_pos == 'angs'):
             fac_pos = A_to_au
         else:
             raise ValueError (f"( {self.mol_type}.{call_name()} ) Invalid unit for position! {unit_pos}")
@@ -236,13 +236,13 @@ class Molecule(object):
         """
         for states in self.states:
             states.energy = 0.
-            states.force = np.zeros((self.nat, self.nsp))
+            states.force = np.zeros((self.nat, self.ndim))
 
         if (calc_coupling):
             if (self.l_nacme):
                 self.nacme = np.zeros((self.nst, self.nst))
             else:
-                self.nac = np.zeros((self.nst, self.nst, self.nat_qm, self.nsp))
+                self.nac = np.zeros((self.nst, self.nst, self.nat_qm, self.ndim))
 
     def backup_bo(self):
         """ Backup BO energies and nonadiabatic couplings
@@ -302,7 +302,7 @@ class Molecule(object):
 
         for nth, atoms in enumerate(self.symbols):
             geom_info += f"  {atoms:3s}"
-            for isp in range(self.nsp):
+            for isp in range(self.ndim):
                 geom_info += f"{self.pos[nth, isp]:15.8f}"
             geom_info += f"{self.mass[nth]:15.5f}\n"
         print (geom_info, flush=True)
@@ -316,7 +316,7 @@ class Molecule(object):
 
         for nth, atoms in enumerate(self.symbols):
             vel_info += f"  {atoms:3s}"
-            for isp in range(self.nsp):
+            for isp in range(self.ndim):
                 vel_info += f"{self.vel[nth, isp]:15.8f}"
             vel_info += f"\n"
         print (vel_info, flush=True)
@@ -331,7 +331,7 @@ class Molecule(object):
         if (self.qmmm and mm != None):
             molecule_info += f"  Number of Atoms (MM)     = {self.nat_mm:>16d}\n"
         molecule_info += textwrap.indent(textwrap.dedent(f"""\
-          Degrees of Freedom       = {int(self.dof):>16d}
+          Degrees of Freedom       = {int(self.ndof):>16d}
           Charge                   = {int(self.charge):>16d}
           Number of Electrons      = {int(self.nelec):>16d}
           Number of States         = {self.nst:>16d}

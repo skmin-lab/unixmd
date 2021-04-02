@@ -6,7 +6,7 @@ import os, shutil, re, textwrap
 import numpy as np
 
 class SSR(DFTBplus):
-    """ Class for SSR method of DFTB+ program
+    """ Class for SSR method of DFTB+
 
         :param object molecule: Molecule object
         :param boolean scc: Include self-consistent charge (SCC) scheme
@@ -28,10 +28,10 @@ class SSR(DFTBplus):
         :param string embedding: Charge-charge embedding options
         :param boolean periodic: Use periodicity in the calculations
         :param double,list cell_length: The lattice vectors of periodic unit cell
-        :param string sk_path: Path for slater-koster files
+        :param string sk_path: Path for Slater-Koster files
         :param string install_path: Path for DFTB+ install directory
         :param integer nthreads: Number of threads in the calculations
-        :param string version: Version of DFTB+ program
+        :param string version: Version of DFTB+
     """
     def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=1000, ocdftb=False, \
         lcdftb=False, lc_method="MatrixBased", ssr22=False, ssr44=False, guess="h0", \

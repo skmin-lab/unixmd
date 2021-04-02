@@ -1,3 +1,4 @@
+.. _Model Systems: 
 
 Model Systems
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -22,7 +23,7 @@ Simple avoided crossing (SAC) model
 """""""""""""""""""""""""""""""""""""""""""""""""""""
 
 +------------------------+----------------------------------------------------+----------+
-| Keywords               | Work                                               | Default  |
+| Parameters             | Work                                               | Default  |
 +========================+====================================================+==========+
 | **molecule**           | Molecule object                                    |          |
 | (:class:`Molecule`)    |                                                    |          |
@@ -45,7 +46,7 @@ Dual avoided crossing (DAC) model
 """""""""""""""""""""""""""""""""""""""""""""""""""""
 
 +------------------------+----------------------------------------------------+----------+
-| Keywords               | Work                                               | Default  |
+| Parameters             | Work                                               | Default  |
 +========================+====================================================+==========+
 | **molecule**           | Molecule object                                    |          |
 | (:class:`Molecule`)    |                                                    |          |
@@ -71,7 +72,7 @@ Extended coupling region with reflection (ECR) model
 """""""""""""""""""""""""""""""""""""""""""""""""""""
 
 +------------------------+----------------------------------------------------+----------+
-| Keywords               | Work                                               | Default  |
+| Parameters             | Work                                               | Default  |
 +========================+====================================================+==========+
 | **molecule**           | Molecule object                                    |          |
 | (:class:`Molecule`)    |                                                    |          |
@@ -91,7 +92,7 @@ Double arch geometry (DAG) model
 """""""""""""""""""""""""""""""""""""""""""""""""""""
 
 +------------------------+----------------------------------------------------+----------+
-| Keywords               | Work                                               | Default  |
+| Parameters             | Work                                               | Default  |
 +========================+====================================================+==========+
 | **molecule**           | Molecule object                                    |          |
 | (:class:`Molecule`)    |                                                    |          |
@@ -113,7 +114,7 @@ Double arch geometry (DAG) model
 Shin-Metiu model
 """""""""""""""""""""""""""""""""""""""""""""""""""""
 
-1D charge transfer model system proposed by Shin and Metiu :cite:`Shin1995` is implemented.
+The 1D charge transfer model system proposed by Shin and Metiu :cite:`Shin1995` is implemented.
 
 .. math::
 
@@ -126,7 +127,7 @@ Shin-Metiu model
 The unit of parameters is atomic unit.
 
 +------------------------+----------------------------------------------------+----------+
-| Keywords               | Work                                               | Default  |
+| Parameters             | Work                                               | Default  |
 +========================+====================================================+==========+
 | **molecule**           | Molecule object                                    |          |
 | (:class:`Molecule`)    |                                                    |          |

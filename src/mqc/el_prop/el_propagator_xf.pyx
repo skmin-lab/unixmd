@@ -5,8 +5,8 @@ import numpy as np
 cimport numpy as np
 
 cdef extern from "rk4_xf.c":
-    void rk4(int nat, int nsp, int nst, int nesteps, double dt, char *propagation, \
-        bint *l_coh, double *mass, double *energy, double *energy_old, double *wsigma, \
+    void rk4(int nat, int ndim, int nst, int nesteps, double dt, char *propagation, \
+        bint *l_coh, double *mass, double *energy, double *energy_old, double *sigma, \
         double **nacme, double **nacme_old, double **pos, double **qmom, double ***aux_pos, \
         double ***phase, double complex *coef, double complex **rho, int verbosity, \
         double *dotpopd)
@@ -18,7 +18,7 @@ def el_run(md):
         double *mass
         double *energy
         double *energy_old
-        double *wsigma
+        double *sigma
         double **nacme
         double **nacme_old
         double **pos
@@ -30,20 +30,20 @@ def el_run(md):
         double *dotpopd
 
         bytes py_bytes
-        int ist, jst, nst, nesteps, iat, aux_nat, aux_nsp, verbosity
+        int ist, jst, nst, nesteps, iat, aux_nat, aux_ndim, verbosity
         double dt
 
     # Assign size variables
     nst = md.mol.nst
     nesteps, dt = md.nesteps, md.dt
-    aux_nat, aux_nsp = md.aux.nat, md.aux.nsp
+    aux_nat, aux_ndim = md.aux.nat, md.aux.ndim
 
     # Allocate variables
     l_coh = <bint*> PyMem_Malloc(nst * sizeof(bint))
     mass = <double*> PyMem_Malloc(aux_nat * sizeof(double))
     energy = <double*> PyMem_Malloc(nst * sizeof(double))
     energy_old = <double*> PyMem_Malloc(nst * sizeof(double))
-    wsigma = <double*> PyMem_Malloc(aux_nat * sizeof(double))
+    sigma = <double*> PyMem_Malloc(aux_nat * sizeof(double))
 
     nacme = <double**> PyMem_Malloc(nst * sizeof(double*))
     nacme_old = <double**> PyMem_Malloc(nst * sizeof(double*))
@@ -58,15 +58,15 @@ def el_run(md):
         nacme_old[ist] = <double*> PyMem_Malloc(nst * sizeof(double))
 
     for iat in range(aux_nat):
-        pos[iat] = <double*> PyMem_Malloc(aux_nsp * sizeof(double))
-        qmom[iat] = <double*> PyMem_Malloc(aux_nsp * sizeof(double))
+        pos[iat] = <double*> PyMem_Malloc(aux_ndim * sizeof(double))
+        qmom[iat] = <double*> PyMem_Malloc(aux_ndim * sizeof(double))
 
     for ist in range(nst):
         aux_pos[ist] = <double**> PyMem_Malloc(aux_nat * sizeof(double*))
         phase[ist] = <double**> PyMem_Malloc(aux_nat * sizeof(double*))
         for iat in range(aux_nat):
-            aux_pos[ist][iat] = <double*> PyMem_Malloc(aux_nsp * sizeof(double))
-            phase[ist][iat] = <double*> PyMem_Malloc(aux_nsp * sizeof(double))
+            aux_pos[ist][iat] = <double*> PyMem_Malloc(aux_ndim * sizeof(double))
+            phase[ist][iat] = <double*> PyMem_Malloc(aux_ndim * sizeof(double))
     
     # Debug related
     verbosity = md.verbosity
@@ -79,7 +79,7 @@ def el_run(md):
 
     for iat in range(aux_nat):
         mass[iat] = md.aux.mass[iat]
-        wsigma[iat] = md.wsigma[iat]
+        sigma[iat] = md.sigma[iat]
 
     for ist in range(nst):
         for jst in range(nst):
@@ -87,13 +87,13 @@ def el_run(md):
             nacme_old[ist][jst] = md.mol.nacme_old[ist, jst]
 
     for iat in range(aux_nat):
-        for isp in range(aux_nsp):
+        for isp in range(aux_ndim):
             pos[iat][isp] = md.pos_0[iat, isp]
 
     for ist in range(nst):
         l_coh[ist] = md.l_coh[ist]
         for iat in range(aux_nat):
-            for isp in range(aux_nsp):
+            for isp in range(aux_ndim):
                 aux_pos[ist][iat][isp] = md.aux.pos[ist, iat, isp]
                 phase[ist][iat][isp] = md.phase[ist, iat, isp]
 
@@ -118,10 +118,10 @@ def el_run(md):
     py_bytes = md.propagation.encode()
     propagation_c = py_bytes
 
-    # Propagate electrons depending on the solver
-    if (md.solver == "rk4"):
-        rk4(aux_nat, aux_nsp, nst, nesteps, dt, propagation_c, l_coh, mass, energy, \
-            energy_old, wsigma, nacme, nacme_old, pos, qmom, aux_pos, phase, coef, rho, verbosity, dotpopd)
+    # Propagate electrons depending on the propagator
+    if (md.propagator == "rk4"):
+        rk4(aux_nat, aux_ndim, nst, nesteps, dt, propagation_c, l_coh, mass, energy, \
+            energy_old, sigma, nacme, nacme_old, pos, qmom, aux_pos, phase, coef, rho, verbosity, dotpopd)
 
     # Assign variables from C to python
     if (md.propagation == "coefficient"):
@@ -151,7 +151,7 @@ def el_run(md):
 
     if (verbosity >= 2):
         for iat in range(aux_nat):
-            for isp in range(aux_nsp):
+            for isp in range(aux_ndim):
                 md.qmom[iat, isp] = qmom[iat][isp]
 
     # Deallocate variables
@@ -176,7 +176,7 @@ def el_run(md):
     PyMem_Free(mass)
     PyMem_Free(energy)
     PyMem_Free(energy_old)
-    PyMem_Free(wsigma)
+    PyMem_Free(sigma)
 
     PyMem_Free(nacme)
     PyMem_Free(nacme_old)

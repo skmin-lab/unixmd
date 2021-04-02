@@ -5,7 +5,7 @@ import os, shutil, re, textwrap
 import numpy as np
 
 class Tinker(MM_calculator):
-    """ Class for Tinker program
+    """ Class for Tinker
 
         :param object molecule: Molecule object
         :param string scheme: Type of QM/MM scheme
@@ -17,7 +17,7 @@ class Tinker(MM_calculator):
         :param string key_file: Initial tinker.key file
         :param string mm_path: Path for MM binary
         :param integer nthreads: Number of threads in the calculations
-        :param string version: Version of Tinker program
+        :param string version: Version of Tinker
     """
     def __init__(self, molecule, scheme=None, embedding=None, vdw=None, periodic=False, \
         cell_par=[0., 0., 0., 0., 0., 0.], xyz_file="./tinker.xyz", key_file="./tinker.key",
@@ -486,7 +486,7 @@ class Tinker(MM_calculator):
                 molecule.states[ist].energy += mm_energy * kcalmol_to_au
 
         # Force; initialize the force at MM level
-        mm_force = np.zeros((molecule.nat, molecule.nsp))
+        mm_force = np.zeros((molecule.nat, molecule.ndim))
 
         if (self.scheme == "additive"):
 

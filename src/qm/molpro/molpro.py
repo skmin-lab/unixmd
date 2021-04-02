@@ -3,13 +3,13 @@ from qm.qm_calculator import QM_calculator
 from misc import call_name
 
 class Molpro(QM_calculator):
-    """ Class for common parts of Molpro program
+    """ Class for common parts of Molpro
 
         :param string basis_set: Basis set information
         :param string memory: Allocatable memory in the calculations
         :param string qm_path: Path for QM binary
         :param integer nthreads: Number of threads in the calculations
-        :param string version: Version of Molpro program
+        :param string version: Version of Molpro
     """
     def __init__(self, basis_set, memory, qm_path, nthreads, version):
         # Save name of QM calculator and its method

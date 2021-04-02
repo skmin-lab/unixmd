@@ -1,15 +1,11 @@
+.. _Objects MQC:
+
 MQC
 -------------------------------------------
 
-Mixed quantum-classical (MQC) dynamics is general method for explaining the variation of molecule including
-electronic state through time propagation. This can be exactly solved by time-dependent Schrodinger equation
-for all particles, but this solution requires enormous cost for numerical calculation so it is restricted for
-very small system. To overcome this limit, MQC tried to describe larger system by considering nuclei as classical 
-particles which follow classical equation of motion.
+Mixed quantum-classical (MQC) dynamics is one of theoretical tools to simulate nonadiabatic processes in molecular or extended systems. This method is characterized by propagating the electrons through quantum mechanics but nuclear dynamics through classical trajectories, to overcome the computational cost of calculating the correlated systems.
 
-PyUNIxMD mainly targeted on MQC, and whole dynamics implemented in current version of PyUNIxMD are subclass of
-MQC class. In the MQC class, there are functions to update classical properties of nuclei.
-MQC methods implemented in PyUNIxMD are listed in the following.
+PyUNIxMD provides a variety of MQC methods:
 
 .. toctree::
     :glob:
@@ -17,20 +13,41 @@ MQC methods implemented in PyUNIxMD are listed in the following.
 
     *
 
-Far more insights about treating MQC in terms of code structure, the overall modules are controlled in fundamental
-input file 'run.py'. When users select their dynamics method, they have to make md object from the subclass of
-:class:`MQC` class such as :class:`SH` (:class:`mqc.SH`), and a run method (``md.run``) to run that md object. In the md object, basic dynamics
-parameters such as number of steps are given as arguments. Besides, the run method includes overall dynamics condition as arguments.
+In your running script, you need to specify the MQC method you want to use by making an object of it.
+In PyUNIxMD, MQC methods are provided in the form of Python classes under :class:`MQC` class.
+The class names are tabulated below.
 
-PyUNIxMD saves the objects for MQC and QM in a binary formatted file ('RESTART.bin') under **input_dir** directory using the 'pickle' package at every time step.
++----------------+----------------+
+| MQC methods    | Class names    |
++================+================+
+| BOMD           | BOMD           |
++----------------+----------------+
+| Ehrenfest      | Eh             |
++----------------+----------------+
+| FSSH           | SH             |
++----------------+----------------+
+| DISH-XF        | SHXF           |
++----------------+----------------+
+
+For example, an MD object of the FSSH method can be created as follows.
+
+.. code-block:: python
+
+   import mqc
+ 
+   md = mqc.SH(...)
+
+The parameters for the initialization are different for each MQC method. For the detailed list of these parameters, see the subsections.
+
+All classes specifying an MQC method have their own ``run`` method. The ``run`` method is used to perform the dynamics at the end of your running script.
+Parameters for the run method are listed below.
+
+Plus, The ``run`` method deals with restart options of dynamics calculations. PyUNIxMD saves the objects for MQC and QM in a binary formatted file ('RESTART.bin') under **output_dir** directory using the 'pickle' package at every time step.
 The 'RESTART.bin' file is overwritten at every successful MD step, therefore the file contains the information of a trajectory at the last successful MD step.
 You can restart the dynamics simulation by reading the 'RESTART.bin' file using 'pickle' package.
 
-Arguments for run method are listed below. The important point is that run method is included in each
-md subclass of :class:`MQC`, not :class:`MQC` itself.
-
 +-----------------------------+-------------------------------------------------+----------+
-| Keywords                    | Work                                            | Default  |
+| Parameters                  | Work                                            | Default  |
 +=============================+=================================================+==========+
 | **qm**                      | QM object containing on-the-fly                 |          |
 | (:class:`QM_calculator`)    | calculation information                         |          |
@@ -38,7 +55,7 @@ md subclass of :class:`MQC`, not :class:`MQC` itself.
 | **mm**                      | MM object containing MM calculation information | *None*   |
 | (:class:`MM_calculator`)    |                                                 |          |
 +-----------------------------+-------------------------------------------------+----------+
-| **input_dir**               | Name of directory where outputs to be saved     | *'./'*   |
+| **output_dir**              | Name of directory where outputs to be saved     | *'./'*   |
 | *(string)*                  |                                                 |          |
 +-----------------------------+-------------------------------------------------+----------+
 | **save_qm_log**             | Logical for saving QM calculation log           | *False*  |
@@ -54,9 +71,7 @@ md subclass of :class:`MQC`, not :class:`MQC` itself.
 | *(string)*                  |                                                 |          |
 +-----------------------------+-------------------------------------------------+----------+
 
-Further information of individual MD objects is listed in each section.
-
-**Ex.** Making an MD object with FSSH method.
+**Ex.** Running FSSH dynamics with an MD object of the FSSH method.
 
 .. code-block:: python
 
@@ -64,10 +79,10 @@ Further information of individual MD objects is listed in each section.
 
    md = mqc.SH(molecule=mol, nsteps=1000, dt=0.125, istate=1, propagation="density")
 
-   md.run(qm=qm, input_dir="./TRAJ.sh", save_scr=True, save_qm_log=False)
+   md.run(qm=qm, output_dir="./TRAJ.sh", save_scr=True, save_qm_log=False)
 
 .. note:: Making molecule and QM objects are omitted in this sample code,
-   but they must be declared to use run method in advance.
+   but they must be declared to use a run method in advance.
 
 **Ex.** Restarting a dynamics simulation.
 
@@ -92,37 +107,37 @@ Further information of individual MD objects is listed in each section.
 
 .. raw:: html
 
-   <h2>Detailed description of arguments</h2>
+   <h2>Detailed description of parameters</h2>
 
-- **input_dir** *(string)* - Default: *'./'*
+- **output_dir** *(string)* - Default: *'./'*
 
-  This argument designates directory for dynamics output. All subdirectories ('md', 'qm_log', and 'mm_log') for output files will be generated under **input_dir**.
+  This parameter designates the directory for dynamics output. All subdirectories ('md', 'qm_log', and 'mm_log') for output files will be generated under **output_dir**.
   If the subdirectories are already present, old subdirectories will be renamed with '_old' and new subdirectories will be made.
 
 \
 
 - **save_qm_log** *(boolean)* - Default: *False*
 
-  This argument determines saving QM calculation logs. Logs will be saved in '**input_dir**/qm_log/'.
+  This parameter determines whether to save QM calculation logs. Logs will be saved in '**output_dir**/qm_log/'.
  
 \
 
 - **save_mm_log** *(boolean)* - Default: *False*
 
-  This argument determines saving MM calculation logs. Logs will be saved in '**input_dir**/mm_log/'.
-  If **MM** = *None*, this argument will be ignored.
+  This parameter determines whether to save MM calculation logs. Logs will be saved in '**output_dir**/mm_log/'.
+  If **MM** = *None*, this parameter will be ignored.
 
 \
 
 - **save_scr** *(boolean)* - Default: *True*
 
-  This argument determines saving scratch output directory in '**input_dir**/md/scr_qm/' after QM calculation, and '**input_dir**/md/scr_mm/' after MM calculation.
+  This parameter determines whether to save scratch output directory in '**output_dir**/md/scr_qm/' after QM calculation, and '**output_dir**/md/scr_mm/' after MM calculation.
 
 \
 
 - **restart** *(string)* - Default: *None*
 
-  If this argument is not set (*None*), all objects will be initialized for a new dynamics simulation.
+  If this parameter is not set (*None*), all objects will be initialized for a new dynamics simulation.
   Otherwise, 'RESTART.bin' is read and a dynamics simulation is restarted from the image read from the file without initialization of objects.
 
   + *'write'*: The dynamics simulation is restarted at resetting the time step to zero and writing new MD output files.

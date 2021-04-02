@@ -3,7 +3,7 @@ MM_calculator
 
 The propagation of molecular dynamics needs the information about potential enrgy surfaces.
 The object for MM calculator should be constructed in PyUNIxMD to evaluate the energies
-and forces in QM/MM calculation. PyUNIxMD interfaces with followings in current version.
+and the forces in QM/MM calculation. PyUNIxMD interfaces with the following in the current version.
 
 .. toctree::
     :glob:
@@ -11,12 +11,12 @@ and forces in QM/MM calculation. PyUNIxMD interfaces with followings in current 
 
     prog_tinker
 
-Only one program supports with MM interface of PyUNIxMD in current version.
-If you want to add other programs such as Gromacs, refer "Tinker" section.
-The MM interfacings in PyUNIxMD proceed with ``get_data`` method in each object.
-Detailed explanation of ``get_data`` method is given in *modules* section.
+Only one MM program is supported in the current version of PyUNIxMD.
+If you want to add an interface of other programs such as Gromacs, you can refer to the Tinker interface.
+The key method of the MM interface is **get_data** method which makes input files, executes calculations and extracts information at every MD step. 
+Detailed description of the ``get_data`` method is given in :ref:`Modules <Module MM>`.
 
-**Ex.** Making a MM object with Tinker program
+**Ex.** Making an MM object with Tinker
 
 .. code-block:: python
 
@@ -27,6 +27,6 @@ Detailed explanation of ``get_data`` method is given in *modules* section.
        mm_path="/opt/tinker/bin/", nthreads=1, version="8.7")
 
 .. note:: For QM/MM calculation, you must define **scheme** variable.
-   In addition, same **embedding** variable of MM object should be used when one generate a QM object.
+   In addition, the same **embedding** variable of the MM object should be used when one generate a QM object.
 
 

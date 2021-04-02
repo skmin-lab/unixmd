@@ -5,7 +5,8 @@
 
 PyUNIxMD documentation
 ===========================================
-This is a documentation page for a Python-based UNIversal eXcited state Molecular Dynamics (PyUNIxMD) program.
+This is a documentation page for the Python-based UNIversal eXcited state Molecular Dynamics (PyUNIxMD) program.
+PyUNIxMD is an object-oriented Python program for molecular dynamics simulations involving multiple electronic states. It is mainly for studying the nonadiabatic dynamics of excited molecules.
 
 
 
@@ -17,7 +18,8 @@ Contents
    :maxdepth: 1
 
    overview
-   build
+   install
+   workflow
    quick_start
    objects/main
    modules/main

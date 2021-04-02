@@ -1,0 +1,177 @@
+==========================
+Workflow
+==========================
+Here, we explain how to run MD calculations with PyUNIxMD.
+
+You will make a running script for the MD calculation you want to perform. In your running script, you will create PyUNIxMD objects successively.
+A typical template of the running script is the following:
+
+.. code-block:: python
+   :linenos:
+
+   from molecule import Molecule
+   import qm, mqc
+   from thermostat import *
+   from misc import data
+
+   geom = """
+   <number of atoms>
+   <comment>
+   <symbol> <X> <Y> <Z> <V_X> <V_Y> <V_Z>
+   <symbol> <X> <Y> <Z> <V_X> <V_Y> <V_Z>
+   ...
+   <symbol> <X> <Y> <Z> <V_X> <V_Y> <V_Z>
+   """
+
+   mol = Molecule(geometry=geom, nstates=NSTATES)
+
+   qm = qm.QM_PROG.QM_METHOD(ARGUMENTS)
+
+   md = mqc.MDTYPE(ARGUMENTS)
+
+   bathT = THERMO_TYPE(ARGUMENTS)
+
+   md.run(theory=qm, thermostat=bathT)
+
+**Line 1-4** import the PyUNIxMD packages for the below jobs.
+
+**Line 6-12** set a target system you are interested in.
+You need to prepare a string as an argument to specify initial geometry and velocities in extended XYZ format.
+NSTATES means the number of adiabatic states considered in the dynamics calculations.
+See :ref:`Molecule <Objects Molecule>` for the list of parameters.
+
+.. note:: The ``mol`` object must be created first because it will be used for making other objects.
+
+**Line 14** determines an electronic structure calculation program and its method to obtain QM information such as energies, forces, and nonadiabatic coupling vectors.
+QM_PROG is the directory name where the QM interface package is. QM_METHOD is a name of Python class specifying one of QM methods provided with that interface package. See :ref:`QM_calculator <Objects QM_calculator>` for the list.
+
+**Line 16** determines a dynamics method you want to use. MDTYPE is a name of Python class specifying one of MQC methods (BOMD, Eh, SH, SHXF). See :ref:`MQC <Objects MQC>` for the details.
+
+**Line 18** sets a thermostat. THERMO_TYPE is a name of Python class specifying how to control temperature. See :ref:`Thermostat <Objects Thermostat>` for the list. 
+
+**Line 20** runs the dynamics calculation. 
+
+Finally, you will execute your running script.
+
+.. code-block:: bash
+
+   $ python3 running_script.py
+
+Running MD calculations with PyUNIxMD, you will obtain output files under the following file tree.
+
+.. image:: diagrams/pyunixmd_file_tree.png
+   :width: 400pt
+
+The blue and light green boxes represent directories and files, respectively. The purple shades distinguish output files that vary according to the MQC methods.
+
+'md/' collects MD outputs, and 'qm_log/' and 'mm_log/' have logs of QM and MM calculations, respectively
+(The latter two directories are optional). 'RESTART.bin' is a binary used to restart a dynamics calculation. See :ref:`MQC<Objects MQC>` for the details.
+
+.. note:: If you put **propagation** = *"density"* when setting an MD method, PyUNIxMD provides 'BOCOH' and 'BOPOP'.
+   However, if you put **propagation** = *"coefficient"* when setting an MD method, PyUNIxMD provides 'BOCOEF' rather than 'BOCOH' and 'BOPOP'.
+
+Details of the MD output files and their formats are the following.
+
+- MDENERGY
+
+This file shows MD energies and energies of adiabatic states.
+
+.. code-block:: bash
+
+   <MD step>   <kinetic energy>   <potential energy>   <total MD energy>   <adiabatic energy 1>   <adiabatic energy 2> ... <adiabatic energy last>
+   <MD step>   <kinetic energy>   <potential energy>   <total MD energy>   <adiabatic energy 1>   <adiabatic energy 2> ... <adiabatic energy last>
+   ...
+
+- MOVIE.xyz
+
+This file contains positions and velocities at each MD step (a trajectory).
+For the ease of visualization, those snapshots are written chronically in the extended XYZ format.
+
+.. code-block:: bash
+
+   <number of atoms>
+   Step:     0
+   <symbol> <X> <Y> <Z> <V_X> <V_Y> <V_Z>
+   <symbol> <X> <Y> <Z> <V_X> <V_Y> <V_Z>
+   ...
+   <number of atoms>
+   Step:     1
+   <symbol> <X> <Y> <Z> <V_X> <V_Y> <V_Z>
+   <symbol> <X> <Y> <Z> <V_X> <V_Y> <V_Z>
+   ...
+
+- FINAL.xyz
+
+This file contains the final position and velocity of an MD calculation.
+
+.. code-block:: bash
+
+   <number of atoms>
+   Step:    <last MD step>
+   <symbol> <X> <Y> <Z> <V_X> <V_Y> <V_Z>
+   <symbol> <X> <Y> <Z> <V_X> <V_Y> <V_Z>
+   ...
+   <symbol> <X> <Y> <Z> <V_X> <V_Y> <V_Z>
+
+- BOPOP
+
+This file shows the adiabatic populations (diagonal elements of the density matrix) at each MD step.
+
+.. code-block:: bash
+
+   <MD step> <population of state 1> <population of state 2> ... <population of last state> 
+   <MD step> <population of state 1> <population of state 2> ... <population of last state> 
+   ... 
+
+- BOCOH 
+
+This file shows off-diagonal elements of the density matrix at each MD step. Only the upper triangular portions are given because of hermiticity. The real and imaginary part of each element are written alternately.
+
+.. code-block:: bash
+
+   <MD step> <Re. element 1, 2> <Im. element 1, 2> <Re. element 1, 3> <Im. element 1, 3> ... <Re. element last-1, last> <Im. element last-1, last> 
+   <MD step> <Re. element 1, 2> <Im. element 1, 2> <Re. element 1, 3> <Im. element 1, 3> ... <Re. element last-1, last> <Im. element last-1, last> 
+   ... 
+
+- NACME
+
+This file shows nonadiabatic coupling matrix elements at each MD step. Only the upper triangular portions are given because of antihermiticity.
+
+.. code-block:: bash
+
+   <MD step> <element 1, 2> <element 1, 3> ... <element last-1, last> 
+   <MD step> <element 1, 2> <element 1, 3> ... <element last-1, last> 
+   ... 
+
+- SHPROB
+
+This file shows hopping probabilities from the running state to the others at each MD step.
+
+.. code-block:: bash
+
+   <MD step> <P(running -> 1)> <P(running -> 2)> ... <P(running -> last)>
+   <MD step> <P(running -> 1)> <P(running -> 2)> ... <P(running -> last)>
+   ... 
+
+- SHSTATE
+
+This file shows the running state at each MD step.
+
+.. code-block:: bash
+
+   <MD step> <running>
+   <MD step> <running>
+   ... 
+
+- DOTPOPD
+
+This file shows time-derivative populations by decoherence at each MD step.
+
+.. code-block:: bash
+
+   <MD step> <TD population of state 1> <TD population of state 2> ... <TD population of last state> 
+   <MD step> <TD population of state 1> <TD population of state 2> ... <TD population of last state> 
+   ... 
+
+For a quick test of PyUNIxMD, see :ref:`Quick Start<Quick Start>` . Also, you can refer to scripts and log files in '$PYUNIXMDHOME/examples/' directory for practical calculations.
+
