@@ -80,7 +80,7 @@ and
 | **propagator**             | Electronic propagator                            | *'rk4'*        |
 | *(string)*                 |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
-| **l_print_dm**             | Logical to print BO population and coherence     | *False*        |
+| **l_print_dm**             | Logical to print BO population and coherence     | *True*         |
 | *(boolean)*                |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
 | **l_adj_nac**              | Adjust nonadiabatic coupling to align the phases | *True*         |
@@ -158,7 +158,7 @@ Detailed description of the parameters
 
 \
 
-- **l_print_dm** *(boolean)* - Default: *False*
+- **l_print_dm** *(boolean)* - Default: *True*
   
   This parameter determines whether to write output files for the density matrix elements ('BOPOP', 'BOCOH') or not.
   If this option is set to *True*, then the 'BOPOP' and 'BOCOH' files are written during the dynamics.

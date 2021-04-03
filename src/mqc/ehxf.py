@@ -42,7 +42,7 @@ class EhXF(MQC):
         :type sigma: double or double,list
         :param init_coef: initial BO coefficient
         :type init_coef: double, list or complex, list
-        :param boolean l_econs_state: logical to use state-wise total energies for auxiliary trajectories
+        :param boolean l_econs_state: logical to use identical total energies for auxiliary trajectories
         :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
         :param integer out_freq: frequency of printing output
         :param integer verbosity: verbosity of output
@@ -50,7 +50,7 @@ class EhXF(MQC):
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         obj="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, \
         threshold=0.01, sigma=None, l_deco_force=False, init_coef=None, \
-        l_econs_state=False, unit_dt="fs", out_freq=1, verbosity=0):
+        l_econs_state=True, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
             obj, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)

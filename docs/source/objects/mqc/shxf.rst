@@ -42,10 +42,10 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **propagator**             | Electronic propagator                                | *'rk4'*      |
 | *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **l_print_dm**             | Logical to print BO population and coherence         | *False*      |
+| **l_print_dm**             | Logical to print BO population and coherence         | *True*       |
 | *(boolean)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **l_adj_nac**               | Adjust nonadiabatic coupling to align the phases     | *True*       |
+| **l_adj_nac**              | Adjust nonadiabatic coupling to align the phases     | *True*       |
 | *(boolean)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **hop_rescale**            | Velocity rescaling method after successful hop       | *'augment'*  |
@@ -63,7 +63,7 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **init_coef**              | Initial BO coefficient                               | *None*       |
 | *(double/complex, list)*   |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **l_econs_state**          | Logical to use state-wise total energies             | *False*      |
+| **l_econs_state**          | Logical to use identical total energies              | *True*       |
 | *(boolean)*                | for auxiliary trajectories                           |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **unit_dt**                | Unit of time interval                                | *'fs'*       |
@@ -123,7 +123,7 @@ Detailed description of the parameters
 
 \
 
-- **l_print_dm** *(boolean)* - Default: *False*
+- **l_print_dm** *(boolean)* - Default: *True*
   
   This parameter determines whether to write output files for density matrix elements ('BOPOP', 'BOCOH') or not.
   If this option is set to *True*, then the 'BOPOP' and 'BOCOH' files are written during the dynamics.
@@ -189,10 +189,10 @@ Detailed description of the parameters
 
 \
 
-- **l_econs_state** *(boolean)* - Default: *False*
+- **l_econs_state** *(boolean)* - Default: *True*
 
-  This parameter determines whether the total energies of the auxiliary trajectories are different or identical.
-  If this is set to *True*, auxiliary trajectories have differnt total energy, or they all have same total energy.
+  This parameter determines whether the total energies of the auxiliary trajectories are identical or not.
+  If this is set to *True*, auxiliary trajectories have same total energy, or they all have different total energy.
 
 \
 
