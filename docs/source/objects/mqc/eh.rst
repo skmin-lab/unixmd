@@ -44,7 +44,7 @@ where :math:`\mathbf{d}_{ij\nu}^{(I)}(t) = \int d \underline{\underline{\mathbf{
 | **nesteps**                | Total step of electronic propagation           | *20*        |
 | *(integer)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **propagation**            | Propagation scheme                             | *'density'* |
+| **obj**                    | Representation for electronic state            | *'density'* |
 | *(string)*                 |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
 | **propagator**             | Electronic propagator                          | *'rk4'*     |
@@ -99,9 +99,9 @@ Detailed description of parameters
 
 \
 
-- **propagation** *(string)* - Default: *'density'*
+- **obj** *(string)* - Default: *'density'*
 
-  The **propagation** parameter determines the representation for the electronic state.
+  The **obj** parameter determines the representation for the electronic state.
 
   + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}^{(I)}(t)\}`
   + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}^{(I)}(t)\}`
@@ -119,7 +119,7 @@ Detailed description of parameters
 
   This parameter determines whether to write output files for the density matrix elements ('BOPOP', 'BOCOH') or not.
   If this option is set to *True*, then the 'BOPOP' and 'BOCOH' files are written during the dynamics.
-  This option is effective only if the parameter **propagation** is set to *'coefficient'* or ignored otherwise.
+  This option is effective only if the parameter **obj** is set to *'coefficient'* or ignored otherwise.
 
 \
 

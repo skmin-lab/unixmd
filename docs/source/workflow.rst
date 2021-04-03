@@ -67,8 +67,8 @@ The blue and light green boxes represent directories and files, respectively. Th
 'md/' collects MD outputs, and 'qm_log/' and 'mm_log/' have logs of QM and MM calculations, respectively
 (The latter two directories are optional). 'RESTART.bin' is a binary used to restart a dynamics calculation. See :ref:`MQC<Objects MQC>` for the details.
 
-.. note:: If you put **propagation** = *"density"* when setting an MD method, PyUNIxMD provides 'BOCOH' and 'BOPOP'.
-   However, if you put **propagation** = *"coefficient"* when setting an MD method, PyUNIxMD provides 'BOCOEF' rather than 'BOCOH' and 'BOPOP'.
+.. note:: If you put **obj** = *"density"* when setting an MD method, PyUNIxMD provides 'BOCOH' and 'BOPOP'.
+   However, if you put **obj** = *"coefficient"* when setting an MD method, PyUNIxMD provides 'BOCOEF' rather than 'BOCOH' and 'BOPOP'.
 
 Details of the MD output files and their formats are the following.
 

@@ -5,7 +5,7 @@ import numpy as np
 cimport numpy as np
 
 cdef extern from "rk4_xf.c":
-    void rk4(int nat, int ndim, int nst, int nesteps, double dt, char *propagation, \
+    void rk4(int nat, int ndim, int nst, int nesteps, double dt, char *obj, \
         bint *l_coh, double *mass, double *energy, double *energy_old, double *sigma, \
         double **nacme, double **nacme_old, double **pos, double **qmom, double ***aux_pos, \
         double ***phase, double complex *coef, double complex **rho, int verbosity, \
@@ -13,7 +13,7 @@ cdef extern from "rk4_xf.c":
 
 def el_run(md):
     cdef:
-        char *propagation_c
+        char *obj_c
         bint *l_coh
         double *mass
         double *energy
@@ -98,14 +98,14 @@ def el_run(md):
                 phase[ist][iat][isp] = md.phase[ist, iat, isp]
 
     # Assign coef or rho with respect to propagation scheme
-    if (md.propagation == "coefficient"):
+    if (md.obj == "coefficient"):
 
         coef = <double complex*> PyMem_Malloc(nst * sizeof(double complex))
 
         for ist in range(nst):
             coef[ist] = md.mol.states[ist].coef
 
-    elif (md.propagation == "density"):
+    elif (md.obj == "density"):
 
         rho = <double complex**> PyMem_Malloc(nst * sizeof(double complex*))
         for ist in range(nst):
@@ -115,16 +115,16 @@ def el_run(md):
             for jst in range(nst):
                 rho[ist][jst] = md.mol.rho[ist, jst]
 
-    py_bytes = md.propagation.encode()
-    propagation_c = py_bytes
+    py_bytes = md.obj.encode()
+    obj_c = py_bytes
 
     # Propagate electrons depending on the propagator
     if (md.propagator == "rk4"):
-        rk4(aux_nat, aux_ndim, nst, nesteps, dt, propagation_c, l_coh, mass, energy, \
+        rk4(aux_nat, aux_ndim, nst, nesteps, dt, obj_c, l_coh, mass, energy, \
             energy_old, sigma, nacme, nacme_old, pos, qmom, aux_pos, phase, coef, rho, verbosity, dotpopd)
 
     # Assign variables from C to python
-    if (md.propagation == "coefficient"):
+    if (md.obj == "coefficient"):
 
         for ist in range(nst):
             md.mol.states[ist].coef = coef[ist]
@@ -135,7 +135,7 @@ def el_run(md):
 
         PyMem_Free(coef)
 
-    elif (md.propagation == "density"):
+    elif (md.obj == "density"):
 
         for ist in range(nst):
             for jst in range(nst):

@@ -77,7 +77,7 @@ You can restart the dynamics simulation by reading the 'RESTART.bin' file using 
 
    import mqc
 
-   md = mqc.SH(molecule=mol, nsteps=1000, dt=0.125, istate=1, propagation="density")
+   md = mqc.SH(molecule=mol, nsteps=1000, dt=0.125, istate=1, obj="density")
 
    md.run(qm=qm, output_dir="./TRAJ.sh", save_scr=True, save_qm_log=False)
 

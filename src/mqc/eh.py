@@ -15,7 +15,7 @@ class Eh(MQC):
         :param double dt: Time interval
         :param integer nsteps: Total step of nuclear propation
         :param integer nesteps: Total step of electronic propagation
-        :param string propagation: Propagation scheme
+        :param string obj: Representation for electronic state
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adjnac: Logical to adjust nonadiabatic coupling
@@ -26,11 +26,11 @@ class Eh(MQC):
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
-        propagation="density", propagator="rk4", l_print_dm=True, l_adjnac=True, \
+        obj="density", propagator="rk4", l_print_dm=True, l_adjnac=True, \
         init_coefficient=None, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            propagation, propagator, l_print_dm, l_adjnac, init_coefficient, unit_dt, out_freq, verbosity)
+            obj, propagator, l_print_dm, l_adjnac, init_coefficient, unit_dt, out_freq, verbosity)
 
     def run(self, qm, mm=None, output_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
         """ Run MQC dynamics according to Ehrenfest dynamics

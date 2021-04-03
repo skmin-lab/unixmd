@@ -19,16 +19,16 @@ static void rk4_rho(int nat, int ndim, int nst, int nesteps, double dt, int *l_c
     int verbosity, double *dotpopd);
 
 // Interface routine for propagation scheme in rk4 propagator
-static void rk4(int nat, int ndim, int nst, int nesteps, double dt, char *propagation, int *l_coh,
+static void rk4(int nat, int ndim, int nst, int nesteps, double dt, char *obj, int *l_coh,
     double *mass, double *energy, double *energy_old, double *sigma, double **nacme, double **nacme_old,
     double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *coef, double complex **rho,
     int verbosity, double *dotpopd){
 
-    if(strcmp(propagation, "coefficient") == 0){
+    if(strcmp(obj, "coefficient") == 0){
         rk4_coef(nat, ndim, nst, nesteps, dt, l_coh, mass, energy, energy_old, sigma,
             nacme, nacme_old, pos, qmom, aux_pos, phase, coef, verbosity, dotpopd);
     }
-    else if(strcmp(propagation, "density") == 0){
+    else if(strcmp(obj, "density") == 0){
         rk4_rho(nat, ndim, nst, nesteps, dt, l_coh, mass, energy, energy_old, sigma,
             nacme, nacme_old, pos, qmom, aux_pos, phase, rho, verbosity, dotpopd);
     }
