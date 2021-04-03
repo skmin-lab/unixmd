@@ -50,7 +50,7 @@ where :math:`\mathbf{d}_{ij\nu}^{(I)}(t) = \int d \underline{\underline{\mathbf{
 | **propagator**             | Electronic propagator                          | *'rk4'*     |
 | *(string)*                 |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **l_print_dm**             | Logical to print BO population and coherence   | *Ture*      |
+| **l_print_dm**             | Logical to print BO population and coherence   | *True*      |
 | *(boolean)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
 | **l_adj_nac**              | Logical to adjust nonadiabatic coupling        | *True*      |
