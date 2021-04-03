@@ -175,9 +175,9 @@ class Molecule(object):
 
         if (unit_vel == 'au'):
             fac_vel = 1.
-        elif (unit_vel == 'A/ps'):
+        elif (unit_vel == 'angs/ps'):
             fac_vel = A_to_au / (1000.0 * fs_to_au)
-        elif (unit_vel == 'A/fs'):
+        elif (unit_vel == 'angs/fs'):
             fac_vel = A_to_au / fs_to_au
         else:
             raise ValueError (f"( {self.mol_type}.{call_name()} ) Invalid unit for velocity! {unit_vel}")

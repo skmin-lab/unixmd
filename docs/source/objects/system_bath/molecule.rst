@@ -45,7 +45,7 @@ The parameters to specify a molecule are below.
 | **ndof**      | Degrees of freedom                                   | *None*    |
 | *(integer)*   |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **unit_pos**  | Unit of atomic positions                             | *'A'*     |
+| **unit_pos**  | Unit of atomic positions                             | *'angs'*  |
 | *(string)*    |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
 | **unit_vel**  | Unit of atomic velocities                            | *'au'*    |
@@ -127,8 +127,8 @@ Detailed description of the parameters
   This parameter specifies the unit of atomic velocities.
 
   + *'au'*: Atomic unit
-  + *'A/ps'*: Angstrom per picosecond
-  + *'A/fs'*: Angstrom per femtosecond
+  + *'angs/ps'*: Angstrom per picosecond
+  + *'angs/fs'*: Angstrom per femtosecond
 
 \
 
