@@ -45,7 +45,7 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **l_print_dm**             | Logical to print BO population and coherence         | *False*      |
 | *(boolean)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **l_adjnac**               | Adjust nonadiabatic coupling to align the phases     | *True*       |
+| **l_adj_nac**               | Adjust nonadiabatic coupling to align the phases     | *True*       |
 | *(boolean)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **hop_rescale**            | Velocity rescaling method after successful hop       | *'augment'*  |
@@ -131,7 +131,7 @@ Detailed description of the parameters
 
 \
 
-- **l_adjnac** *(boolean)* - Default: *True* 
+- **l_adj_nac** *(boolean)* - Default: *True* 
 
   If this parameter is set to *True*, the signs of the NACVs are adjusted to match the phases to the previous time step during the dynamics.
 

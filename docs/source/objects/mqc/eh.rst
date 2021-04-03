@@ -53,7 +53,7 @@ where :math:`\mathbf{d}_{ij\nu}^{(I)}(t) = \int d \underline{\underline{\mathbf{
 | **l_print_dm**             | Logical to print BO population and coherence   | *False*     |
 | *(boolean)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **l_adjnac**               | Logical to adjust nonadiabatic coupling        | *True*      |
+| **l_adj_nac**              | Logical to adjust nonadiabatic coupling        | *True*      |
 | *(boolean)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
 | **init_coef**              | Initial BO coefficient                         | *None*      |
@@ -123,7 +123,7 @@ Detailed description of parameters
 
 \
 
-- **l_adjnac** *(boolean)* - Default: *True*
+- **l_adj_nac** *(boolean)* - Default: *True*
 
   If this parameter is set to *True*, the signs of the NACVs are adjusted to match the phases to the previous time step during the dynamics.
 

@@ -18,7 +18,7 @@ class SH(MQC):
         :param string obj: Representation for electronic state
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
-        :param boolean l_adjnac: Adjust nonadiabatic coupling to align the phases
+        :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
         :param string hop_rescale: Velocity rescaling method after successful hop
         :param string vel_reject: Velocity rescaling method after frustrated hop
         :param init_coef: Initial BO coefficient
@@ -30,12 +30,12 @@ class SH(MQC):
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
-        obj="density", propagator="rk4", l_print_dm=True, l_adjnac=True, hop_rescale="augment", \
+        obj="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
         vel_reject="reverse", init_coef=None, deco_correction=None, edc_parameter=0.1, \
         unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            obj, propagator, l_print_dm, l_adjnac, init_coef, unit_dt, out_freq, verbosity)
+            obj, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
 
         # Initialize SH variables
         self.rstate = istate

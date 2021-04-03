@@ -17,7 +17,7 @@ class MQC(object):
         :param string obj: Representation for electronic state
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
-        :param boolean l_adjnac: Logical to adjust nonadiabatic coupling
+        :param boolean l_adj_nac: Logical to adjust nonadiabatic coupling
         :param initial_coef: Initial BO coefficient
         :type initial_coef: Double, list or complex, list
         :param string unit_dt: Unit of time step (fs = femtosecond, au = atomic unit)
@@ -25,7 +25,7 @@ class MQC(object):
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat, istate, dt, nsteps, nesteps, \
-        obj, propagator, l_print_dm, l_adjnac, init_coef, unit_dt, out_freq, verbosity):
+        obj, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -66,7 +66,7 @@ class MQC(object):
 
         self.l_print_dm = l_print_dm
 
-        self.l_adjnac = l_adjnac
+        self.l_adj_nac = l_adj_nac
 
         self.rforce = np.zeros((self.mol.nat, self.mol.ndim))
 
