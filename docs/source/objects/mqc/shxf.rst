@@ -60,7 +60,7 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **sigma**                  | Width of nuclear wave packet of auxiliary trajectory | *None*       |
 | *(double/(double, list))*  |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **init_coefficient**       | Initial BO coefficient                               | *None*       |
+| **init_coef**              | Initial BO coefficient                               | *None*       |
 | *(double/complex, list)*   |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **l_econs_state**          | Logical to use state-wise total energies             | *False*      |
@@ -181,7 +181,7 @@ Detailed description of the parameters
 
 \
 
-- **init_coefficient** *(double/complex, list)* - Default: *None*
+- **init_coef** *(double/complex, list)* - Default: *None*
 
   This parameter defines the initial BO coefficients.
   The elements can be either real or complex values.

@@ -21,8 +21,8 @@ class SH(MQC):
         :param boolean l_adjnac: Adjust nonadiabatic coupling to align the phases
         :param string hop_rescale: Velocity rescaling method after successful hop
         :param string vel_reject: Velocity rescaling method after frustrated hop
-        :param init_coefficient: Initial BO coefficient
-        :type init_coefficient: double, list or complex, list
+        :param init_coef: Initial BO coefficient
+        :type init_coef: double, list or complex, list
         :param string deco_correction: Simple decoherence correction schemes
         :param double edc_parameter: Energy constant for rescaling coefficients in edc
         :param string unit_dt: Unit of time step 
@@ -31,11 +31,11 @@ class SH(MQC):
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         obj="density", propagator="rk4", l_print_dm=True, l_adjnac=True, hop_rescale="augment", \
-        vel_reject="reverse", init_coefficient=None, deco_correction=None, edc_parameter=0.1, \
+        vel_reject="reverse", init_coef=None, deco_correction=None, edc_parameter=0.1, \
         unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            obj, propagator, l_print_dm, l_adjnac, init_coefficient, unit_dt, out_freq, verbosity)
+            obj, propagator, l_print_dm, l_adjnac, init_coef, unit_dt, out_freq, verbosity)
 
         # Initialize SH variables
         self.rstate = istate

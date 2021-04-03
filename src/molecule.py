@@ -265,8 +265,8 @@ class Molecule(object):
     def get_coefficient(self, coef, istate):
         """ Get initial coefficient
             
-            :param coefficient: Initial BO coefficient
-            :type coefficient: double, list or complex, list
+            :param coef: Initial BO coefficient
+            :type coef: double, list or complex, list
             :param integer istate: Initial adiabatic state
         """
         if (coef == None):

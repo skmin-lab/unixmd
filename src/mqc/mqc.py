@@ -18,14 +18,14 @@ class MQC(object):
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adjnac: Logical to adjust nonadiabatic coupling
-        :param initial_coefficient: Initial BO coefficient
-        :type initial_coefficient: Double, list or complex, list
+        :param initial_coef: Initial BO coefficient
+        :type initial_coef: Double, list or complex, list
         :param string unit_dt: Unit of time step (fs = femtosecond, au = atomic unit)
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat, istate, dt, nsteps, nesteps, \
-        obj, propagator, l_print_dm, l_adjnac, init_coefficient, unit_dt, out_freq, verbosity):
+        obj, propagator, l_print_dm, l_adjnac, init_coef, unit_dt, out_freq, verbosity):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -74,7 +74,7 @@ class MQC(object):
         self.verbosity = verbosity
 
         # Initialize coefficients and densities
-        self.mol.get_coefficient(init_coefficient, self.istate)
+        self.mol.get_coefficient(init_coef, self.istate)
 
     def run_init(self, qm, mm, output_dir, save_qm_log, save_mm_log, save_scr, restart):
         """ Initialize MQC dynamics

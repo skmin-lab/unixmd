@@ -92,7 +92,7 @@ and
 | **vel_reject**             | Velocity rescaling method after frustrated hop   | *'reverse'*    |
 | *(string)*                 |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
-| **init_coefficient**       | Initial BO coefficient                           | *None*         |
+| **init_coef**              | Initial BO coefficient                           | *None*         |
 | *(double/complex, list)*   |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
 | **deco_correction**        | Simple decoherence correction schemes            | *None*         |
@@ -193,7 +193,7 @@ Detailed description of the parameters
 
 \
 
-- **init_coefficient** *(double/complex, list)* - Default: *None*
+- **init_coef** *(double/complex, list)* - Default: *None*
 
   This parameter defines the initial BO coefficients.
   The elements can be either real or complex values.

@@ -56,7 +56,7 @@ where :math:`\mathbf{d}_{ij\nu}^{(I)}(t) = \int d \underline{\underline{\mathbf{
 | **l_adjnac**               | Logical to adjust nonadiabatic coupling        | *True*      |
 | *(boolean)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **init_coefficient**       | Initial BO coefficient                         | *None*      |
+| **init_coef**              | Initial BO coefficient                         | *None*      |
 | *(double/complex, list)*   |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
 | **unit_dt**                | Unit of time step                              | *'fs'*      |
@@ -129,7 +129,7 @@ Detailed description of parameters
 
 \
 
-- **init_coefficient** *(double/complex, list)* - Default: *None*
+- **init_coef** *(double/complex, list)* - Default: *None*
 
   This parameter defines the initial BO coefficients.
   The elements can be either real or complex values.
