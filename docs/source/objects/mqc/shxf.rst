@@ -51,7 +51,7 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **hop_rescale**            | Velocity rescaling method after successful hop       | *'augment'*  |
 | *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **vel_reject**             | Velocity rescaling method after frustrated hop       | *'reverse'*  |
+| **hop_reject**             | Velocity rescaling method after frustrated hop       | *'reverse'*  |
 | *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **threshold**              | Electronic density threshold for decoherence term    | *0.01*       |
@@ -149,7 +149,7 @@ Detailed description of the parameters
 
 \
    
-- **vel_reject** *(string)* - Default: *'reverse'*
+- **hop_reject** *(string)* - Default: *'reverse'*
   
   This parameter determines the momentum rescaling method when a hop is rejected.
   

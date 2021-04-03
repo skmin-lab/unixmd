@@ -20,7 +20,7 @@ class SH(MQC):
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
         :param string hop_rescale: Velocity rescaling method after successful hop
-        :param string vel_reject: Velocity rescaling method after frustrated hop
+        :param string hop_reject: Velocity rescaling method after frustrated hop
         :param init_coef: Initial BO coefficient
         :type init_coef: double, list or complex, list
         :param string deco_correction: Simple decoherence correction schemes
@@ -31,7 +31,7 @@ class SH(MQC):
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         obj="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
-        vel_reject="reverse", init_coef=None, deco_correction=None, edc_parameter=0.1, \
+        hop_reject="reverse", init_coef=None, deco_correction=None, edc_parameter=0.1, \
         unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
@@ -52,9 +52,9 @@ class SH(MQC):
         if not (self.hop_rescale in ["energy", "velocity", "momentum", "augment"]):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'hop_rescale'! {self.hop_rescale}")
 
-        self.vel_reject = vel_reject
-        if not (self.vel_reject in ["keep", "reverse"]):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'vel_reject'! {self.vel_reject}")
+        self.hop_reject = hop_reject
+        if not (self.hop_reject in ["keep", "reverse"]):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'hop_reject'! {self.hop_reject}")
 
         # Initialize decoherence variables
         self.deco_correction = deco_correction
@@ -68,8 +68,8 @@ class SH(MQC):
             # No analytical nonadiabatic couplings exist
             if (self.hop_rescale in ["velocity", "momentum", "augment"]):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'energy' rescaling for 'hop_rescale'! {self.hop_rescale}")
-            if (self.vel_reject == "reverse"):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'keep' rescaling for 'vel_reject'! {self.vel_reject}")
+            if (self.hop_reject == "reverse"):
+                raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'keep' rescaling for 'hop_reject'! {self.hop_reject}")
 
         # Initialize event to print
         self.event = {"HOP": []}
@@ -297,10 +297,10 @@ class SH(MQC):
                 # Record event for frustrated hop
                 if (self.mol.ekin_qm < pot_diff):
                     self.event["HOP"].append(f"Reject hopping: smaller kinetic energy than potential energy difference between {self.rstate} and {self.rstate_old}")
-                # Set scaling constant with respect to 'vel_reject'
-                if (self.vel_reject == "keep"):
+                # Set scaling constant with respect to 'hop_reject'
+                if (self.hop_reject == "keep"):
                     self.event["HOP"].append("Reject hopping: no solution to find rescale factor, velocity is not changed")
-                elif (self.vel_reject == "reverse"):
+                elif (self.hop_reject == "reverse"):
                     # x = - 1 when 'hop_rescale' is 'energy', otherwise x = - b / a
                     self.event["HOP"].append("Reject hopping: no solution to find rescale factor, velocity is reversed along coupling direction")
                     x = - b / a
@@ -320,7 +320,7 @@ class SH(MQC):
                         x = 0.5 * (- b + np.sqrt(det)) / a
 
             # Rescale velocities for QM atoms
-            if (not (self.vel_reject == "keep" and self.l_reject)):
+            if (not (self.hop_reject == "keep" and self.l_reject)):
                 if (self.hop_rescale == "energy"):
                     self.mol.vel[0:self.mol.nat_qm] *= x
 
