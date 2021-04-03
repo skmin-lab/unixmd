@@ -11,7 +11,7 @@ A typical template of the running script is the following:
 
    from molecule import Molecule
    import qm, mqc
-   from thermostat import *
+   import thermostat
    from misc import data
 
    geom = """
@@ -27,11 +27,11 @@ A typical template of the running script is the following:
 
    qm = qm.QM_PROG.QM_METHOD(ARGUMENTS)
 
-   md = mqc.MDTYPE(ARGUMENTS)
+   bathT = thermostat.THERMO_TYPE(ARGUMENTS)
 
-   bathT = THERMO_TYPE(ARGUMENTS)
+   md = mqc.MDTYPE(molecule=mol, thermostat=bathT, ARGUMENTS)
 
-   md.run(theory=qm, thermostat=bathT)
+   md.run(qm=qm, ARGUMENTS)
 
 **Line 1-4** import the PyUNIxMD packages for the below jobs.
 
@@ -45,9 +45,9 @@ See :ref:`Molecule <Objects Molecule>` for the list of parameters.
 **Line 14** determines an electronic structure calculation program and its method to obtain QM information such as energies, forces, and nonadiabatic coupling vectors.
 QM_PROG is the directory name where the QM interface package is. QM_METHOD is a name of Python class specifying one of QM methods provided with that interface package. See :ref:`QM_calculator <Objects QM_calculator>` for the list.
 
-**Line 16** determines a dynamics method you want to use. MDTYPE is a name of Python class specifying one of MQC methods (BOMD, Eh, SH, SHXF). See :ref:`MQC <Objects MQC>` for the details.
+**Line 16** sets a thermostat. THERMO_TYPE is a name of Python class specifying how to control temperature. See :ref:`Thermostat <Objects Thermostat>` for the list. 
 
-**Line 18** sets a thermostat. THERMO_TYPE is a name of Python class specifying how to control temperature. See :ref:`Thermostat <Objects Thermostat>` for the list. 
+**Line 18** determines a dynamics method you want to use. MDTYPE is a name of Python class specifying one of MQC methods (BOMD, Eh, SH, SHXF). See :ref:`MQC <Objects MQC>` for the details.
 
 **Line 20** runs the dynamics calculation. 
 
