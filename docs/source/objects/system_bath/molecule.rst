@@ -36,7 +36,7 @@ The parameters to specify a molecule are below.
 | **nstates**   | Number of BO states                                  | *3*       |
 | *(integer)*   |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **qmmm**      | Use the QM/MM scheme for the calculation             | *False*   |
+| **l_qmmm**    | Use the QM/MM scheme for the calculation             | *False*   |
 | *(boolean)*   |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
 | **natoms_mm** | Number of atoms in the MM region                     | *None*    |
@@ -54,7 +54,7 @@ The parameters to specify a molecule are below.
 | **charge**    | Total charge of the system                           | *0.0*     |
 | *(double)*    |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **model**     | Is the system a model system?                        | *False*   |
+| **l_model**   | Is the system a model system?                        | *False*   |
 | *(boolean)*   |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
 
@@ -73,7 +73,7 @@ Detailed description of the parameters
   3. Specification of the molecule (atomic symbol, positions, velocities)
 
   This parameter does not have default, thus user must put a proper string into **geometry** having the following structure.
-  When the QM/MM scheme is used (**qmmm** = *True*), information of the MM atoms is followed by the QM atoms.
+  When the QM/MM scheme is used (**l_qmmm** = *True*), information of the MM atoms is followed by the QM atoms.
 
 \
 
@@ -89,7 +89,7 @@ Detailed description of the parameters
 
 \
 
-- **qmmm** *(boolean)* - Default: *False*
+- **l_qmmm** *(boolean)* - Default: *False*
 
   This parameter determines whether to use the QM/MM scheme.
 
@@ -97,7 +97,7 @@ Detailed description of the parameters
 
 - **natoms_mm** *(integer)* - Default: *None*
 
-  This parameter specifies the number of atoms in the MM region when **qmmm** is *True*. 
+  This parameter specifies the number of atoms in the MM region when **l_qmmm** is *True*. 
 
 \
 
@@ -105,9 +105,9 @@ Detailed description of the parameters
 
   This parameter specifies the degrees of freedom of the system. This value will be set automatically if no specific value is given.
 
-  If **model** = *False*, it becomes :math:`3 \times \textrm{(the number of atoms)}-6` (The DoF of a non-linear molecule).
+  If **l_model** = *False*, it becomes :math:`3 \times \textrm{(the number of atoms)}-6` (The DoF of a non-linear molecule).
 
-  If **model** = *True*, :math:`\textrm{(the dimension)} \times \textrm{(the number of atoms)}`.
+  If **l_model** = *True*, :math:`\textrm{(the dimension)} \times \textrm{(the number of atoms)}`.
 
   When the argument is present, it overrides the above defaults.
 
@@ -138,7 +138,7 @@ Detailed description of the parameters
 
 \
 
-- **model** *(boolean)* - Default: *False*
+- **l_model** *(boolean)* - Default: *False*
 
   This parameter determines whether the system is a model system or not. About model systems provided by PyUNIxMD, see :ref:`Model Systems <Model Systems>`.
 

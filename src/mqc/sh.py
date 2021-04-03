@@ -74,20 +74,20 @@ class SH(MQC):
         # Initialize event to print
         self.event = {"HOP": []}
 
-    def run(self, qm, mm=None, output_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
+    def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to surface hopping dynamics
 
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
             :param string output_dir: Name of directory where outputs to be saved.
-            :param boolean save_qm_log: Logical for saving QM calculation log
-            :param boolean save_mm_log: Logical for saving MM calculation log
-            :param boolean save_scr: Logical for saving scratch directory
+            :param boolean l_save_qm_log: Logical for saving QM calculation log
+            :param boolean l_save_mm_log: Logical for saving MM calculation log
+            :param boolean l_save_scr: Logical for saving scratch directory
             :param string restart: Option for controlling dynamics restarting
         """
         # Initialize UNI-xMD
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
-             self.run_init(qm, mm, output_dir, save_qm_log, save_mm_log, save_scr, restart)
+             self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
         bo_list = [self.rstate]
         qm.calc_coupling = True
         self.print_init(qm, mm, restart)
@@ -97,7 +97,7 @@ class SH(MQC):
             self.istep = -1
             self.mol.reset_bo(qm.calc_coupling)
             qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
-            if (self.mol.qmmm and mm != None):
+            if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
             if (not self.mol.l_nacme):
                 self.mol.get_nacme()
@@ -116,7 +116,7 @@ class SH(MQC):
 
             if (qm.re_calc and self.l_hop):
                 qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
-                if (self.mol.qmmm and mm != None):
+                if (self.mol.l_qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=True)
 
             self.update_energy()
@@ -144,7 +144,7 @@ class SH(MQC):
             self.mol.backup_bo()
             self.mol.reset_bo(qm.calc_coupling)
             qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
-            if (self.mol.qmmm and mm != None):
+            if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
             if (not self.mol.l_nacme):
@@ -171,7 +171,7 @@ class SH(MQC):
 
             if (qm.re_calc and self.l_hop):
                 qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
-                if (self.mol.qmmm and mm != None):
+                if (self.mol.l_qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
 
             if (self.thermo != None):
@@ -192,12 +192,12 @@ class SH(MQC):
                 pickle.dump({'qm':qm, 'md':self}, f)
 
         # Delete scratch directory
-        if (not save_scr):
+        if (not l_save_scr):
             tmp_dir = os.path.join(unixmd_dir, "scr_qm")
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
 
-            if (self.mol.qmmm and mm != None):
+            if (self.mol.l_qmmm and mm != None):
                 tmp_dir = os.path.join(unixmd_dir, "scr_mm")
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)

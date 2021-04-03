@@ -22,7 +22,7 @@ Detailed description of the ``get_data`` method is given in :ref:`Modules <Modul
 
    import mm
 
-   mm = mm.Tinker(molecule=mol, scheme="subtractive", periodic=False, xyz_file="./tinker.xyz", \
+   mm = mm.Tinker(molecule=mol, scheme="subtractive", l_periodic=False, xyz_file="./tinker.xyz", \
        key_file="./tinker.key", embedding="electrostatic", vdw="lennardjones", \
        mm_path="/opt/tinker/bin/", nthreads=1, version="8.7")
 

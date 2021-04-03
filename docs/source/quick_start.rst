@@ -28,7 +28,7 @@ The running script is the following.
    X1       -4.0     0.0
    """
    
-   mol = Molecule(geometry=geom, ndim=1, nstates=2, ndof=1, unit_pos='au', model=True)
+   mol = Molecule(geometry=geom, ndim=1, nstates=2, ndof=1, unit_pos='au', l_model=True)
    
    qm = qm.model.Shin_Metiu(molecule=mol)
    

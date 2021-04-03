@@ -76,15 +76,15 @@ class MQC(object):
         # Initialize coefficients and densities
         self.mol.get_coefficient(init_coef, self.istate)
 
-    def run_init(self, qm, mm, output_dir, save_qm_log, save_mm_log, save_scr, restart):
+    def run_init(self, qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart):
         """ Initialize MQC dynamics
 
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
             :param string output_dir: Location of input directory
-            :param boolean save_qm_log: Logical for saving QM calculation log
-            :param boolean save_mm_log: Logical for saving MM calculation log
-            :param boolean save_scr: Logical for saving scratch directory
+            :param boolean l_save_qm_log: Logical for saving QM calculation log
+            :param boolean l_save_mm_log: Logical for saving MM calculation log
+            :param boolean l_save_scr: Logical for saving scratch directory
             :param string restart: Option for controlling dynamics restarting
         """
         # Check whether the restart option is right
@@ -96,9 +96,9 @@ class MQC(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Ehrenfest dynamics needs NACV! {self.mol.l_nacme}")
 
         # Check compatibility of variables for QM and MM calculation
-        if ((self.mol.qmmm and mm == None) or (not self.mol.qmmm and mm != None)):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Both self.mol.qmmm and mm object is necessary! {self.mol.qmmm} and {mm}")
-        if (self.mol.qmmm and mm != None):
+        if ((self.mol.l_qmmm and mm == None) or (not self.mol.l_qmmm and mm != None)):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Both self.mol.l_qmmm and mm object is necessary! {self.mol.l_qmmm} and {mm}")
+        if (self.mol.l_qmmm and mm != None):
             self.check_qmmm(qm, mm)
 
         # Set directory information
@@ -107,17 +107,17 @@ class MQC(object):
         unixmd_dir = os.path.join(base_dir, "md")
         qm_log_dir = os.path.join(base_dir, "qm_log")
         mm_log_dir = None
-        if (self.mol.qmmm and mm != None):
+        if (self.mol.l_qmmm and mm != None):
             mm_log_dir = os.path.join(base_dir, "mm_log")
 
         # Check and make directories
         if (restart == "append"):
             if (not os.path.exists(unixmd_dir)):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Directory to be appended for restart not found! {restart} and {unixmd_dir}")
-            if (not os.path.exists(unixmd_dir) and save_qm_log):
+            if (not os.path.exists(unixmd_dir) and l_save_qm_log):
                 os.makedirs(qm_log_dir)
-            if (self.mol.qmmm and mm != None):
-                if (not os.path.exists(mm_log_dir) and save_mm_log):
+            if (self.mol.l_qmmm and mm != None):
+                if (not os.path.exists(mm_log_dir) and l_save_mm_log):
                     os.makedirs(mm_log_dir)
         else:
             if (os.path.exists(unixmd_dir)):
@@ -126,13 +126,13 @@ class MQC(object):
 
             if (os.path.exists(qm_log_dir)):
                 shutil.move(qm_log_dir, qm_log_dir + "_old_" + str(os.getpid()))
-            if (save_qm_log):
+            if (l_save_qm_log):
                 os.makedirs(qm_log_dir)
 
-            if (self.mol.qmmm and mm != None):
+            if (self.mol.l_qmmm and mm != None):
                 if (os.path.exists(mm_log_dir)):
                     shutil.move(mm_log_dir, mm_log_dir + "_old_" + str(os.getpid()))
-                if (save_mm_log):
+                if (l_save_mm_log):
                     os.makedirs(mm_log_dir)
 
             self.touch_file(unixmd_dir)
@@ -221,7 +221,7 @@ class MQC(object):
           QM Program               = {qm.qm_prog:>16s}
           QM Method                = {qm.qm_method:>16s}
         """)
-        if (self.mol.qmmm and mm != None):
+        if (self.mol.l_qmmm and mm != None):
             dynamics_info += textwrap.indent(textwrap.dedent(f"""\
               MM Program               = {mm.mm_prog:>16s}
               QMMM Scheme              = {mm.scheme:>16s}
