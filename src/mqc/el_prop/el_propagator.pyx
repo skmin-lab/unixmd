@@ -5,13 +5,13 @@ import numpy as np
 cimport numpy as np
 
 cdef extern from "rk4.c":
-    void rk4(int nst, int nesteps, double dt, char *obj, double *energy, \
+    void rk4(int nst, int nesteps, double dt, char *elec_object, double *energy, \
         double *energy_old, double **nacme, double **nacme_old, double complex *coef, \
         double complex **rho)
 
 def el_run(md):
     cdef:
-        char *obj_c
+        char *elec_object_c
         double *energy
         double *energy_old
         double **nacme
@@ -49,14 +49,14 @@ def el_run(md):
             nacme_old[ist][jst] = md.mol.nacme_old[ist, jst]
 
     # Assign coef or rho with respect to propagation scheme
-    if (md.obj == "coefficient"):
+    if (md.elec_object == "coefficient"):
 
         coef = <double complex*> PyMem_Malloc(nst * sizeof(double complex))
 
         for ist in range(nst):
             coef[ist] = md.mol.states[ist].coef
 
-    elif (md.obj == "density"):
+    elif (md.elec_object == "density"):
 
         rho = <double complex**> PyMem_Malloc(nst * sizeof(double complex*))
         for ist in range(nst):
@@ -66,15 +66,15 @@ def el_run(md):
             for jst in range(nst):
                 rho[ist][jst] = md.mol.rho[ist, jst]
 
-    py_bytes = md.obj.encode()
-    obj_c = py_bytes
+    py_bytes = md.elec_object.encode()
+    elec_object_c = py_bytes
 
     # Propagate electrons depending on the propagator
     if (md.propagator == "rk4"):
-        rk4(nst, nesteps, dt, obj_c, energy, energy_old, nacme, nacme_old, coef, rho)
+        rk4(nst, nesteps, dt, elec_object_c, energy, energy_old, nacme, nacme_old, coef, rho)
 
     # Assign variables from C to python
-    if (md.obj == "coefficient"):
+    if (md.elec_object == "coefficient"):
 
         for ist in range(nst):
             md.mol.states[ist].coef = coef[ist]
@@ -85,7 +85,7 @@ def el_run(md):
 
         PyMem_Free(coef)
 
-    elif (md.obj == "density"):
+    elif (md.elec_object == "density"):
 
         for ist in range(nst):
             for jst in range(nst):

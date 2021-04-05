@@ -14,13 +14,13 @@ static void rk4_rho(int nst, int nesteps, double dt, double *energy, double *ene
     double **nacme, double **nacme_old, double complex **rho);
 
 // Interface routine for propagation scheme in rk4 propagator
-static void rk4(int nst, int nesteps, double dt, char *obj, double *energy, double *energy_old,
+static void rk4(int nst, int nesteps, double dt, char *elec_object, double *energy, double *energy_old,
     double **nacme, double **nacme_old, double complex *coef, double complex **rho){
 
-    if(strcmp(obj, "coefficient") == 0){
+    if(strcmp(elec_object, "coefficient") == 0){
         rk4_coef(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, coef);
     }
-    else if(strcmp(obj, "density") == 0){
+    else if(strcmp(elec_object, "density") == 0){
         rk4_rho(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, rho);
     }
 

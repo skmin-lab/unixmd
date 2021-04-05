@@ -14,7 +14,7 @@ class MQC(object):
         :param double dt: Time interval
         :param integer nsteps: Nuclear step
         :param integer nesteps: Electronic step
-        :param string obj: Representation for electronic state
+        :param string elec_object: Electronic equation of motions
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adj_nac: Logical to adjust nonadiabatic coupling
@@ -25,7 +25,7 @@ class MQC(object):
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat, istate, dt, nsteps, nesteps, \
-        obj, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity):
+        elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -57,9 +57,9 @@ class MQC(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Index for initial state must be smaller than number of states! {self.istate}")
 
         # None for BOMD case
-        self.obj = obj
-        if not (self.obj in [None, "coefficient", "density"]):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'obj'! {self.obj}")
+        self.elec_object = elec_object
+        if not (self.elec_object in [None, "coefficient", "density"]):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'elec_object'! {self.elec_object}")
         self.propagator = propagator
         if not (self.propagator in [None, "rk4"]):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'propagator'! {self.propagator}")
@@ -246,7 +246,7 @@ class MQC(object):
         """), "  ")
         if (self.md_type != "BOMD"):
             dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
-            dynamics_info += f"  Propagation Scheme       = {self.obj:>16s}\n"
+            dynamics_info += f"  Propagation Scheme       = {self.elec_object:>16s}\n"
 
         # Print surface hopping variables
         if (self.md_type == "SH" or self.md_type == "SHXF"):
@@ -300,12 +300,12 @@ class MQC(object):
 
         if (self.md_type != "BOMD"):
             # BO coefficents, densities file header
-            if (self.obj == "density"):
+            if (self.elec_object == "density"):
                 tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "BOPOP", "w")
                 tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "BOCOH", "w")
-            elif (self.obj == "coefficient"):
+            elif (self.elec_object == "coefficient"):
                 tmp = f'{"#":5s} BO State Coefficients: state Re-Im; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "BOCOEF", "w")
                 if (self.l_print_dm):
@@ -351,13 +351,13 @@ class MQC(object):
 
         if (self.md_type != "BOMD"):
             # Write BOCOEF, BOPOP, BOCOH files
-            if (self.obj == "density"):
+            if (self.elec_object == "density"):
                 tmp = f'{istep + 1:9d}' + "".join([f'{self.mol.rho.real[ist, ist]:15.8f}' for ist in range(self.mol.nst)])
                 typewriter(tmp, unixmd_dir, "BOPOP", "a")
                 tmp = f'{istep + 1:9d}' + "".join([f"{self.mol.rho.real[ist, jst]:15.8f}{self.mol.rho.imag[ist, jst]:15.8f}" \
                     for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
                 typewriter(tmp, unixmd_dir, "BOCOH", "a")
-            elif (self.obj == "coefficient"):
+            elif (self.elec_object == "coefficient"):
                 tmp = f'{istep + 1:9d}' + "".join([f'{states.coef.real:15.8f}{states.coef.imag:15.8f}' \
                     for states in self.mol.states])
                 typewriter(tmp, unixmd_dir, "BOCOEF", "a")

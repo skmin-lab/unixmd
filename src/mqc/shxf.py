@@ -44,7 +44,7 @@ class SHXF(MQC):
         :param double dt: Time interval
         :param integer nsteps: Total step of nuclear propagation
         :param integer nesteps: Total step of electronic propagation
-        :param string obj: Representation for electronic state
+        :param string elec_object: Electronic equation of motions
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
@@ -61,12 +61,12 @@ class SHXF(MQC):
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
-        obj="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
+        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
         hop_reject="reverse", threshold=0.01, sigma=None, l_xf1d=False, init_coef=None, \
         l_econs_state=True, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            obj, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
+            elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
 
         # Initialize SH variables
         self.rstate = istate
@@ -480,7 +480,7 @@ class SHXF(MQC):
         self.l_coh = [False] * self.mol.nst
         self.l_first = [False] * self.mol.nst
 
-        if (self.obj == "coefficient"):
+        if (self.elec_object == "coefficient"):
             for ist in range(self.mol.nst):
                 if (ist == one_st):
                     self.mol.states[ist].coef /= np.absolute(self.mol.states[ist].coef).real

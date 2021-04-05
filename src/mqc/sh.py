@@ -15,7 +15,7 @@ class SH(MQC):
         :param double dt: Time interval
         :param integer nsteps: Total step of nuclear propagation
         :param integer nesteps: Total step of electronic propagation
-        :param string obj: Representation for electronic state
+        :param string elec_object: Electronic equation of motions
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
@@ -30,12 +30,12 @@ class SH(MQC):
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
-        obj="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
+        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
         hop_reject="reverse", init_coef=None, deco_correction=None, edc_parameter=0.1, \
         unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            obj, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
+            elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
 
         # Initialize SH variables
         self.rstate = istate
@@ -348,7 +348,7 @@ class SH(MQC):
     def correct_deco_idc(self):
         """ Routine to decoherence correction, instantaneous decoherence correction(IDC) scheme
         """
-        if (self.obj == "coefficient"):
+        if (self.elec_object == "coefficient"):
             for states in self.mol.states:
                 states.coef = 0. + 0.j
             self.mol.states[self.rstate].coef = 1. + 0.j
@@ -364,7 +364,7 @@ class SH(MQC):
             np.abs(self.mol.states[ist].energy - self.mol.states[self.rstate].energy))) for ist in range(self.mol.nst)])
         rho_update = 1.
 
-        if (self.obj == "coefficient"):
+        if (self.elec_object == "coefficient"):
             # Update coefficients
             for ist in range(self.mol.nst):
                 # self.mol.states[self.rstate] need other updated coefficients
@@ -380,7 +380,7 @@ class SH(MQC):
                     self.mol.rho[ist, jst] = self.mol.states[ist].coef.conjugate() * self.mol.states[jst].coef
                     self.mol.rho[jst, ist] = self.mol.rho[ist, jst].conjugate()
 
-        elif (self.obj == "density"):
+        elif (self.elec_object == "density"):
             # save old running state element for update running state involved elements
             rho_old_rstate = self.mol.rho[self.rstate, self.rstate]
             for ist in range(self.mol.nst):

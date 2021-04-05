@@ -36,7 +36,7 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **nesteps**                | Total step of electronic propagation                 | *20*         |
 | *(integer)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **obj**                    | Representation for electronic state                  | *'density'*  |
+| **elec_object**            | Electronic equation of motions                       | *'density'*    |
 | *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **propagator**             | Electronic propagator                                | *'rk4'*      |
@@ -107,9 +107,9 @@ Detailed description of the parameters
 
 \
 
-- **obj** *(string)*- Default: *'density'*
+- **elec_object** *(string)*- Default: *'density'*
   
-  The **obj** parameter determines the representation for the electronic state.
+  The **elec_object** parameter determines the representation for the electronic state.
    
   + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}^{(I)}(t)\}`
   + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}^{(I)}(t)\}`
@@ -127,7 +127,7 @@ Detailed description of the parameters
   
   This parameter determines whether to write output files for density matrix elements ('BOPOP', 'BOCOH') or not.
   If this option is set to *True*, then the 'BOPOP' and 'BOCOH' files are written during the dynamics.
-  This option is effective only if the **obj** parameter is set to *'coefficient'* or ignored otherwise.
+  This option is effective only if the **elec_object** parameter is set to *'coefficient'* or ignored otherwise.
 
 \
 
