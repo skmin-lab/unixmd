@@ -419,7 +419,8 @@ class CT(MQC):
         super().write_md_output(unixmd_dir, istep)
 
         # Write decoherence information
-        self.write_deco(itrajectory, unixmd_dir, istep)
+        if (istep != -1):
+            self.write_deco(itrajectory, unixmd_dir, istep)
 
     def write_deco(self, itrajectory, unixmd_dir, istep):
         """ Write CT-based decoherence information
@@ -433,21 +434,34 @@ class CT(MQC):
 
         # Write auxiliary trajectories
         if (self.verbosity >= 2):
+          
             #tmp= f'{istep+1:8d}' + \
             #    "".join([f'{self.count_ntrajs[iat]:15.8f}' for iat in range(self.nat)])
             #typewriter(tmp, dirs[itraj], f"NNTRAJ", "a")
             #tmp= f'{istep+1:8d}{self.sigma_lk[itraj, 0, 0, 0]:15.8f}'
             #typewriter(tmp, dirs[itraj], f"SIGMA", "a")
-            #tmp= f'{istep+1:8d}{self.slope_i[itraj, 0, 0]:15.8f}'
-            #typewriter(tmp, dirs[itraj], f"SLOPE", "a")
-            #tmp= f'{istep+1:8d}{self.center_lk[itraj, 0, 0, 0]:15.8f}'
-            #typewriter(tmp, dirs[itraj], f"CENTER", "a")
+            tmp = f'{self.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}sigma_x{"":5s}sigma_y{"":5s}sigma_z{"":5s}nntraj' + \
+                "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
+                "".join([f'{self.sigma_lk[itrajectory, 0, iat, idim]:15.8f}' for idim in range(self.ndim)]) + \
+                f'{self.count_ntrajs[itrajectory, iat]:15.8f}' for iat in range(self.nat)])
+            typewriter(tmp, unixmd_dir, f"SIGMA", "a")
+            
+            tmp = f'{self.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}slope' + \
+                "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
+                "".join([f'{self.slope_i[itrajectory, iat, idim]:15.8f}' for idim in range(self.ndim)]) for iat in range(self.nat)])
+            typewriter(tmp, unixmd_dir, f"SLOPE", "a")
+
             # Write quantum momenta
             index_lk = -1
             for ist in range(self.nst):
                 for jst in range(ist + 1, self.nst):
                     index_lk += 1
-                    tmp = f'{self.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum (au)' + \
+                    tmp = f'{self.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}QMOM_center (au)' + \
+                        "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
+                        "".join([f'{self.center_lk[itrajectory, index_lk, iat, idim]:15.8f}' for idim in range(self.ndim)]) for iat in range(self.nat)])
+                    typewriter(tmp, unixmd_dir, f"CENTER_{ist}_{jst}", "a")
+
+                    tmp = f'{self.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}QMOM (au)' + \
                         "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
                         "".join([f'{self.qmom[itrajectory, index_lk, iat, idim]:15.8f}' for idim in range(self.ndim)]) for iat in range(self.nat)])
                     typewriter(tmp, unixmd_dir, f"QMOM_{ist}_{jst}", "a")
@@ -461,7 +475,7 @@ class CT(MQC):
             # Write auxiliary variables
             for ist in range(self.mol.nst):
                 # Write auxiliary phase
-                tmp = f'{self.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum (au)' + \
+                tmp = f'{self.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Phase (au)' + \
                     "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
                     "".join([f'{self.phase[itrajectory, ist, iat, idim]:15.8f}' for idim in range(self.ndim)]) for iat in range(self.nat)])
                 typewriter(tmp, unixmd_dir, f"PHASE_{ist}", "a")
