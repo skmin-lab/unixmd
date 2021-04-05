@@ -98,7 +98,7 @@ class EhXF(MQC):
 
             :param object qm: qm object containing on-the-fly calculation infomation
             :param object mm: mm object containing MM calculation infomation
-            :param string output_dir: location of input directory
+            :param string output_dir: Name of directory where outputs to be saved.
             :param boolean l_save_qm_log: logical for saving QM calculation log
             :param boolean l_save_mm_log: logical for saving MM calculation log
             :param boolean l_save_scr: logical for saving scratch directory

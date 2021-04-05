@@ -37,7 +37,7 @@ class Eh(MQC):
 
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
-            :param string output_dir: Location of input directory
+            :param string output_dir: Name of directory where outputs to be saved.
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
             :param boolean l_save_scr: Logical for saving scratch directory

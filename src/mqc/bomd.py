@@ -22,12 +22,12 @@ class BOMD(MQC):
         super().__init__(molecule, thermostat, istate, dt, nsteps, None, None, None, \
             False, None, None, unit_dt, out_freq, verbosity)
 
-    def run(self, qm, mm=None, input_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
+    def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to BOMD
 
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
-            :param string input_dir: Location of input directory
+            :param string output_dir: Name of directory where outputs to be saved.
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
             :param boolean l_save_scr: Logical for saving scratch directory
@@ -35,7 +35,7 @@ class BOMD(MQC):
         """
         # Initialize UNI-xMD
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
-             self.run_init(qm, mm, input_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
+             self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
         bo_list = [self.istate]
         qm.calc_coupling = False
         self.print_init(qm, mm, restart)
