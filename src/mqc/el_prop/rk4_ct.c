@@ -5,28 +5,28 @@
 #include <string.h>
 #include "derivs_ct.h"
 
-// Routine for coefficient propagation scheme in rk4 solver
+// Routine for coefficient elec_object scheme in rk4 solver
 static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *energy_old,
     double **nacme, double **nacme_old, double **k_lk, double complex *coef);
 
-// Routine for density propagation scheme in rk4 solver
+// Routine for density elec_object scheme in rk4 solver
 static void rk4_rho(int nst, int nesteps, double dt, double *energy, double *energy_old,
     double **nacme, double **nacme_old, double **k_lk, double complex **rho);
 
-// Interface routine for propagation scheme in rk4 solver
-static void rk4(int nst, int nesteps, double dt, char *propagation, double *energy, double *energy_old,
+// Interface routine for elec_object scheme in rk4 solver
+static void rk4(int nst, int nesteps, double dt, char *elec_object, double *energy, double *energy_old,
     double **nacme, double **nacme_old, double **k_lk, double complex *coef, double complex **rho){
 
-    if(strcmp(propagation, "coefficient") == 0){
+    if(strcmp(elec_object, "coefficient") == 0){
         rk4_coef(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, k_lk, coef);
     }
-    else if(strcmp(propagation, "density") == 0){
+    else if(strcmp(elec_object, "density") == 0){
         rk4_rho(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, k_lk, rho);
     }
 
 }
 
-// Routine for coefficient propagation scheme in rk4 solver
+// Routine for coefficient elec_object scheme in rk4 solver
 static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *energy_old,
     double **nacme, double **nacme_old, double **k_lk, double complex *coef){
 
@@ -140,7 +140,7 @@ static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *en
 
 }
 
-// Routine for density propagation scheme in rk4 solver
+// Routine for density elec_object scheme in rk4 solver
 static void rk4_rho(int nst, int nesteps, double dt, double *energy, double *energy_old,
     double **nacme, double **nacme_old, double **k_lk, double complex **rho){
 
