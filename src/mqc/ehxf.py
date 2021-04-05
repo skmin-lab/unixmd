@@ -9,7 +9,7 @@ import pickle
 class Auxiliary_Molecule(object):
     """ Class for auxiliary molecule that is used for the calculation of decoherence term
 
-        :param object molecule: molecule object
+        :param object molecule: Molecule object
     """
     def __init__(self, molecule):
         # Initialize auxiliary molecule
@@ -27,25 +27,25 @@ class Auxiliary_Molecule(object):
 class EhXF(MQC):
     """ Class for Ehrenfest-XF dynamics
 
-        :param object molecule: molecule object
-        :param object thermostat: thermostat type
-        :param integer istate: initial adiabatic state
-        :param double dt: time interval
-        :param integer nsteps: nuclear step
-        :param integer nesteps: electronic step
+        :param object molecule: Molecule object
+        :param object thermostat: Thermostat type
+        :param integer istate: Initial state
+        :param double dt: Time interval
+        :param integer nsteps: Total step of nuclear propagation
+        :param integer nesteps: Total step of electronic propagation
         :param string obj: Representation for electronic state
         :param string propagator: Electronic propagator
-        :param boolean l_print_dm: logical to print BO population and coherence
-        :param boolean l_adj_nac: logical to adjust nonadiabatic coupling
-        :param double threshold: electronic density threshold for decoherence term calculation
-        :param sigma: width of nuclear wave packet of auxiliary trajectory
+        :param boolean l_print_dm: Logical to print BO population and coherence
+        :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
+        :param double threshold: Electronic density threshold for decoherence term calculation
+        :param sigma: Width of nuclear wave packet of auxiliary trajectory
         :type sigma: double or double,list
-        :param init_coef: initial BO coefficient
+        :param init_coef: Initial BO coefficient
         :type init_coef: double, list or complex, list
-        :param boolean l_econs_state: logical to use identical total energies for auxiliary trajectories
-        :param string unit_dt: unit of time step (fs = femtosecond, au = atomic unit)
-        :param integer out_freq: frequency of printing output
-        :param integer verbosity: verbosity of output
+        :param boolean l_econs_state: Logical to use identical total energies for all auxiliary trajectories
+        :param string unit_dt: Unit of time step (fs = femtosecond, au = atomic unit)
+        :param integer out_freq: Frequency of printing output
+        :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         obj="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, \
@@ -96,13 +96,13 @@ class EhXF(MQC):
     def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to Ehrenfest-XF dynamics
 
-            :param object qm: qm object containing on-the-fly calculation infomation
-            :param object mm: mm object containing MM calculation infomation
+            :param object qm: QM object containing on-the-fly calculation infomation
+            :param object mm: MM object containing MM calculation infomation
             :param string output_dir: Name of directory where outputs to be saved.
-            :param boolean l_save_qm_log: logical for saving QM calculation log
-            :param boolean l_save_mm_log: logical for saving MM calculation log
-            :param boolean l_save_scr: logical for saving scratch directory
-            :param string restart: option for controlling dynamics restarting
+            :param boolean l_save_qm_log: Logical for saving QM calculation log
+            :param boolean l_save_mm_log: Logical for saving MM calculation log
+            :param boolean l_save_scr: Logical for saving scratch directory
+            :param string restart: Option for controlling dynamics restarting
         """
         # Initialize UNI-xMD
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
@@ -346,8 +346,8 @@ class EhXF(MQC):
     def write_md_output(self, unixmd_dir, istep):
         """ Write output files
 
-            :param string unixmd_dir: unixmd directory
-            :param integer istep: current MD step
+            :param string unixmd_dir: PyUNIxMD directory
+            :param integer istep: Current MD step
         """
         # Write the common part
         super().write_md_output(unixmd_dir, istep)
@@ -358,8 +358,8 @@ class EhXF(MQC):
     def write_deco(self, unixmd_dir, istep):
         """ Write XF-based decoherence information
 
-            :param string unixmd_dir: unixmd directory
-            :param integer istep: current MD step
+            :param string unixmd_dir: PyUNIxMD directory
+            :param integer istep: Current MD step
         """
         # Write time-derivative density matrix elements in DOTPOTD
         tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopd])
@@ -392,8 +392,8 @@ class EhXF(MQC):
     def print_init(self, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
-            :param object qm: qm object containing on-the-fly calculation infomation
-            :param object mm: mm object containing MM calculation infomation
+            :param object qm: QM object containing on-the-fly calculation infomation
+            :param object mm: MM object containing MM calculation infomation
         """
         # Print initial information about molecule, qm, mm and thermostat
         super().print_init(qm, mm, restart)
@@ -422,7 +422,7 @@ class EhXF(MQC):
     def print_step(self, istep):
         """ Routine to print each steps infomation about dynamics
 
-            :param integer istep: current MD step
+            :param integer istep: Current MD step
         """
         ctemp = self.mol.ekin * 2. / float(self.mol.ndof) * au_to_K
         norm = 0.

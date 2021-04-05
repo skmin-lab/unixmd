@@ -64,7 +64,7 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | *(double/complex, list)*   |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **l_econs_state**          | Logical to use identical total energies              | *True*       |
-| *(boolean)*                | for auxiliary trajectories                           |              |
+| *(boolean)*                | for all auxiliary trajectories                       |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **unit_dt**                | Unit of time interval                                | *'fs'*       |
 | *(string)*                 |                                                      |              |
@@ -191,7 +191,7 @@ Detailed description of the parameters
 
 - **l_econs_state** *(boolean)* - Default: *True*
 
-  This parameter determines whether the total energies of the auxiliary trajectories are identical or not.
+  This parameter determines whether the total energies of all auxiliary trajectories are identical or not.
   If this is set to *True*, auxiliary trajectories have same total energy, or they all have different total energy.
 
 \

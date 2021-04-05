@@ -55,7 +55,7 @@ class SHXF(MQC):
         :type sigma: double or double,list
         :param init_coef: Initial BO coefficient
         :type init_coef: double, list or complex, list
-        :param boolean l_econs_state: Logical to use identical total energies for auxiliary trajectories
+        :param boolean l_econs_state: Logical to use identical total energies for all auxiliary trajectories
         :param string unit_dt: Unit of time interval
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
