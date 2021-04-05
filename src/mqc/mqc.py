@@ -14,18 +14,18 @@ class MQC(object):
         :param double dt: Time interval
         :param integer nsteps: Nuclear step
         :param integer nesteps: Electronic step
-        :param string propagation: Propagation scheme
+        :param string elec_object: Electronic equation of motions
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
-        :param boolean l_adjnac: Logical to adjust nonadiabatic coupling
-        :param initial_coefficient: Initial BO coefficient
-        :type initial_coefficient: Double, list or complex, list
+        :param boolean l_adj_nac: Logical to adjust nonadiabatic coupling
+        :param initial_coef: Initial BO coefficient
+        :type initial_coef: Double, list or complex, list
         :param string unit_dt: Unit of time step (fs = femtosecond, au = atomic unit)
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat, istate, dt, nsteps, nesteps, \
-        propagation, propagator, l_print_dm, l_adjnac, init_coefficient, unit_dt, out_freq, verbosity):
+        elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -57,16 +57,16 @@ class MQC(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Index for initial state must be smaller than number of states! {self.istate}")
 
         # None for BOMD case
-        self.propagation = propagation
-        if not (self.propagation in [None, "coefficient", "density"]):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'propagation'! {self.propagation}")
+        self.elec_object = elec_object
+        if not (self.elec_object in [None, "coefficient", "density"]):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'elec_object'! {self.elec_object}")
         self.propagator = propagator
         if not (self.propagator in [None, "rk4"]):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'propagator'! {self.propagator}")
 
         self.l_print_dm = l_print_dm
 
-        self.l_adjnac = l_adjnac
+        self.l_adj_nac = l_adj_nac
 
         self.rforce = np.zeros((self.mol.nat, self.mol.ndim))
 
@@ -74,17 +74,17 @@ class MQC(object):
         self.verbosity = verbosity
 
         # Initialize coefficients and densities
-        self.mol.get_coefficient(init_coefficient, self.istate)
+        self.mol.get_coefficient(init_coef, self.istate)
 
-    def run_init(self, qm, mm, output_dir, save_qm_log, save_mm_log, save_scr, restart):
+    def run_init(self, qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart):
         """ Initialize MQC dynamics
 
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
             :param string output_dir: Location of input directory
-            :param boolean save_qm_log: Logical for saving QM calculation log
-            :param boolean save_mm_log: Logical for saving MM calculation log
-            :param boolean save_scr: Logical for saving scratch directory
+            :param boolean l_save_qm_log: Logical for saving QM calculation log
+            :param boolean l_save_mm_log: Logical for saving MM calculation log
+            :param boolean l_save_scr: Logical for saving scratch directory
             :param string restart: Option for controlling dynamics restarting
         """
         # Check whether the restart option is right
@@ -96,9 +96,9 @@ class MQC(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Ehrenfest dynamics needs NACV! {self.mol.l_nacme}")
 
         # Check compatibility of variables for QM and MM calculation
-        if ((self.mol.qmmm and mm == None) or (not self.mol.qmmm and mm != None)):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Both self.mol.qmmm and mm object is necessary! {self.mol.qmmm} and {mm}")
-        if (self.mol.qmmm and mm != None):
+        if ((self.mol.l_qmmm and mm == None) or (not self.mol.l_qmmm and mm != None)):
+            raise ValueError (f"( {self.md_type}.{call_name()} ) Both self.mol.l_qmmm and mm object is necessary! {self.mol.l_qmmm} and {mm}")
+        if (self.mol.l_qmmm and mm != None):
             self.check_qmmm(qm, mm)
 
         # Set directory information
@@ -107,17 +107,17 @@ class MQC(object):
         unixmd_dir = os.path.join(base_dir, "md")
         qm_log_dir = os.path.join(base_dir, "qm_log")
         mm_log_dir = None
-        if (self.mol.qmmm and mm != None):
+        if (self.mol.l_qmmm and mm != None):
             mm_log_dir = os.path.join(base_dir, "mm_log")
 
         # Check and make directories
         if (restart == "append"):
             if (not os.path.exists(unixmd_dir)):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Directory to be appended for restart not found! {restart} and {unixmd_dir}")
-            if (not os.path.exists(unixmd_dir) and save_qm_log):
+            if (not os.path.exists(unixmd_dir) and l_save_qm_log):
                 os.makedirs(qm_log_dir)
-            if (self.mol.qmmm and mm != None):
-                if (not os.path.exists(mm_log_dir) and save_mm_log):
+            if (self.mol.l_qmmm and mm != None):
+                if (not os.path.exists(mm_log_dir) and l_save_mm_log):
                     os.makedirs(mm_log_dir)
         else:
             if (os.path.exists(unixmd_dir)):
@@ -126,13 +126,13 @@ class MQC(object):
 
             if (os.path.exists(qm_log_dir)):
                 shutil.move(qm_log_dir, qm_log_dir + "_old_" + str(os.getpid()))
-            if (save_qm_log):
+            if (l_save_qm_log):
                 os.makedirs(qm_log_dir)
 
-            if (self.mol.qmmm and mm != None):
+            if (self.mol.l_qmmm and mm != None):
                 if (os.path.exists(mm_log_dir)):
                     shutil.move(mm_log_dir, mm_log_dir + "_old_" + str(os.getpid()))
-                if (save_mm_log):
+                if (l_save_mm_log):
                     os.makedirs(mm_log_dir)
 
             self.touch_file(unixmd_dir)
@@ -221,7 +221,7 @@ class MQC(object):
           QM Program               = {qm.qm_prog:>16s}
           QM Method                = {qm.qm_method:>16s}
         """)
-        if (self.mol.qmmm and mm != None):
+        if (self.mol.l_qmmm and mm != None):
             dynamics_info += textwrap.indent(textwrap.dedent(f"""\
               MM Program               = {mm.mm_prog:>16s}
               QMMM Scheme              = {mm.scheme:>16s}
@@ -246,12 +246,12 @@ class MQC(object):
         """), "  ")
         if (self.md_type != "BOMD"):
             dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
-            dynamics_info += f"  Propagation Scheme       = {self.propagation:>16s}\n"
+            dynamics_info += f"  Propagation Scheme       = {self.elec_object:>16s}\n"
 
         # Print surface hopping variables
         if (self.md_type == "SH" or self.md_type == "SHXF"):
-            dynamics_info += f"\n  Velocity Rescale in Hop  = {self.hop_rescale:>16s}\n"
-            dynamics_info += f"  Rescale when Hop Reject  = {self.vel_reject:>16s}\n"
+            dynamics_info += f"\n  Rescaling after Hop      = {self.hop_rescale:>16s}\n"
+            dynamics_info += f"  Rescaling after Reject   = {self.hop_reject:>16s}\n"
 
         # Print XF variables
         if (self.md_type == "SHXF" or self.md_type == "EhXF"):
@@ -300,12 +300,12 @@ class MQC(object):
 
         if (self.md_type != "BOMD"):
             # BO coefficents, densities file header
-            if (self.propagation == "density"):
+            if (self.elec_object == "density"):
                 tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "BOPOP", "w")
                 tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "BOCOH", "w")
-            elif (self.propagation == "coefficient"):
+            elif (self.elec_object == "coefficient"):
                 tmp = f'{"#":5s} BO State Coefficients: state Re-Im; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "BOCOEF", "w")
                 if (self.l_print_dm):
@@ -313,8 +313,6 @@ class MQC(object):
                     typewriter(tmp, unixmd_dir, "BOPOP", "w")
                     tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
                     typewriter(tmp, unixmd_dir, "BOCOH", "w")
-            else:
-                raise ValueError (f"( {call_name()} ) Other propagator not implemented! {propagation}")
 
             # NACME file header
             tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
@@ -353,13 +351,13 @@ class MQC(object):
 
         if (self.md_type != "BOMD"):
             # Write BOCOEF, BOPOP, BOCOH files
-            if (self.propagation == "density"):
+            if (self.elec_object == "density"):
                 tmp = f'{istep + 1:9d}' + "".join([f'{self.mol.rho.real[ist, ist]:15.8f}' for ist in range(self.mol.nst)])
                 typewriter(tmp, unixmd_dir, "BOPOP", "a")
                 tmp = f'{istep + 1:9d}' + "".join([f"{self.mol.rho.real[ist, jst]:15.8f}{self.mol.rho.imag[ist, jst]:15.8f}" \
                     for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
                 typewriter(tmp, unixmd_dir, "BOCOH", "a")
-            elif (self.propagation == "coefficient"):
+            elif (self.elec_object == "coefficient"):
                 tmp = f'{istep + 1:9d}' + "".join([f'{states.coef.real:15.8f}{states.coef.imag:15.8f}' \
                     for states in self.mol.states])
                 typewriter(tmp, unixmd_dir, "BOCOEF", "a")

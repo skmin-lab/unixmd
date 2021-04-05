@@ -15,37 +15,37 @@ class Eh(MQC):
         :param double dt: Time interval
         :param integer nsteps: Total step of nuclear propation
         :param integer nesteps: Total step of electronic propagation
-        :param string propagation: Propagation scheme
+        :param string elec_object: Electronic equation of motions
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
-        :param boolean l_adjnac: Logical to adjust nonadiabatic coupling
-        :param init_coefficient: Initial BO coefficient
-        :type init_coefficient: Double, list or complex, list
+        :param boolean l_adj_nac: Logical to adjust nonadiabatic coupling
+        :param init_coef: Initial BO coefficient
+        :type init_coef: Double, list or complex, list
         :param string unit_dt: Unit of time step (fs = femtosecond, au = atomic unit)
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
-        propagation="density", propagator="rk4", l_print_dm=True, l_adjnac=True, \
-        init_coefficient=None, unit_dt="fs", out_freq=1, verbosity=0):
+        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, \
+        init_coef=None, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            propagation, propagator, l_print_dm, l_adjnac, init_coefficient, unit_dt, out_freq, verbosity)
+            elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
 
-    def run(self, qm, mm=None, output_dir="./", save_qm_log=False, save_mm_log=False, save_scr=True, restart=None):
+    def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to Ehrenfest dynamics
 
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
-            :param string output_dir: Location of input directory
-            :param boolean save_qm_log: Logical for saving QM calculation log
-            :param boolean save_mm_log: Logical for saving MM calculation log
-            :param boolean save_scr: Logical for saving scratch directory
+            :param string output_dir: Name of directory where outputs to be saved.
+            :param boolean l_save_qm_log: Logical for saving QM calculation log
+            :param boolean l_save_mm_log: Logical for saving MM calculation log
+            :param boolean l_save_scr: Logical for saving scratch directory
             :param string restart: Option for controlling dynamics restarting
         """
         # Initialize UNI-xMD
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
-             self.run_init(qm, mm, output_dir, save_qm_log, save_mm_log, save_scr, restart)
+             self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
         bo_list = [ist for ist in range(self.mol.nst)]
         qm.calc_coupling = True
         self.print_init(qm, mm, restart)
@@ -55,7 +55,7 @@ class Eh(MQC):
             self.istep = -1
             self.mol.reset_bo(qm.calc_coupling)
             qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
-            if (self.mol.qmmm and mm != None):
+            if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
             self.mol.get_nacme()
 
@@ -84,10 +84,11 @@ class Eh(MQC):
             self.mol.backup_bo()
             self.mol.reset_bo(qm.calc_coupling)
             qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
-            if (self.mol.qmmm and mm != None):
+            if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
-            self.mol.adjust_nac()
+            if (self.l_adj_nac):
+                self.mol.adjust_nac()
 
             self.cl_update_velocity()
 
@@ -112,12 +113,12 @@ class Eh(MQC):
                 pickle.dump({'qm':qm, 'md':self}, f)
 
         # Delete scratch directory
-        if (not save_scr):
+        if (not l_save_scr):
             tmp_dir = os.path.join(unixmd_dir, "scr_qm")
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
 
-            if (self.mol.qmmm and mm != None):
+            if (self.mol.l_qmmm and mm != None):
                 tmp_dir = os.path.join(unixmd_dir, "scr_mm")
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)

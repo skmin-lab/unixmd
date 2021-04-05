@@ -24,7 +24,7 @@ charge penetration effects, and HIPPO (Hydrogen-like Interatomic Polarizable POt
 | **vdw**                | Van der Waals interactions                     | *None*              |
 | *(string)*             |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
-| **periodic**           | Use periodicity in the calculations            | *False*             |
+| **l_periodic**         | Use periodicity in the calculations            | *False*             |
 | *(boolean)*            |                                                |                     |
 +------------------------+------------------------------------------------+---------------------+
 | **cell_par**           | Cell lattice parameters (lengths and angles)   | *6 \* [ 0.0 ]*      |
@@ -95,9 +95,9 @@ Detailed description of parameters
 
 \
 
-- **periodic** *(boolean)* - Default: *False*
+- **l_periodic** *(boolean)* - Default: *False*
 
-  When **periodic** is set to *True*, a periodicity is considered in the calculation.
+  When **l_periodic** is set to *True*, a periodicity is considered in the calculation.
   Only :math:`\Gamma`-point sampling is supported with Tinker when the periodicity is considered.
 
 \

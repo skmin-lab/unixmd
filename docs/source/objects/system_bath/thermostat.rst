@@ -10,9 +10,9 @@ case that no thermostating process is needed). The following are the options.
 
 .. code-block:: python
 
-   from thermostat import *
+   import thermostat
 
-   bathT = Rescale1(temperature=300.0, nrescale=20) # velocity rescaling thermostat
+   bathT = thermostat.Rescale1(temperature=300.0, nrescale=20) # velocity rescaling thermostat
 
 Rescale1
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

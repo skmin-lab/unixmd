@@ -9,57 +9,57 @@ class SSR(DFTBplus):
     """ Class for SSR method of DFTB+
 
         :param object molecule: Molecule object
-        :param boolean scc: Include self-consistent charge (SCC) scheme
+        :param boolean l_scc: Include self-consistent charge (SCC) scheme
         :param double scc_tol: Stopping criteria for the SCC iterations
         :param integer scc_max_iter: Maximum number of SCC iterations
-        :param boolean ocdftb: Include onsite correction to SCC term
-        :param boolean lcdftb: Include long-range corrected functional
+        :param boolean l_onsite: Include onsite correction to SCC term
+        :param boolean l_range_sep: Include long-range corrected functional
         :param string lc_method: Algorithms for LC-DFTB
-        :param boolean ssr22: Use SSR(2,2) calculation?
-        :param boolean ssr44: Use SSR(4,4) calculation?
+        :param boolean l_ssr22: Use SSR(2,2) calculation?
+        :param boolean l_ssr44: Use SSR(4,4) calculation?
         :param string guess: Initial guess method for SCC scheme
         :param string guess_file: Initial guess file for eigenvetors
-        :param boolean state_interactions: Include state-interaction terms to SA-REKS
+        :param boolean l_state_interactions: Include state-interaction terms to SA-REKS
         :param double shift: Level shifting value in SCC iterations
         :param double,list tuning: Scaling factor for atomic spin constants
         :param string cpreks_grad_alg: Algorithms used in CP-REKS equations
         :param double cpreks_grad_tol: Tolerance used in the conjugate-gradient based algorithms
-        :param boolean save_memory: Save memory in cache used in CP-REKS equations
+        :param boolean l_save_memory: Save memory in cache used in CP-REKS equations
         :param string embedding: Charge-charge embedding options
-        :param boolean periodic: Use periodicity in the calculations
+        :param boolean l_periodic: Use periodicity in the calculations
         :param double,list cell_length: The lattice vectors of periodic unit cell
         :param string sk_path: Path for Slater-Koster files
         :param string install_path: Path for DFTB+ install directory
         :param integer nthreads: Number of threads in the calculations
         :param string version: Version of DFTB+
     """
-    def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=1000, ocdftb=False, \
-        lcdftb=False, lc_method="MatrixBased", ssr22=False, ssr44=False, guess="h0", \
-        guess_file="./eigenvec.bin", state_interactions=False, shift=0.3, tuning=None, \
-        cpreks_grad_alg="pcg", cpreks_grad_tol=1E-8, save_memory=False, embedding=None, \
-        periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.], sk_path="./", \
+    def __init__(self, molecule, l_scc=True, scc_tol=1E-6, scc_max_iter=1000, l_onsite=False, \
+        l_range_sep=False, lc_method="MatrixBased", l_ssr22=False, l_ssr44=False, guess="h0", \
+        guess_file="./eigenvec.bin", l_state_interactions=False, shift=0.3, tuning=None, \
+        cpreks_grad_alg="pcg", cpreks_grad_tol=1E-8, l_save_memory=False, embedding=None, \
+        l_periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.], sk_path="./", \
         install_path="./", nthreads=1, version="20.1"):
         # Initialize DFTB+ common variables
         super(SSR, self).__init__(molecule, sk_path, install_path, nthreads, version)
 
         # Initialize DFTB+ SSR variables
-        self.scc = scc
+        self.l_scc = l_scc
         self.scc_tol = scc_tol
         self.scc_max_iter = scc_max_iter
 
-        self.ocdftb = ocdftb
-        if (self.ocdftb):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Onsite-correction not implemented! {self.ocdftb}")
+        self.l_onsite = l_onsite
+        if (self.l_onsite):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Onsite-correction not implemented! {self.l_onsite}")
 
-        self.lcdftb = lcdftb
+        self.l_range_sep = l_range_sep
         self.lc_method = lc_method
 
-        self.ssr22 = ssr22
-        self.ssr44 = ssr44
-        if (not (self.ssr22 or self.ssr44)):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Other active space not implemented! {self.ssr22 or self.ssr44}")
-        if (self.ssr44):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) REKS(4,4) not implemented! {self.ssr44}")
+        self.l_ssr22 = l_ssr22
+        self.l_ssr44 = l_ssr44
+        if (not (self.l_ssr22 or self.l_ssr44)):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Other active space not implemented! {self.l_ssr22 or self.l_ssr44}")
+        if (self.l_ssr44):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) REKS(4,4) not implemented! {self.l_ssr44}")
 
         # Set initial guess for eigenvectors
         self.guess = guess
@@ -67,7 +67,7 @@ class SSR(DFTBplus):
         if (not (self.guess == "h0" or self.guess == "read")):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
 
-        self.state_interactions = state_interactions
+        self.l_state_interactions = l_state_interactions
         self.shift = shift
 
         # Set scaling factor for atomic spin constants
@@ -78,14 +78,14 @@ class SSR(DFTBplus):
 
         self.cpreks_grad_alg = cpreks_grad_alg
         self.cpreks_grad_tol = cpreks_grad_tol
-        self.save_memory = save_memory
+        self.l_save_memory = l_save_memory
 
         self.embedding = embedding
         if (self.embedding != None):
             if (not (self.embedding == "mechanical" or self.embedding == "electrostatic")):
                 raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong charge embedding given! {self.embedding}")
 
-        self.periodic = periodic
+        self.l_periodic = l_periodic
         self.a_axis = np.copy(cell_length[0:3])
         self.b_axis = np.copy(cell_length[3:6])
         self.c_axis = np.copy(cell_length[6:9])
@@ -134,7 +134,7 @@ class SSR(DFTBplus):
         """
         # Make 'geometry.gen' file
         os.system("xyz2gen geometry.xyz")
-        if (self.periodic):
+        if (self.l_periodic):
             # Substitute C to S in first line
             file_be = open('geometry.gen', 'r')
             file_af = open('tmp.gen', 'w')
@@ -187,7 +187,7 @@ class SSR(DFTBplus):
         input_dftb += input_ham_init
 
         # SCC-DFTB option
-        if (self.scc):
+        if (self.l_scc):
             input_ham_scc = textwrap.indent(textwrap.dedent(f"""\
               SCC = Yes
               SCCTolerance = {self.scc_tol}
@@ -196,7 +196,7 @@ class SSR(DFTBplus):
             input_dftb += input_ham_scc
 
             # Read atomic spin constants used in DFTB/SSR
-            if (self.lcdftb):
+            if (self.l_range_sep):
                 spin_constant = ("\n" + " " * 14).join([f"  {itype} = {{ {spin_w_lc[f'{itype}']} }}" for itype in self.atom_type])
             else:
                 spin_constant = ("\n" + " " * 14).join([f"  {itype} = {{ {spin_w[f'{itype}']} }}" for itype in self.atom_type])
@@ -209,7 +209,7 @@ class SSR(DFTBplus):
             input_dftb += input_ham_spin
 
             # Long-range corrected DFTB (LC-DFTB) option
-            if (self.lcdftb):
+            if (self.l_range_sep):
                 input_ham_lc = textwrap.indent(textwrap.dedent(f"""\
                   RangeSeparated = LC{{
                     Screening = {self.lc_method}{{}}
@@ -229,7 +229,7 @@ class SSR(DFTBplus):
                 """), "  ")
                 input_dftb += input_ham_pc
 
-        if (self.periodic):
+        if (self.l_periodic):
             input_ham_periodic = textwrap.indent(textwrap.dedent(f"""\
               KPointsAndWeights = {{
                 0.0 0.0 0.0 1.0
@@ -277,7 +277,7 @@ class SSR(DFTBplus):
         # REKS Block
 
         # Energy functional options
-        if (self.ssr22):
+        if (self.l_ssr22):
             # Set active space and energy functional used in SA-REKS
             space = "SSR22"
             if (molecule.nst == 1):
@@ -293,7 +293,7 @@ class SSR(DFTBplus):
                 raise ValueError (f"( {self.qm_method}.{call_name()} ) Too many electrnoic states! {molecule.nst}")
 
             # Include state-interaction terms to SA-REKS; SI-SA-REKS
-            if (self.state_interactions):
+            if (self.l_state_interactions):
                 do_ssr = "Yes"
             else:
                 do_ssr = "No"
@@ -338,13 +338,13 @@ class SSR(DFTBplus):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong CP-REKS algorithm given! {self.cpreks_grad_alg}")
 
         # Save memory in cache to reduce computational cost in CP-REKS
-        if (self.save_memory):
+        if (self.l_save_memory):
             memory = "Yes"
         else:
             memory = "No"
  
         # NAC calculation options
-        if (molecule.nst == 1 or not self.state_interactions):
+        if (molecule.nst == 1 or not self.l_state_interactions):
             # Single-state REKS or SA-REKS state
             self.nac = "No"
         else:
@@ -357,7 +357,7 @@ class SSR(DFTBplus):
                 self.nac = "No"
 
         # Relaxed density options; It is determined automatically
-        if (molecule.qmmm and self.embedding == "electrostatic"):
+        if (molecule.l_qmmm and self.embedding == "electrostatic"):
             relaxed_density = "Yes"
         else:
             relaxed_density = "No"
@@ -449,7 +449,7 @@ class SSR(DFTBplus):
             energy = re.findall(tmp_e, log_out)
             energy = np.array(energy)
         else:
-            if (self.state_interactions):
+            if (self.l_state_interactions):
                 # SSR state
                 energy = re.findall('SSR state\s+\S+\s+([-]\S+)', log_out)
                 energy = np.array(energy)
@@ -466,7 +466,7 @@ class SSR(DFTBplus):
         # Force
         if (self.nac == "Yes"):
             # SHXF, SH, Eh : SSR state
-            if (molecule.qmmm):
+            if (molecule.l_qmmm):
                 for ist in range(molecule.nst):
                     tmp_g = f' {ist + 1} st state \(SSR\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
                     grad = re.findall(tmp_g, log_out)
@@ -491,7 +491,7 @@ class SSR(DFTBplus):
                     molecule.states[ist].force = - np.copy(grad)
         else:
             # BOMD : SSR state, SA-REKS state or single-state REKS
-            if (molecule.qmmm):
+            if (molecule.l_qmmm):
                 tmp_g = f' {bo_list[0] + 1} state \(\w+[-]*\w+\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
                 grad = re.findall(tmp_g, log_out)
                 grad = np.array(grad[0])

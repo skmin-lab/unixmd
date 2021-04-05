@@ -58,13 +58,13 @@ You can restart the dynamics simulation by reading the 'RESTART.bin' file using 
 | **output_dir**              | Name of directory where outputs to be saved     | *'./'*   |
 | *(string)*                  |                                                 |          |
 +-----------------------------+-------------------------------------------------+----------+
-| **save_qm_log**             | Logical for saving QM calculation log           | *False*  |
+| **l_save_qm_log**           | Logical for saving QM calculation log           | *False*  |
 | *(boolean)*                 |                                                 |          |
 +-----------------------------+-------------------------------------------------+----------+
-| **save_mm_log**             | Logical for saving MM calculation log           | *False*  |
+| **l_save_mm_log**           | Logical for saving MM calculation log           | *False*  |
 | *(boolean)*                 |                                                 |          |
 +-----------------------------+-------------------------------------------------+----------+
-| **save_scr**                | Logical for saving scratch directory            | *True*   |
+| **l_save_scr**              | Logical for saving scratch directory            | *True*   |
 | *(boolean)*                 |                                                 |          |
 +-----------------------------+-------------------------------------------------+----------+
 | **restart**                 | Option for controlling dynamics restarting      | *None*   |
@@ -77,9 +77,9 @@ You can restart the dynamics simulation by reading the 'RESTART.bin' file using 
 
    import mqc
 
-   md = mqc.SH(molecule=mol, nsteps=1000, dt=0.125, istate=1, propagation="density")
+   md = mqc.SH(molecule=mol, nsteps=1000, dt=0.125, istate=1, elec_object="density")
 
-   md.run(qm=qm, output_dir="./TRAJ.sh", save_scr=True, save_qm_log=False)
+   md.run(qm=qm, output_dir="./TRAJ.sh", l_save_scr=True, l_save_qm_log=False)
 
 .. note:: Making molecule and QM objects are omitted in this sample code,
    but they must be declared to use a run method in advance.
@@ -116,20 +116,20 @@ You can restart the dynamics simulation by reading the 'RESTART.bin' file using 
 
 \
 
-- **save_qm_log** *(boolean)* - Default: *False*
+- **l_save_qm_log** *(boolean)* - Default: *False*
 
   This parameter determines whether to save QM calculation logs. Logs will be saved in '**output_dir**/qm_log/'.
  
 \
 
-- **save_mm_log** *(boolean)* - Default: *False*
+- **l_save_mm_log** *(boolean)* - Default: *False*
 
   This parameter determines whether to save MM calculation logs. Logs will be saved in '**output_dir**/mm_log/'.
   If **MM** = *None*, this parameter will be ignored.
 
 \
 
-- **save_scr** *(boolean)* - Default: *True*
+- **l_save_scr** *(boolean)* - Default: *True*
 
   This parameter determines whether to save scratch output directory in '**output_dir**/md/scr_qm/' after QM calculation, and '**output_dir**/md/scr_mm/' after MM calculation.
 

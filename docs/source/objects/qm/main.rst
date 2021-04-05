@@ -50,4 +50,4 @@ The names of directories where the interface packages are and the classes of met
 
    qm = qm.molpro.CASSCF(molecule=mol, basis_set="6-31G", memory="500m", \
        active_elec=2, active_orb=2, cpscf_grad_tol=1E-7, \
-       qm_path="/opt/molpro2015.1/bin/", nthreads=1, version=2015.1)
+       qm_path="/opt/molpro2015.1/bin/", nthreads=1, version="2015.1")

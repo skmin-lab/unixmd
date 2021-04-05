@@ -44,19 +44,19 @@ where :math:`\mathbf{d}_{ij\nu}^{(I)}(t) = \int d \underline{\underline{\mathbf{
 | **nesteps**                | Total step of electronic propagation           | *20*        |
 | *(integer)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **propagation**            | Propagation scheme                             | *'density'* |
+| **elec_object**            | Electronic equation of motions                 | *'density'* |
 | *(string)*                 |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
 | **propagator**             | Electronic propagator                          | *'rk4'*     |
 | *(string)*                 |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **l_print_dm**             | Logical to print BO population and coherence   | *False*     |
+| **l_print_dm**             | Logical to print BO population and coherence   | *True*      |
 | *(boolean)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **l_adjnac**               | Logical to adjust nonadiabatic coupling        | *True*      |
+| **l_adj_nac**              | Logical to adjust nonadiabatic coupling        | *True*      |
 | *(boolean)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **init_coefficient**       | Initial BO coefficient                         | *None*      |
+| **init_coef**              | Initial BO coefficient                         | *None*      |
 | *(double/complex, list)*   |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
 | **unit_dt**                | Unit of time step                              | *'fs'*      |
@@ -99,9 +99,9 @@ Detailed description of parameters
 
 \
 
-- **propagation** *(string)* - Default: *'density'*
+- **elec_object** *(string)* - Default: *'density'*
 
-  The **propagation** parameter determines the representation for the electronic state.
+  The **elec_object** parameter determines the representation for the electronic state.
 
   + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}^{(I)}(t)\}`
   + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}^{(I)}(t)\}`
@@ -115,21 +115,21 @@ Detailed description of parameters
 
 \
 
-- **l_print_dm** *(boolean)* - Default: *False*
+- **l_print_dm** *(boolean)* - Default: *True*
 
   This parameter determines whether to write output files for the density matrix elements ('BOPOP', 'BOCOH') or not.
   If this option is set to *True*, then the 'BOPOP' and 'BOCOH' files are written during the dynamics.
-  This option is effective only if the parameter **propagation** is set to *'coefficient'* or ignored otherwise.
+  This option is effective only if the parameter **elec_object** is set to *'coefficient'* or ignored otherwise.
 
 \
 
-- **l_adjnac** *(boolean)* - Default: *True*
+- **l_adj_nac** *(boolean)* - Default: *True*
 
   If this parameter is set to *True*, the signs of the NACVs are adjusted to match the phases to the previous time step during the dynamics.
 
 \
 
-- **init_coefficient** *(double/complex, list)* - Default: *None*
+- **init_coef** *(double/complex, list)* - Default: *None*
 
   This parameter defines the initial BO coefficients.
   The elements can be either real or complex values.

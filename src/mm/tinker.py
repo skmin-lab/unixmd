@@ -11,7 +11,7 @@ class Tinker(MM_calculator):
         :param string scheme: Type of QM/MM scheme
         :param string embedding: Charge embedding options
         :param string vdw: Van der Walls interactions
-        :param boolean periodic: Use periodicity in the calculations
+        :param boolean l_periodic: Use periodicity in the calculations
         :param double,list cell_par: Cell lattice parameters (lengths and angles)
         :param string xyz_file: Initial tinker.xyz file
         :param string key_file: Initial tinker.key file
@@ -19,7 +19,7 @@ class Tinker(MM_calculator):
         :param integer nthreads: Number of threads in the calculations
         :param string version: Version of Tinker
     """
-    def __init__(self, molecule, scheme=None, embedding=None, vdw=None, periodic=False, \
+    def __init__(self, molecule, scheme=None, embedding=None, vdw=None, l_periodic=False, \
         cell_par=[0., 0., 0., 0., 0., 0.], xyz_file="./tinker.xyz", key_file="./tinker.key",
         mm_path="./", nthreads=1, version="8.7"):
         # Save name of MM calculator
@@ -41,7 +41,7 @@ class Tinker(MM_calculator):
             if (self.vdw != "lennardjones"):
                 raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong van der Waals interaction given! {self.vdw}")
 
-        self.periodic = periodic
+        self.l_periodic = l_periodic
         self.cell_par = cell_par
 
         self.xyz_file = xyz_file
@@ -153,7 +153,7 @@ class Tinker(MM_calculator):
             input_xyz2 = ""
 
             input_xyz2 += f" {molecule.nat_mm}\n"
-            if (self.periodic):
+            if (self.l_periodic):
                 input_xyz2 += " ".join([f"{ i:12.6f}" for i in self.cell_par]) + "\n"
 
             # Read 'tinker.xyz' file to obtain atom type and topology
@@ -193,7 +193,7 @@ class Tinker(MM_calculator):
             input_xyz12 = ""
 
             input_xyz12 += f" {molecule.nat}\n"
-            if (self.periodic):
+            if (self.l_periodic):
                 input_xyz12 += " ".join([f"{ i:12.6f}" for i in self.cell_par]) + "\n"
 
             # Read 'tinker.xyz' file to obtain atom type and topology
@@ -228,7 +228,7 @@ class Tinker(MM_calculator):
             input_xyz1 = ""
 
             input_xyz1 += f" {molecule.nat_qm}\n"
-            if (self.periodic):
+            if (self.l_periodic):
                 input_xyz1 += " ".join([f"{ i:12.6f}" for i in self.cell_par]) + "\n"
 
             # Read 'tinker.xyz' file to obtain atom type and topology
@@ -350,7 +350,7 @@ class Tinker(MM_calculator):
                 line = ""
             file_af.write(line)
 
-        if (self.periodic):
+        if (self.l_periodic):
             # Add periodic keywords to last line when periodicity is used
             input_periodic = textwrap.dedent(f"""\
             a-axis {self.cell_par[0]}

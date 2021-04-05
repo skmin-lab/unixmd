@@ -24,23 +24,23 @@ class Molecule(object):
         :param string geometry: A string containing atomic positions and velocities
         :param integer ndim: Dimension of space
         :param integer nstates: Number of BO states
-        :param boolean qmmm: Use the QM/MM scheme
+        :param boolean l_qmmm: Use the QM/MM scheme
         :param integer natoms_mm: Number of atoms in the MM region
         :param integer ndof: Degrees of freedom (if model is False, the molecular DoF is given.)
         :param string unit_pos: Unit of atomic positions
         :param string unit_vel: Unit of atomic velocities
         :param double charge: Total charge of the system
-        :param boolean model: Is the system a model system?
+        :param boolean l_model: Is the system a model system?
     """
-    def __init__(self, geometry, ndim=3, nstates=3, qmmm=False, natoms_mm=None, ndof=None, \
-        unit_pos='angs', unit_vel='au', charge=0., model=False):
+    def __init__(self, geometry, ndim=3, nstates=3, l_qmmm=False, natoms_mm=None, ndof=None, \
+        unit_pos='angs', unit_vel='au', charge=0., l_model=False):
         # Save name of Molecule class
         self.mol_type = self.__class__.__name__
 
         # Initialize input values
         self.ndim = ndim
         self.nst = nstates
-        self.model = model
+        self.l_model = l_model
 
         # Initialize geometry
         self.pos = []
@@ -50,9 +50,9 @@ class Molecule(object):
         self.read_geometry(geometry, unit_pos, unit_vel)
 
         # Initialize QM/MM method
-        self.qmmm = qmmm
+        self.l_qmmm = l_qmmm
         self.nat_mm = natoms_mm
-        if (self.qmmm):
+        if (self.l_qmmm):
             if (self.nat_mm == None):
                 raise ValueError (f"( {self.mol_type}.{call_name()} ) Number of atoms in MM region is essential for QMMM! {self.nat_mm}")
             self.nat_qm = self.nat - self.nat_mm
@@ -62,7 +62,7 @@ class Molecule(object):
             self.nat_qm = self.nat
 
         # Initialize system charge and number of electrons
-        if (not self.model):
+        if (not self.l_model):
             self.charge = charge
             self.get_nr_electrons()
         else:
@@ -70,7 +70,7 @@ class Molecule(object):
             self.nelec = 0
 
         # Initialize degrees of freedom
-        if (self.model):
+        if (self.l_model):
             if (ndof == None):
                 self.ndof = self.nat * self.ndim
             else:
@@ -112,7 +112,7 @@ class Molecule(object):
         self.l_nacme = False
 
         # Initialize point charges for QM/MM calculations
-        if (self.qmmm):
+        if (self.l_qmmm):
             self.mm_charge = np.zeros(self.nat_mm)
 
     def read_geometry(self, geometry, unit_pos, unit_vel):
@@ -175,9 +175,9 @@ class Molecule(object):
 
         if (unit_vel == 'au'):
             fac_vel = 1.
-        elif (unit_vel == 'A/ps'):
+        elif (unit_vel == 'angs/ps'):
             fac_vel = A_to_au / (1000.0 * fs_to_au)
-        elif (unit_vel == 'A/fs'):
+        elif (unit_vel == 'angs/fs'):
             fac_vel = A_to_au / fs_to_au
         else:
             raise ValueError (f"( {self.mol_type}.{call_name()} ) Invalid unit for velocity! {unit_vel}")
@@ -223,7 +223,7 @@ class Molecule(object):
         """
         self.ekin = np.sum(0.5 * self.mass * np.sum(self.vel ** 2, axis=1))
 
-        if (self.qmmm):
+        if (self.l_qmmm):
             # Calculate the kinetic energy for QM atoms
             self.ekin_qm = np.sum(0.5 * self.mass[0:self.nat_qm] * np.sum(self.vel[0:self.nat_qm] ** 2, axis=1))
         else:
@@ -265,8 +265,8 @@ class Molecule(object):
     def get_coefficient(self, coef, istate):
         """ Get initial coefficient
             
-            :param coefficient: Initial BO coefficient
-            :type coefficient: double, list or complex, list
+            :param coef: Initial BO coefficient
+            :type coef: double, list or complex, list
             :param integer istate: Initial adiabatic state
         """
         if (coef == None):
@@ -328,7 +328,7 @@ class Molecule(object):
         {"-" * 68}
           Number of Atoms (QM)     = {self.nat_qm:>16d}
         """)
-        if (self.qmmm and mm != None):
+        if (self.l_qmmm and mm != None):
             molecule_info += f"  Number of Atoms (MM)     = {self.nat_mm:>16d}\n"
         molecule_info += textwrap.indent(textwrap.dedent(f"""\
           Degrees of Freedom       = {int(self.ndof):>16d}

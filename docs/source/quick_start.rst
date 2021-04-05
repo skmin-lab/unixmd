@@ -28,12 +28,12 @@ The running script is the following.
    X1       -4.0     0.0
    """
    
-   mol = Molecule(geometry=geom, ndim=1, nstates=2, ndof=1, unit_pos='au', model=True)
+   mol = Molecule(geometry=geom, ndim=1, nstates=2, ndof=1, unit_pos='au', l_model=True)
    
    qm = qm.model.Shin_Metiu(molecule=mol)
    
    md = mqc.SHXF(molecule=mol, nsteps=2890, nesteps=1, dt=0.5, unit_dt='au', \
-        sigma=0.1, istate=1, propagation="density")
+        sigma=0.1, istate=1, elec_object="density")
    
    md.run(qm=qm)
 
@@ -418,7 +418,7 @@ by changing the MD setting in the above running script:
 .. code-block:: python
 
    md = mqc.SH(molecule=mol, nsteps=2890, nesteps=1, dt=0.5, unit_dt='au', \
-        , istate=1, propagation="density")
+        , istate=1, elec_object="density")
 
 Then the populations and the coherence will be shown like this.
 
