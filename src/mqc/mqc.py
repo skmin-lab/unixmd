@@ -102,17 +102,16 @@ class MQC(object):
             self.check_qmmm(qm, mm)
 
         # Set directory information
-<<<<<<< HEAD
-        input_dir = os.path.expanduser(input_dir)
+        output_dir = os.path.expanduser(output_dir)
         base_dir = []
         unixmd_dir = []
         qm_log_dir = []
         mm_log_dir = [None]
 
-        if (self.mol.qmmm and mm != None):
+        if (self.mol.l_qmmm and mm != None):
             mm_log_dir = []
 
-        dir_tmp = os.path.join(os.getcwd(), input_dir)
+        dir_tmp = os.path.join(os.getcwd(), output_dir)
         if (self.md_type != "CT"):
             base_dir.append(dir_tmp)
         else:
@@ -123,7 +122,7 @@ class MQC(object):
         for idir in base_dir:
             unixmd_dir.append(os.path.join(idir, "md"))
             qm_log_dir.append(os.path.join(idir, "qm_log"))
-            if (self.mol.qmmm and mm != None):
+            if (self.mol.l_qmmm and mm != None):
                 mm_log_dir.append(os.path.join(idir, "mm_log"))
 
         # Check and make directories
@@ -134,14 +133,14 @@ class MQC(object):
                     raise ValueError (f"( {self.md_type}.{call_name()} ) Directory to be appended for restart not found! {restart} and {md_idir}")
 
             # For QM output directory
-            if (save_qm_log):
+            if (l_save_qm_log):
                 for qm_idir in qm_log_dir:
                     if (not os.path.exists(qm_idir)):
                         os.makedirs(qm_idir)
 
             # For MM output directory
-            if (self.mol.qmmm and mm != None):
-                if (save_mm_log):
+            if (self.mol.l_qmmm and mm != None):
+                if (l_save_mm_log):
                     for mm_idir in mm_log_dir:
                         if (not os.path.exists(mm_idir)):
                             os.makedirs(mm_idir)
@@ -158,15 +157,15 @@ class MQC(object):
             for qm_idir in qm_log_dir:
                 if (os.path.exists(qm_idir)):
                     shutil.move(qm_idir, qm_idir + "_old_" + str(os.getpid()))
-                if (save_qm_log):
+                if (l_save_qm_log):
                     os.makedirs(qm_idir)
 
             # For MM output directory
             for mm_idir in mm_log_dir:
-                if (self.mol.qmmm and mm != None):
+                if (self.mol.l_qmmm and mm != None):
                     if (os.path.exists(mm_idir)):
                         shutil.move(mm_idir, mm_idir + "_old_" + str(os.getpid()))
-                    if (save_mm_log):
+                    if (l_save_mm_log):
                         os.makedirs(mm_idir)
 
         os.chdir(base_dir[0])
