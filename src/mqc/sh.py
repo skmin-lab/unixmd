@@ -147,7 +147,7 @@ class SH(MQC):
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
-            if (not self.mol.l_nacme):
+            if (not self.mol.l_nacme and self.l_adj_nac):
                 self.mol.adjust_nac()
 
             self.cl_update_velocity()

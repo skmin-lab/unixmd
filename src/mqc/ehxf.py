@@ -156,7 +156,8 @@ class EhXF(MQC):
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
-            self.mol.adjust_nac()
+            if (self.l_adj_nac):
+                self.mol.adjust_nac()
 
             self.cl_update_velocity()
 
