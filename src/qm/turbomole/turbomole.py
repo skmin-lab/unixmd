@@ -4,14 +4,14 @@ from misc import call_name
 import os
 
 class Turbomole(QM_calculator):
-    """ Class for common parts of Turbomole program
+    """ Class for common parts of Turbomole
 
         :param string functional: Exchange-correlation functional information
         :param string basis_set: Basis set information
         :param string memory: Allocatable memory in the calculations
         :param string qm_path: Path for QM binary
         :param integer nthreads: Number of threads in the calculations
-        :param string version: Version of Turbomole program
+        :param string version: Version of Turbomole
     """
     def __init__(self, functional, basis_set, memory, qm_path, nthreads, version):
         # Save name of QM calculator and its method

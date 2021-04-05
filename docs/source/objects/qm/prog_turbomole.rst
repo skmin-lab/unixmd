@@ -4,9 +4,9 @@ TURBOMOLE
 
 Turbomole :cite:`Ahlrichs1989` is quantum chemical program package, initially developed
 in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and at the Forschungszentrum Karlsruhe.
-(TD)DFT method is interfaced with current version of PyUNIxMD.
+(TD)DFT method is interfaced with the current version of PyUNIxMD.
 
-- (TD)DFT provides analytical gradients, thus it can be used born-oppenhiemer molecular dynamics (BOMD).
+- (TD)DFT provides analytical gradients, thus it can be used for Born-Oppenhiemer molecular dynamics (BOMD).
 
 +---------+------+--------+----+-----+
 |         | BOMD | SH(XF) | Eh | nac |
@@ -18,7 +18,7 @@ in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and a
 """""""""""""""""""""""""""""""""""""
 
 +---------------------+---------------------------------------------+----------------+
-| Keywords            | Work                                        | Default        |
+| Parameters          | Work                                        | Default        |
 +=====================+=============================================+================+
 | **molecule**        | Molecule object                             |                |
 | (:class:`Molecule`) |                                             |                |
@@ -50,38 +50,38 @@ in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and a
 | **nthreads**        | Number of threads in the calculations       | *1*            |
 | *(integer)*         |                                             |                |
 +---------------------+---------------------------------------------+----------------+
-| **version**         | Version of Turbomole program                | *'6.4'*        |
+| **version**         | Version of Turbomole                        | *'6.4'*        |
 | *(string)*          |                                             |                |
 +---------------------+---------------------------------------------+----------------+
 
-Detailed description of arguments
+Detailed description of parameters
 ''''''''''''''''''''''''''''''''''''
 
 - **functional** *(string)* - Default: *'b-lyp'*
 
-  This argument specifies exchange-correlation functional used in Turbomole calculation.
-  The available options for this argument are same as the original arguments of Turbomole.
-  It is recommended to check a Turbomole manual for the detailed list of **functional**.
+  This parameter specifies the exchange-correlation functional used in the Turbomole calculation.
+  The available options for this parameter are the same as the original ones of Turbomole.
+  It is recommended to check the Turbomole manual for the detailed list of **functional**.
 
 \
 
 - **basis_set** *(string)* - Default: *'SV(P)'*
 
-  This argument specifies a basis set used in Turbomole calculation.
-  The available options for this argument are same as the original arguments of Turbomole.
-  It is recommended to check a Turbomole manual for the detailed list of **basis_set**.
+  This parameter specifies the basis set used in the Turbomole calculation.
+  The available options for this parameter are the same as the original ones of Turbomole.
+  It is recommended to check the Turbomole manual for the detailed list of **basis_set**.
 
 \
 
 - **memory** *(integer)* - Default: *50*
 
-  This argument determines how much memory will be allocated in a QM calculation. The unit is MB.
+  This parameter determines how much memory will be allocated in the QM calculation. The unit is MB.
 
 \
 
 - **scf_max_iter** *(integer)* - Default: *50*
 
-  This argument determines maximum number of SCF iterations.
+  This parameter determines the maximum number of the SCF iterations.
 
 \
 
@@ -93,7 +93,7 @@ Detailed description of arguments
 
 - **cis_max_iter** *(integer)* - Default: *25*
 
-  This argument determines maximum number of CIS iterations.
+  This parameter determines the maximum number of CIS iterations.
 
 \
 
@@ -105,21 +105,21 @@ Detailed description of arguments
 
 - **qm_path** *(string)* - Default: *'./'*
 
-  This argument designates path for QM binary file for the Turbomole.
-  The `$TURBODIR` environment variable determines the directory where Turbomole is installed, not the binary files themselves (For example, `$TURBODIR` is '/my_disk/my_name/TURBOMOLE').
+  This parameter designates the path for QM binary file for Turbomole.
+  The `$TURBODIR` environment variable determines the directory where Turbomole is installed, not the binary files themselves (For example, `$TURBODIR` is '/my_disk/my_name/TURBOMOLE/').
   Thus, **qm_path** must be a *'`$TURBODIR`'*, not a *'`$TURBODIR`/define'*. 
 
 \
 
 - **nthreads** *(integer)* - Default: *1*
 
-  This argument specifies number of threads for QM calculation.
+  This parameter specifies the number of threads for QM calculation.
 
 \
 
 - **version** *(string)* - Default: *'6.4'*
 
-  This argument determines version of Turbomole program. PyUNIxMD is currently based on 7.0 version of Turbomole program.
+  This parameter determines the version of Turbomole. PyUNIxMD is currently based on version 7.0 of Turbomole.
 
 \
 

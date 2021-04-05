@@ -5,7 +5,7 @@ import os, shutil, re, textwrap
 import numpy as np
 
 class CASSCF(Molpro):
-    """ Class for CASSCF method of Molpro program
+    """ Class for CASSCF method of Molpro
 
         :param object molecule: Molecule object
         :param string basis_set: Basis set information
@@ -24,7 +24,7 @@ class CASSCF(Molpro):
         :param double cpscf_grad_tol: Gradient convergence threshold for CP-CASSCF equations
         :param string qm_path: Path for QM binary
         :param integer nthreads: Number of threads in the calculations
-        :param string version: Version of Molpro program
+        :param string version: Version of Molpro
     """
     def __init__(self, molecule, basis_set="sto-3g", memory="500m", \
         guess="hf", guess_file="./wf.wfu", scf_max_iter=20, scf_en_tol=1E-8, scf_rho_tol=1E-6, \
@@ -246,8 +246,8 @@ class CASSCF(Molpro):
         command = f"{qm_command} -m {self.memory} -I int -W wfu --no-xml-output -d int -o log -g -s molpro.inp > tmp_log"
         os.system(command)
         os.remove("tmp_log")
-        # Copy the output file to 'QMlog' directory
-        tmp_dir = os.path.join(base_dir, "QMlog")
+        # Copy the output file to 'qm_log' directory
+        tmp_dir = os.path.join(base_dir, "qm_log")
         if (os.path.exists(tmp_dir)):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
             shutil.copy("log", os.path.join(tmp_dir, log_step))
@@ -277,11 +277,11 @@ class CASSCF(Molpro):
         for ist in bo_list:
             tmp_f = f'SA-MC GRADIENT FOR STATE {ist + 1:d}.1\n\n' + \
                 '\s+Atom\s+dE\/dx\s+dE\/dy\s+dE\/dz\n\n' + \
-                '\s+\d+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat
+                '\s+\d+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat_qm
             force = re.findall(tmp_f, log_out)
             force = np.array(force[0])
             force = force.astype(float)
-            force = force.reshape(molecule.nat, 3, order='C')
+            force = force.reshape(molecule.nat_qm, 3, order='C')
             molecule.states[ist].force = - np.copy(force)
 
         # NAC
@@ -290,11 +290,11 @@ class CASSCF(Molpro):
                 for jst in range(ist + 1, molecule.nst):
                     tmp_c = f'SA-MC NACME FOR STATES {ist + 1:d}.1 - {jst + 1:d}.1\n\n' + \
                         '\s+Atom\s+dE\/dx\s+dE\/dy\s+dE\/dz\n\n' + \
-                        '\s+\d+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat
+                        '\s+\d+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat_qm
                     nac = re.findall(tmp_c, log_out)
                     nac = np.array(nac[0])
                     nac = nac.astype(float)
-                    nac = nac.reshape(molecule.nat, 3, order='C')
+                    nac = nac.reshape(molecule.nat_qm, 3, order='C')
                     molecule.nac[ist, jst] = nac
                     molecule.nac[jst, ist] = - nac
 

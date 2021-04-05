@@ -4,123 +4,71 @@ PyUNIxMD Overview
 
 Features
 ---------------------------
-| This is features.
-| UNI-xMD program includes adiabatic, Ehrenfest, surface hopping and especially DISH-XF dynamics method.
-| This package includes several scripts that interface the dynamics modules with some quantum chemistry calculation program such as Molpro, DFTB+, etc..
+The features of PyUNIxMD are as follows.
+
+- Conventional (non)adiabatic dynamics
+
+  -  Born-Oppenheimer molecular dynamics (BOMD)
+  -  Ehrenfest dynamics :cite:`Ehrenfest1927`
+  -  Fewest switches surface hopping (FSSH) dynamics :cite:`Tully1990` with ad hoc decoherence corrections :cite:`Granucci2010`
+
+.. Padding
+
+- Decoherence based on exact factorization
+
+  -  Decoherence induced surface hopping based on exact factorization (DISH-XF) :cite:`Ha2018`
+  -  Coupled-trajectory mixed quantum-classical (CTMQC) method :cite:`Agostini2016`
+
+.. Padding
+
+- Accessible interface to external QM programs and built-in model Hamiltonians
+
+  -  COLUMBUS :cite:`Lischka2011`: SA-CASSCF
+  -  Molpro :cite:`Werner2012`: SA-CASSCF
+  -  Gaussian 09 :cite:`Frisch2009`: TDDFT
+  -  Q-Chem :cite:`qchem2015`: TDDFT
+  -  TURBOMOLE :cite:`Ahlrichs1989`: TDDFT
+  -  TeraChem :cite:`Ufimtsev2008_1,Ufimtsev2009_1,Ufimtsev2009_2`: SI-SA-REKS (SSR)
+  -  DFTB+ :cite:`Hourahine2020`: TDDFTB, DFTB/SSR
+  -  Model Hamiltonians: Tully :cite:`Tully1990`, Shin-Metiu :cite:`Shin1995`
+
+.. Padding
+
+- Numerical calculation of time-derivative nonadiabatic couplings :cite:`Ryabinkin2015`
+- QM/MM functionalities
+- Utility scripts in Python
 
 Authors
 ---------------------------
-This is authors.
+The current version of PyUNIxMD has been developed by Seung Kyu Min, In Seong Lee, Jong-Kwon Ha, Daeho Han, Kicheol Kim, Tae In Kim, Sung Wook Moon in the Theoretical/Computational Chemistry Group for Excited State Phenomena of Ulsan National Institute of Science and Technology (UNIST). 
 
+..
+  Acknowledgement
+  ---------------------------
+  This is acknowledgement.
 
-Acknowledgement
----------------------------
-This is acknowledgement.
-
-
-Code Overview
----------------------------
 
 Program Structure
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------
+The overall code structure is displayed in the next figure.
 
-The overall code structure is displayed in next figure.
-
-.. image:: ./unixmd_structure.png
+.. image:: diagrams/pyunixmd_structure.png
    :width: 400pt
 
-UNI-xMD is mainly based on object-oriented programming, which is structured by
-several classes closely connected with each other.
-Central modules of UNI-xMD can be divided into followings.
+PyUNIxMD is an object-oriented program consisting of
+several key classes closely connected with each other:
 
-- Molecule : Describes overall molecule objects, including state objects.
+- :class:`Molecule` defines a target system. A molecule object contains information of the electronic states as well as the geometry.
 
-- MQC : Class for dynamics propagation. Contains subclasses for each method such as Ehrenfest or surface hopping.
+- :class:`MQC` has information about molecular dynamics. Each nonadiabatic dynamics method (Ehrenfest, surface hopping, etc.) comprises its subclasses. 
 
-- QM : Class for calculating dynamics properties using external software such as Molpro or DFTB+.
+- :class:`QM_calculator` interfaces several QM programs (Molpro, Gaussian 09, DFTB+, etc.) and methodologies to perform electronic structure calculations.
 
-- MM : Class for calculating dynamics properties using external software such as Tinker.
+- :class:`MM_calculator` enables QM/MM calculations using external softwares such as Tinker.
 
-- Thermostat : Class for a component which controls the temperature of a physical system.
+- :class:`Thermostat` controls temperature of a target system.
 
-Subclasses of MQC, QM and MM classes are organized in inheritance structure.
-This helps to simplify codes by inheriting common arguments to the subclasses.
+PyUNIxMD takes advantage of the inheritance feature to organize functionalities and simplify the codes by sharing the common parameters and methods.
 
-For the detailed information of each module, check each section in below.
-
-Working Process
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To run UNI-xMD, it requires creating some objects in running script.
-A straightfoward way to perform a UNI-xMD calculation is as follows:
-
-**1. First of all, you should add the corresponding directory to your python path.**
-
-.. code-block:: bash
-
-   $ export PYTHONPATH=$UNIXMDHOME/src:$PYTHONPATH
- 
-**2. You should import some libraries in the running script.**
-
-.. code-block:: python
-
-   from molecule import Molecule
-   import qm, mqc
-   from thermostat import *
-   from misc import data
-
-**3. To run UNI-xMD, you should create several objects in your running script. The important
-thing is that the object inherited from** ``Molecule`` **class is created in the first place.**
-
-- Define molecular infomation.
-
-.. code-block:: python
-
-   geom = """
-   NUMBER_OF_ATOMS
-   TITLE
-   SYMBOL  COORDINATES  VELOCITIES
-   """
-
-   mol = Molecule(geometry=geom, ARGUMENTS)
-
-.. note:: ``mol`` object should be already created before creating another objects which describe QM, MQC and thermostat.
-
-- Determine electronic structure calculation program and method to get energy, force and nonadiabatic coupling vector.
-
-.. code-block:: python
-
-   qm = qm.QM_prog.QM_method(molecule=mol, ARGUMENTS)
-
-**QM_prog** and **QM_method** are electronic structure calculation program and theory, respectively. They are listed in ???.
-
-- Determine method for dynamics propagation.
-
-.. code-block:: python
-
-   md = mqc.MDTYPE(molecule=mol, ARGUMENTS)
-
-**MDTYPE** can be replaced by BOMD, SH, Eh or SHXF which mean Born-Opphenhimer molecular dynamics, surface hopping,
-Ehrenfest dynamics and decoherence induced surface hopping based on exact factorization, respectively.
-
-- Choose a thermostat type. Currently, there are three types for thermostat.
-
-.. code-block:: python
-
-   bathT = THERMOSTAT(temperature=300.0, ARGUMENTS)
-
-**THERMOSTAT** is listed in ???.
-
-- Put your objects into ``run`` method of ``md`` object.
-
-.. code-block:: python
-
-   md.run(molecule=mol, theory=qm, thermostat=bathT, ARGUMENTS)
-
-**4. Execute your running script**
-
-.. code-block:: bash
-
-   $ python3 running_script.py
-
+For detailed information of each class, see :ref:`PyUNIxMD Objects <Objects>`. 
 

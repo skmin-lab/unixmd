@@ -5,7 +5,7 @@ import os, shutil, re, textwrap
 import numpy as np
 
 class SSR(TeraChem):
-    """ Class for SSR method of TeraChem program
+    """ Class for SSR method of TeraChem
 
         :param object molecule: Molecule object
         :param string basis_set: Basis set information
@@ -13,24 +13,24 @@ class SSR(TeraChem):
         :param string precision: Precision in the calculations
         :param double scf_rho_tol: Wavefunction convergence for SCF iterations
         :param integer scf_max_iter: Maximum number of SCF iterations
-        :param boolean ssr22: Use SSR(2,2) calculation?
+        :param boolean l_ssr22: Use SSR(2,2) calculation?
         :param string guess: Initial guess for REKS SCF iterations
         :param string guess_file: Initial guess file
         :param double reks_rho_tol: wavefunction error for REKS SCF iterations
         :param integer reks_max_iter: Maximum number of REKS SCF iterations
         :param double shift: Level shifting value in REKS SCF iterations
-        :param boolean state_interactions: Include state-interaction terms to SA-REKS
+        :param boolean l_state_interactions: Include state-interaction terms to SA-REKS
         :param double cpreks_grad_tol: Gradient tolerance for CP-REKS equations
         :param integer cpreks_max_iter: Maximum number of CP-REKS iterations
         :param string qm_path: Path for QM binary
         :param integer ngpus: Number of GPUs
         :param string gpu_id: ID of used GPUs
-        :param string version: Version of TeraChem program
+        :param string version: Version of TeraChem
     """
     def __init__(self, molecule, ngpus=1, gpu_id="1", precision="dynamic", \
         version="1.93", functional="hf", basis_set="sto-3g", scf_rho_tol=1E-2, \
-        scf_max_iter=300, ssr22=True, guess="dft", guess_file="./c0", \
-        reks_rho_tol=1E-6, reks_max_iter=1000, shift=0.3, state_interactions=False, \
+        scf_max_iter=300, l_ssr22=True, guess="dft", guess_file="./c0", \
+        reks_rho_tol=1E-6, reks_max_iter=1000, shift=0.3, l_state_interactions=False, \
         cpreks_grad_tol=1E-6, cpreks_max_iter=1000, qm_path="./"):
         # Initialize TeraChem common variables
         super(SSR, self).__init__(functional, basis_set, qm_path, ngpus, \
@@ -40,14 +40,14 @@ class SSR(TeraChem):
         self.scf_rho_tol = scf_rho_tol
         self.scf_max_iter = scf_max_iter
 
-        self.ssr22 = ssr22
-        if (self.ssr22):
+        self.l_ssr22 = l_ssr22
+        if (self.l_ssr22):
             if (molecule.nst > 2):
                 raise ValueError (f"( {self.qm_method}.{call_name()} ) 3-state REKS not implemented! {molecule.nst}")
             self.reks_rho_tol = reks_rho_tol
             self.reks_max_iter = reks_max_iter
             self.shift = shift
-            self.state_interactions = state_interactions
+            self.l_state_interactions = l_state_interactions
 
             # Set initial guess for REKS SCF iterations
             self.guess = guess
@@ -59,7 +59,7 @@ class SSR(TeraChem):
                 self.cpreks_grad_tol = cpreks_grad_tol
                 self.cpreks_max_iter = cpreks_max_iter
         else:
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Other active space not implemented! {self.ssr22}")
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Other active space not implemented! {self.l_ssr22}")
 
         # Set 'l_nacme' with respect to the computational method
         # SSR can produce NACs, so we do not need to get NACME from CIoverlap
@@ -166,13 +166,13 @@ class SSR(TeraChem):
             input_terachem += input_dft
 
         # REKS Block
-        if (self.ssr22):
+        if (self.l_ssr22):
 
             # Energy functional options
             if (molecule.nst == 1):
                 sa_reks = 0
             elif (molecule.nst == 2):
-                if (self.state_interactions):
+                if (self.l_state_interactions):
                     sa_reks = 2
                 else:
                     sa_reks = 1
@@ -232,8 +232,8 @@ class SSR(TeraChem):
         os.environ["OMP_NUM_THREADS"] = "1"
         command = f"{qm_command} input.tcin > log"
         os.system(command)
-        # Copy the output file to 'QMlog' directory
-        tmp_dir = os.path.join(base_dir, "QMlog")
+        # Copy the output file to 'qm_log' directory
+        tmp_dir = os.path.join(base_dir, "qm_log")
         if (os.path.exists(tmp_dir)):
             log_step = f"log.{istep + 1}.{bo_list[0]}"
             shutil.copy("log", os.path.join(tmp_dir, log_step))
@@ -258,7 +258,7 @@ class SSR(TeraChem):
             energy = energy.astype(float)
             molecule.states[0].energy = energy[0]
         else:
-            if (self.state_interactions):
+            if (self.l_state_interactions):
                 # SSR state
                 energy = re.findall('SSR state\s\d\s+([-]\S+)', log_out)
                 energy = np.array(energy)
@@ -283,20 +283,20 @@ class SSR(TeraChem):
             # SHXF, SH, Eh : SSR state
             for ist in range(molecule.nst):
                 tmp_f = f'Eigen state {ist + 1} gradient\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
-                    '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
+                    '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
                 force = re.findall(tmp_f, log_out)
                 force = np.array(force[0])
                 force = force.astype(float)
-                force = force.reshape(molecule.nat, 3, order='C')
+                force = force.reshape(molecule.nat_qm, 3, order='C')
                 molecule.states[ist].force = - np.copy(force)
         else:
             # BOMD : SSR state, SA-REKS state or single-state REKS
             tmp_f = 'Gradient units are Hartree/Bohr\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
-	              '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
+	              '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
             force = re.findall(tmp_f, log_out)
             force = np.array(force[0])
             force = force.astype(float)
-            force = force.reshape(molecule.nat, 3, order='C')
+            force = force.reshape(molecule.nat_qm, 3, order='C')
             molecule.states[bo_list[0]].force = - np.copy(force)
 
         # NAC
@@ -305,19 +305,21 @@ class SSR(TeraChem):
             # 1.99 version do not show H vector
             if (self.version == "1.99"):
                 # Zeroing for G, h and H vectors
-                Gvec = np.zeros((molecule.nat, molecule.nsp))
-                hvec = np.zeros((molecule.nat, molecule.nsp))
+
+                Gvec = np.zeros((molecule.nat_qm, molecule.ndim))
+                hvec = np.zeros((molecule.nat_qm, molecule.ndim))
                 ssr_coef = np.zeros((molecule.nst, molecule.nst))
-                Hvec = np.zeros((molecule.nat, molecule.nsp))
+                Hvec = np.zeros((molecule.nat_qm, molecule.ndim))
+
                 # Calculate G vector, G vector is difference gradient so minus sign is needed
                 Gvec = - 0.5 * (molecule.states[0].force - molecule.states[1].force)
                 # Read h vector
                 tmp_c = 'Coupling gradient\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
-	                  '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
+	                  '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
                 hvec = re.findall(tmp_c, log_out)
                 hvec = np.array(hvec[0])
                 hvec = hvec.astype(float)
-                hvec = hvec.reshape(molecule.nat, 3, order='C')
+                hvec = hvec.reshape(molecule.nat_qm, 3, order='C')
                 # Read coefficients of SSR state
                 ssr_coef = re.findall('SSR state\s\d\s+[-]\S+\s+([-]*\S+)\s+([-]*\S+)', log_out)
                 ssr_coef = np.array(ssr_coef)
@@ -335,11 +337,11 @@ class SSR(TeraChem):
                 for ist in range(molecule.nst):
                     for jst in range(ist + 1, molecule.nst):
                         tmp_c = '>\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
-	                          '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
+	                          '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
                         nac = re.findall(tmp_c, log_out)
                         nac = np.array(nac[kst])
                         nac = nac.astype(float)
-                        nac = nac.reshape(molecule.nat, 3, order='C')
+                        nac = nac.reshape(molecule.nat_qm, 3, order='C')
                         molecule.nac[ist, jst] = nac
                         molecule.nac[jst, ist] = - nac
                         kst += 1

@@ -2,23 +2,29 @@
 Ehrenfest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Ehrenfest dynamics :cite:`Prezhdo1999`, which is mean-field dynamics, evolves nuclei on averaging potential energy surfaces,
+In Ehrenfest dynamics :cite:`Prezhdo1999`, which is mean-field dynamics, evolves nuclei on an averaged potential energy surface,
 
 .. math::
 
-   E(\underline{\underline{\bf R}}(t))=\sum_{i}\vert c_i \vert^2E_i,
+   E(\underline{\underline{\bf R}}^{(I)}(t))=\sum_{i}\vert C_{i}^{(I)}(t) \vert^2E_{i}^{(I)}(t),
 
-where :math:`E_i` is :math:`i`-th adiabatic energy and
-the driving force is given by:
+where :math:`C_{i}^{(I)}(t)` and :math:`E_{i}^{(I)}(t)` is the :math:`i`-th BO coefficient and the adiabatic energy respectively from the :math:`I`-th trajectory. The equations of the electronic coefficients are given by introducing the BO basis expansion, :math:`\Phi^{(I)}(t)=\sum_{i}C_{i}^{(I)}(t)\Phi_{i}^{(I)}(t)`, to the electronic Schroedinger equation, :math:`i \hbar \partial_{t} \Phi^{(I)}(t)=\hat{H}_{\mathrm{BO}}\Phi^{(I)}(t)`:
 
 .. math::
 
-   \vec{F}=\sum_{i} \vec{F}_i + \sum_{i\neq j} c_ic_j(E_i-E_j)d_{ij},
+    \dot C^{(I)}_k(t) = -\frac{i}{\hbar}E^{(I)}_k(t)C^{(I)}_k(t)
+    - \sum_j\sum_{\nu}{\bf d}^{(I)}_{kj\nu}(t)\cdot\dot{\bf R}^{(I)}_\nu(t)C^{(I)}_j(t).
 
-where :math:`d_{ij}` is nonadiabatic couping between :math:`i`-th and :math:`j`-th adiabatic state.
+Thus, the driving force is given by
+
+.. math::
+
+   \mathbf{F}_{\nu}^{(I)}=-\sum_{i} \nabla_{\nu}\mathbf{E}_{i}^{(I)}(t) + \sum_{i\neq j} C_{i}^{(I)}(t)C_{j}^{(I)}(t)(E_{i}^{(I)}(t)-E_{j}^{(I)}(t))\mathbf{d}_{ij\nu}^{(I)}(t),
+
+where :math:`\mathbf{d}_{ij\nu}^{(I)}(t) = \int d \underline{\underline{\mathbf{r}}}\Phi_{i}(\underline{\underline{\mathbf{r}}};\underline{\underline{\mathbf{R}}}^{(I)}(t))\nabla_{\nu}\Phi_{j}(\underline{\underline{\mathbf{r}}};\underline{\underline{\mathbf{R}}}^{(I)}(t))` is the nonadiabatic couping vector between the :math:`i`-th and the :math:`j`-th adiabatic state.
 
 +----------------------------+------------------------------------------------+-------------+
-| Keywords                   | Work                                           | Default     |
+| Parameters                 | Work                                           | Default     |
 +============================+================================================+=============+
 | **molecule**               | Molecule object                                |             |
 | (:class:`Molecule`)        |                                                |             |
@@ -35,22 +41,22 @@ where :math:`d_{ij}` is nonadiabatic couping between :math:`i`-th and :math:`j`-
 | **nsteps**                 | Total step of nuclear propagation              | *1000*      |
 | *(integer)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **nesteps**                | Total step of electronic propagation           | *10000*     |
+| **nesteps**                | Total step of electronic propagation           | *20*        |
 | *(integer)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **propagation**            | Propagation scheme                             | *'density'* |
+| **elec_object**            | Electronic equation of motions                 | *'density'* |
 | *(string)*                 |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **solver**                 | Propagation solver                             | *'rk4'*     |
+| **propagator**             | Electronic propagator                          | *'rk4'*     |
 | *(string)*                 |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **l_pop_print**            | Logical to print BO population and coherence   | *False*     |
+| **l_print_dm**             | Logical to print BO population and coherence   | *True*      |
 | *(boolean)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **l_adjnac**               | Logical to adjust nonadiabatic coupling        | *True*      |
+| **l_adj_nac**              | Logical to adjust nonadiabatic coupling        | *True*      |
 | *(boolean)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
-| **coefficient**            | Initial BO coefficient                         | *None*      |
+| **init_coef**              | Initial BO coefficient                         | *None*      |
 | *(double/complex, list)*   |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
 | **unit_dt**                | Unit of time step                              | *'fs'*      |
@@ -63,76 +69,77 @@ where :math:`d_{ij}` is nonadiabatic couping between :math:`i`-th and :math:`j`-
 | *(integer)*                |                                                |             |
 +----------------------------+------------------------------------------------+-------------+
 
-Detailed description of arguments
+Detailed description of parameters
 ''''''''''''''''''''''''''''''''''''
 
 - **istate** *(integer)* - Default: *0* (Ground state)
 
-  This argument specifies the initial running state. The possible range of the argument is from *0* to ``molecule.nst-1``.
+  This parameter specifies the initial running state. The possible range is from *0* to ``molecule.nst - 1``.
 
 \
 
 - **dt** *(double)* - Default: *0.5*
 
-  This argument determines the time interval of the nuclear time steps.
-  You can select the unit of time for the dynamics with the argument **unit_dt**.
+  This parameter determines the time interval of the nuclear time steps.
+  You can select the unit of time for the dynamics with the **unit_dt** parameter.
+
 \
 
 - **nsteps** *(integer)* - Default: *1000*
 
-  This argument determines the total number of the nuclear time steps.
+  This parameter determines the total number of the nuclear time steps.
 
 \
 
 - **nesteps** *(integer)* - Default: *20*
 
-  This argument determines the number of electronic time steps between one nuclear time step for the integration of the electronic equation of motion.
+  This parameter determines the number of electronic time steps between one nuclear time step for the integration of the electronic equation of motion.
   The electronic equation of motion is more sensitive to the time interval than the nuclear equation of motion since the electrons are much lighter than the nuclei.
   Therefore, the nuclear time step is further divided and electronic equation of motion is integrated with smaller time step.
 
 \
 
-- **propagation** *(string)* - Default: *'density'*
+- **elec_object** *(string)* - Default: *'density'*
 
-  The **propagation** argument determines the representation for the electronic state.
+  The **elec_object** parameter determines the representation for the electronic state.
 
-  + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}\}`
-  + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}\}`
+  + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}^{(I)}(t)\}`
+  + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}^{(I)}(t)\}`
 
 \
 
-- **solver** *(string)* - Default: *'rk4'*
+- **propagator** *(string)* - Default: *'rk4'*
 
-  This argument determines the numerical integration method for the electronic equation of motion.
+  This parameter determines the numerical integration method for the electronic equation of motion.
   Currently, only the RK4 algorithm (*'rk4'*) is available.
 
 \
 
-- **l_pop_print** *(boolean)* - Default: *False*
+- **l_print_dm** *(boolean)* - Default: *True*
 
-  This argument determines whether to write output files for density matrix elements ('BOPOP', 'BOCOH') or not.
+  This parameter determines whether to write output files for the density matrix elements ('BOPOP', 'BOCOH') or not.
   If this option is set to *True*, then the 'BOPOP' and 'BOCOH' files are written during the dynamics.
-  This option is effective only if the argument **propagation** is set to *'coefficient'* or ignored otherwise.
+  This option is effective only if the parameter **elec_object** is set to *'coefficient'* or ignored otherwise.
 
 \
 
-- **l_adjnac** *(boolean)* - Default: *True*
+- **l_adj_nac** *(boolean)* - Default: *True*
 
-  If this argument is set to *True*, the signs of the NACVs are adjusted to match the phases to the previous time step during the dynamics.
+  If this parameter is set to *True*, the signs of the NACVs are adjusted to match the phases to the previous time step during the dynamics.
 
 \
 
-- **coefficient** *(double/complex, list)* - Default: *None*
+- **init_coef** *(double/complex, list)* - Default: *None*
 
-  This argument defines the initial BO coefficients.
+  This parameter defines the initial BO coefficients.
   The elements can be either real or complex values.
-  If the argument is not given, the BO coefficients and density matrix are initialized according to **istate**.
+  If the parameter is not given, the BO coefficients and the density matrix are initialized according to **istate**.
 
 \
 
 - **unit_dt** *(string)* - Default: *'fs'*
 
-  This argument determines the unit of time for the simulation.
+  This parameter determines the unit of time for the simulation.
 
   + *'fs'*: femtosecond
   + *'au'*: atomic unit
@@ -147,7 +154,7 @@ Detailed description of arguments
 
 - **verbosity** *(integer)* - Default: *0*
 
-  This argument determines the verbosity of the output files and stream.  
+  This parameter determines the verbosity of the output files and stream.  
 
   + **verbosity** :math:`\geq` *1*: Prints potential energy of all BO states.
   + **verbosity** :math:`\geq` *2*: Writes the NACVs ('NACV\_\ :math:`i`\_\ :math:`j`').

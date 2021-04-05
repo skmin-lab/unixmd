@@ -3,9 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-UNI-xMD documentation
+PyUNIxMD documentation
 ===========================================
-This is a documentation page for UNIversal eXcited state Molecular Dynamics (UNI-xMD) program.
+This is a documentation page for the Python-based UNIversal eXcited state Molecular Dynamics (PyUNIxMD) program.
+PyUNIxMD is an object-oriented Python program for molecular dynamics simulations involving multiple electronic states. It is mainly for studying the nonadiabatic dynamics of excited molecules.
 
 
 
@@ -17,7 +18,8 @@ Contents
    :maxdepth: 1
 
    overview
-   build
+   install
+   workflow
    quick_start
    objects/main
    modules/main

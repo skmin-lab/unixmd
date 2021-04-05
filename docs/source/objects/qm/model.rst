@@ -1,3 +1,4 @@
+.. _Model Systems: 
 
 Model Systems
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -22,9 +23,9 @@ Simple avoided crossing (SAC) model
 """""""""""""""""""""""""""""""""""""""""""""""""""""
 
 +------------------------+----------------------------------------------------+----------+
-| Keywords               | Work                                               | Default  |
+| Parameters             | Work                                               | Default  |
 +========================+====================================================+==========+
-| **molecule**           | Molecular object                                   |          |
+| **molecule**           | Molecule object                                    |          |
 | (:class:`Molecule`)    |                                                    |          |
 +------------------------+----------------------------------------------------+----------+
 | **A**                  | Parameter for SAC model                            | *0.01*   |
@@ -45,9 +46,9 @@ Dual avoided crossing (DAC) model
 """""""""""""""""""""""""""""""""""""""""""""""""""""
 
 +------------------------+----------------------------------------------------+----------+
-| Keywords               | Work                                               | Default  |
+| Parameters             | Work                                               | Default  |
 +========================+====================================================+==========+
-| **molecule**           | Molecular object                                   |          |
+| **molecule**           | Molecule object                                    |          |
 | (:class:`Molecule`)    |                                                    |          |
 +------------------------+----------------------------------------------------+----------+
 | **E0**                 | Parameter for DAC model                            | *0.05*   |
@@ -71,9 +72,9 @@ Extended coupling region with reflection (ECR) model
 """""""""""""""""""""""""""""""""""""""""""""""""""""
 
 +------------------------+----------------------------------------------------+----------+
-| Keywords               | Work                                               | Default  |
+| Parameters             | Work                                               | Default  |
 +========================+====================================================+==========+
-| **molecule**           | Molecular object                                   |          |
+| **molecule**           | Molecule object                                    |          |
 | (:class:`Molecule`)    |                                                    |          |
 +------------------------+----------------------------------------------------+----------+
 | **A**                  | Parameter for ECR model                            | *0.0004* |
@@ -91,9 +92,9 @@ Double arch geometry (DAG) model
 """""""""""""""""""""""""""""""""""""""""""""""""""""
 
 +------------------------+----------------------------------------------------+----------+
-| Keywords               | Work                                               | Default  |
+| Parameters             | Work                                               | Default  |
 +========================+====================================================+==========+
-| **molecule**           | Molecular object                                   |          |
+| **molecule**           | Molecule object                                    |          |
 | (:class:`Molecule`)    |                                                    |          |
 +------------------------+----------------------------------------------------+----------+
 | **A**                  | Parameter for DAG model                            | *0.0004* |
@@ -113,7 +114,7 @@ Double arch geometry (DAG) model
 Shin-Metiu model
 """""""""""""""""""""""""""""""""""""""""""""""""""""
 
-1D charge transfer model system proposed by Shin and Metiu :cite:`Shin1995` is implemented.
+The 1D charge transfer model system proposed by Shin and Metiu :cite:`Shin1995` is implemented.
 
 .. math::
 
@@ -126,9 +127,9 @@ Shin-Metiu model
 The unit of parameters is atomic unit.
 
 +------------------------+----------------------------------------------------+----------+
-| Keywords               | Work                                               | Default  |
+| Parameters             | Work                                               | Default  |
 +========================+====================================================+==========+
-| **molecule**           | Molecular object                                   |          |
+| **molecule**           | Molecule object                                    |          |
 | (:class:`Molecule`)    |                                                    |          |
 +------------------------+----------------------------------------------------+----------+
 | **nx**                 | The number of grid points for electronic DOF       | *401*    |

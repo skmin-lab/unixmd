@@ -7,16 +7,16 @@ import os, shutil, re, textwrap
 import numpy as np
 
 class DFTB(DFTBplus):
-    """ Class for (TD)DFTB method of DFTB+ program
+    """ Class for (TD)DFTB method of DFTB+
 
         :param object molecule: Molecule object
-        :param boolean scc: Include self-consistent charge (SCC) scheme
+        :param boolean l_scc: Include self-consistent charge (SCC) scheme
         :param double scc_tol: Stopping criteria for the SCC iterations
         :param integer scc_max_iter: Maximum number of SCC iterations
-        :param boolean ocdftb: Include onsite correction to SCC term
-        :param boolean lcdftb: Include long-range corrected functional
+        :param boolean l_onsite: Include onsite correction to SCC term
+        :param boolean l_range_sep: Include long-range corrected functional
         :param string lc_method: Algorithms for LC-DFTB
-        :param boolean sdftb: Include spin-polarisation scheme
+        :param boolean l_spin_pol: Include spin-polarisation scheme
         :param double unpaired_elec: Number of unpaired electrons
         :param string guess: Initial guess method for SCC scheme
         :param string guess_file: Initial guess file for charges
@@ -25,34 +25,34 @@ class DFTB(DFTBplus):
         :param string ex_symmetry: Symmetry of excited state in TDDFTB
         :param double e_window: Energy window for TDDFTB. Increases efficiency of NACME calculation.
         :param integer,list k_point: Number of k-point samplings
-        :param boolean periodic: Use periodicity in the calculations
+        :param boolean l_periodic: Use periodicity in the calculations
         :param double,list cell_length: The lattice vectors of periodic unit cell
-        :param string sk_path: Path for slater-koster files
+        :param string sk_path: Path for Slater-Koster files
         :param string install_path: Path for DFTB+ install directory
         :param boolean mpi: Use MPI parallelization
         :param string mpi_path: Path for MPI binary
         :param integer nthreads: Number of threads in the calculations
-        :param string version: Version of DFTB+ program
+        :param string version: Version of DFTB+
     """
-    def __init__(self, molecule, scc=True, scc_tol=1E-6, scc_max_iter=100, ocdftb=False, \
-        lcdftb=False, lc_method="MatrixBased", sdftb=False, unpaired_elec=0., guess="h0", \
+    def __init__(self, molecule, l_scc=True, scc_tol=1E-6, scc_max_iter=100, l_onsite=False, \
+        l_range_sep=False, lc_method="MatrixBased", l_spin_pol=False, unpaired_elec=0., guess="h0", \
         guess_file="./charges.bin", elec_temp=0., mixer="Broyden", ex_symmetry="singlet", e_window=0., \
-        k_point=[1, 1, 1], periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.,], \
+        k_point=[1, 1, 1], l_periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.,], \
         sk_path="./", install_path="./", mpi=False, mpi_path="./", nthreads=1, version="20.1"):
         # Initialize DFTB+ common variables
         super(DFTB, self).__init__(molecule, sk_path, install_path, nthreads, version)
 
         # Initialize DFTB+ DFTB variables
-        self.scc = scc
+        self.l_scc = l_scc
         self.scc_tol = scc_tol
         self.scc_max_iter = scc_max_iter
 
-        self.ocdftb = ocdftb
+        self.l_onsite = l_onsite
 
-        self.lcdftb = lcdftb
+        self.l_range_sep = l_range_sep
         self.lc_method = lc_method
 
-        self.sdftb = sdftb
+        self.l_spin_pol = l_spin_pol
         self.unpaired_elec = unpaired_elec
 
         # Set initial guess for SCC term
@@ -68,7 +68,7 @@ class DFTB(DFTBplus):
         self.e_window = e_window
 
         self.k_point = k_point
-        self.periodic = periodic
+        self.l_periodic = l_periodic
         self.a_axis = np.copy(cell_length[0:3])
         self.b_axis = np.copy(cell_length[3:6])
         self.c_axis = np.copy(cell_length[6:9])
@@ -209,14 +209,14 @@ class DFTB(DFTBplus):
         """
         # Make 'geometry.gen' file
         os.system("xyz2gen geometry.xyz")
-        if (self.periodic):
+        if (self.l_periodic):
             # Substitute C to S in first line
             file_be = open('geometry.gen', 'r')
             file_af = open('tmp.gen', 'w')
             first_row = True
             for row in file_be:
                 if (first_row):
-                    row = f'{molecule.nat} S\n'
+                    row = f'{molecule.nat_qm} S\n'
                     first_row = False
                 file_af.write(row)
             # Add gamma-point and cell lattice information
@@ -246,7 +246,7 @@ class DFTB(DFTBplus):
             first_row = True
             for row in file_be:
                 if (first_row):
-                    row = f'{molecule.nat * 2}\n'
+                    row = f'{molecule.nat_qm * 2}\n'
                     first_row = False
                 file_af.write(row)
             file_be.close()
@@ -279,7 +279,7 @@ class DFTB(DFTBplus):
         input_dftb += input_ham_init
 
         # SCC-DFTB option
-        if (self.scc):
+        if (self.l_scc):
             input_ham_scc = textwrap.indent(textwrap.dedent(f"""\
               SCC = Yes
               SCCTolerance = {self.scc_tol}
@@ -289,7 +289,7 @@ class DFTB(DFTBplus):
             input_dftb += input_ham_scc
 
             # Onsite-corrected DFTB (OC-DFTB) option
-            if (self.ocdftb):
+            if (self.l_onsite):
                 onsite_const_uu = ("\n" + " " * 18).join([f"  {itype}uu = {{ {onsite_uu[f'{itype}']} }}" for itype in self.atom_type])
                 onsite_const_ud = ("\n" + " " * 18).join([f"  {itype}ud = {{ {onsite_ud[f'{itype}']} }}" for itype in self.atom_type])
                 input_ham_oc = textwrap.indent(textwrap.dedent(f"""\
@@ -301,7 +301,7 @@ class DFTB(DFTBplus):
                 input_dftb += input_ham_oc
 
             # Long-range corrected DFTB (LC-DFTB) option
-            if (self.lcdftb):
+            if (self.l_range_sep):
                 input_ham_lc = textwrap.indent(textwrap.dedent(f"""\
                   RangeSeparated = LC{{
                     Screening = {self.lc_method}{{}}
@@ -310,7 +310,7 @@ class DFTB(DFTBplus):
                 input_dftb += input_ham_lc
 
             # Spin-polarized DFTB option
-            if (self.sdftb and molecule.nst == 1):
+            if (self.l_spin_pol and molecule.nst == 1):
                 input_ham_spin = textwrap.dedent(f"""\
                 SpinPolarisation = Colinear{{
                   UnpairedElectrons = {self.unpaired_elec}
@@ -320,9 +320,9 @@ class DFTB(DFTBplus):
 
             # Read atomic spin constants used in spin-polarized DFTB or TDDFTB
             # TODO : Currently, allows only singlet excited states with TDDFTB
-#            if (self.sdftb or self.ex_symmetry == "triplet"):
-            if (self.sdftb and molecule.nst == 1):
-                if (self.lcdftb):
+#            if (self.l_spin_pol or self.ex_symmetry == "triplet"):
+            if (self.l_spin_pol and molecule.nst == 1):
+                if (self.l_range_sep):
                     spin_constant = ("\n" + " " * 18).join([f"  {itype} = {{ {spin_w_lc[f'{itype}']} }}" for itype in self.atom_type])
                 else:
                     spin_constant = ("\n" + " " * 18).join([f"  {itype} = {{ {spin_w[f'{itype}']} }}" for itype in self.atom_type])
@@ -361,7 +361,7 @@ class DFTB(DFTBplus):
 
         # TODO: for QM/MM, point_charge??
 
-        if (self.periodic):
+        if (self.l_periodic):
             num_k_point = np.sum(self.k_point)
             if (num_k_point == 3):
                 # gamma-point sampling
@@ -435,9 +435,9 @@ class DFTB(DFTBplus):
 
             # Set number of excitations in TDDFTB
             # This part can be modified by users
-            if (molecule.nat <= 5):
+            if (molecule.nat_qm <= 5):
                 num_ex = molecule.nst + 2
-            elif (molecule.nat > 5 and molecule.nat <= 15):
+            elif (molecule.nat_qm > 5 and molecule.nat_qm <= 15):
                 num_ex = 2 * molecule.nst + 2
             else:
                 num_ex = 3 * molecule.nst + 2
@@ -479,7 +479,7 @@ class DFTB(DFTBplus):
 
         # Parallel Block
         if (self.mpi):
-            if (self.sdftb and self.nthreads > 1):
+            if (self.l_spin_pol and self.nthreads > 1):
                 groups = 2
             else:
                 groups = 1
@@ -564,8 +564,8 @@ class DFTB(DFTBplus):
         file_name = f"detailed.out.{bo_list[0]}"
         shutil.copy("detailed.out", file_name)
 
-        # Copy the output file to 'QMlog' directory
-        tmp_dir = os.path.join(base_dir, "QMlog")
+        # Copy the output file to 'qm_log' directory
+        tmp_dir = os.path.join(base_dir, "qm_log")
         if (os.path.exists(tmp_dir)):
             detailed_out_step = f"detailed.out.{istep + 1}.{bo_list[0]}"
             shutil.copy("detailed.out", os.path.join(tmp_dir, detailed_out_step))
@@ -611,11 +611,11 @@ class DFTB(DFTBplus):
                     molecule.states[ist].energy = molecule.states[0].energy + energy[ist - 1]
 
         # Force
-        tmp_f = 'Total Forces' + '\n\s+\d*\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat
+        tmp_f = 'Total Forces' + '\n\s+\d*\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
         force = re.findall(tmp_f, detailed_out)
         force = np.array(force[0])
         force = force.astype(float)
-        force = force.reshape(molecule.nat, 3, order='C')
+        force = force.reshape(molecule.nat_qm, 3, order='C')
         molecule.states[bo_list[0]].force = np.copy(force)
 
         # NACME

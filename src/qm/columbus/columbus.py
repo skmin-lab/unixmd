@@ -5,13 +5,13 @@ from misc import call_name
 import os
 
 class Columbus(QM_calculator):
-    """ Class for common parts of Columbus program
+    """ Class for common parts of Columbus
 
         :param object molecule: Molecule object
         :param string basis_set: Basis set information
         :param integer memory: Allocatable memory in the calculations
         :param string qm_path: Path for QM binary
-        :param string version: Version of Columbus program
+        :param string version: Version of Columbus
     """
     def __init__(self, molecule, basis_set, memory, qm_path, version):
         # Save name of QM calculator and its method
