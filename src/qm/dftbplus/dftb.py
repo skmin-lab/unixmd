@@ -13,10 +13,10 @@ class DFTB(DFTBplus):
         :param boolean l_scc: Include self-consistent charge (SCC) scheme
         :param double scc_tol: Stopping criteria for the SCC iterations
         :param integer scc_max_iter: Maximum number of SCC iterations
-        :param boolean l_ocdftb: Include onsite correction to SCC term
-        :param boolean l_lcdftb: Include long-range corrected functional
+        :param boolean l_onsite: Include onsite correction to SCC term
+        :param boolean l_range_sep: Include long-range corrected functional
         :param string lc_method: Algorithms for LC-DFTB
-        :param boolean l_sdftb: Include spin-polarisation scheme
+        :param boolean l_spin_pol: Include spin-polarisation scheme
         :param double unpaired_elec: Number of unpaired electrons
         :param string guess: Initial guess method for SCC scheme
         :param string guess_file: Initial guess file for charges
@@ -34,8 +34,8 @@ class DFTB(DFTBplus):
         :param integer nthreads: Number of threads in the calculations
         :param string version: Version of DFTB+
     """
-    def __init__(self, molecule, l_scc=True, scc_tol=1E-6, scc_max_iter=100, l_ocdftb=False, \
-        l_lcdftb=False, lc_method="MatrixBased", l_sdftb=False, unpaired_elec=0., guess="h0", \
+    def __init__(self, molecule, l_scc=True, scc_tol=1E-6, scc_max_iter=100, l_onsite=False, \
+        l_range_sep=False, lc_method="MatrixBased", l_spin_pol=False, unpaired_elec=0., guess="h0", \
         guess_file="./charges.bin", elec_temp=0., mixer="Broyden", ex_symmetry="singlet", e_window=0., \
         k_point=[1, 1, 1], l_periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.,], \
         sk_path="./", install_path="./", mpi=False, mpi_path="./", nthreads=1, version="20.1"):
@@ -47,12 +47,12 @@ class DFTB(DFTBplus):
         self.scc_tol = scc_tol
         self.scc_max_iter = scc_max_iter
 
-        self.l_ocdftb = l_ocdftb
+        self.l_onsite = l_onsite
 
-        self.l_lcdftb = l_lcdftb
+        self.l_range_sep = l_range_sep
         self.lc_method = lc_method
 
-        self.l_sdftb = l_sdftb
+        self.l_spin_pol = l_spin_pol
         self.unpaired_elec = unpaired_elec
 
         # Set initial guess for SCC term
@@ -289,7 +289,7 @@ class DFTB(DFTBplus):
             input_dftb += input_ham_scc
 
             # Onsite-corrected DFTB (OC-DFTB) option
-            if (self.l_ocdftb):
+            if (self.l_onsite):
                 onsite_const_uu = ("\n" + " " * 18).join([f"  {itype}uu = {{ {onsite_uu[f'{itype}']} }}" for itype in self.atom_type])
                 onsite_const_ud = ("\n" + " " * 18).join([f"  {itype}ud = {{ {onsite_ud[f'{itype}']} }}" for itype in self.atom_type])
                 input_ham_oc = textwrap.indent(textwrap.dedent(f"""\
@@ -301,7 +301,7 @@ class DFTB(DFTBplus):
                 input_dftb += input_ham_oc
 
             # Long-range corrected DFTB (LC-DFTB) option
-            if (self.l_lcdftb):
+            if (self.l_range_sep):
                 input_ham_lc = textwrap.indent(textwrap.dedent(f"""\
                   RangeSeparated = LC{{
                     Screening = {self.lc_method}{{}}
@@ -310,7 +310,7 @@ class DFTB(DFTBplus):
                 input_dftb += input_ham_lc
 
             # Spin-polarized DFTB option
-            if (self.l_sdftb and molecule.nst == 1):
+            if (self.l_spin_pol and molecule.nst == 1):
                 input_ham_spin = textwrap.dedent(f"""\
                 SpinPolarisation = Colinear{{
                   UnpairedElectrons = {self.unpaired_elec}
@@ -320,9 +320,9 @@ class DFTB(DFTBplus):
 
             # Read atomic spin constants used in spin-polarized DFTB or TDDFTB
             # TODO : Currently, allows only singlet excited states with TDDFTB
-#            if (self.l_sdftb or self.ex_symmetry == "triplet"):
-            if (self.l_sdftb and molecule.nst == 1):
-                if (self.l_lcdftb):
+#            if (self.l_spin_pol or self.ex_symmetry == "triplet"):
+            if (self.l_spin_pol and molecule.nst == 1):
+                if (self.l_range_sep):
                     spin_constant = ("\n" + " " * 18).join([f"  {itype} = {{ {spin_w_lc[f'{itype}']} }}" for itype in self.atom_type])
                 else:
                     spin_constant = ("\n" + " " * 18).join([f"  {itype} = {{ {spin_w[f'{itype}']} }}" for itype in self.atom_type])
@@ -479,7 +479,7 @@ class DFTB(DFTBplus):
 
         # Parallel Block
         if (self.mpi):
-            if (self.l_sdftb and self.nthreads > 1):
+            if (self.l_spin_pol and self.nthreads > 1):
                 groups = 2
             else:
                 groups = 1

@@ -12,8 +12,8 @@ class SSR(DFTBplus):
         :param boolean l_scc: Include self-consistent charge (SCC) scheme
         :param double scc_tol: Stopping criteria for the SCC iterations
         :param integer scc_max_iter: Maximum number of SCC iterations
-        :param boolean l_ocdftb: Include onsite correction to SCC term
-        :param boolean l_lcdftb: Include long-range corrected functional
+        :param boolean l_onsite: Include onsite correction to SCC term
+        :param boolean l_range_sep: Include long-range corrected functional
         :param string lc_method: Algorithms for LC-DFTB
         :param boolean l_ssr22: Use SSR(2,2) calculation?
         :param boolean l_ssr44: Use SSR(4,4) calculation?
@@ -33,8 +33,8 @@ class SSR(DFTBplus):
         :param integer nthreads: Number of threads in the calculations
         :param string version: Version of DFTB+
     """
-    def __init__(self, molecule, l_scc=True, scc_tol=1E-6, scc_max_iter=1000, l_ocdftb=False, \
-        l_lcdftb=False, lc_method="MatrixBased", l_ssr22=False, l_ssr44=False, guess="h0", \
+    def __init__(self, molecule, l_scc=True, scc_tol=1E-6, scc_max_iter=1000, l_onsite=False, \
+        l_range_sep=False, lc_method="MatrixBased", l_ssr22=False, l_ssr44=False, guess="h0", \
         guess_file="./eigenvec.bin", l_state_interactions=False, shift=0.3, tuning=None, \
         cpreks_grad_alg="pcg", cpreks_grad_tol=1E-8, l_save_memory=False, embedding=None, \
         l_periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.], sk_path="./", \
@@ -47,11 +47,11 @@ class SSR(DFTBplus):
         self.scc_tol = scc_tol
         self.scc_max_iter = scc_max_iter
 
-        self.l_ocdftb = l_ocdftb
-        if (self.l_ocdftb):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Onsite-correction not implemented! {self.l_ocdftb}")
+        self.l_onsite = l_onsite
+        if (self.l_onsite):
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) Onsite-correction not implemented! {self.l_onsite}")
 
-        self.l_lcdftb = l_lcdftb
+        self.l_range_sep = l_range_sep
         self.lc_method = lc_method
 
         self.l_ssr22 = l_ssr22
@@ -196,7 +196,7 @@ class SSR(DFTBplus):
             input_dftb += input_ham_scc
 
             # Read atomic spin constants used in DFTB/SSR
-            if (self.l_lcdftb):
+            if (self.l_range_sep):
                 spin_constant = ("\n" + " " * 14).join([f"  {itype} = {{ {spin_w_lc[f'{itype}']} }}" for itype in self.atom_type])
             else:
                 spin_constant = ("\n" + " " * 14).join([f"  {itype} = {{ {spin_w[f'{itype}']} }}" for itype in self.atom_type])
@@ -209,7 +209,7 @@ class SSR(DFTBplus):
             input_dftb += input_ham_spin
 
             # Long-range corrected DFTB (LC-DFTB) option
-            if (self.l_lcdftb):
+            if (self.l_range_sep):
                 input_ham_lc = textwrap.indent(textwrap.dedent(f"""\
                   RangeSeparated = LC{{
                     Screening = {self.lc_method}{{}}

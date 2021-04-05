@@ -64,16 +64,16 @@ speed. (TD)DFTB and SSR methods are interfaced with the current version of PyUNI
 | **scc_max_iter**       | Maximum number of SCC iterations               | *100*              |
 | *(integer)*            |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
-| **l_ocdftb**           | Include onsite correction to SCC term          | *False*            |
+| **l_onsite**           | Include onsite correction to SCC term          | *False*            |
 | *(boolean)*            |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
-| **l_lcdftb**           | Include long-range corrected functional        | *False*            |
+| **l_range_sep**        | Include long-range corrected functional        | *False*            |
 | *(boolean)*            |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
 | **lc_method**          | Algorithms for LC-DFTB                         | *'MatrixBased'*    |
 | *(string)*             |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
-| **l_sdftb**            | Include spin-polarisation scheme               | *False*            |
+| **l_spin_pol**         | Include spin-polarisation scheme               | *False*            |
 | *(boolean)*            |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
 | **unpaired_elec**      | Number of unpaired electrons                   | *0.0*              |
@@ -148,15 +148,15 @@ Detailed description of parameters
 
 \
 
-- **l_ocdftb** *(boolean)* - Default: *False*
+- **l_onsite** *(boolean)* - Default: *False*
 
-  When **l_ocdftb** is set to *True*, onsite-correction (OC) scheme is added to SCC-DFTB.
+  When **l_onsite** is set to *True*, onsite-correction (OC) scheme is added to SCC-DFTB.
 
 \
 
-- **l_lcdftb** *(boolean)* - Default: *False*
+- **l_range_sep** *(boolean)* - Default: *False*
 
-  When **l_lcdftb** is set to *True*, long-range corrected (LC) functional is added to SCC-DFTB.
+  When **l_range_sep** is set to *True*, long-range corrected (LC) functional is added to SCC-DFTB.
   In this case, the corresponding Slater-Koster files must be used. Check the **sk_path** carefully.
 
 \
@@ -172,9 +172,9 @@ Detailed description of parameters
 
 \
 
-- **l_sdftb** *(boolean)* - Default: *False*
+- **l_spin_pol** *(boolean)* - Default: *False*
 
-  When **l_sdftb** is set to *True*, the spin-polarisation scheme is added to SCC-DFTB.
+  When **l_spin_pol** is set to *True*, the spin-polarisation scheme is added to SCC-DFTB.
   The atomic spin constants are given in '`$PYUNIXMD`/src/qm/dftb/dftbpar.py',
   and the values about hydrogen, carbon, nitrogen, and oxygen atoms are currently included.
   If you want to exploit spin-polarization scheme with other atomic species, then add the
@@ -325,10 +325,10 @@ determined from the **l_state_interactions** parameter.
 | **scc_max_iter**         | Maximum number of SCC iterations               | *1000*              |
 | *(integer)*              |                                                |                     |
 +--------------------------+------------------------------------------------+---------------------+
-| **l_ocdftb**             | Include onsite correction to SCC term          | *False*             |
+| **l_onsite**             | Include onsite correction to SCC term          | *False*             |
 | *(boolean)*              |                                                |                     |
 +--------------------------+------------------------------------------------+---------------------+
-| **l_lcdftb**             | Include long-range corrected functional        | *False*             |
+| **l_range_sep**          | Include long-range corrected functional        | *False*             |
 | *(boolean)*              |                                                |                     |
 +--------------------------+------------------------------------------------+---------------------+
 | **lc_method**            | Algorithms for LC-DFTB                         | *'MatrixBased'*     |
@@ -409,16 +409,16 @@ Detailed description of parameters
 
 \
 
-- **l_ocdftb** *(boolean)* - Default: *False*
+- **l_onsite** *(boolean)* - Default: *False*
 
-  When **l_ocdftb** is set to *True*, onsite-correction (OC) scheme is added to DFTB/SSR.
+  When **l_onsite** is set to *True*, onsite-correction (OC) scheme is added to DFTB/SSR.
   It is currently experimental feature, and not implemented in the SSR calculation.
 
 \
 
-- **l_lcdftb** *(boolean)* - Default: *False*
+- **l_range_sep** *(boolean)* - Default: *False*
 
-  When **l_lcdftb** is set to *True*, long-range corrected (LC) functional is added to DFTB/SSR.
+  When **l_range_sep** is set to *True*, long-range corrected (LC) functional is added to DFTB/SSR.
   To deal with the excited states properly, it is recommended to use LC funtionals for the DFTB/SSR calculations.
   In this case, the corresponding Slater-Koster files must be used. Check the **sk_path** carefully.
 
