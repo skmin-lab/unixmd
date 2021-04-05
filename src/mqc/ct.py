@@ -60,6 +60,13 @@ class CT(MQC):
         self.qmom = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.ndim))
         self.K_lk = np.zeros((self.ntrajs, self.nst, self.nst))
 
+        # Initialize variables to calculate quantum momentum 
+        self.count_ntrajs = np.zeros((self.ntrajs, self.nat))
+        self.sigma_lk = np.ones((self.ntrajs, self.nst_pair, self.nat, self.ndim))
+        self.slope_i = np.zeros((self.ntrajs, self.nat, self.ndim))
+        self.center_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.ndim))
+
+        # Determine parameters to calculate decoherenece effect
         self.upper_th = 1. - rho_threshold
         self.lower_th = rho_threshold
         
@@ -235,10 +242,10 @@ class CT(MQC):
         # -------------------------------------------------------------------
         # 1. Calculate variances for each trajectory
         # TODO: method to calculate sigma
-        sigma_lk = np.ones((self.ntrajs, self.nst_pair, self.nat, self.ndim)) # TODO: state-pair
+        self.sigma_lk = np.ones((self.ntrajs, self.nst_pair, self.nat, self.ndim)) # TODO: state-pair
         for itraj in range(self.ntrajs):
             # Variable to determine how many trajecories are in cutoff.
-            nntraj = np.zeros((self.nat)) 
+            self.count_ntrajs[itraj] = np.zeros((self.nat)) 
 
             R2_tmp = np.zeros((self.nat, self.ndim)) # Temporary variable for R**2
             R_tmp = np.zeros((self.nat, self.ndim))  # Temporary variable for R
@@ -252,23 +259,16 @@ class CT(MQC):
                     if (distance <= smooth_factor):
                         R_tmp[iat] += self.mols[jtraj].pos[iat] # Dimension = (self.nat, self.ndim)
                         R2_tmp[iat] += self.mols[jtraj].pos[iat] * self.mols[jtraj].pos[iat] # Dimension = (self.nat, self.ndim)
-                        nntraj[iat] += 1
-
-            tmp= f'{istep+1:8d}' + \
-                "".join([f'{nntraj[iat]:15.8f}' for iat in range(self.nat)])
-            typewriter(tmp, dirs[itraj], f"NNTRAJ", "a")
+                        self.count_ntrajs[itraj, iat] += 1
 
             for iat in range(self.nat):
-                avg_R = R_tmp[iat] / nntraj[iat]
-                avg_R2 = R2_tmp[iat] / nntraj[iat]
-                for isp in range(self.ndim):
-                    sigma_lk[itraj, 0, iat, isp] = np.sqrt((avg_R2[isp] - avg_R[isp] ** 2)) / np.sqrt(np.sqrt(nntraj[iat]))
-                    # / np.sqrt(np.sqrt(nntraj)) is artifact to modulate sigma.
-                    if (sigma_lk[itraj, 0, iat, isp] <= 1.0E-8):
-                        sigma_lk[itraj, 0, iat, isp] = smooth_factor
-
-            tmp= f'{istep+1:8d}{sigma_lk[itraj, 0, 0, 0]:15.8f}'
-            typewriter(tmp, dirs[itraj], f"SIGMA", "a")
+                avg_R = R_tmp[iat] / self.count_ntrajs[itraj, iat]
+                avg_R2 = R2_tmp[iat] / self.count_ntrajs[itraj, iat]
+                for idim in range(self.ndim):
+                    self.sigma_lk[itraj, 0, iat, idim] = np.sqrt((avg_R2[idim] - avg_R[idim] ** 2)) \
+                        / np.sqrt(np.sqrt(self.count_ntrajs[itraj, iat])) # / np.sqrt(np.sqrt(nntraj)) is artifact to modulate sigma.
+                    if (self.sigma_lk[itraj, 0, iat, idim] <= 1.0E-8):
+                        self.sigma_lk[itraj, 0, iat, idim] = smooth_factor
 
         # 2. Calculate slope
         # (2-1) Calculate w_ij
@@ -279,11 +279,11 @@ class CT(MQC):
         for itraj in range(self.ntrajs):
             for jtraj in range(self.ntrajs):
                 for iat in range(self.nat):
-                    for isp in range(self.ndim):
+                    for idim in range(self.ndim):
                         # gaussian1d(x, pre-factor, sigma, mean)
                         # gaussian1d(R^{itraj}, 1.0, sigma^{jtraj}, R^{jtraj})
-                        prod_g_i[itraj, jtraj] *= gaussian1d(self.mols[itraj].pos[iat, isp], 1., \
-                            sigma_lk[jtraj, 0, iat, isp], self.mols[jtraj].pos[iat, isp])
+                        prod_g_i[itraj, jtraj] *= gaussian1d(self.mols[itraj].pos[iat, idim], 1., \
+                            self.sigma_lk[jtraj, 0, iat, idim], self.mols[jtraj].pos[iat, idim])
                 g_i[itraj] += prod_g_i[itraj, jtraj]
 
         # w_ij is defined as W_IJ in SI of J. Phys. Chem. Lett., 2017, 8, 3048-3055.
@@ -291,19 +291,17 @@ class CT(MQC):
         for itraj in range(self.ntrajs):
             for jtraj in range(self.ntrajs):
                 for iat in range(self.nat):
-                    for isp in range(self.ndim):
-                        w_ij[itraj, jtraj, iat, isp] = prod_g_i[itraj, jtraj] /\
-                        (2. * sigma_lk[jtraj, 0, iat, isp] ** 2 * g_i[itraj])
+                    for idim in range(self.ndim):
+                        w_ij[itraj, jtraj, iat, idim] = prod_g_i[itraj, jtraj] /\
+                        (2. * self.sigma_lk[jtraj, 0, iat, idim] ** 2 * g_i[itraj])
 
         # (2-2) Calculate slope_i
         # the slope is calculated as a sum over j of w_ij
-        slope_i = np.zeros((self.ntrajs, self.nat, self.ndim))
+        self.slope_i = np.zeros((self.ntrajs, self.nat, self.ndim))
         for itraj in range(self.ntrajs):
             for jtraj in range(self.ntrajs):
-                slope_i[itraj] -= w_ij[itraj, jtraj]
+                self.slope_i[itraj] -= w_ij[itraj, jtraj]
 
-            tmp= f'{istep+1:8d}{slope_i[itraj, 0, 0]:15.8f}'
-            typewriter(tmp, dirs[itraj], f"SLOPE", "a")
 
         # 3. Calculate the center of quantum momentum
         rho = np.zeros((self.ntrajs, self.nst))
@@ -319,9 +317,9 @@ class CT(MQC):
                 for jst in range(ist + 1, self.nst):  
                     index_lk += 1
                     for iat in range(self.nat):
-                        for isp in range(self.ndim):
-                            deno_lk[index_lk, iat, isp] += rho[itraj, ist] * rho[itraj, jst] * \
-                                (self.phase[itraj, ist, iat, isp] - self.phase[itraj, jst, iat, isp]) * slope_i[itraj, iat, isp]
+                        for idim in range(self.ndim):
+                            deno_lk[index_lk, iat, idim] += rho[itraj, ist] * rho[itraj, jst] * \
+                                (self.phase[itraj, ist, iat, idim] - self.phase[itraj, jst, iat, idim]) * self.slope_i[itraj, iat, idim]
 
         # (3-2) Compute numerator
         ratio_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.ndim)) # numerator / denominator
@@ -332,14 +330,14 @@ class CT(MQC):
                 for jst in range(ist + 1, self.nst):
                     index_lk += 1
                     for iat in range(self.nat):
-                        for isp in range(self.ndim):
-                            numer_lk[itraj, index_lk, iat, isp] = rho[itraj, ist] * rho[itraj, jst] * self.mols[itraj].pos[iat, isp] * \
-                                (self.phase[itraj, ist, iat, isp] - self.phase[itraj, jst, iat, isp]) * slope_i[itraj, iat, isp]
-                            if (abs(deno_lk[index_lk, iat, isp]) <= 1.0E-08):
-                                ratio_lk[itraj, index_lk, iat, isp] = 0.
+                        for idim in range(self.ndim):
+                            numer_lk[itraj, index_lk, iat, idim] = rho[itraj, ist] * rho[itraj, jst] * self.mols[itraj].pos[iat, idim] * \
+                                (self.phase[itraj, ist, iat, idim] - self.phase[itraj, jst, iat, idim]) * self.slope_i[itraj, iat, idim]
+                            if (abs(deno_lk[index_lk, iat, idim]) <= 1.0E-08):
+                                ratio_lk[itraj, index_lk, iat, idim] = 0.
                             else:
-                                ratio_lk[itraj, index_lk, iat, isp] = numer_lk[itraj, index_lk, iat, isp] / \
-                                    deno_lk[index_lk, iat, isp]
+                                ratio_lk[itraj, index_lk, iat, idim] = numer_lk[itraj, index_lk, iat, idim] / \
+                                    deno_lk[index_lk, iat, idim]
 
         # Center of quantum momentum is calculated by Eq.(S28) of J. Phys. Chem. Lett., 2017, 8, 3048-3055.
         center_old_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.ndim))
@@ -349,11 +347,11 @@ class CT(MQC):
                 for jst in range(ist + 1, self.nst):
                     index_lk += 1
                     for iat in range(self.nat):
-                        for isp in range(self.ndim):
+                        for idim in range(self.ndim):
                             for jtraj in range(self.ntrajs):
-                                center_old_lk[itraj, index_lk, iat, isp] += ratio_lk[jtraj, index_lk, iat, isp]
-                            if ((abs(slope_i[itraj, iat, isp]) <= 1.0E-08) or (center_old_lk[itraj, index_lk, iat, isp] == 0.)):
-                                center_old_lk[itraj, index_lk, iat, isp] = self.mols[itraj].pos[iat, isp]
+                                center_old_lk[itraj, index_lk, iat, idim] += ratio_lk[jtraj, index_lk, iat, idim]
+                            if ((abs(self.slope_i[itraj, iat, idim]) <= 1.0E-08) or (center_old_lk[itraj, index_lk, iat, idim] == 0.)):
+                                center_old_lk[itraj, index_lk, iat, idim] = self.mols[itraj].pos[iat, idim]
 
         # Center of quantum momentum is calculated by Eq.(S21) of J. Phys. Chem. Lett., 2017, 8, 3048-3055.
         center_new_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.ndim))
@@ -363,36 +361,33 @@ class CT(MQC):
                 for jst in range(ist + 1, self.nst):
                     index_lk += 1
                     for iat in range(self.nat):
-                        for isp in range(self.ndim):
-                            if (abs(slope_i[itraj, iat, isp]) <= 1.0E-08):
-                                center_new_lk[itraj, index_lk, iat, isp] = self.mols[itraj].pos[iat, isp]
+                        for idim in range(self.ndim):
+                            if (abs(self.slope_i[itraj, iat, idim]) <= 1.0E-08):
+                                center_new_lk[itraj, index_lk, iat, idim] = self.mols[itraj].pos[iat, idim]
                             else:
                                 for jtraj in range(self.ntrajs):
-                                    center_new_lk[itraj, index_lk, iat, isp] += self.mols[jtraj].pos[iat, isp] * prod_g_i[itraj, jtraj] /\
-                                        (2. * sigma_lk[jtraj, 0, iat, isp] ** 2 * g_i[itraj] * (- slope_i[itraj, iat, isp]))
+                                    center_new_lk[itraj, index_lk, iat, idim] += self.mols[jtraj].pos[iat, idim] * prod_g_i[itraj, jtraj] /\
+                                        (2. * self.sigma_lk[jtraj, 0, iat, idim] ** 2 * g_i[itraj] * (- self.slope_i[itraj, iat, idim]))
 
         # (3-3) Determine qauntum momentum center
-        center_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.ndim)) # Finally, qmom_center
+        self.center_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.ndim)) # Finally, qmom_center
         for itraj in range(self.ntrajs):
             index_lk = -1
             for ist in range(self.nst):
                 for jst in range(ist + 1, self.nst):
                     index_lk += 1
                     for iat in range(self.nat):
-                        for isp in range(self.ndim):
+                        for idim in range(self.ndim):
                             # tmp_var is deviation between position of classical trajectory and quantum momentum center.
-                            tmp_var = center_old_lk[itraj, index_lk, iat, isp] - self.mols[itraj].pos[iat, isp]
-                            if (abs(tmp_var) > M_parameter * sigma[iat, isp]): 
-                                tmp_var = center_new_lk[itraj, index_lk, iat, isp] - self.mols[itraj].pos[iat, isp]
-                                if (abs(tmp_var) > M_parameter * sigma[iat, isp]): 
-                                    center_lk[itraj, index_lk, iat, isp] = self.mols[itraj].pos[iat, isp]
+                            tmp_var = center_old_lk[itraj, index_lk, iat, idim] - self.mols[itraj].pos[iat, idim]
+                            if (abs(tmp_var) > M_parameter * sigma[iat, idim]): 
+                                tmp_var = center_new_lk[itraj, index_lk, iat, idim] - self.mols[itraj].pos[iat, idim]
+                                if (abs(tmp_var) > M_parameter * sigma[iat, idim]): 
+                                    self.center_lk[itraj, index_lk, iat, idim] = self.mols[itraj].pos[iat, idim]
                                 else:
-                                    center_lk[itraj, index_lk, iat, isp] = center_new_lk[itraj, index_lk, iat, isp]
+                                    self.center_lk[itraj, index_lk, iat, idim] = center_new_lk[itraj, index_lk, iat, idim]
                             else: 
-                                center_lk[itraj, index_lk, iat, isp] = center_old_lk[itraj, index_lk, iat, isp]
-
-            tmp= f'{istep+1:8d}{center_lk[itraj, 0, 0, 0]:15.8f}'
-            typewriter(tmp, dirs[itraj], f"CENTER", "a")
+                                self.center_lk[itraj, index_lk, iat, idim] = center_old_lk[itraj, index_lk, iat, idim]
 
         # 4. Compute quantum momentum
         for itraj in range(self.ntrajs):
@@ -400,7 +395,7 @@ class CT(MQC):
             for ist in range(self.nst):
                 for jst in range(ist + 1, self.nst):
                     index_lk += 1
-                    self.qmom[itraj, index_lk] = slope_i[itraj] * (self.mols[itraj].pos - center_lk[itraj, index_lk])
+                    self.qmom[itraj, index_lk] = self.slope_i[itraj] * (self.mols[itraj].pos - self.center_lk[itraj, index_lk])
 
         # 5. Calculate 2 * Qmom * phase / mass
         self.K_lk = np.zeros((self.ntrajs, self.nst, self.nst))
@@ -438,6 +433,15 @@ class CT(MQC):
 
         # Write auxiliary trajectories
         if (self.verbosity >= 2):
+            #tmp= f'{istep+1:8d}' + \
+            #    "".join([f'{self.count_ntrajs[iat]:15.8f}' for iat in range(self.nat)])
+            #typewriter(tmp, dirs[itraj], f"NNTRAJ", "a")
+            #tmp= f'{istep+1:8d}{self.sigma_lk[itraj, 0, 0, 0]:15.8f}'
+            #typewriter(tmp, dirs[itraj], f"SIGMA", "a")
+            #tmp= f'{istep+1:8d}{self.slope_i[itraj, 0, 0]:15.8f}'
+            #typewriter(tmp, dirs[itraj], f"SLOPE", "a")
+            #tmp= f'{istep+1:8d}{self.center_lk[itraj, 0, 0, 0]:15.8f}'
+            #typewriter(tmp, dirs[itraj], f"CENTER", "a")
             # Write quantum momenta
             index_lk = -1
             for ist in range(self.nst):
@@ -445,7 +449,7 @@ class CT(MQC):
                     index_lk += 1
                     tmp = f'{self.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum (au)' + \
                         "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
-                        "".join([f'{self.qmom[itrajectory, index_lk, iat, isp]:15.8f}' for isp in range(self.ndim)]) for iat in range(self.nat)])
+                        "".join([f'{self.qmom[itrajectory, index_lk, iat, idim]:15.8f}' for idim in range(self.ndim)]) for iat in range(self.nat)])
                     typewriter(tmp, unixmd_dir, f"QMOM_{ist}_{jst}", "a")
 
             for ist in range(self.nst):
@@ -459,7 +463,7 @@ class CT(MQC):
                 # Write auxiliary phase
                 tmp = f'{self.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum (au)' + \
                     "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
-                    "".join([f'{self.phase[itrajectory, ist, iat, isp]:15.8f}' for isp in range(self.ndim)]) for iat in range(self.nat)])
+                    "".join([f'{self.phase[itrajectory, ist, iat, idim]:15.8f}' for idim in range(self.ndim)]) for iat in range(self.nat)])
                 typewriter(tmp, unixmd_dir, f"PHASE_{ist}", "a")
 
     def print_init(self, qm, mm, restart):
