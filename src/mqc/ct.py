@@ -10,7 +10,7 @@ class CT(MQC):
     """ Class for coupled-trajectory mixed quantum-classical (CTMQC) dynamics
     """
     def __init__(self, molecules, thermostat=None, istates=None, dt=0.5, nsteps=1000, nesteps=20, \
-        rho_threshold=0.01, elec_object="coefficient", propagator="rk4", dist_threshold=0.25, dist_cutoff=0.5, \
+        rho_threshold=0.01, elec_object="coefficient", propagator="rk4", sigma_threshold=0.25, dist_cutoff=0.5, \
         dist_parameter=10., sigma=0.3, l_print_dm=True, l_adj_nac=True, init_coefs=None, unit_dt="fs", \
         out_freq=1, verbosity=2):
         # Save name of MQC dynamics
@@ -70,7 +70,7 @@ class CT(MQC):
         self.upper_th = 1. - rho_threshold
         self.lower_th = rho_threshold
         
-        self.dist_threshold = dist_threshold
+        self.sigma_threshold = sigma_threshold
         self.dist_cutoff = dist_cutoff
 
         self.dist_parameter = dist_parameter
@@ -104,11 +104,13 @@ class CT(MQC):
 
                 self.get_phase(itraj)
 
-                self.write_md_output(itraj, unixmd_dirs[itraj], self.istep)
-                
-                self.print_traj(self.istep, itraj)
+            self.calculate_qmom(self.istep)
 
-            self.calculate_qmom(self.istep, unixmd_dirs)
+            for itraj in range(self.ntrajs):
+
+                self.write_md_output(itraj, unixmd_dirs[itraj], self.istep)
+
+                self.print_traj(self.istep, itraj)
 
             self.print_step(self.istep)
 
@@ -122,7 +124,7 @@ class CT(MQC):
         for istep in range(self.istep, self.nsteps):
             for itraj in range(self.ntrajs):
                 self.mol = self.mols[itraj]
-                
+
                 self.calculate_force(itraj)
                 self.cl_update_position()
 
@@ -131,7 +133,8 @@ class CT(MQC):
                 qm.get_data(self.mol, base_dirs[itraj], bo_list, self.dt, istep, calc_force_only=False)
                 #TODO: QM/MM
 
-                self.mol.adjust_nac()
+                if (not self.mol.l_nacme and self.l_adj_nac):
+                    self.mol.adjust_nac()
 
                 self.calculate_force(itraj)
                 self.cl_update_velocity()
@@ -148,11 +151,6 @@ class CT(MQC):
 
                 self.get_phase(itraj)
 
-                if ((istep + 1) % self.out_freq == 0):
-                    self.write_md_output(itraj, unixmd_dirs[itraj], istep)
-                    self.print_traj(istep, itraj)
-                if (istep == self.nsteps - 1):
-                    self.write_final_xyz(unixmd_dirs[itraj], istep)
 
                 #TODO: restart
                 #self.fstep = istep
@@ -160,10 +158,17 @@ class CT(MQC):
                 #with open(restart_file, 'wb') as f:
                 #    pickle.dump({'qm':qm, 'md':self}, f)
 
-            self.calculate_qmom(istep, unixmd_dirs)
+            self.calculate_qmom(istep)
+            
+            for itraj in range(self.ntrajs):
+                if ((istep + 1) % self.out_freq == 0):
+                    self.write_md_output(itraj, unixmd_dirs[itraj], istep)
+                    self.print_traj(istep, itraj)
+                if (istep == self.nsteps - 1):
+                    self.write_final_xyz(unixmd_dirs[itraj], istep)
 
             self.print_step(istep)
-
+          
         # Delete scratch directory
         if (not l_save_scr):
             for itraj in range(self.ntrajs):
@@ -221,18 +226,11 @@ class CT(MQC):
             else:
                 self.phase[itrajectory, ist] += self.mol.states[ist].force * self.dt
 
-    def calculate_qmom(self, istep, dirs):
+    def calculate_qmom(self, istep):
         """ Routine to calculate quantum momentum
             
             :param integer istep: Current MD step
-            :param string dirs: Output directory name
         """
-        #TODO: default value of parameter
-        #TODO: test
-        smooth_factor = 2.
-        # dist_cutoff = 0.5 in sh_tddft_utils.mod.F90 
-        # threshold = 0.25
-        # It use when nntraj is counted.
         M_parameter = 10.
         sigma = np.ones((self.nat, self.ndim)) * 0.3
         # The value of M_parameter * sigma is used when determine quantum momentum center.
@@ -256,7 +254,7 @@ class CT(MQC):
 
                 for iat in range(self.nat):
                     distance = np.sqrt(pos_diff2[iat]) # Distance between i-th atom in itraj and jtraj
-                    if (distance <= smooth_factor):
+                    if (distance <= self.dist_cutoff):
                         R_tmp[iat] += self.mols[jtraj].pos[iat] # Dimension = (self.nat, self.ndim)
                         R2_tmp[iat] += self.mols[jtraj].pos[iat] * self.mols[jtraj].pos[iat] # Dimension = (self.nat, self.ndim)
                         self.count_ntrajs[itraj, iat] += 1
@@ -267,8 +265,8 @@ class CT(MQC):
                 for idim in range(self.ndim):
                     self.sigma_lk[itraj, 0, iat, idim] = np.sqrt((avg_R2[idim] - avg_R[idim] ** 2)) \
                         / np.sqrt(np.sqrt(self.count_ntrajs[itraj, iat])) # / np.sqrt(np.sqrt(nntraj)) is artifact to modulate sigma.
-                    if (self.sigma_lk[itraj, 0, iat, idim] <= 1.0E-8):
-                        self.sigma_lk[itraj, 0, iat, idim] = smooth_factor
+                    if (self.sigma_lk[itraj, 0, iat, idim] <= self.sigma_threshold):
+                        self.sigma_lk[itraj, 0, iat, idim] = self.dist_cutoff
 
         # 2. Calculate slope
         # (2-1) Calculate w_ij
@@ -380,9 +378,9 @@ class CT(MQC):
                         for idim in range(self.ndim):
                             # tmp_var is deviation between position of classical trajectory and quantum momentum center.
                             tmp_var = center_old_lk[itraj, index_lk, iat, idim] - self.mols[itraj].pos[iat, idim]
-                            if (abs(tmp_var) > M_parameter * sigma[iat, idim]): 
+                            if (abs(tmp_var) > self.dist_parameter * self.sigma): 
                                 tmp_var = center_new_lk[itraj, index_lk, iat, idim] - self.mols[itraj].pos[iat, idim]
-                                if (abs(tmp_var) > M_parameter * sigma[iat, idim]): 
+                                if (abs(tmp_var) > self_dist_parameter * self.sigma): 
                                     self.center_lk[itraj, index_lk, iat, idim] = self.mols[itraj].pos[iat, idim]
                                 else:
                                     self.center_lk[itraj, index_lk, iat, idim] = center_new_lk[itraj, index_lk, iat, idim]
@@ -439,7 +437,7 @@ class CT(MQC):
                 "".join([f'{self.sigma_lk[itrajectory, 0, iat, idim]:15.8f}' for idim in range(self.ndim)]) + \
                 f'{self.count_ntrajs[itrajectory, iat]:15.8f}' for iat in range(self.nat)])
             typewriter(tmp, unixmd_dir, f"SIGMA", "a")
-            
+
             tmp = f'{self.nat:6d}\n{"":2s}Step:{istep:6d}{"":12s}slope' + \
                 "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
                 "".join([f'{self.slope_i[itrajectory, iat, idim]:15.8f}' for idim in range(self.ndim)]) for iat in range(self.nat)])
