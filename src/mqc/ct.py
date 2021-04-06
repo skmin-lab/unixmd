@@ -8,11 +8,31 @@ import pickle
 
 class CT(MQC):
     """ Class for coupled-trajectory mixed quantum-classical (CTMQC) dynamics
+
+        :param object,list molecules: List for molecule objects
+        :param object thermostat: Thermostat object
+        :param integer,list istates: List for initial state
+        :param double dt: Time interval
+        :param integer nsteps: Total step of nuclear propagation
+        :param integer nesteps: Total step of electronic propagation
+        :param string elec_object: Electronic equation of motions
+        :param string propagator: Electronic propagator
+        :param boolean l_print_dm: Logical to print BO population and coherence
+        :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
+        :param double rho_threshold: Electronic density threshold for decoherence term calculation
+        :param double sigma_threshold: Sigma threshold for quantum momentum calculation
+        :param double dist_cutoff: Distance cutoff for quantum momentum calculation
+        :param double dist_parameter: Distance parameter to determine quantum momentum center
+        :param double sigma: Sigma to determine quantum momentum center
+        :param init_coefs: Initial BO coefficient
+        :type init_coefs: double, list, list or complex, list, list
+        :param integer out_freq: Frequency of printing output
+        :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecules, thermostat=None, istates=None, dt=0.5, nsteps=1000, nesteps=20, \
-        rho_threshold=0.01, elec_object="coefficient", propagator="rk4", sigma_threshold=0.25, dist_cutoff=0.5, \
-        dist_parameter=10., sigma=0.3, l_print_dm=True, l_adj_nac=True, init_coefs=None, unit_dt="fs", \
-        out_freq=1, verbosity=2):
+        elec_object="coefficient", propagator="rk4", l_print_dm=True, l_adj_nac=True, \
+        rho_threshold=0.01, sigma_threshold=0.25, dist_cutoff=0.5, dist_parameter=10., sigma=0.3, \
+        init_coefs=None, unit_dt="fs", out_freq=1, verbosity=0):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -79,6 +99,16 @@ class CT(MQC):
         self.dotpopd = np.zeros(self.nst)
 
     def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
+        """ Run MQC dynamics according to CTMQC dynamics
+
+            :param object qm: QM object containing on-the-fly calculation infomation
+            :param object mm: MM object containing MM calculation infomation
+            :param string output_dir: Name of directory where outputs to be saved.
+            :param boolean l_save_qm_log: Logical for saving QM calculation log
+            :param boolean l_save_mm_log: Logical for saving MM calculation log
+            :param boolean l_save_scr: Logical for saving scratch directory
+            :param string restart: Option for controlling dynamics restarting
+        """
         # Initialize UNI-xMD
         base_dirs, unixmd_dirs, qm_log_dirs, mm_log_dirs =\
              self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
@@ -96,7 +126,7 @@ class CT(MQC):
 
                 self.mol.reset_bo(qm.calc_coupling)
                 qm.get_data(self.mol, base_dirs[itraj], bo_list, self.dt, self.istep, calc_force_only=False)
-                
+
                 # TODO: QM/MM
                 self.mol.get_nacme()
 
@@ -140,7 +170,7 @@ class CT(MQC):
                 self.cl_update_velocity()
 
                 self.mol.get_nacme()
-                
+
                 el_run(self, itraj)
 
                 #TODO: thermostat
@@ -151,7 +181,6 @@ class CT(MQC):
 
                 self.get_phase(itraj)
 
-
                 #TODO: restart
                 #self.fstep = istep
                 #restart_file = os.path.join(base_dir, "RESTART.bin")
@@ -159,7 +188,7 @@ class CT(MQC):
                 #    pickle.dump({'qm':qm, 'md':self}, f)
 
             self.calculate_qmom(istep)
-            
+
             for itraj in range(self.ntrajs):
                 if ((istep + 1) % self.out_freq == 0):
                     self.write_md_output(itraj, unixmd_dirs[itraj], istep)
@@ -168,7 +197,7 @@ class CT(MQC):
                     self.write_final_xyz(unixmd_dirs[itraj], istep)
 
             self.print_step(istep)
-          
+
         # Delete scratch directory
         if (not l_save_scr):
             for itraj in range(self.ntrajs):
@@ -178,11 +207,11 @@ class CT(MQC):
 
     def calculate_force(self, itrajectory):
         """ Routine to calculate force
-            
+
             :param integer itrajectory: Index for trajectories
         """
         self.rforce = np.zeros((self.nat, self.ndim))
-        
+
         # Derivatives of energy
         for ist, istate in enumerate(self.mols[itrajectory].states):
             self.rforce += istate.force * self.mol.rho.real[ist, ist]
@@ -216,7 +245,7 @@ class CT(MQC):
 
     def get_phase(self, itrajectory):
         """ Routine to calculate phase
-            
+
             :param integer itrajectory: Index for trajectories
         """
         for ist in range(self.nst):
@@ -228,13 +257,9 @@ class CT(MQC):
 
     def calculate_qmom(self, istep):
         """ Routine to calculate quantum momentum
-            
+
             :param integer istep: Current MD step
         """
-        M_parameter = 10.
-        sigma = np.ones((self.nat, self.ndim)) * 0.3
-        # The value of M_parameter * sigma is used when determine quantum momentum center.
-
         # _lk means state_pair dependency.
         # i and j are trajectory index.
         # -------------------------------------------------------------------
@@ -299,7 +324,6 @@ class CT(MQC):
         for itraj in range(self.ntrajs):
             for jtraj in range(self.ntrajs):
                 self.slope_i[itraj] -= w_ij[itraj, jtraj]
-
 
         # 3. Calculate the center of quantum momentum
         rho = np.zeros((self.ntrajs, self.nst))
@@ -367,7 +391,7 @@ class CT(MQC):
                                     center_new_lk[itraj, index_lk, iat, idim] += self.mols[jtraj].pos[iat, idim] * prod_g_i[itraj, jtraj] /\
                                         (2. * self.sigma_lk[jtraj, 0, iat, idim] ** 2 * g_i[itraj] * (- self.slope_i[itraj, iat, idim]))
 
-        # (3-3) Determine qauntum momentum center
+        # (3-3) Determine qauntum momentum center TODO: atomistic flag
         self.center_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat, self.ndim)) # Finally, qmom_center
         for itraj in range(self.ntrajs):
             index_lk = -1
@@ -376,6 +400,7 @@ class CT(MQC):
                     index_lk += 1
                     for iat in range(self.nat):
                         for idim in range(self.ndim):
+                            # test how far calculated center of quantum momentum is from current atomic position.
                             # tmp_var is deviation between position of classical trajectory and quantum momentum center.
                             tmp_var = center_old_lk[itraj, index_lk, iat, idim] - self.mols[itraj].pos[iat, idim]
                             if (abs(tmp_var) > self.dist_parameter * self.sigma): 
@@ -410,6 +435,7 @@ class CT(MQC):
     def write_md_output(self, itrajectory, unixmd_dir, istep):
         """ Write output files
 
+            :param integer itrajectory: Index for trajectories
             :param string unixmd_dir: Unixmd directory
             :param integer istep: Current MD step
         """
@@ -423,6 +449,7 @@ class CT(MQC):
     def write_deco(self, itrajectory, unixmd_dir, istep):
         """ Write CT-based decoherence information
 
+            :param integer itrajectory: Index for trajectories
             :param string unixmd_dir: Unixmd directory
             :param integer istep: Current MD step
         """
