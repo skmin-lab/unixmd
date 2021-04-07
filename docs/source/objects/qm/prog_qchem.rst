@@ -36,7 +36,7 @@ Q-Chem :cite:`qchem2015` is a comprehensive ab initio quantum chemistry software
 | **scf_max_iter**      | Maximum number of SCF iterations               | *50*         |
 | *(integer)*           |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **scf_rho_tol**       | Density convergence for SCF iterations         | *8*          |
+| **scf_wf_tol**        | Wave function convergence for SCF iterations   | *8*          |
 | *(integer)*           |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
 | **cis_max_iter**      | Maximum number of CIS iterations               | *30*         |
@@ -93,9 +93,9 @@ Detailed description of parameters
 
 \
 
-- **scf_rho_tol** *(integer)* - Default : *8*
+- **scf_wf_tol** *(integer)* - Default : *8*
 
-  SCF is considered converged when the density error is less than :math:`10^{-\textbf{scf_rho_tol}}`.
+  SCF is considered converged when the wave function error is less than :math:`10^{-\textbf{scf_wf_tol}}`.
 
 \
 
