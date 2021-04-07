@@ -275,13 +275,13 @@ class SHXF(MQC):
 
         accum = 0.
 
-        if (self.mol.rho.real[self.rstate, self.rstate] < self.rho_threshold):
+        if (self.mol.rho.real[self.rstate, self.rstate] < self.lower_th):
             self.force_hop = True
 
         for ist in range(self.mol.nst):
             if (ist != self.rstate):
                 if (self.force_hop):
-                    self.prob[ist] = self.mol.rho.real[ist, ist] / (1. - self.rho_threshold)
+                    self.prob[ist] = self.mol.rho.real[ist, ist] / self.upper_th
                 else:
                     self.prob[ist] = - 2. * self.mol.rho.real[ist, self.rstate] * \
                         self.mol.nacme[ist, self.rstate] * self.dt / self.mol.rho.real[self.rstate, self.rstate]
