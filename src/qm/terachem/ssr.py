@@ -302,48 +302,48 @@ class SSR(TeraChem):
         # NAC
         if (self.nac == "Yes"):
 
-            # 1.99 version do not show H vector
-            if (self.version == "1.99"):
-                # Zeroing for G, h and H vectors
+            ## 1.99 version do not show H vector
+            #if (self.version == "1.99"):
+            #    # Zeroing for G, h and H vectors
 
-                Gvec = np.zeros((molecule.nat_qm, molecule.ndim))
-                hvec = np.zeros((molecule.nat_qm, molecule.ndim))
-                ssr_coef = np.zeros((molecule.nst, molecule.nst))
-                Hvec = np.zeros((molecule.nat_qm, molecule.ndim))
+            #    Gvec = np.zeros((molecule.nat_qm, molecule.ndim))
+            #    hvec = np.zeros((molecule.nat_qm, molecule.ndim))
+            #    ssr_coef = np.zeros((molecule.nst, molecule.nst))
+            #    Hvec = np.zeros((molecule.nat_qm, molecule.ndim))
 
-                # Calculate G vector, G vector is difference gradient so minus sign is needed
-                Gvec = - 0.5 * (molecule.states[0].force - molecule.states[1].force)
-                # Read h vector
-                tmp_c = 'Coupling gradient\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
-	                  '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-                hvec = re.findall(tmp_c, log_out)
-                hvec = np.array(hvec[0])
-                hvec = hvec.astype(float)
-                hvec = hvec.reshape(molecule.nat_qm, 3, order='C')
-                # Read coefficients of SSR state
-                ssr_coef = re.findall('SSR state\s\d\s+[-]\S+\s+([-]*\S+)\s+([-]*\S+)', log_out)
-                ssr_coef = np.array(ssr_coef)
-                ssr_coef = ssr_coef.astype(float)
-                # Calculate H vector from G, h vector
-                Hvec = 1. / (molecule.states[1].energy - molecule.states[0].energy) * \
-                    ((2. * ssr_coef[0, 0] * ssr_coef[1, 0] * Gvec + hvec) / \
-                    (ssr_coef[0, 0] * ssr_coef[1, 1] + ssr_coef[1, 0] * ssr_coef[0, 1]))
+            #    # Calculate G vector, G vector is difference gradient so minus sign is needed
+            #    Gvec = - 0.5 * (molecule.states[0].force - molecule.states[1].force)
+            #    # Read h vector
+            #    tmp_c = 'Coupling gradient\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
+	          #        '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+            #    hvec = re.findall(tmp_c, log_out)
+            #    hvec = np.array(hvec[0])
+            #    hvec = hvec.astype(float)
+            #    hvec = hvec.reshape(molecule.nat_qm, 3, order='C')
+            #    # Read coefficients of SSR state
+            #    ssr_coef = re.findall('SSR state\s\d\s+[-]\S+\s+([-]*\S+)\s+([-]*\S+)', log_out)
+            #    ssr_coef = np.array(ssr_coef)
+            #    ssr_coef = ssr_coef.astype(float)
+            #    # Calculate H vector from G, h vector
+            #    Hvec = 1. / (molecule.states[1].energy - molecule.states[0].energy) * \
+            #        ((2. * ssr_coef[0, 0] * ssr_coef[1, 0] * Gvec + hvec) / \
+            #        (ssr_coef[0, 0] * ssr_coef[1, 1] + ssr_coef[1, 0] * ssr_coef[0, 1]))
 
-                molecule.nac[0, 1] = Hvec
-                molecule.nac[1, 0] = - Hvec
+            #    molecule.nac[0, 1] = Hvec
+            #    molecule.nac[1, 0] = - Hvec
 
-            elif (self.version == "1.93"):
-                kst = 0
-                for ist in range(molecule.nst):
-                    for jst in range(ist + 1, molecule.nst):
-                        tmp_c = '>\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
-	                          '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-                        nac = re.findall(tmp_c, log_out)
-                        nac = np.array(nac[kst])
-                        nac = nac.astype(float)
-                        nac = nac.reshape(molecule.nat_qm, 3, order='C')
-                        molecule.nac[ist, jst] = nac
-                        molecule.nac[jst, ist] = - nac
-                        kst += 1
+            #elif (self.version == "1.93"):
+            kst = 0
+            for ist in range(molecule.nst):
+                for jst in range(ist + 1, molecule.nst):
+                    tmp_c = '>\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
+                        '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+                    nac = re.findall(tmp_c, log_out)
+                    nac = np.array(nac[kst])
+                    nac = nac.astype(float)
+                    nac = nac.reshape(molecule.nat_qm, 3, order='C')
+                    molecule.nac[ist, jst] = nac
+                    molecule.nac[jst, ist] = - nac
+                    kst += 1
 
 

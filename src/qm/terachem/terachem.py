@@ -27,15 +27,15 @@ class TeraChem(QM_calculator):
         self.gpu_id = gpu_id
         
         if (self.gpu_id == None):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) gpu_id should be given as list! {self.gpu_id}")
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) The data type of gpu_id should be given as list! {self.gpu_id}")
 
         if (len(self.gpu_id) != self.ngpus):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) the length of gpu_id should be same to ngpus! {self.gpu_id}, {self.ngpus}")
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) The length of gpu_id should be same to ngpus! ({self.gpu_id} != {self.ngpus})")
 
         self.precision = precision
         self.version = version
 
-        if (not (self.version == "1.99" or self.version == "1.93")):
+        if (not (self.version == "1.93")):
             raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")
 
 
