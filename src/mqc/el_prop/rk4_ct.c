@@ -10,8 +10,10 @@ static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *en
     double **nacme, double **nacme_old, double **k_lk, double *dotpopd, double complex *coef);
 
 // Routine for density elec_object scheme in rk4 solver
+/*
 static void rk4_rho(int nst, int nesteps, double dt, double *energy, double *energy_old,
     double **nacme, double **nacme_old, double **k_lk, double *dotpopd, double complex **rho);
+*/
 
 // Interface routine for elec_object scheme in rk4 solver
 static void rk4(int nst, int nesteps, double dt, char *elec_object, double *energy, double *energy_old,
@@ -20,10 +22,11 @@ static void rk4(int nst, int nesteps, double dt, char *elec_object, double *ener
     if(strcmp(elec_object, "coefficient") == 0){
         rk4_coef(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, k_lk, dotpopd, coef);
     }
+    /*
     else if(strcmp(elec_object, "density") == 0){
         rk4_rho(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, k_lk, dotpopd, rho);
     }
-
+    */
 }
 
 // Routine for coefficient elec_object scheme in rk4 solver
@@ -140,6 +143,7 @@ static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *en
 
 }
 
+/*
 // Routine for density elec_object scheme in rk4 solver
 static void rk4_rho(int nst, int nesteps, double dt, double *energy, double *energy_old,
     double **nacme, double **nacme_old, double **k_lk, double *dotpopd, double complex **rho){
@@ -234,22 +238,22 @@ static void rk4_rho(int nst, int nesteps, double dt, double *energy, double *ene
 
     }
 
-    /*
-    for(ist = 0; ist < nst; ist++){
-        na_term[ist] = 0.0;
-        for(jst = 0; jst < nst; jst++){
-            if(jst != ist){
-                na_term[ist] -= 2.0 * dv[ist][jst] * creal(rho[ist][jst]);
-            }
-        }
-        printf("RHODOT_NAC %d %f\n",ist+1, na_term[ist]);
-    }
-    norm = 0.0;
-    for(ist = 0; ist < nst; ist++){
-        norm += creal(rho[ist][ist]);
-    }
-    printf("RK4_COEF : NORM = %15.8f\n", norm);
-    */
+    
+    //for(ist = 0; ist < nst; ist++){
+    //    na_term[ist] = 0.0;
+    //    for(jst = 0; jst < nst; jst++){
+    //        if(jst != ist){
+    //            na_term[ist] -= 2.0 * dv[ist][jst] * creal(rho[ist][jst]);
+    //        }
+    //    }
+    //    printf("RHODOT_NAC %d %f\n",ist+1, na_term[ist]);
+    //}
+    //norm = 0.0;
+    //for(ist = 0; ist < nst; ist++){
+    //    norm += creal(rho[ist][ist]);
+    //}
+    //printf("RK4_COEF : NORM = %15.8f\n", norm);
+    
 
     for(ist = 0; ist < nst; ist++){
         free(k1[ist]);
@@ -277,4 +281,4 @@ static void rk4_rho(int nst, int nesteps, double dt, double *energy, double *ene
 
 }
 
-
+*/

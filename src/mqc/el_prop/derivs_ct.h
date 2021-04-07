@@ -48,6 +48,7 @@ static void ct_cdot(int nst, double *e, double **dv, double **k_lk, double compl
     free(ct_term);
 }
 
+/*
 // Routine to calculate rhodot contribution originated from Ehrenfest term
 static void ct_rhodot(int nst, double *e, double **dv, double complex **rho, double complex **rho_dot){
 
@@ -78,5 +79,4 @@ static void ct_rhodot(int nst, double *e, double **dv, double complex **rho, dou
     }
 
 }
-
-
+*/

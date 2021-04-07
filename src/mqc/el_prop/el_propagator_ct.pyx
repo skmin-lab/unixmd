@@ -68,15 +68,15 @@ def el_run(md, itrajectory):
         for ist in range(nst):
             coef[ist] = md.mol.states[ist].coef
         
-    elif (md.elec_object == "density"):
+    #elif (md.elec_object == "density"):
 
-        rho = <double complex**> PyMem_Malloc(nst * sizeof(double complex*))
-        for ist in range(nst):
-            rho[ist] = <double complex*> PyMem_Malloc(nst * sizeof(double complex))
+    #    rho = <double complex**> PyMem_Malloc(nst * sizeof(double complex*))
+    #    for ist in range(nst):
+    #        rho[ist] = <double complex*> PyMem_Malloc(nst * sizeof(double complex))
 
-        for ist in range(nst):
-            for jst in range(nst):
-                rho[ist][jst] = md.mol.rho[ist, jst]
+    #    for ist in range(nst):
+    #        for jst in range(nst):
+    #            rho[ist][jst] = md.mol.rho[ist, jst]
 
     py_bytes = md.elec_object.encode()
     elec_object_c = py_bytes
@@ -97,15 +97,15 @@ def el_run(md, itrajectory):
 
         PyMem_Free(coef)
 
-    elif (md.elec_object == "density"):
+    #elif (md.elec_object == "density"):
 
-        for ist in range(nst):
-            for jst in range(nst):
-                md.mol.rho[ist, jst] = rho[ist][jst]
+    #    for ist in range(nst):
+    #        for jst in range(nst):
+    #            md.mol.rho[ist, jst] = rho[ist][jst]
 
-        for ist in range(nst):
-            PyMem_Free(rho[ist])
-        PyMem_Free(rho)
+    #    for ist in range(nst):
+    #        PyMem_Free(rho[ist])
+    #    PyMem_Free(rho)
 
     # Deallocate variables
     for ist in range(nst):
