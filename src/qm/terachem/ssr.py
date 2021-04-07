@@ -39,7 +39,7 @@ class SSR(TeraChem):
         # Initialize TeraChem SSR variables
         self.scf_wf_tol = scf_wf_tol
         self.scf_max_iter = scf_max_iter
-            
+
         self.l_ssr22 = l_ssr22
         if (self.l_ssr22):
             if (molecule.nst > 2):
