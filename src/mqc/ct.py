@@ -289,7 +289,7 @@ class CT(MQC):
                 avg_R2 = R2_tmp[iat] / self.count_ntrajs[itraj, iat]
                 for idim in range(self.ndim):
                     self.sigma_lk[itraj, 0, iat, idim] = np.sqrt((avg_R2[idim] - avg_R[idim] ** 2)) \
-                        / np.sqrt(np.sqrt(self.count_ntrajs[itraj, iat])) # / np.sqrt(np.sqrt(nntraj)) is artifact to modulate sigma.
+                        / np.sqrt(np.sqrt(self.count_ntrajs[itraj, iat])) # / np.sqrt(np.sqrt(count_ntrajs)) is artifact to modulate sigma.
                     if (self.sigma_lk[itraj, 0, iat, idim] <= self.sigma_threshold):
                         self.sigma_lk[itraj, 0, iat, idim] = self.dist_cutoff
 
@@ -460,7 +460,7 @@ class CT(MQC):
 
         # Write auxiliary trajectories
         if (self.verbosity >= 2):
-            tmp = f'{self.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}sigma_x{"":5s}sigma_y{"":5s}sigma_z{"":5s}nntraj' + \
+            tmp = f'{self.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}sigma_x{"":5s}sigma_y{"":5s}sigma_z{"":5s}count_ntrajs' + \
                 "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
                 "".join([f'{self.sigma_lk[itrajectory, 0, iat, idim]:15.8f}' for idim in range(self.ndim)]) + \
                 f'{self.count_ntrajs[itrajectory, iat]:15.8f}' for iat in range(self.nat)])
