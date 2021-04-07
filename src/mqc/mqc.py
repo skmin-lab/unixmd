@@ -18,8 +18,8 @@ class MQC(object):
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adj_nac: Logical to adjust nonadiabatic coupling
-        :param initial_coef: Initial BO coefficient
-        :type initial_coef: Double, list or complex, list
+        :param init_coef: Initial BO coefficient
+        :type init_coef: Double, list or complex, list
         :param string unit_dt: Unit of time step (fs = femtosecond, au = atomic unit)
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
@@ -208,14 +208,15 @@ class MQC(object):
 
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
+            :param string restart: Option for controlling dynamics restarting
         """
-        # Print UNI-xMD version
+        # Print PyUNI-xMD version
         cur_time = datetime.datetime.now()
         cur_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
         prog_info = textwrap.dedent(f"""\
         {"-" * 68}
 
-        {"UNI-xMD version 20.1":>43s}
+        {"PyUNI-xMD version 20.1":>43s}
 
         {"< Developers >":>40s}
         {" " * 4}Seung Kyu Min,  In Seong Lee,  Jong-Kwon Ha,  Daeho Han,
@@ -226,7 +227,7 @@ class MQC(object):
         {" " * 4}Please cite UNI-xMD as follows:
         {" " * 4}This is article
 
-        {" " * 4}UNI-xMD begins on {cur_time}
+        {" " * 4}PyUNI-xMD begins on {cur_time}
         """)
         print (prog_info, flush=True)
 

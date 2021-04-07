@@ -109,7 +109,7 @@ class CT(MQC):
             :param boolean l_save_scr: Logical for saving scratch directory
             :param string restart: Option for controlling dynamics restarting
         """
-        # Initialize UNI-xMD
+        # Initialize PyUNI-xMD
         base_dirs, unixmd_dirs, qm_log_dirs, mm_log_dirs =\
              self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
 
@@ -331,8 +331,8 @@ class CT(MQC):
             for ist in range(self.nst):
                 rho[itraj, ist] = self.mols[itraj].rho[ist, ist].real
 
-        # (3-1) Compute denominat_qmor
-        deno_lk = np.zeros((self.nst_pair, self.nat_qm, self.ndim)) # denominat_qmor
+        # (3-1) Compute denominator
+        deno_lk = np.zeros((self.nst_pair, self.nat_qm, self.ndim)) # denominator
         for itraj in range(self.ntrajs):
             index_lk = -1
             for ist in range(self.nst):
@@ -344,7 +344,7 @@ class CT(MQC):
                                 (self.phase[itraj, ist, iat, idim] - self.phase[itraj, jst, iat, idim]) * self.slope_i[itraj, iat, idim]
 
         # (3-2) Compute numerator
-        ratio_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim)) # numerator / denominat_qmor
+        ratio_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim)) # numerator / denominator
         numer_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim)) # numerator
         for itraj in range(self.ntrajs):
             index_lk = -1
@@ -427,16 +427,16 @@ class CT(MQC):
             for ist in range(self.nst):
                 for jst in range(ist + 1, self.nst):
                     index_lk += 1
-                    self.K_lk[itraj, ist, jst] += 2. * np.sum(1. / self.mol.mass[0:self.mol.nat_qm] * \
+                    self.K_lk[itraj, ist, jst] += 2. * np.sum(1. / self.mol.mass[0:self.nat_qm] * \
                         np.sum(self.qmom[itraj, index_lk] * self.phase[itraj, ist], axis = 1))
-                    self.K_lk[itraj, jst, ist] += 2. * np.sum(1. / self.mol.mass[0:self.mol.nat_qm] * \
+                    self.K_lk[itraj, jst, ist] += 2. * np.sum(1. / self.mol.mass[0:self.nat_qm] * \
                         np.sum(self.qmom[itraj, index_lk] * self.phase[itraj, jst], axis = 1))
 
     def write_md_output(self, itrajectory, unixmd_dir, istep):
         """ Write output files
 
             :param integer itrajectory: Index for trajectories
-            :param string unixmd_dir: Unixmd directory
+            :param string unixmd_dir: PyUNIxMD directory
             :param integer istep: Current MD step
         """
         # Write the common part
@@ -450,7 +450,7 @@ class CT(MQC):
         """ Write CT-based decoherence information
 
             :param integer itrajectory: Index for trajectories
-            :param string unixmd_dir: Unixmd directory
+            :param string unixmd_dir: PyUNIxMD directory
             :param integer istep: Current MD step
         """
         # TODO
@@ -476,12 +476,12 @@ class CT(MQC):
             for ist in range(self.nst):
                 for jst in range(ist + 1, self.nst):
                     index_lk += 1
-                    tmp = f'{self.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}QMOM_center (au)' + \
+                    tmp = f'{self.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum center (au)' + \
                         "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
                         "".join([f'{self.center_lk[itrajectory, index_lk, iat, idim]:15.8f}' for idim in range(self.ndim)]) for iat in range(self.nat_qm)])
                     typewriter(tmp, unixmd_dir, f"CENTER_{ist}_{jst}", "a")
 
-                    tmp = f'{self.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}QMOM (au)' + \
+                    tmp = f'{self.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum (au)' + \
                         "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
                         "".join([f'{self.qmom[itrajectory, index_lk, iat, idim]:15.8f}' for idim in range(self.ndim)]) for iat in range(self.nat_qm)])
                     typewriter(tmp, unixmd_dir, f"QMOM_{ist}_{jst}", "a")
@@ -503,9 +503,9 @@ class CT(MQC):
     def print_init(self, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
-            :param object qm: qm object containing on-the-fly calculation infomation
-            :param object mm: mm object containing MM calculation infomation
-            :param string restart: option for controlling dynamics restarting
+            :param object qm: Qm object containing on-the-fly calculation infomation
+            :param object mm: Mm object containing MM calculation infomation
+            :param string restart: Option for controlling dynamics restarting
         """
         # Print initial information about molecule, qm, mm and thermostat
         super().print_init(qm, mm, restart)
