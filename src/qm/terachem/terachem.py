@@ -30,7 +30,7 @@ class TeraChem(QM_calculator):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) The data type of gpu_id should be given as list! {self.gpu_id}")
 
         if (len(self.gpu_id) != self.ngpus):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) The length of gpu_id should be same to ngpus! ({self.gpu_id} != {self.ngpus})")
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) The length of gpu_id should be same to ngpus! (len({self.gpu_id}) != {self.ngpus})")
 
         self.precision = precision
         self.version = version
