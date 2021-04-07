@@ -503,8 +503,8 @@ class CT(MQC):
     def print_init(self, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
-            :param object qm: Qm object containing on-the-fly calculation infomation
-            :param object mm: Mm object containing MM calculation infomation
+            :param object qm: QM object containing on-the-fly calculation infomation
+            :param object mm: MM object containing MM calculation infomation
             :param string restart: Option for controlling dynamics restarting
         """
         # Print initial information about molecule, qm, mm and thermostat
