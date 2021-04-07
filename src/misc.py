@@ -1,5 +1,6 @@
 from functools import wraps
 import sys, time, os
+import numpy as np
 
 # Atomic weight
 data = { "xx" : 1.00794, "H" : 1.00794, "He" : 4.00260, "Li" : 6.941, "Be" : 9.012187, "B" : 10.811,
@@ -73,3 +74,9 @@ def typewriter(string, dir_name, filename, mode):
     with open(tmp_name, mode) as f:
         f.write(string + "\n")
 
+def gaussian1d(x, const, sigma, x0):
+    if (sigma < 0.0):
+        return -1
+    else:
+        res = const / (sigma * np.sqrt(2. * np.pi)) * np.exp(- (x - x0) ** 2 / (2. * sigma ** 2))
+        return res 

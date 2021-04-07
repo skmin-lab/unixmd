@@ -18,8 +18,8 @@ class MQC(object):
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adj_nac: Logical to adjust nonadiabatic coupling
-        :param initial_coef: Initial BO coefficient
-        :type initial_coef: Double, list or complex, list
+        :param init_coef: Initial BO coefficient
+        :type init_coef: Double, list or complex, list
         :param string unit_dt: Unit of time step (fs = femtosecond, au = atomic unit)
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
@@ -103,59 +103,87 @@ class MQC(object):
 
         # Set directory information
         output_dir = os.path.expanduser(output_dir)
-        base_dir = os.path.join(os.getcwd(), output_dir)
-        unixmd_dir = os.path.join(base_dir, "md")
-        qm_log_dir = os.path.join(base_dir, "qm_log")
-        mm_log_dir = None
+        base_dir = []
+        unixmd_dir = []
+        qm_log_dir = []
+        mm_log_dir = [None]
+
         if (self.mol.l_qmmm and mm != None):
-            mm_log_dir = os.path.join(base_dir, "mm_log")
+            mm_log_dir = []
+
+        dir_tmp = os.path.join(os.getcwd(), output_dir)
+        if (self.md_type != "CT"):
+            base_dir.append(dir_tmp)
+        else:
+            for itraj in range(self.ntrajs):
+                itraj_dir = os.path.join(dir_tmp, f"traj{itraj + 1:0{self.digit}d}")
+                base_dir.append(itraj_dir)
+
+        for idir in base_dir:
+            unixmd_dir.append(os.path.join(idir, "md"))
+            qm_log_dir.append(os.path.join(idir, "qm_log"))
+            if (self.mol.l_qmmm and mm != None):
+                mm_log_dir.append(os.path.join(idir, "mm_log"))
 
         # Check and make directories
         if (restart == "append"):
-            if (not os.path.exists(unixmd_dir)):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Directory to be appended for restart not found! {restart} and {unixmd_dir}")
-            if (not os.path.exists(unixmd_dir) and l_save_qm_log):
-                os.makedirs(qm_log_dir)
-            if (self.mol.l_qmmm and mm != None):
-                if (not os.path.exists(mm_log_dir) and l_save_mm_log):
-                    os.makedirs(mm_log_dir)
-        else:
-            if (os.path.exists(unixmd_dir)):
-                shutil.move(unixmd_dir, unixmd_dir + "_old_" + str(os.getpid()))
-            os.makedirs(unixmd_dir)
+            # For MD output directory
+            for md_idir in unixmd_dir:
+                if (not os.path.exists(md_idir)):
+                    raise ValueError (f"( {self.md_type}.{call_name()} ) Directory to be appended for restart not found! {restart} and {md_idir}")
 
-            if (os.path.exists(qm_log_dir)):
-                shutil.move(qm_log_dir, qm_log_dir + "_old_" + str(os.getpid()))
+            # For QM output directory
             if (l_save_qm_log):
-                os.makedirs(qm_log_dir)
+                for qm_idir in qm_log_dir:
+                    if (not os.path.exists(qm_idir)):
+                        os.makedirs(qm_idir)
 
+            # For MM output directory
             if (self.mol.l_qmmm and mm != None):
-                if (os.path.exists(mm_log_dir)):
-                    shutil.move(mm_log_dir, mm_log_dir + "_old_" + str(os.getpid()))
                 if (l_save_mm_log):
-                    os.makedirs(mm_log_dir)
+                    for mm_idir in mm_log_dir:
+                        if (not os.path.exists(mm_idir)):
+                            os.makedirs(mm_idir)
+        else:
+            # For MD output directory
+            for md_idir in unixmd_dir:
+                if (os.path.exists(md_idir)):
+                    shutil.move(md_idir, md_idir + "_old_" + str(os.getpid()))
+                os.makedirs(md_idir)
 
-            self.touch_file(unixmd_dir)
+                self.touch_file(md_idir)
 
-        os.chdir(base_dir)
+            # For QM output directory
+            for qm_idir in qm_log_dir:
+                if (os.path.exists(qm_idir)):
+                    shutil.move(qm_idir, qm_idir + "_old_" + str(os.getpid()))
+                if (l_save_qm_log):
+                    os.makedirs(qm_idir)
 
-        return base_dir, unixmd_dir, qm_log_dir, mm_log_dir
+            # For MM output directory
+            for mm_idir in mm_log_dir:
+                if (self.mol.l_qmmm and mm != None):
+                    if (os.path.exists(mm_idir)):
+                        shutil.move(mm_idir, mm_idir + "_old_" + str(os.getpid()))
+                    if (l_save_mm_log):
+                        os.makedirs(mm_idir)
+
+        os.chdir(base_dir[0])
+
+        if (self.md_type != "CT"):
+            return base_dir[0], unixmd_dir[0], qm_log_dir[0], mm_log_dir[0]
+        else:
+            return base_dir, unixmd_dir, qm_log_dir, mm_log_dir
 
     def cl_update_position(self):
         """ Routine to update nuclear positions
-
         """
-        self.calculate_force()
-
         self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.ndim)
         self.mol.pos += self.dt * self.mol.vel
 
     def cl_update_velocity(self):
         """ Routine to update nuclear velocities
-
         """
-        self.calculate_force()
-
         self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.ndim)
         self.mol.update_kinetic()
 
@@ -180,14 +208,15 @@ class MQC(object):
 
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
+            :param string restart: Option for controlling dynamics restarting
         """
-        # Print UNI-xMD version
+        # Print PyUNI-xMD version
         cur_time = datetime.datetime.now()
         cur_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
         prog_info = textwrap.dedent(f"""\
         {"-" * 68}
 
-        {"UNI-xMD version 20.1":>43s}
+        {"PyUNI-xMD version 20.1":>43s}
 
         {"< Developers >":>40s}
         {" " * 4}Seung Kyu Min,  In Seong Lee,  Jong-Kwon Ha,  Daeho Han,
@@ -198,7 +227,7 @@ class MQC(object):
         {" " * 4}Please cite UNI-xMD as follows:
         {" " * 4}This is article
 
-        {" " * 4}UNI-xMD begins on {cur_time}
+        {" " * 4}PyUNI-xMD begins on {cur_time}
         """)
         print (prog_info, flush=True)
 
@@ -210,8 +239,12 @@ class MQC(object):
             """), "    ")
             print (restart_info, flush=True)
 
-        # Print molecule information: coordinate, velocity
-        self.mol.print_init(mm)
+        # Print self.mol information: coordinate, velocity
+        if (self.md_type != "CT"):
+            self.mol.print_init(mm)
+        else:
+            for itraj, mol in enumerate(self.mols):
+                mol.print_init(mm)
 
         # Print dynamics information
         dynamics_info = textwrap.dedent(f"""\

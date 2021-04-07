@@ -85,7 +85,7 @@ class SH(MQC):
             :param boolean l_save_scr: Logical for saving scratch directory
             :param string restart: Option for controlling dynamics restarting
         """
-        # Initialize UNI-xMD
+        # Initialize PyUNIxMD
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
              self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
         bo_list = [self.rstate]
@@ -139,6 +139,7 @@ class SH(MQC):
         # Main MD loop
         for istep in range(self.istep, self.nsteps):
 
+            self.calculate_force()
             self.cl_update_position()
 
             self.mol.backup_bo()
@@ -150,6 +151,7 @@ class SH(MQC):
             if (not self.mol.l_nacme and self.l_adj_nac):
                 self.mol.adjust_nac()
 
+            self.calculate_force()
             self.cl_update_velocity()
 
             if (not self.mol.l_nacme):
@@ -443,6 +445,7 @@ class SH(MQC):
 
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
+            :param string restart: Option for controlling dynamics restarting
         """
         # Print initial information about molecule, qm, mm and thermostat
         super().print_init(qm, mm, restart)
