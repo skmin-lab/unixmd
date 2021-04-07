@@ -87,9 +87,11 @@ class CT(MQC):
         self.center_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim))
 
         # Determine parameters to calculate decoherenece effect
+        self.small = 1.0E-08
+
         self.upper_th = 1. - rho_threshold
         self.lower_th = rho_threshold
-        
+
         self.sigma_threshold = sigma_threshold
         self.dist_cutoff = dist_cutoff
 
@@ -355,7 +357,7 @@ class CT(MQC):
                         for idim in range(self.ndim):
                             numer_lk[itraj, index_lk, iat, idim] = rho[itraj, ist] * rho[itraj, jst] * self.mols[itraj].pos[iat, idim] * \
                                 (self.phase[itraj, ist, iat, idim] - self.phase[itraj, jst, iat, idim]) * self.slope_i[itraj, iat, idim]
-                            if (abs(deno_lk[index_lk, iat, idim]) <= 1.0E-08):
+                            if (abs(deno_lk[index_lk, iat, idim]) <= self.small):
                                 ratio_lk[itraj, index_lk, iat, idim] = 0.
                             else:
                                 ratio_lk[itraj, index_lk, iat, idim] = numer_lk[itraj, index_lk, iat, idim] / \
@@ -372,7 +374,7 @@ class CT(MQC):
                         for idim in range(self.ndim):
                             for jtraj in range(self.ntrajs):
                                 center_old_lk[itraj, index_lk, iat, idim] += ratio_lk[jtraj, index_lk, iat, idim]
-                            if ((abs(self.slope_i[itraj, iat, idim]) <= 1.0E-08) or (center_old_lk[itraj, index_lk, iat, idim] == 0.)):
+                            if ((abs(self.slope_i[itraj, iat, idim]) <= self.small) or (center_old_lk[itraj, index_lk, iat, idim] == 0.)):
                                 center_old_lk[itraj, index_lk, iat, idim] = self.mols[itraj].pos[iat, idim]
 
         # Center of quantum momentum is calculated by Eq.(S21) of J. Phys. Chem. Lett., 2017, 8, 3048-3055.
@@ -384,7 +386,7 @@ class CT(MQC):
                     index_lk += 1
                     for iat in range(self.nat_qm):
                         for idim in range(self.ndim):
-                            if (abs(self.slope_i[itraj, iat, idim]) <= 1.0E-08):
+                            if (abs(self.slope_i[itraj, iat, idim]) <= self.small):
                                 center_new_lk[itraj, index_lk, iat, idim] = self.mols[itraj].pos[iat, idim]
                             else:
                                 for jtraj in range(self.ntrajs):
