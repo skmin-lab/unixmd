@@ -50,7 +50,7 @@ class SHXF(MQC):
         :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
         :param string hop_rescale: Velocity rescaling method after successful hop
         :param string hop_reject: Velocity rescaling method after frustrated hop
-        :param double rho_threshold: Electronic density rho_threshold for decoherence term calculation
+        :param double rho_threshold: Electronic density threshold for decoherence term calculation
         :param sigma: Width of nuclear wave packet of auxiliary trajectory
         :type sigma: double or double,list
         :param init_coef: Initial BO coefficient
@@ -281,7 +281,7 @@ class SHXF(MQC):
         for ist in range(self.mol.nst):
             if (ist != self.rstate):
                 if (self.force_hop):
-                    self.prob[ist] = self.mol.rho.real[ist, ist] / (1. - self._rhothreshold)
+                    self.prob[ist] = self.mol.rho.real[ist, ist] / (1. - self.rho_threshold)
                 else:
                     self.prob[ist] = - 2. * self.mol.rho.real[ist, self.rstate] * \
                         self.mol.nacme[ist, self.rstate] * self.dt / self.mol.rho.real[self.rstate, self.rstate]

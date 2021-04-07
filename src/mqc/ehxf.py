@@ -37,7 +37,7 @@ class EhXF(MQC):
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
-        :param double rho_threshold: Electronic density rho_threshold for decoherence term calculation
+        :param double rho_threshold: Electronic density threshold for decoherence term calculation
         :param sigma: Width of nuclear wave packet of auxiliary trajectory
         :type sigma: double or double,list
         :param init_coef: Initial BO coefficient
