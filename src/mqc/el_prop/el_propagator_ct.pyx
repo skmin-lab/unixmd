@@ -7,7 +7,7 @@ cimport numpy as np
 cdef extern from "rk4_ct.c":
     void rk4(int nst, int nesteps, double dt, char *elec_object, double *energy, \
         double *energy_old, double **nacme, double **nacme_old, double **k_lk, \
-        double complex *coef, double complex **rho)
+        double *dotpopd, double complex *coef, double complex **rho)
 
 def el_run(md, itrajectory):
     cdef:
@@ -17,18 +17,18 @@ def el_run(md, itrajectory):
         double **nacme
         double **nacme_old
         double **k_lk
+        double **k_lk_old
         double complex *coef
         double complex **rho
+        double *dotpopd
 
         bytes py_bytes
         int ist, jst, nst, nesteps
-        int nat, ndim
         double dt
 
     # Assign size variables
     nst = md.nst
     nesteps, dt = md.nesteps, md.dt
-    nat, ndim = md.nat, md.ndim
 
     # Allocate variables
     energy = <double*> PyMem_Malloc(nst * sizeof(double))
@@ -44,6 +44,9 @@ def el_run(md, itrajectory):
         nacme_old[ist] = <double*> PyMem_Malloc(nst * sizeof(double))
 
         k_lk[ist] = <double*> PyMem_Malloc(nst * sizeof(double))
+    
+    # Contribution of decoherence term 
+    dotpopd = <double*> PyMem_Malloc(nst * sizeof(double))
 
     # Assign variables from python to C
     for ist in range(nst):
@@ -80,7 +83,7 @@ def el_run(md, itrajectory):
 
     # Propagate electrons depending on the propagator
     if (md.propagator == "rk4"):
-        rk4(nst, nesteps, dt, elec_object_c, energy, energy_old, nacme, nacme_old, k_lk, coef, rho)
+        rk4(nst, nesteps, dt, elec_object_c, energy, energy_old, nacme, nacme_old, k_lk, dotpopd, coef, rho)
 
     # Assign variables from C to python
     if (md.elec_object == "coefficient"):

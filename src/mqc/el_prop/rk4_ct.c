@@ -7,28 +7,28 @@
 
 // Routine for coefficient elec_object scheme in rk4 solver
 static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *energy_old,
-    double **nacme, double **nacme_old, double **k_lk, double complex *coef);
+    double **nacme, double **nacme_old, double **k_lk, double *dotpopd, double complex *coef);
 
 // Routine for density elec_object scheme in rk4 solver
 static void rk4_rho(int nst, int nesteps, double dt, double *energy, double *energy_old,
-    double **nacme, double **nacme_old, double **k_lk, double complex **rho);
+    double **nacme, double **nacme_old, double **k_lk, double *dotpopd, double complex **rho);
 
 // Interface routine for elec_object scheme in rk4 solver
 static void rk4(int nst, int nesteps, double dt, char *elec_object, double *energy, double *energy_old,
-    double **nacme, double **nacme_old, double **k_lk, double complex *coef, double complex **rho){
+    double **nacme, double **nacme_old, double **k_lk, double *dotpopd, double complex *coef, double complex **rho){
 
     if(strcmp(elec_object, "coefficient") == 0){
-        rk4_coef(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, k_lk, coef);
+        rk4_coef(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, k_lk, dotpopd, coef);
     }
     else if(strcmp(elec_object, "density") == 0){
-        rk4_rho(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, k_lk, rho);
+        rk4_rho(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, k_lk, dotpopd, rho);
     }
 
 }
 
 // Routine for coefficient elec_object scheme in rk4 solver
 static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *energy_old,
-    double **nacme, double **nacme_old, double **k_lk, double complex *coef){
+    double **nacme, double **nacme_old, double **k_lk, double *dotpopd, double complex *coef){
 
     double complex *k1 = malloc(nst * sizeof(double complex));
     double complex *k2 = malloc(nst * sizeof(double complex));
@@ -142,7 +142,7 @@ static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *en
 
 // Routine for density elec_object scheme in rk4 solver
 static void rk4_rho(int nst, int nesteps, double dt, double *energy, double *energy_old,
-    double **nacme, double **nacme_old, double **k_lk, double complex **rho){
+    double **nacme, double **nacme_old, double **k_lk, double *dotpopd, double complex **rho){
 
     double complex **k1 = malloc(nst * sizeof(double complex*));
     double complex **k2 = malloc(nst * sizeof(double complex*));

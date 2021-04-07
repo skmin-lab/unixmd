@@ -24,6 +24,7 @@ static double dot(int nst, double complex *u, double complex *v){
 static void ct_cdot(int nst, double *e, double **dv, double **k_lk, double complex *c, double complex *c_dot){
 
     double complex *na_term = malloc(nst * sizeof(double complex));
+    double complex *ct_term = malloc(nst * sizeof(double complex));
 
     int ist, jst;
     double egs;
@@ -33,21 +34,18 @@ static void ct_cdot(int nst, double *e, double **dv, double **k_lk, double compl
         for(jst = 0; jst < nst; jst++){
             if(ist != jst){
                 na_term[ist] -= dv[ist][jst] * c[jst];
+                ct_term[ist] += 0.25 * (k_lk[ist][jst] - k_lk[jst][ist]) * creal(conj(c[jst]) * c[jst]);
             }
         }
     }
 
     egs = e[0];
     for(ist = 0; ist < nst; ist++){
-        c_dot[ist] = - 1.0 * I * c[ist] * (e[ist] - egs) + na_term[ist];
-        for(jst = 0; jst < nst; jst++){
-            if(jst != ist){
-                c_dot[ist] += 0.25 * (k_lk[ist][jst] - k_lk[jst][ist]) * creal(conj(c[jst]) * c[jst]) * c[ist];
-            }
-        }
+        c_dot[ist] = - 1.0 * I * c[ist] * (e[ist] - egs) + na_term[ist] + ct_term[ist] * c[ist];
     }
 
     free(na_term);
+    free(ct_term);
 }
 
 // Routine to calculate rhodot contribution originated from Ehrenfest term
