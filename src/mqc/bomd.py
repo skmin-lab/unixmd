@@ -33,7 +33,7 @@ class BOMD(MQC):
             :param boolean l_save_scr: Logical for saving scratch directory
             :param string restart: Option for controlling dynamics restarting
         """
-        # Initialize PyUNI-xMD
+        # Initialize PyUNIxMD
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
              self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
         bo_list = [self.istate]

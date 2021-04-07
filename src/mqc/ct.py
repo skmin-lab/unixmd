@@ -109,7 +109,7 @@ class CT(MQC):
             :param boolean l_save_scr: Logical for saving scratch directory
             :param string restart: Option for controlling dynamics restarting
         """
-        # Initialize PyUNI-xMD
+        # Initialize PyUNIxMD
         base_dirs, unixmd_dirs, qm_log_dirs, mm_log_dirs =\
              self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
 
@@ -443,8 +443,7 @@ class CT(MQC):
         super().write_md_output(unixmd_dir, istep)
 
         # Write decoherence information
-        if (istep != -1):
-            self.write_deco(itrajectory, unixmd_dir, istep)
+        self.write_deco(itrajectory, unixmd_dir, istep)
 
     def write_deco(self, itrajectory, unixmd_dir, istep):
         """ Write CT-based decoherence information
