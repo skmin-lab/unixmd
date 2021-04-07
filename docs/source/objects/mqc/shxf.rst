@@ -36,7 +36,7 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **nesteps**                | Total step of electronic propagation                 | *20*         |
 | *(integer)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **elec_object**            | Electronic equation of motions                       | *'density'*    |
+| **elec_object**            | Electronic equation of motions                       | *'density'*  |
 | *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **propagator**             | Electronic propagator                                | *'rk4'*      |

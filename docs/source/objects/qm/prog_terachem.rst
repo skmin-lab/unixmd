@@ -52,7 +52,7 @@ determined from the **l_state_interactions** parameter.
 | **precision**            | Precision in the calculations               | *'dynamic'* |
 | *(string)*               |                                             |             |
 +--------------------------+---------------------------------------------+-------------+
-| **scf_rho_tol**          | Wavefunction convergence for SCF iterations | *1E-2*      |
+| **scf_wf_tol**           | Wavefunction convergence for SCF iterations | *1E-2*      |
 | *(double)*               |                                             |             |
 +--------------------------+---------------------------------------------+-------------+
 | **scf_max_iter**         | Maximum number of SCF iterations            | *300*       |
@@ -67,7 +67,7 @@ determined from the **l_state_interactions** parameter.
 | **guess_file**           | Initial guess file                          | *'./c0'*    |
 | *(string)*               |                                             |             |
 +--------------------------+---------------------------------------------+-------------+
-| **reks_rho_tol**         | wavefunction error for REKS SCF iterations  | *1E-6*      |
+| **reks_diis_tol**        | DIIS error for REKS SCF iterations          | *1E-6*      |
 | *(double)*               |                                             |             |
 +--------------------------+---------------------------------------------+-------------+
 | **reks_max_iter**        | Maximum number of REKS SCF iterations       | *1000*      |
@@ -91,8 +91,8 @@ determined from the **l_state_interactions** parameter.
 | **ngpus**                | Number of GPUs                              | *1*         |
 | *(integer)*              |                                             |             |
 +--------------------------+---------------------------------------------+-------------+
-| **gpu_id**               | ID of used GPUs                             | *'1'*       |
-| *(string)*               |                                             |             |
+| **gpu_id**               | ID of used GPUs                             | *None*      |
+| *(integer, list)*        |                                             |             |
 +--------------------------+---------------------------------------------+-------------+
 | **version**              | Version of TeraChem                         | *'1.93'*    |
 | *(string)*               |                                             |             |
@@ -125,9 +125,9 @@ Detailed description of parameters
 
 \
 
-- **scf_rho_tol** *(double)* - Default: *1E-2*
+- **scf_wf_tol** *(double)* - Default: *1E-2*
 
-  SCF cycles are considered converged when the wavefunction error is less than **scf_rho_tol**.
+  SCF cycles are considered converged when the wavefunction error is less than **scf_wf_tol**.
 
 \
 
@@ -163,9 +163,9 @@ Detailed description of parameters
 
 \
 
-- **reks_rho_tol** *(double)* - Default: *1E-6*
+- **reks_diis_tol** *(double)* - Default: *1E-6*
 
-  The REKS SCF cycles are considered converged when the wavefunction error is less than **reks_rho_tol**.
+  The REKS SCF cycles are considered converged when the DIIS error is less than **reks_diis_tol**.
 
 \
 
@@ -219,10 +219,11 @@ Detailed description of parameters
 
 \
 
-- **gpu_id** *(string)* - Default: *'1'*
+- **gpu_id** *(integer, list)* - Default: *None*
 
   This parameter specifies the ID of used GPUs. If you want to use 2 GPUs with ID of 0 and 1,
-  then put *'0 1'* into **gpu_id**.
+  then put *[0, 1]* into **gpu_id**.
+  The length of **gpu_id** should be same to **ngpus**
 
 \
 
