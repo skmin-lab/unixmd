@@ -289,7 +289,7 @@ class MQC(object):
         # Print XF variables
         if (self.md_type == "SHXF" or self.md_type == "EhXF"):
             # Print density threshold used in decoherence term
-            dynamics_info += f"\n  Density Threshold        = {self.threshold:>16.6f}"
+            dynamics_info += f"\n  Density Threshold        = {self.rho_threshold:>16.6f}"
             if (self.md_type == "SHXF" and self.l_xf1d):
                 # Print reduced mass
                 dynamics_info += f"\n  Reduced Mass             = {self.aux.mass[0]:16.6f}"

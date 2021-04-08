@@ -50,7 +50,7 @@ class SHXF(MQC):
         :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
         :param string hop_rescale: Velocity rescaling method after successful hop
         :param string hop_reject: Velocity rescaling method after frustrated hop
-        :param double threshold: Electronic density threshold for decoherence term calculation
+        :param double rho_threshold: Electronic density threshold for decoherence term calculation
         :param sigma: Width of nuclear wave packet of auxiliary trajectory
         :type sigma: double or double,list
         :param init_coef: Initial BO coefficient
@@ -62,7 +62,7 @@ class SHXF(MQC):
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
-        hop_reject="reverse", threshold=0.01, sigma=None, l_xf1d=False, init_coef=None, \
+        hop_reject="reverse", rho_threshold=0.01, sigma=None, l_xf1d=False, init_coef=None, \
         l_econs_state=True, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
@@ -101,7 +101,7 @@ class SHXF(MQC):
         self.l_xf1d = l_xf1d
         self.l_coh = [False] * self.mol.nst
         self.l_first = [False] * self.mol.nst
-        self.threshold = threshold
+        self.rho_threshold = rho_threshold
 
         self.sigma = sigma
         if (self.sigma == None):
@@ -119,8 +119,8 @@ class SHXF(MQC):
         else:
             raise ValueError (f"( {self.md_type}.{call_name()} ) Wrong type for sigma given! {self.sigma}")
 
-        self.upper_th = 1. - self.threshold
-        self.lower_th = self.threshold
+        self.upper_th = 1. - self.rho_threshold
+        self.lower_th = self.rho_threshold
 
         # Initialize auxiliary molecule object
         self.aux = Auxiliary_Molecule(self.mol, self.l_xf1d)
@@ -275,13 +275,13 @@ class SHXF(MQC):
 
         accum = 0.
 
-        if (self.mol.rho.real[self.rstate, self.rstate] < self.threshold):
+        if (self.mol.rho.real[self.rstate, self.rstate] < self.lower_th):
             self.force_hop = True
 
         for ist in range(self.mol.nst):
             if (ist != self.rstate):
                 if (self.force_hop):
-                    self.prob[ist] = self.mol.rho.real[ist, ist] / (1. - self.threshold)
+                    self.prob[ist] = self.mol.rho.real[ist, ist] / self.upper_th
                 else:
                     self.prob[ist] = - 2. * self.mol.rho.real[ist, self.rstate] * \
                         self.mol.nacme[ist, self.rstate] * self.dt / self.mol.rho.real[self.rstate, self.rstate]

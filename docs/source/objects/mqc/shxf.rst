@@ -36,7 +36,7 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **nesteps**                | Total step of electronic propagation                 | *20*         |
 | *(integer)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **elec_object**            | Electronic equation of motions                       | *'density'*    |
+| **elec_object**            | Electronic equation of motions                       | *'density'*  |
 | *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **propagator**             | Electronic propagator                                | *'rk4'*      |
@@ -54,7 +54,7 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **hop_reject**             | Velocity rescaling method after frustrated hop       | *'reverse'*  |
 | *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
-| **threshold**              | Electronic density threshold for decoherence term    | *0.01*       |
+| **rho_threshold**          | Electronic density threshold for decoherence term    | *0.01*       |
 | *(double)*                 | calculation                                          |              |
 +----------------------------+------------------------------------------------------+--------------+
 | **sigma**                  | Width of nuclear wave packet of auxiliary trajectory | *None*       |
@@ -158,7 +158,7 @@ Detailed description of the parameters
 
 \
 
-- **threshold** *(double)* - Default: *0.01*
+- **rho_threshold** *(double)* - Default: *0.01*
 
   This parameter defines the numerical threshold for the coherence. 
   Specifically, if the populations of two or more states are larger than this value, the electronic state is 'coherent' and the decoherence term is calculated.

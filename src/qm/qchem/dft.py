@@ -13,7 +13,7 @@ class DFT(QChem):
         :param integer nthreads: Number of threads in the calculation
         :param string functional: Exchange-correlation functional 
         :param integer scf_max_iter: Maximum number of SCF iterations
-        :param integer scf_rho_tol: Density convergence for SCF iterations
+        :param integer scf_wf_tol: Wave function convergence for SCF iterations
         :param integer cis_max_iter: Maximum number of CIS iterations
         :param integer cis_en_tol: Energy convergence for CIS iterations
         :param integer cpscf_max_iter: Maximum number of CP iterations
@@ -22,7 +22,7 @@ class DFT(QChem):
         :param string version: Q-Chem version
     """
     def __init__(self, molecule, basis_set="sto-3g", memory=2000, nthreads=1, \
-        functional="blyp", scf_max_iter=50, scf_rho_tol=8, cis_max_iter=30, cis_en_tol=6, \
+        functional="blyp", scf_max_iter=50, scf_wf_tol=8, cis_max_iter=30, cis_en_tol=6, \
         cpscf_max_iter=30, cpscf_grad_tol=6, qm_path="./", version="5.2"):
         # Initialize Q-Chem common variables
         super(DFT, self).__init__(basis_set, memory, qm_path, nthreads, version)
@@ -30,7 +30,7 @@ class DFT(QChem):
         self.functional = functional
         self.scf_max_iter = scf_max_iter
         self.nthreads = nthreads
-        self.scf_rho_tol = scf_rho_tol
+        self.scf_wf_tol = scf_wf_tol
         self.cis_max_iter = cis_max_iter
         self.cis_en_tol = cis_en_tol
         self.cpscf_max_iter = cpscf_max_iter
@@ -88,7 +88,7 @@ class DFT(QChem):
             INPUT_BOHR TRUE
             METHOD {self.functional}
             BASIS {self.basis_set}
-            SCF_CONVERGENCE {self.scf_rho_tol}
+            SCF_CONVERGENCE {self.scf_wf_tol}
             SYMMETRY FALSE
             SYM_IGNORE TRUE
             """)
