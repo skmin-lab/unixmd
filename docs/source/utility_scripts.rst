@@ -12,6 +12,7 @@ input_gen.py
 ---------------------------
 Python utility script for PyUNIxMD input generator.
 In this script, input files of each trajectories are generated from 1) sampled geometry files and 2) running script.
+After running a script, `TRAJ_(number)` directories will be generated. Each directory contains xyz coordinate file and PyUNIxMD input script.
 The important thing is that sampled geometry files must be named in "sample_(number).xyz" and prepared running script must be read geometry from "geom.xyz" file.
 
 +---------------------+----------------------------------------------------+-----------+
@@ -30,7 +31,7 @@ The important thing is that sampled geometry files must be named in "sample_(num
 |                     |                                                    |           |
 +---------------------+----------------------------------------------------+-----------+
 
-**Ex.** Making a 100 trajectory of input script, based on XYZ from `Sampled/` and running script from `run_base.py`
+**Ex.** Making 100 trajectories of input scripts, based on XYZ from `Sampled/` and running script from `run_base.py`
 
 .. code-block:: bash
 
@@ -45,8 +46,11 @@ Currently, three geometrical parameters can be measured: bond, angle, and dihedr
 1. In the bond analysis, bond length between two given atoms will be calculated from given geometry information.
 2. In the angle analysis, angle between three given atoms will be calculated. here, second atom will be a vertex of angle. 
 3. In the dihedral angle analysis, dihedral angle between four or six given atoms will be calculated. 
-In four atom case, angle between (1,2,3),(2,3,4) plane will be calculated and dihedreal axis will be atom2-atom3. 
-In six atom case, angle between (1,2,3),(4,5,6) plane will be calculated and dihedral axis will be atom3-atom4.
+   In four atom case, angle between (1,2,3),(2,3,4) plane will be calculated and dihedreal axis will be atom2-atom3. 
+   In six atom case, angle between (1,2,3),(4,5,6) plane will be calculated and dihedral axis will be atom3-atom4.
+
+After running a script, analysis results will be saved in md output directory in each trajectories (`TRAJ_(number)/md/`).
+If averaging option is given, averaged results can be found in current directory.
 
 +------------------------+----------------------------------------------------+-----------+
 | Option                 | Description                                        | Default   |
@@ -83,11 +87,31 @@ statistical_analysis.py
 ---------------------------
 Python utility script for UNI-xMD output analysis.
 In this script, PyUNIxMD output files are post-process into organized analysis data.
-Currently, three statistical parameters are measured: BO population analysis, electron coherence analysis, nacme averaging.
+Currently, three statistical parameters can be measured: BO population analysis, electron coherence analysis, nacme averaging.
 
 1. BO population analysis based on the running state of each trajectories or based on density matrix of each trajectories
+
+.. math::
+
+   P_{I}(t) = \frac{N_{I}(t)}{N_{traj}} 
+
+.. math::
+
+   <\rho_{II}(t)> = \frac{\sum_{j}^{N_{traj}} \rho_{II}^{(j)}(t)}{N_{traj}}
+
 2. Electronic coherence analysis based on density matrix of each trajectories
+
+.. math::
+
+   <\left\vert\rho_{IJ}(t)\right\vert^{2}> = \frac{\sum_{k}^{N_{traj}} \rho_{II}^{(k)}(t)\rho_{JJ}^{(k)}(t)}{N_{traj}}
+
 3. Averaging off-diagonal non-adiabatic coupling matrix, phase is ignored with absolute value
+
+.. math::
+
+   <\left\vert\sigma_{IJ}(t)\right\vert> = \frac{\sum_{k}^{N_{traj}} \left\vert\sigma_{IJ}^{(k)}(t)\right\vert}{N_{traj}}
+
+After running a script, analysis results can be found in current directory.
 
 +------------------------+----------------------------------------------------+-----------+
 | Option                 | Description                                        | Default   |
@@ -105,7 +129,6 @@ Currently, three statistical parameters are measured: BO population analysis, el
 |                        |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
 
-**Ex.** Statistical analysis on 100 trajectories, first 10 steps in 2 states.
 
 .. code-block:: bash
 
