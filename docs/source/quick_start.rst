@@ -363,55 +363,6 @@ This file shows the running state at each MD step.
         1120              0
    (...)
 
-- DOTPOPD
-
-This file shows the time-derivative populations by decoherence at each MD step.
-The decoherence correction turns on when there are finite populations of the two adiabatic states.
-Due to the correction, decoherence occurs in the off-coupling region and
-eventually the electronic state collapses to the running state (the ground state, in this case).
-
-.. code-block:: bash
-
-   #     Time-derivative Density Matrix by decoherence: population; see the manual for detail orders
-           0     0.00000000     0.00000000
-           1     0.00000000     0.00000000
-           2     0.00000000     0.00000000
-           3     0.00000000     0.00000000
-           4     0.00000000     0.00000000
-           5     0.00000000     0.00000000
-           6     0.00000000     0.00000000
-           7     0.00000000     0.00000000
-           8     0.00000000     0.00000000
-           9     0.00000000     0.00000000
-   (...)
-        1380     0.00073534    -0.00073534
-        1381     0.00074055    -0.00074055
-        1382     0.00074573    -0.00074573
-        1383     0.00075088    -0.00075088
-        1384     0.00075598    -0.00075598
-        1385     0.00076105    -0.00076105
-        1386     0.00076607    -0.00076607
-        1387     0.00077106    -0.00077106
-        1388     0.00077600    -0.00077600
-        1389     0.00078090    -0.00078090
-        1390     0.00078576    -0.00078576
-        1391     0.00079057    -0.00079057
-        1392     0.00079533    -0.00079533
-        1393     0.00080004    -0.00080004
-        1394     0.00080471    -0.00080471
-        1395     0.00080932    -0.00080932
-        1396     0.00081388    -0.00081388
-        1397     0.00081839    -0.00081839
-        1398     0.00082284    -0.00082284
-        1399     0.00082724    -0.00082724
-        1400     0.00083159    -0.00083159
-   (...)
-   
-If you plot them as a function of MD steps, it looks like the following.
-
-.. image:: diagrams/pdotpopd.png
-   :width: 400pt
-
 You can check the effect of the decoherence by performing a FSSH calculation
 by changing the MD setting in the above running script:
 
