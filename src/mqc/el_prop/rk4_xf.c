@@ -10,27 +10,27 @@
 static void rk4_coef(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
     double *mass, double *energy, double *energy_old, double *sigma, double **nacme,
     double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *coef,
-    int verbosity, double *dotpopd);
+    int verbosity, double *dotpopdec);
 
 // Routine for density propagation scheme in rk4 propagator
 static void rk4_rho(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
     double *mass, double *energy, double *energy_old, double *sigma, double **nacme,
     double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex **rho,
-    int verbosity, double *dotpopd);
+    int verbosity, double *dotpopdec);
 
 // Interface routine for propagation scheme in rk4 propagator
 static void rk4(int nat, int ndim, int nst, int nesteps, double dt, char *elec_object, int *l_coh,
     double *mass, double *energy, double *energy_old, double *sigma, double **nacme, double **nacme_old,
     double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *coef, double complex **rho,
-    int verbosity, double *dotpopd){
+    int verbosity, double *dotpopdec){
 
     if(strcmp(elec_object, "coefficient") == 0){
         rk4_coef(nat, ndim, nst, nesteps, dt, l_coh, mass, energy, energy_old, sigma,
-            nacme, nacme_old, pos, qmom, aux_pos, phase, coef, verbosity, dotpopd);
+            nacme, nacme_old, pos, qmom, aux_pos, phase, coef, verbosity, dotpopdec);
     }
     else if(strcmp(elec_object, "density") == 0){
         rk4_rho(nat, ndim, nst, nesteps, dt, l_coh, mass, energy, energy_old, sigma,
-            nacme, nacme_old, pos, qmom, aux_pos, phase, rho, verbosity, dotpopd);
+            nacme, nacme_old, pos, qmom, aux_pos, phase, rho, verbosity, dotpopdec);
     }
 
 }
@@ -39,7 +39,7 @@ static void rk4(int nat, int ndim, int nst, int nesteps, double dt, char *elec_o
 static void rk4_coef(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
     double *mass, double *energy, double *energy_old, double *sigma, double **nacme,
     double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *coef,
-    int verbosity, double *dotpopd){
+    int verbosity, double *dotpopdec){
 
     double complex *k1 = malloc(nst * sizeof(double complex));
     double complex *k2 = malloc(nst * sizeof(double complex));
@@ -124,7 +124,9 @@ static void rk4_coef(int nat, int ndim, int nst, int nesteps, double dt, int *l_
 
     }
 
-    xf_print_coef(nst, coef, xf_c_dot, dotpopd);
+    if(verbosity >= 1){
+        xf_print_coef(nst, coef, xf_c_dot, dotpopdec);
+    }
 
     for(ist = 0; ist < nst; ist++){
         free(dv[ist]);
@@ -148,7 +150,7 @@ static void rk4_coef(int nat, int ndim, int nst, int nesteps, double dt, int *l_
 static void rk4_rho(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
     double *mass, double *energy, double *energy_old, double *sigma, double **nacme,
     double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex **rho,
-    int verbosity, double *dotpopd){
+    int verbosity, double *dotpopdec){
 
     double complex **k1 = malloc(nst * sizeof(double complex*));
     double complex **k2 = malloc(nst * sizeof(double complex*));
@@ -244,7 +246,9 @@ static void rk4_rho(int nat, int ndim, int nst, int nesteps, double dt, int *l_c
 
     }
 
-    xf_print_rho(nst, xf_rho_dot, dotpopd); 
+    if(verbosity >= 1){
+        xf_print_rho(nst, xf_rho_dot, dotpopdec); 
+    }
 
     for(ist = 0; ist < nst; ist++){
         free(k1[ist]);

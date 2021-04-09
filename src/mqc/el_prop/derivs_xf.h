@@ -80,11 +80,11 @@ static void xf_cdot(int nat, int ndim, int nst, int *l_coh, double *mass, double
 }
 
 // Routine to print xf debug info 
-static void xf_print_coef(int nst, double complex *coef, double complex *xfcdot, double *dotpopd){
+static void xf_print_coef(int nst, double complex *coef, double complex *xfcdot, double *dotpopdec){
     int ist;
     
     for(ist = 0; ist < nst; ist++){
-        dotpopd[ist] = 2.0 * creal(xfcdot[ist] * conj(coef[ist]));
+        dotpopdec[ist] = 2.0 * creal(xfcdot[ist] * conj(coef[ist]));
     }
 }
 
@@ -167,11 +167,11 @@ static void xf_rhodot(int nat, int ndim, int nst, int *l_coh, double *mass, doub
 }
 
 // Routine to print xf debug info 
-static void xf_print_rho(int nst, double complex **xfrhodot, double *dotpopd){
+static void xf_print_rho(int nst, double complex **xfrhodot, double *dotpopdec){
     int ist;
     
     for(ist = 0; ist < nst; ist++){
-        dotpopd[ist] = creal(xfrhodot[ist][ist]);
+        dotpopdec[ist] = creal(xfrhodot[ist][ist]);
     }
 }
 

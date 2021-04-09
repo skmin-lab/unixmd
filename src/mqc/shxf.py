@@ -128,7 +128,7 @@ class SHXF(MQC):
         self.phase = np.array(np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim)))
 
         # Debug variables
-        self.dotpopd = np.zeros(self.mol.nst)
+        self.dotpopdec = np.zeros(self.mol.nst)
         self.qmom = np.zeros((self.aux.nat, self.aux.ndim))
 
         # Initialize event to print
@@ -592,9 +592,10 @@ class SHXF(MQC):
             :param string unixmd_dir: PyUNIxMD directory
             :param integer istep: Current MD step
         """
-        # Write time-derivative density matrix elements in DOTPOTD
-        tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopd])
-        typewriter(tmp, unixmd_dir, "DOTPOPD", "a")
+        # Write time-derivative density matrix elements in DOTPOPDEC
+        if (self.verbosity >= 1):
+            tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopdec])
+            typewriter(tmp, unixmd_dir, "DOTPOPDEC", "a")
 
         # Write auxiliary trajectories
         if (self.verbosity >= 2 and True in self.l_coh):

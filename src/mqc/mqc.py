@@ -362,7 +362,7 @@ class MQC(object):
         # file header for XF-based methods
         if (self.md_type == "SHXF" or self.md_type == "EhXF"):
             tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
-            typewriter(tmp, unixmd_dir, "DOTPOPD", "w")
+            typewriter(tmp, unixmd_dir, "DOTPOPDEC", "w")
 
     def write_md_output(self, unixmd_dir, istep):
         """ Write output files
