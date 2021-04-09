@@ -129,6 +129,7 @@ After running a script, analysis results can be found in current directory.
 |                        |                                                    |           |
 +------------------------+----------------------------------------------------+-----------+
 
+**Ex.** Statistical analysis on 100 trajectories, first 10 steps in 2 states.
 
 .. code-block:: bash
 
