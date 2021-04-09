@@ -73,9 +73,10 @@ def calculate_bond_length(ntrajs, digit, nimages, atom_index, l_mean):
         with open(path, 'r') as f:
             line = f.readline()
             natoms = int(line)
+            count = 0
             while (True):
                 line = f.readline()
-                if (not line):
+                if ((not line) or (count >= nimages)):
                     break
                 # save xyz coordinates in every isteps
                 if (iline % (natoms + 2) == atom_index[0]):
@@ -87,6 +88,7 @@ def calculate_bond_length(ntrajs, digit, nimages, atom_index, l_mean):
                     # calculate bond length after both point1/2 extracted
                     bond = np.linalg.norm(atom1 - atom2)
                     bond_list += [bond]
+                    count += 1
                 iline += 1
 
         if (iline != (nimages * (2 + natoms) - 1)):
@@ -139,9 +141,10 @@ def calculate_angle(ntrajs, digit, nimages, atom_index, l_mean):
         with open(path, 'r') as f:
             line = f.readline()
             natoms = int(line)
+            count = 0
             while (True):
                 line = f.readline()
-                if (not line):
+                if ((not line) or (count >= nimages)):
                     break
                 # save xyz coordinates in every isteps
                 if (iline % (natoms + 2) == atom_index[0]):
@@ -160,6 +163,7 @@ def calculate_angle(ntrajs, digit, nimages, atom_index, l_mean):
                     y = np.linalg.norm(np.cross(unit_vector1, unit_vector2))
                     angle = np.degrees(np.arctan2(y, x))
                     angle_list += [angle]
+                    count += 1
                 iline += 1
 
         if (iline != (nimages * (2 + natoms) - 1)):
@@ -218,9 +222,10 @@ def calculate_dihedral(ntrajs, digit, nimages, atom_index, l_mean):
         with open(path, 'r') as f:
             line = f.readline()
             natoms = int(line)
+            count = 0
             while (True):
                 line = f.readline()
-                if (not line):
+                if ((not line) or (count >= nimages)):
                     break
                 # save xyz coordinates in every isteps
                 if (iline % (natoms + 2) == atom_index[0]):
@@ -257,6 +262,7 @@ def calculate_dihedral(ntrajs, digit, nimages, atom_index, l_mean):
                     y = np.dot(m, norm2)
                     dihedral_angle = np.degrees(np.arctan2(y, x))
                     dihedral_list += [dihedral_angle]
+                    count += 1
                 iline += 1
 
         if (iline != (nimages * (2 + natoms) - 1)):
