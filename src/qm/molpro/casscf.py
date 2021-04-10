@@ -38,8 +38,10 @@ class CASSCF(Molpro):
         # Set initial guess for CASSCF calculation
         self.guess = guess
         self.guess_file = guess_file
-        if (not (self.guess == "hf" or self.guess == "read")):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
+        if not (self.guess in ["hf", "read"]):
+            error_message = "Invalid initial guess for CASSCF given!"
+            error_vars = f"guess = {self.guess}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # HF calculation for initial guess of CASSCF calculation
         self.scf_max_iter = scf_max_iter
@@ -57,14 +59,19 @@ class CASSCF(Molpro):
 
         # Check the closed shell for systems
         if (not int(molecule.nelec) % 2 == 0):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Only closed shell configuration implemented! {int(molecule.nelec)}")
+            # TODO : In this case, name of variable is not determined, how to express?
+            error_message = "Only closed shell configuration supported!"
+            error_vars = f"nelec = {int(molecule.nelec)}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Molpro do not support periodic setting with CASSCF method
 
         # CASSCF calculation do not provide parallel computation
         # If your system provide parallel casscf, then this part should be removed
         if (self.nthreads > 1):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Parallel CASSCF not implemented! {self.nthreads}")
+            error_message = "Parallel CASSCF not implemented!"
+            error_vars = f"nthreads = {self.nthreads}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Calculate number of frozen, closed and occ orbitals in CASSCF method
         # No positive frozen core orbitals in CASSCF
