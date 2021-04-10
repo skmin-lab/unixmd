@@ -31,8 +31,10 @@ class DFT(Gaussian09):
         # Set initial guess for DFT calculation
         self.guess = guess
         self.guess_file = os.path.abspath(guess_file)
-        if (not (self.guess == "Harris" or self.guess == "read")):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
+        if not (self.guess in ["Harris", "read"]):
+            error_message = "Invalid initial guess for DFT given!"
+            error_vars = f"guess = {self.guess}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Set 'l_nacme' with respect to the computational method
         molecule.l_nacme = True
@@ -269,7 +271,10 @@ class DFT(Gaussian09):
 
         # Check the convergence of the calculation
         if ("Convergence failure" in log):
-            raise Exception (f"The SCF failed to converge! Check {file_name} in {self.scr_qm_dir}.")
+            # TODO : In this case, name of variable is not determined, how to express?
+            error_message = "SCF iteration not converged!"
+            error_vars = f"output file = {self.scr_qm_dir}/{file_name}"
+            raise Exception (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Energy
         if (not calc_force_only):

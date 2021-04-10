@@ -23,6 +23,6 @@ class Gaussian09(QM_calculator):
         self.version = version
 
         # Print Gaussian09 Revision warning
-        print("\n\n WARNING: The Gaussian09 implementation is based on the Revision A.02 version, not the latest one! \n\n")
+        print ("\n\n WARNING: The Gaussian09 implementation is based on the Revision A.02 version, not the latest one! \n\n", flush=True)
 
 
