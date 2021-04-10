@@ -92,7 +92,7 @@ class MQC(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'restart'! {restart}")
 
         # Check if NACVs are calculated for Ehrenfest dynamics
-        if (self.md_type in ["Eh", "EhXF"] and self.mol.l_nacme):
+        if (self.md_type == "Eh" and self.mol.l_nacme):
             raise ValueError (f"( {self.md_type}.{call_name()} ) Ehrenfest dynamics needs NACV! {self.mol.l_nacme}")
 
         # Check compatibility of variables for QM and MM calculation
@@ -287,7 +287,7 @@ class MQC(object):
             dynamics_info += f"  Rescaling after Reject   = {self.hop_reject:>16s}\n"
 
         # Print XF variables
-        if (self.md_type == "SHXF" or self.md_type == "EhXF"):
+        if (self.md_type == "SHXF"):
             # Print density threshold used in decoherence term
             dynamics_info += f"\n  Density Threshold        = {self.rho_threshold:>16.6f}"
             if (self.md_type == "SHXF" and self.l_xf1d):
@@ -360,7 +360,7 @@ class MQC(object):
             typewriter(tmp, unixmd_dir, "SHPROB", "w")
 
         # file header for XF-based methods
-        if (self.md_type == "SHXF" or self.md_type == "EhXF"):
+        if (self.md_type == "SHXF"):
             tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
             typewriter(tmp, unixmd_dir, "DOTPOPD", "w")
 
