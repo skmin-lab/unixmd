@@ -640,20 +640,13 @@ class SHXF(MQC):
         """)
 
         # Print INIT for each step
-        INIT = f" #INFO{'STEP':>8s}{'State':>7s}{'Max. Prob.':>14s}{'Rand.':>12s}{'Kinetic(H)':>15s}{'Potential(H)':>15s}{'Total(H)':>13s}{'Temperature(K)':>17s}{'Norm.':>8s}"
+        INIT = f" #INFO{'STEP':>8s}{'State':>7s}{'Max. Prob.':>14s}{'Kinetic(H)':>16s}{'Potential(H)':>15s}{'Total(H)':>13s}{'Temperature(K)':>17s}{'Norm.':>8s}"
         dynamics_step_info += INIT
 
         # Print DEBUG1 for each step
         if (self.verbosity >= 1):
-            DEBUG1 = f" #DEBUG1{'STEP':>6s}"
-            for ist in range(self.mol.nst):
-                DEBUG1 += f"{'Potential_':>14s}{ist}(H)"
+            DEBUG1 = f" #DEBUG1{'STEP':>6s}{'Rand.':>11s}{'Acc. Hopping Prob.':>28s}"
             dynamics_step_info += "\n" + DEBUG1
-
-        # Print DEBUG2 for each step
-        if (self.verbosity >= 2):
-            DEBUG2 = f" #DEBUG2{'STEP':>6s}{'Acc. Hopping Prob.':>22s}"
-            dynamics_step_info += "\n" + DEBUG2
 
         print (dynamics_step_info, flush=True)
 
@@ -675,7 +668,7 @@ class SHXF(MQC):
             norm += self.mol.rho.real[ist, ist]
 
         # Print INFO for each step
-        INFO = f" INFO{istep + 1:>9d}{self.rstate:>5d}{max_prob:11.5f} ({self.rstate}->{hstate}){self.rand:11.5f}"
+        INFO = f" INFO{istep + 1:>9d}{self.rstate:>5d}{max_prob:11.5f} ({self.rstate}->{hstate})"
         INFO += f"{self.mol.ekin:14.8f}{self.mol.epot:15.8f}{self.mol.etot:15.8f}"
         INFO += f"{ctemp:13.6f}"
         INFO += f"{norm:11.5f}"
@@ -684,16 +677,10 @@ class SHXF(MQC):
         # Print DEBUG1 for each step
         if (self.verbosity >= 1):
             DEBUG1 = f" DEBUG1{istep + 1:>7d}"
+            DEBUG1 += f"{self.rand:11.5f}"
             for ist in range(self.mol.nst):
-                DEBUG1 += f"{self.mol.states[ist].energy:17.8f} "
+                DEBUG1 += f"{self.acc_prob[ist]:12.5f} ({self.rstate}->{ist})"
             print (DEBUG1, flush=True)
-
-        # Print DEBUG2 for each step
-        if (self.verbosity >= 2):
-            DEBUG2 = f" DEBUG2{istep + 1:>7d}"
-            for ist in range(self.mol.nst):
-                DEBUG2 += f"{self.acc_prob[ist]:12.5f} ({self.rstate}->{ist})"
-            print (DEBUG2, flush=True)
 
         # Print event in SHXF
         for category, events in self.event.items():
@@ -702,3 +689,5 @@ class SHXF(MQC):
                     print (f" {category}{istep + 1:>9d}  {ievent}", flush=True)
         self.event["HOP"] = []
         self.event["DECO"] = []
+
+

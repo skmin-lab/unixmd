@@ -76,18 +76,17 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | *(integer)*                |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
 
-
 Detailed description of the parameters
 """"""""""""""""""""""""""""""""""""""""""
 
 - **istate** *(integer)* - Default: *0* (Ground state)
-  
+
   This parameter specifies the initial running state. The possible range is from *0* to ``molecule.nst - 1``.
-   
+
 \
 
 - **dt** *(double)* - Default: *0.5*
-  
+
   This parameter determines the time interval of the nuclear time steps.
   You can select the unit of time for the dynamics with the **unit_dt** parameter.
 
@@ -100,7 +99,7 @@ Detailed description of the parameters
 \
 
 - **nesteps** *(integer)* - Default: *20*
-  
+
   This parameter determines the number of electronic time steps between one nuclear time step for the integration of the electronic equation of motion.
   The electronic equation of motion is more sensitive to the time interval than the nuclear equation of motion since the electrons are much lighter than the nuclei.
   Therefore, the nuclear time step is further divided and electronic equation of motion is integrated with smaller time step.
@@ -108,9 +107,9 @@ Detailed description of the parameters
 \
 
 - **elec_object** *(string)*- Default: *'density'*
-  
+
   The **elec_object** parameter determines the representation for the electronic state.
-   
+
   + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}^{(I)}(t)\}`
   + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}^{(I)}(t)\}`
 
@@ -124,7 +123,7 @@ Detailed description of the parameters
 \
 
 - **l_print_dm** *(boolean)* - Default: *True*
-  
+
   This parameter determines whether to write output files for density matrix elements ('BOPOP', 'BOCOH') or not.
   If this option is set to *True*, then the 'BOPOP' and 'BOCOH' files are written during the dynamics.
   This option is effective only if the **elec_object** parameter is set to *'coefficient'* or ignored otherwise.
@@ -141,7 +140,7 @@ Detailed description of the parameters
 
   This parameter determines the direction of the momentum to be adjusted after a hop to conserve the total energy.
   If there is not enough kinetic energy in this direction, the hop is rejected and the running state is switched back to the original state.
-  
+
   + *'energy'*: Simply rescale the nuclear velocities.
   + *'momentum'*: Adjust the momentum in the direction of the NACV.
   + *'augment'*: First, the hop is evaluated as the *'momentum'*. 
@@ -150,9 +149,9 @@ Detailed description of the parameters
 \
    
 - **hop_reject** *(string)* - Default: *'reverse'*
-  
+
   This parameter determines the momentum rescaling method when a hop is rejected.
-  
+
   + *'keep'*: Do nothing, keeps the nuclear velocities.
   + *'reverse'*: Reverse the momentum along the NACV.
 
@@ -199,14 +198,14 @@ Detailed description of the parameters
 - **unit_dt** *(string)* - Default: *'fs'*
 
   This parameter determines the unit of time for the simulation.
-  
+
   + *'fs'*: Femtosecond
   + *'au'*: Atomic unit
 
 \
 
 - **out_freq** *(integer)* - Default: *1*
-  
+
   PyUNIxMD prints and writes the dynamics information at every **out_freq** time step.
 
 \
@@ -215,6 +214,8 @@ Detailed description of the parameters
 
   This parameter determines the verbosity of the output files and stream.
 
-  + **verbosity** :math:`\geq` *1*: Prints potential energy of all BO states.
-  + **verbosity** :math:`\geq` *2*: Prints accumulated hopping probabilities and writes the NACVs ('NACV\_\ :math:`i`\_\ :math:`j`'), qauntum momentum (QMOM), 
-    phase terms ('AUX_PHASE\_\ :math:`i`'), and atomic postions and velocities of the auxiliary trajectories ('AUX_MOVIE\_\ :math:`i`.xyz') where :math:`i` and :math:`j` represent BO states.
+  + **verbosity** :math:`\geq` *1*: Prints accumulated hopping probabilities and random numbers.
+  + **verbosity** :math:`\geq` *2*: Writes the NACVs ('NACV\_\ :math:`i`\_\ :math:`j`'), qauntum momentum (QMOM), 
+    phase terms ('AUX_PHASE\_\ :math:`i`'), and atomic postions and velocities of the auxiliary trajectories
+    ('AUX_MOVIE\_\ :math:`i`.xyz') where :math:`i` and :math:`j` represent BO states.
+
