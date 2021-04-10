@@ -81,19 +81,27 @@ class SHXF(MQC):
 
         self.hop_rescale = hop_rescale
         if not (self.hop_rescale in ["energy", "velocity", "momentum", "augment"]):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'hop_rescale'! {self.hop_rescale}")
+            error_message = "Invalid rescaling method for accepted hop given!"
+            error_vars = f"hop_rescale = {self.hop_rescale}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.hop_reject = hop_reject
         if not (self.hop_reject in ["keep", "reverse"]):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'hop_reject'! {self.hop_reject}")
+            error_message = "Invalid rescaling method for frustrated hop given!"
+            error_vars = f"hop_reject = {self.hop_reject}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check error for incompatible cases
         if (self.mol.l_nacme):
             # No analytical nonadiabatic couplings exist
             if (self.hop_rescale in ["velocity", "momentum", "augment"]):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'energy' rescaling for 'hop_rescale'! {self.hop_rescale}")
+                error_message = "Only isotropic rescaling is possible!"
+                error_vars = f"hop_rescale = {self.hop_rescale}"
+                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
             if (self.hop_reject == "reverse"):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'keep' rescaling for 'hop_reject'! {self.hop_reject}")
+                error_message = "Only keep rescaling is possible!"
+                error_vars = f"hop_reject = {self.hop_reject}"
+                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Initialize XF related variables
         self.force_hop = False
@@ -105,7 +113,9 @@ class SHXF(MQC):
 
         self.sigma = sigma
         if (self.sigma == None):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Sigma values should be provided in input arguments! {self.sigma}")
+            error_message = "Sigma for auxiliary trajectories must be set in running script!"
+            error_vars = f"sigma = {self.sigma}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         if (isinstance(self.sigma, float)):
             # uniform value for sigma
@@ -113,11 +123,19 @@ class SHXF(MQC):
         elif (isinstance(self.sigma, list)):
             # atom-resolved values for sigma
             if (len(self.sigma) != self.mol.nat_qm):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Wrong number of elements of sigma given! {self.sigma}")
+                # TODO : how to express "number of initial coefficients"?
+                error_message = "Number of elements for sigma must be equal to number of atoms!"
+                error_vars = f"number of sigma = {len(self.sigma)}"
+                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
             if (self.l_xf1d):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) SHXF1D requires only 1 float number for sigma! {self.sigma}")
+                # TODO : how to express "number of initial coefficients"?
+                error_message = "Sigma must be float, not list in XF-1D scheme!"
+                error_vars = f"number of sigma = {len(self.sigma)}"
+                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Wrong type for sigma given! {self.sigma}")
+            error_message = "Sigma must be float or list consisting of float!"
+            error_vars = f"sigma = {self.sigma}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.upper_th = 1. - self.rho_threshold
         self.lower_th = self.rho_threshold

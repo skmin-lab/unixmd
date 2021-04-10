@@ -50,26 +50,37 @@ class SH(MQC):
 
         self.hop_rescale = hop_rescale
         if not (self.hop_rescale in ["energy", "velocity", "momentum", "augment"]):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'hop_rescale'! {self.hop_rescale}")
+            error_message = "Invalid rescaling method for accepted hop given!"
+            error_vars = f"hop_rescale = {self.hop_rescale}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.hop_reject = hop_reject
         if not (self.hop_reject in ["keep", "reverse"]):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'hop_reject'! {self.hop_reject}")
+            error_message = "Invalid rescaling method for frustrated hop given!"
+            error_vars = f"hop_reject = {self.hop_reject}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Initialize decoherence variables
         self.deco_correction = deco_correction
         self.edc_parameter = edc_parameter
 
         if not (deco_correction in [None, "idc", "edc"]):
-            raise ValueError (f"( {self.deco_correction}.{call_name()} ) Invalid 'deco_correction'! {self.deco_correction}")
+            error_message = "Invalid decoherence corrections given!"
+            error_vars = f"deco_correction = {self.deco_correction}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check error for incompatible cases
         if (self.mol.l_nacme):
             # No analytical nonadiabatic couplings exist
             if (self.hop_rescale in ["velocity", "momentum", "augment"]):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'energy' rescaling for 'hop_rescale'! {self.hop_rescale}")
+                error_message = "Only isotropic rescaling is possible!"
+                error_vars = f"hop_rescale = {self.hop_rescale}"
+                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
             if (self.hop_reject == "reverse"):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'keep' rescaling for 'hop_reject'! {self.hop_reject}")
+                # TODO : Is there better error message than 'keep rescaling'?
+                error_message = "Only keep rescaling is possible!"
+                error_vars = f"hop_reject = {self.hop_reject}"
+                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Initialize event to print
         self.event = {"HOP": []}

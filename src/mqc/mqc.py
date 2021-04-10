@@ -50,19 +50,28 @@ class MQC(object):
         elif (unit_dt == 'fs'):
             self.dt = dt * fs_to_au
         else:
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid unit for time step! {unit_dt}")
+            error_message = "Invalid unit for time step given!"
+            error_vars = f"unit_dt = {unit_dt}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check number of state and initial state
         if (self.istate >= self.mol.nst):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Index for initial state must be smaller than number of states! {self.istate}")
+            # TODO : use original parameter for nstates used in Molecule class?
+            error_message = "Index for initial state must be smaller than number of states!"
+            error_vars = f"istate = {self.istate}, nstates = {self.mol.nst}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # None for BOMD case
         self.elec_object = elec_object
         if not (self.elec_object in [None, "coefficient", "density"]):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'elec_object'! {self.elec_object}")
+            error_message = "Invalid electronic object given!"
+            error_vars = f"elec_object = {self.elec_object}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         self.propagator = propagator
         if not (self.propagator in [None, "rk4"]):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'propagator'! {self.propagator}")
+            error_message = "Invalid electronic propagator given!"
+            error_vars = f"propagator = {self.propagator}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.l_print_dm = l_print_dm
 
@@ -89,15 +98,22 @@ class MQC(object):
         """
         # Check whether the restart option is right
         if not (restart in [None, "write", "append"]):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'restart'! {restart}")
+            error_message = "Invalid restart option given!"
+            error_vars = f"restart = {restart}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check if NACVs are calculated for Ehrenfest dynamics
         if (self.md_type in ["Eh", "EhXF"] and self.mol.l_nacme):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Ehrenfest dynamics needs NACV! {self.mol.l_nacme}")
+            # TODO : how to express l_nacme? l_nacme is local variable, not parameters
+            error_message = "Ehrenfest dynamics needs evaluation of NACVs!"
+            error_vars = f"l_nacme = {self.mol.l_nacme}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check compatibility of variables for QM and MM calculation
         if ((self.mol.l_qmmm and mm == None) or (not self.mol.l_qmmm and mm != None)):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Both self.mol.l_qmmm and mm object is necessary! {self.mol.l_qmmm} and {mm}")
+            error_message = "Both logical for QM/MM and MM object is necessary!"
+            error_vars = f"l_qmmm = {self.mol.l_qmmm}, mm = {mm}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         if (self.mol.l_qmmm and mm != None):
             self.check_qmmm(qm, mm)
 
@@ -130,7 +146,10 @@ class MQC(object):
             # For MD output directory
             for md_idir in unixmd_dir:
                 if (not os.path.exists(md_idir)):
-                    raise ValueError (f"( {self.md_type}.{call_name()} ) Directory to be appended for restart not found! {restart} and {md_idir}")
+                    # TODO : how to express directory?
+                    error_message = "Directory to be appended for restart not found!"
+                    error_vars = f"restart = {restart}, directory = {md_idir}"
+                    raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
             # For QM output directory
             if (l_save_qm_log):
@@ -451,8 +470,14 @@ class MQC(object):
 
         if (do_qmmm):
             if (qm.embedding != mm.embedding):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Inconsistent charge embedding options between QM and MM objects! {qm.embedding} and {mm.embedding}")
+                # TODO : how to distinguish qm.embedding and mm.embedding? Same parameter name
+                error_message = "Inconsistent charge embedding between QM and MM objects given!"
+                error_vars = f"embedding = {qm.embedding}, embedding = {mm.embedding}"
+                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Not compatible objects in QMMM! {qm.qm_prog}.{qm.qm_method} and {mm.mm_prog}")
+            # TODO : how to express local variable name (qm_prog, qm_method, mm_prog)?
+            error_message = "Incompatible QM and MM objects for QM/MM calculation given!"
+            error_vars = f"qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}, mm_prog = {mm.mm_prog}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
 
