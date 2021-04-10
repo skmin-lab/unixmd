@@ -54,11 +54,15 @@ class Molecule(object):
         self.nat_mm = natoms_mm
         if (self.l_qmmm):
             if (self.nat_mm == None):
-                raise ValueError (f"( {self.mol_type}.{call_name()} ) Number of atoms in MM region is essential for QMMM! {self.nat_mm}")
+                error_message = "Number of atoms in MM region is essential for QMMM!"
+                error_vars = f"natoms_mm = {self.nat_mm}"
+                raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
             self.nat_qm = self.nat - self.nat_mm
         else:
             if (self.nat_mm != None):
-                raise ValueError (f"( {self.mol_type}.{call_name()} ) Number of atoms in MM region is not necessary! {self.nat_mm}")
+                error_message = "Number of atoms in MM region is not necessary!"
+                error_vars = f"natoms_mm = {self.nat_mm}"
+                raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
             self.nat_qm = self.nat
 
         # Initialize system charge and number of electrons
@@ -78,7 +82,10 @@ class Molecule(object):
         else:
             if (ndof == None):
                 if (self.nat == 1):
-                    raise ValueError (f"( {self.mol_type}.{call_name()} ) Too small number of atoms! {self.nat}")
+                    # TODO : In this case, name of variable is not determined, how to express?
+                    error_message = "Too small number of atoms given, check geometry!"
+                    error_vars = f"natoms = {self.nat}"
+                    raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
                 elif (self.nat == 2):
                     # Diatomic molecules
                     self.ndof = 1
@@ -169,7 +176,9 @@ class Molecule(object):
         elif (unit_pos == 'angs'):
             fac_pos = A_to_au
         else:
-            raise ValueError (f"( {self.mol_type}.{call_name()} ) Invalid unit for position! {unit_pos}")
+            error_message = "Invalid unit for position given!"
+            error_vars = f"unit_pos = {unit_pos}"
+            raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.pos = np.array(self.pos) * fac_pos
 
@@ -180,7 +189,9 @@ class Molecule(object):
         elif (unit_vel == 'angs/fs'):
             fac_vel = A_to_au / fs_to_au
         else:
-            raise ValueError (f"( {self.mol_type}.{call_name()} ) Invalid unit for velocity! {unit_vel}")
+            error_message = "Invalid unit for velocity given!"
+            error_vars = f"unit_vel = {unit_vel}"
+            raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.vel = np.array(self.vel) * fac_vel
 
@@ -274,7 +285,10 @@ class Molecule(object):
             self.rho[istate, istate] = 1. + 0.j
         else:
             if (len(coef) != self.nst):
-                raise ValueError (f"( {self.mol_type}.{call_name()} ) The number of coefficiecnt should be same to nstates!: {len(coef)} != molecule.nst")
+                # TODO : how to express "number of initial coefficients"?
+                error_message = "Number of initial coefficients must be equal to number of states!"
+                error_vars = f"number of initial coefficients = {len(coef)}, nstates = {self.nst}"
+                raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
             else:
                 for ist in range(self.nst):
                     if (isinstance(coef[ist], float)):
@@ -282,7 +296,11 @@ class Molecule(object):
                     elif (isinstance(coef[ist], complex)):
                         self.states[ist].coef = coef[ist]
                     else:
-                        raise ValueError (f"( {self.mol_type}.{call_name()} ) The coefficiecnt should be float or complex: {coef[ist]}")
+                        # TODO : parenthesis in error message indicates index of element
+                        # TODO : numbering can begin from 0 or 1, this should be merged?
+                        error_message = "Type of coefficient must be float or complex!"
+                        error_vars = f"coef({ist}) = {coef[ist]}"
+                        raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
                         
                 for ist in range(self.nst):
                     for jst in range(self.nst):
