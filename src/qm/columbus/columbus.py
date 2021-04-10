@@ -35,7 +35,10 @@ class Columbus(QM_calculator):
             try:
                 pass
             except:
-                raise KeyError (f"( {self.qm_method}.{call_name()} ) Data not found: Atom {itype} with basis! {self.basis_set}")
+                # TODO : Error messsage must be changed after test
+                error_message = "Data not found: Atom {itype} with basis!"
+                error_vars = f"basis_set = {self.basis_set}"
+                raise KeyError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Set basis sets information
         if (self.basis_set == "cc-pvdz"):
@@ -59,9 +62,14 @@ class Columbus(QM_calculator):
         elif (self.basis_set == "6-311g+*"):
             self.basis_nums = "\n".join([f"{s_311pgs[f'{itype}']}" for itype in self.atom_type])
         else:
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) No basis set in colbasis.py! {self.basis_set}")
+            # TODO : Error messsage must be changed after test
+            error_message = "No basis set in colbasis.py!"
+            error_vars = f"basis_set = {self.basis_set}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         if (self.version != "7.0"):
-            raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")
+            error_message = "Other versions not implemented!"
+            error_vars = f"version = {self.version}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
 
