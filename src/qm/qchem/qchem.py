@@ -24,4 +24,8 @@ class QChem(QM_calculator):
         self.version = version
 
         if (self.version != "5.2"):
-            raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")
+            error_message = "Other versions not implemented!"
+            error_vars = f"version = {self.version}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
+
