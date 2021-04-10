@@ -40,7 +40,10 @@ class Rescale1(Thermostat):
 
         ctemp = md.mol.ekin * 2 / float(md.mol.ndof) * au_to_K
         if (ctemp < eps):
-            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Too small current temperature! {ctemp}")
+            # TODO : In this case, name of variable is not determined, how to express?
+            error_message = "Too small current temperature!"
+            error_vars = f"temperature = {ctemp}"
+            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         alpha = np.sqrt(self.temp / ctemp)
         md.mol.vel *= alpha
@@ -82,7 +85,10 @@ class Rescale2(Thermostat):
         """
         ctemp = md.mol.ekin * 2 / float(md.mol.ndof) * au_to_K
         if (ctemp < eps):
-            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Too small current temperature! {ctemp}")
+            # TODO : In this case, name of variable is not determined, how to express?
+            error_message = "Too small current temperature!"
+            error_vars = f"temperature = {ctemp}"
+            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         if (abs(self.temp - ctemp) > self.dtemp):
             alpha = np.sqrt(self.temp / ctemp)
@@ -118,13 +124,17 @@ class Berendsen(Thermostat):
         # Initialize input values
         super().__init__(temperature)
 
-        self.coup_str = coupling_strength
         self.coup_prm = coupling_parameter
+        self.coup_str = coupling_strength
 
         if (self.coup_prm == None and self.coup_str == None):
-            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Either coupling parameter or coupling strength should be set! {self.coup_prm} and {self.coup_str}")
+            error_message = "Either coupling paramter or coupling strength must be set!"
+            error_vars = f"coupling_parameter = {self.coup_prm}, coupling_strength = {self.coup_str}"
+            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) {error_message} ( {error_vars} )")
         elif (self.coup_prm != None and self.coup_str != None):
-            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Only coupling parameter or coupling strength can be set! {self.coup_prm} and {self.coup_str}")
+            error_message = "Only coupling paramter or coupling strength can be set!"
+            error_vars = f"coupling_parameter = {self.coup_prm}, coupling_strength = {self.coup_str}"
+            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
     def run(self, md):
         """ Control the temperature
@@ -186,9 +196,13 @@ class NHC(Thermostat):
         self.time_scale = time_scale
 
         if (self.coup_str == None and self.time_scale == None):
-            raise ValueError(f"( {self.thermostat_type}.{call_name()} Either coupling strength or time scale should be set! {self.coup_str} and {self.time_scale}")
+            error_message = "Either coupling strength or time scale must be set!"
+            error_vars = f"coupling_strength = {self.coup_str}, time_scale = {self.time_scale}"
+            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) {error_message} ( {error_vars} )")
         elif (self.coup_str != None and self.time_scale != None):
-            raise ValueError(f"( {self.thermostat_type}.{call_name()} Only coupling strength or time scale can be set! {self.coup_str} and {self.time_scale}")
+            error_message = "Only coupling strength or time scale can be set!"
+            error_vars = f"coupling_strength = {self.coup_str}, time_scale = {self.time_scale}"
+            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.chain_length = chain_length
         self.nsteps = nsteps
@@ -217,7 +231,9 @@ class NHC(Thermostat):
             self.w[1:4] = self.w[0]
             self.w[2] = 1. - 4. * self.w[0]
         else:
-            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) Invalid order! {self.order}")
+            error_message = "Invalid order for NHC thermostat given!"
+            error_vars = f"order = {self.order}"
+            raise ValueError (f"( {self.thermostat_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
     def run(self, md):
         """ Control the temperature
