@@ -27,19 +27,26 @@ class Tinker(MM_calculator):
 
         self.scheme = scheme
 
-        if (not (self.scheme == "additive" or self.scheme == "subtractive")):
-            raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong QM/MM scheme given! {self.scheme}")
+        if (self.scheme != None):
+            if not (self.scheme in ["additive", "subtractive"]):
+                error_message = "Invalid scheme for QM/MM calculation given!"
+                error_vars = f"scheme = {self.scheme}"
+                raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.embedding = embedding
         self.vdw = vdw
 
         if (self.embedding != None):
-            if (not (self.embedding == "mechanical" or self.embedding == "electrostatic")):
-                raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong charge embedding given! {self.embedding}")
+            if not (self.embedding in ["mechanical", "electrostatic"]):
+                error_message = "Invalid charge embedding for QM/MM calculation given!"
+                error_vars = f"embedding = {self.embedding}"
+                raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
         if (self.vdw != None):
             if (self.vdw != "lennardjones"):
-                raise ValueError (f"( {self.mm_prog}.{call_name()} ) Wrong van der Waals interaction given! {self.vdw}")
+                error_message = "Invalid van der Waals interaction for QM/MM calculation given!"
+                error_vars = f"vdw = {self.vdw}"
+                raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.l_periodic = l_periodic
         self.cell_par = cell_par
@@ -52,7 +59,9 @@ class Tinker(MM_calculator):
         self.version = version
 
         if (not self.version == "8.7"):
-            raise ValueError (f"( {self.mm_prog}.{call_name()} ) Other version not implemented! {self.version}")
+            error_message = "Other versions not implemented!"
+            error_vars = f"version = {self.version}"
+            raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
         if (self.embedding == "electrostatic"):
             # Save current atom type for electrostatic embedding
@@ -64,7 +73,11 @@ class Tinker(MM_calculator):
                 lines = f_xyz.readlines()
                 # Check the number of lines; Read only non-periodic format for tinker.xyz file
                 if (len(lines) != molecule.nat + 1):
-                    raise ValueError (f"( {self.mm_prog}.{call_name()} ) Only non-periodic xyz file needed! {self.xyz_file}")
+                    # TODO : Search error type in python, ValueError?
+                    # TODO : I add f-string to error_message
+                    error_message = f"Only non-periodic xyz file needed! Check {self.xyz_file}"
+                    error_vars = f"number of lines != {molecule.nat + 1}"
+                    raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
                 iline = 1
                 for line in lines:
@@ -95,6 +108,10 @@ class Tinker(MM_calculator):
                         prm_file = field[1]
                 if (not is_prm):
                     raise ValueError (f"( {self.mm_prog}.{call_name()} ) Force field file needed! {self.key_file}")
+                    # TODO : Search error type in python, ValueError?
+                    error_message = "Force field file must be set in key file!"
+                    error_vars = f"parameters != {self.key_file}"
+                    raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
             # Save point charge values of current parameter file for electrostatic embedding
             point_charges = []
@@ -138,13 +155,17 @@ class Tinker(MM_calculator):
         if (os.path.isfile(self.xyz_file)):
             shutil.copy(self.xyz_file, os.path.join(self.scr_mm_dir, "tinker.xyz"))
         else:
-            raise ValueError (f"( {self.mm_prog}.{call_name()} ) Initial tinker.xyz file not given! {self.xyz_file}")
+            error_message = "Initial tinker.xyz file not given, check file name!"
+            error_vars = f"xyz_file = {self.xyz_file}"
+            raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Copy key file to currect directory
         if (os.path.isfile(self.key_file)):
             shutil.copy(self.key_file, os.path.join(self.scr_mm_dir, "tinker.key"))
         else:
-            raise ValueError (f"( {self.mm_prog}.{call_name()} ) Initial tinker.key file not given! {self.key_file}")
+            error_message = "Initial tinker.key file not given, check file name!"
+            error_vars = f"key_file = {self.key_file}"
+            raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Write xyz file using current positions
         if (self.scheme == "additive"):
@@ -408,7 +429,9 @@ class Tinker(MM_calculator):
         elif (os.path.isfile(binary2)):
             mm_command = binary2
         else:
-            raise ValueError (f"( {self.mm_prog}.{call_name()} ) No testgrad binary in the Tinker directory! {self.mm_path}")
+            error_message = "No testgrad (or testgrad.x) binary in the Tinker directory!"
+            error_vars = f"mm_path = {self.mm_path}"
+            raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # OpenMP setting
         os.environ["OMP_NUM_THREADS"] = f"{self.nthreads}"

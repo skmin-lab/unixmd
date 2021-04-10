@@ -133,7 +133,7 @@ class SHXF(MQC):
                 error_vars = f"number of sigma = {len(self.sigma)}"
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
-            error_message = "Sigma must be float or list consisting of float!"
+            error_message = "Type of sigma must be float or list consisting of float!"
             error_vars = f"sigma = {self.sigma}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
