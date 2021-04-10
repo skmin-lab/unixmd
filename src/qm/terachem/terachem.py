@@ -27,16 +27,27 @@ class TeraChem(QM_calculator):
         self.gpu_id = gpu_id
         
         if (self.gpu_id == None):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) The data type of gpu_id should be given as list! {self.gpu_id}")
+            error_message = "GPU ID must be set in running script!"
+            error_vars = f"gpu_id = {self.gpu_id}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        if (len(self.gpu_id) != self.ngpus):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) The length of gpu_id should be same to ngpus! (len({self.gpu_id}) != {self.ngpus})")
+        if (isinstance(self.gpu_id, list)):
+            if (len(self.gpu_id) != self.ngpus):
+                # TODO : how to express "number of GPU IDs"?
+                error_message = "Number of elements for GPU ID must be equal to number of GPUs!"
+                error_vars = f"number of GPU ID = {len(self.gpu_id)}, ngpus = {self.ngpus}"
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+        else:
+            error_message = "Type of GPU ID must be list consisting of integer!"
+            error_vars = f"gpu_id = {self.gpu_id}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.precision = precision
         self.version = version
 
-        if (not (self.version == "1.93")):
-            raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")
-
+        if (self.version != "1.93"):
+            error_message = "Other versions not implemented!"
+            error_vars = f"version = {self.version}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
 

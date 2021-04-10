@@ -43,7 +43,9 @@ class SSR(TeraChem):
         self.l_ssr22 = l_ssr22
         if (self.l_ssr22):
             if (molecule.nst > 2):
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) 3-state REKS not implemented! {molecule.nst}")
+                error_message = "SSR(2,2) can calculate up to 2 electronic states!"
+                error_vars = f"nstates = {molecule.nst}"
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
             self.reks_diis_tol = reks_diis_tol
             self.reks_max_iter = reks_max_iter
             self.shift = shift
@@ -52,14 +54,18 @@ class SSR(TeraChem):
             # Set initial guess for REKS SCF iterations
             self.guess = guess
             self.guess_file = guess_file
-            if (not (self.guess == "dft" or self.guess == "read")):
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
+            if not (self.guess in ["dft", "read"]):
+                error_message = "Invalid initial guess for SSR given!"
+                error_vars = f"guess = {self.guess}"
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
             if (molecule.nst > 1):
                 self.cpreks_grad_tol = cpreks_grad_tol
                 self.cpreks_max_iter = cpreks_max_iter
         else:
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Other active space not implemented! {self.l_ssr22}")
+            error_message = "Use (2,2) active space for SSR!"
+            error_vars = f"l_ssr22 = {self.l_ssr22}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Set 'l_nacme' with respect to the computational method
         # SSR can produce NACs, so we do not need to get NACME from CIoverlap

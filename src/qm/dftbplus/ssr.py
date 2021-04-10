@@ -72,7 +72,7 @@ class SSR(DFTBplus):
         self.guess = guess
         self.guess_file = guess_file
         if not (self.guess in ["h0", "read"]):
-            error_message = "Invalid initial guess for DFTB given!"
+            error_message = "Invalid initial guess for DFTB/SSR given!"
             error_vars = f"guess = {self.guess}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
