@@ -36,5 +36,8 @@ class Turbomole(QM_calculator):
             self.qm_bin_path = os.path.join(self.qm_path, "bin/em64t-unknown-linux-gnu_smp/")
 
         if (self.version != "6.4"):
-            raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")
+            error_message = "Other versions not implemented!"
+            error_vars = f"version = {self.version}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
 

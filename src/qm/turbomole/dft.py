@@ -64,7 +64,10 @@ class DFT(Turbomole):
             :param integer,list bo_list: List of BO states for BO calculation
         """
         if (self.calc_coupling):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) BOMD is only valid! {self.calc_coupling}")
+            # TODO : In this case, name of variable is not determined, how to express?
+            error_message = "Only BOMD supported!"
+            error_vars = f"calc_coupling = {self.calc_coupling}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         x2t_command = os.path.join(self.qm_scripts_path, "x2t")
         command = f"{x2t_command} geometry.xyz > coord"
