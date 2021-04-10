@@ -58,8 +58,10 @@ class DFTB(DFTBplus):
         # Set initial guess for SCC term
         self.guess = guess
         self.guess_file = guess_file
-        if (not (self.guess == "h0" or self.guess == "read")):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
+        if not (self.guess in ["h0", "read"]):
+            error_message = "Invalid initial guess for DFTB given!"
+            error_vars = f"guess = {self.guess}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.elec_temp = elec_temp
         self.mixer = mixer
@@ -75,9 +77,11 @@ class DFTB(DFTBplus):
 
         # Check excitation symmetry in TDDFTB
         # TODO : Currently, allows only singlet excited states with TDDFTB
-#        if (not (self.ex_symmetry == "singlet" or self.ex_symmetry == "triplet")):
-        if (not (self.ex_symmetry == "singlet")):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong symmetry for excited state! {self.ex_symmetry}")
+#        if not (self.ex_symmetry in ["singlet", "triplet"]):
+        if (not self.ex_symmetry == "singlet"):
+            error_message = "Invalid symmetry of excited states for TDDFTB given!"
+            error_vars = f"ex_symmetry = {self.ex_symmetry}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.mpi = mpi
         self.mpi_path = mpi_path
@@ -105,6 +109,10 @@ class DFTB(DFTBplus):
                 self.nbasis += 9
             else:
                 raise ValueError (f"( {self.qm_method}.{call_name()} ) Not added to basis sets for f orbitals! {max_ang}")
+                # TODO : In this case, name of variable is not determined, how to express?
+                error_message = "Basis sets for f orbitals not added, see $PYUNIXMDHOME/src/qm/dftbplus/dftb.py!"
+                error_vars = f"max_ang = {max_ang}"
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
             self.check_atom.append(self.nbasis)
             # Check number of core electrons with respect to atomic number
             sym_index = list(data.keys()).index(molecule.symbols[iat])
@@ -119,7 +127,10 @@ class DFTB(DFTBplus):
             elif (sym_index > 36 and sym_index <= 54):
                 core_elec += 36.
             else:
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) Not added to core electrons for current element! {sym_index}")
+                # TODO : In this case, name of variable is not determined, how to express?
+                error_message = "Core electrons for current element not added, see $PYUNIXMDHOME/src/qm/dftbplus/dftb.py!"
+                error_vars = f"sym_index = {sym_index}"
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Set new variable to decide the position of atoms in terms of basis functions
         self.check_basis = []

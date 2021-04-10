@@ -23,15 +23,20 @@ class DFTBplus(QM_calculator):
         self.nthreads = nthreads
         self.version = version
 
-        # Environmental variable setting for python scripts such as xyz2gen used in DFTB+
-        if (self.version == "19.1" or self.version == "20.1"):
+        # Environmental variable setting for Python scripts such as xyz2gen used in DFTB+
+        if (self.version in ["19.1", "20.1"]):
             self.qm_path = os.path.join(self.install_path, "bin")
-            # Note that the python version can be changed according to the users setting
+            # Note that the Python version can be changed according to the users setting
             lib_dir = os.path.join(self.install_path, "lib/python3.6/site-packages")
             if (not os.path.exists(lib_dir)):
-                raise ValueError (f"( {self.qm_prog}.{call_name()} ) Please modify python version in interfacing script! {lib_dir}")
+                # TODO : In this case, name of variable is not determined, how to express?
+                error_message = "Please modify Python version in $PYUNIXMDHOME/src/qm/dftbplus/dftbplus.py!"
+                error_vars = f"lib_dir = {lib_dir}"
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
-            raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")
+            error_message = "Other versions not implemented!"
+            error_vars = f"version = {self.version}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Append following paths to PATH and PYTHONPATH variables
         os.environ["PATH"] += os.pathsep + os.path.join(self.qm_path)
