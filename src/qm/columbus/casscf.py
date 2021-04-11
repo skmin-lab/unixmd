@@ -25,7 +25,7 @@ class CASSCF(Columbus):
     """
     def __init__(self, molecule, basis_set="6-31g*", memory=500, \
         guess="hf", guess_file="./mocoef", scf_en_tol=9, scf_max_iter=40, \
-        mcscf_en_tol=8, mcscf_max_iter=100, cpscf_grad_tol=6, cpscf_max_iter=100, \
+        mcscf_en_tol=8, mcscf_max_iter=100, state_avg=None, cpscf_grad_tol=6, cpscf_max_iter=100, \
         active_elec=2, active_orb=2, qm_path="./", version="7.0"):
         # Initialize Columbus common variables
         super(CASSCF, self).__init__(molecule, basis_set, memory, qm_path, version)
@@ -54,6 +54,14 @@ class CASSCF(Columbus):
         self.frozen_orb = 0
         self.closed_orb = int((int(molecule.nelec) - self.active_elec) / 2)
         self.docc_orb = int(int(molecule.nelec) / 2)
+
+        self.state_avg = state_avg
+        if (self.state_avg == None):
+            # Set number of state-averaging to number of states
+            self.state_avg = molecule.nst
+        else:
+            if (self.state_avg < molecule.nst):
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) Too small number of state-averaging! {self.state_avg}")
 
         # Check the closed shell for systems
         if (not int(molecule.nelec) % 2 == 0):
