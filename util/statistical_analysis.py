@@ -3,11 +3,11 @@ import os
 import numpy as np
 
 def statistical_analysis():
-    """ Python utility script for UNI-xMD output analysis
+    """ Python utility script for PyUNIxMD output analysis
         In this script, UNI-xMD output files are post-process into organized analysis data
         It includes BO population analysis, electron coherence analysis, nacme averaging 
     """
-    parser = argparse.ArgumentParser(description="Python script for UNI-xMD output analysis")
+    parser = argparse.ArgumentParser(description="Python script for PyUNIxMD output analysis")
     parser.add_argument('-n', '-ntrajs', action='store', dest='ntrajs', type=int, \
         help="Total number of trajectories", required=True)
     parser.add_argument('-s', '-nsteps', action='store', dest='nsteps', type=int, \
