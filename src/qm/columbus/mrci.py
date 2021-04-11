@@ -147,7 +147,7 @@ class MRCI(Columbus):
         for iat in range(molecule.nat_qm):
             atom_num = list(data.keys()).index(f"{molecule.symbols[iat]}")
             tmp_atom = f' {molecule.symbols[iat]:5s}{atom_num:7.2f}' \
-                + "".join([f'{molecule.pos[iat, isp]:15.8f}' for isp in range(molecule.nsp)]) \
+                + "".join([f'{molecule.pos[iat, isp]:15.8f}' for isp in range(molecule.ndim)]) \
                 + f'{molecule.mass[iat] / amu_to_au:15.8f}' + "\n"
             geom += tmp_atom
 
@@ -435,7 +435,7 @@ class MRCI(Columbus):
             file_name = f"GRADIENTS/cartgrd.drt1.state{ist + 1}.sp"
             with open(file_name, "r") as f:
                 log_out = f.read()
-                log_out = log_out.replace("D", "E", molecule.nat_qm * molecule.nsp)
+                log_out = log_out.replace("D", "E", molecule.nat_qm * molecule.ndim)
 
             tmp_f ='\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat_qm
             force = re.findall(tmp_f, log_out)
