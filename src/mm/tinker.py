@@ -58,10 +58,15 @@ class Tinker(MM_calculator):
         self.nthreads = nthreads
         self.version = version
 
-        if (not self.version == "8.7"):
-            error_message = "Other versions not implemented!"
+        if (isinstance(self.version, str)):
+            if (self.version != "8.7"):
+                error_message = "Other versions not implemented!"
+                error_vars = f"version = {self.version}"
+                raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
+        else:
+            error_message = "Type of version must be string!"
             error_vars = f"version = {self.version}"
-            raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
+            raise TypeError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
         if (self.embedding == "electrostatic"):
             # Save current atom type for electrostatic embedding

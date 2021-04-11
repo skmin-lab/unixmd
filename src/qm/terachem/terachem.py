@@ -45,9 +45,14 @@ class TeraChem(QM_calculator):
         self.precision = precision
         self.version = version
 
-        if (self.version != "1.93"):
-            error_message = "Other versions not implemented!"
+        if (isinstance(self.version, str)):
+            if (self.version != "1.93"):
+                error_message = "Other versions not implemented!"
+                error_vars = f"version = {self.version}"
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+        else:
+            error_message = "Type of version must be string!"
             error_vars = f"version = {self.version}"
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+            raise TypeError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
 

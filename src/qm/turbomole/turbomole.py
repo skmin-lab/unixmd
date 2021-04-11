@@ -35,9 +35,14 @@ class Turbomole(QM_calculator):
             os.environ["PARNODES"] = f"{self.nthreads}"
             self.qm_bin_path = os.path.join(self.qm_path, "bin/em64t-unknown-linux-gnu_smp/")
 
-        if (self.version != "6.4"):
-            error_message = "Other versions not implemented!"
+        if (isinstance(self.version, str)):
+            if (self.version != "6.4"):
+                error_message = "Other versions not implemented!"
+                error_vars = f"version = {self.version}"
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+        else:
+            error_message = "Type of version must be string!"
             error_vars = f"version = {self.version}"
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+            raise TypeError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
 

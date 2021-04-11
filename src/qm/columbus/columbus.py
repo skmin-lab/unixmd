@@ -67,9 +67,14 @@ class Columbus(QM_calculator):
             error_vars = f"basis_set = {self.basis_set}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        if (self.version != "7.0"):
-            error_message = "Other versions not implemented!"
+        if (isinstance(self.version, str)):
+            if (self.version != "7.0"):
+                error_message = "Other versions not implemented!"
+                error_vars = f"version = {self.version}"
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+        else:
+            error_message = "Type of version must be string!"
             error_vars = f"version = {self.version}"
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+            raise TypeError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
 
