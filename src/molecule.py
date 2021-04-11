@@ -42,12 +42,25 @@ class Molecule(object):
         self.nst = nstates
         self.l_model = l_model
 
+        # Conversion unit
+        self.unit_pos = unit_pos
+        if not (self.unit_pos in ["angs", "au"]):
+            error_message = "Invalid unit for position given!"
+            error_vars = f"unit_pos = {self.unit_pos}"
+            raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        self.unit_vel = unit_vel
+        if not (self.unit_vel in ["angs/ps", "angs/fs", "au"]):
+            error_message = "Invalid unit for velocity given!"
+            error_vars = f"unit_vel = {self.unit_vel}"
+            raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
         # Initialize geometry
         self.pos = []
         self.vel = []
         self.mass = []
         self.symbols = []
-        self.read_geometry(geometry, unit_pos, unit_vel)
+        self.read_geometry(geometry)
 
         # Initialize QM/MM method
         self.l_qmmm = l_qmmm
@@ -122,7 +135,7 @@ class Molecule(object):
         if (self.l_qmmm):
             self.mm_charge = np.zeros(self.nat_mm)
 
-    def read_geometry(self, geometry, unit_pos, unit_vel):
+    def read_geometry(self, geometry):
         """ Routine to read the geometry in extended xyz format.\n
             Example:\n\n
             geometry = '''\n
@@ -134,8 +147,6 @@ class Molecule(object):
             self.read_geometry(geometry)
 
             :param string geometry: Cartesian coordinates for position and initial velocity in the extended xyz format
-            :param string unit_pos: Unit of position (A = angstrom, au = atomic unit [bohr])
-            :param string unit_vel: Unit of velocity (au = atomic unit, A/ps = angstrom per ps, A/fs = angstromm per fs)
         """
         f = geometry.split('\n')
 
@@ -171,27 +182,19 @@ class Molecule(object):
         self.mass = np.array(self.mass)
 
         # Conversion unit
-        if (unit_pos == 'au'):
+        if (self.unit_pos == 'au'):
             fac_pos = 1.
-        elif (unit_pos == 'angs'):
+        elif (self.unit_pos == 'angs'):
             fac_pos = A_to_au
-        else:
-            error_message = "Invalid unit for position given!"
-            error_vars = f"unit_pos = {unit_pos}"
-            raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.pos = np.array(self.pos) * fac_pos
 
-        if (unit_vel == 'au'):
+        if (self.unit_vel == 'au'):
             fac_vel = 1.
-        elif (unit_vel == 'angs/ps'):
+        elif (self.unit_vel == 'angs/ps'):
             fac_vel = A_to_au / (1000.0 * fs_to_au)
-        elif (unit_vel == 'angs/fs'):
+        elif (self.unit_vel == 'angs/fs'):
             fac_vel = A_to_au / fs_to_au
-        else:
-            error_message = "Invalid unit for velocity given!"
-            error_vars = f"unit_vel = {unit_vel}"
-            raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.vel = np.array(self.vel) * fac_vel
 
