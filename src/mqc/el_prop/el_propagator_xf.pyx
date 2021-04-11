@@ -70,7 +70,8 @@ def el_run(md):
     
     # Debug related
     verbosity = md.verbosity
-    dotpopdec = <double*> PyMem_Malloc(nst * sizeof(double))
+    if (verbosity >= 1):
+        dotpopdec = <double*> PyMem_Malloc(nst * sizeof(double))
 
     # Assign variables from python to C
     for ist in range(nst):
@@ -146,8 +147,9 @@ def el_run(md):
         PyMem_Free(rho)
 
     # Debug
-    for ist in range(nst):
-        md.dotpopdec[ist] = dotpopdec[ist]
+    if (verbosity >= 1):
+        for ist in range(nst):
+            md.dotpopdec[ist] = dotpopdec[ist]
 
     if (verbosity >= 2):
         for iat in range(aux_nat):
@@ -186,5 +188,6 @@ def el_run(md):
     PyMem_Free(aux_pos)
     PyMem_Free(phase)
 
-    PyMem_Free(dotpopdec)
+    if (verbosity >= 1):
+        PyMem_Free(dotpopdec)
 
