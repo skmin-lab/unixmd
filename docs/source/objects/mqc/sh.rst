@@ -95,7 +95,7 @@ and
 | **init_coef**              | Initial BO coefficient                           | *None*         |
 | *(double/complex, list)*   |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
-| **deco_correction**        | Simple decoherence correction schemes            | *None*         |
+| **dec_correction**         | Simple decoherence correction schemes            | *None*         |
 | *(string)*                 |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
 | **edc_parameter**          | Energy constant for rescaling coefficients       | *0.1*          |
@@ -201,7 +201,7 @@ Detailed description of the parameters
 
 \
 
-- **deco_correction** *(string)* - Default: *None*
+- **dec_correction** *(string)* - Default: *None*
 
   This parameter determines the simple decoherence correction method.
 

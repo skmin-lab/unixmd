@@ -23,7 +23,7 @@ class SH(MQC):
         :param string hop_reject: Velocity rescaling method after frustrated hop
         :param init_coef: Initial BO coefficient
         :type init_coef: double, list or complex, list
-        :param string deco_correction: Simple decoherence correction schemes
+        :param string dec_correction: Simple decoherence correction schemes
         :param double edc_parameter: Energy constant for rescaling coefficients in edc
         :param string unit_dt: Unit of time step 
         :param integer out_freq: Frequency of printing output
@@ -31,7 +31,7 @@ class SH(MQC):
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
-        hop_reject="reverse", init_coef=None, deco_correction=None, edc_parameter=0.1, \
+        hop_reject="reverse", init_coef=None, dec_correction=None, edc_parameter=0.1, \
         unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
@@ -61,12 +61,12 @@ class SH(MQC):
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Initialize decoherence variables
-        self.deco_correction = deco_correction
+        self.dec_correction = dec_correction
         self.edc_parameter = edc_parameter
 
-        if not (deco_correction in [None, "idc", "edc"]):
+        if not (dec_correction in [None, "idc", "edc"]):
             error_message = "Invalid decoherence corrections given!"
-            error_vars = f"deco_correction = {self.deco_correction}"
+            error_vars = f"dec_correction = {self.dec_correction}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check error for incompatible cases
@@ -117,10 +117,10 @@ class SH(MQC):
             self.hop_check(bo_list)
             self.evaluate_hop(bo_list, self.istep)
 
-            if (self.deco_correction == "idc"):
+            if (self.dec_correction == "idc"):
                 if (self.l_hop or self.l_reject):
                     self.correct_deco_idc()
-            elif (self.deco_correction == "edc"):
+            elif (self.dec_correction == "edc"):
                 # If kinetic is 0, coefficient/density matrix are update into itself
                 if (self.mol.ekin_qm > eps):
                     self.correct_deco_edc()
@@ -174,10 +174,10 @@ class SH(MQC):
             self.hop_check(bo_list)
             self.evaluate_hop(bo_list, istep)
 
-            if (self.deco_correction == "idc"):
+            if (self.dec_correction == "idc"):
                 if (self.l_hop or self.l_reject):
                     self.correct_deco_idc()
-            elif (self.deco_correction == "edc"):
+            elif (self.dec_correction == "edc"):
                 # If kinetic is 0, coefficient/density matrix are update into itself
                 if (self.mol.ekin_qm > eps):
                     self.correct_deco_edc()
