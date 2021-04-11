@@ -214,7 +214,8 @@ Detailed description of the parameters
 
   This parameter determines the verbosity of the output files and stream.
 
-  + **verbosity** :math:`\geq` *1*: Prints accumulated hopping probabilities and random numbers.
+  + **verbosity** :math:`\geq` *1*: Prints accumulated hopping probabilities and random numbers,
+    and writes decoherence terms in time-derivative of BO populations to DOTPOPDEC.
   + **verbosity** :math:`\geq` *2*: Writes the NACVs ('NACV\_\ :math:`i`\_\ :math:`j`'), qauntum momentum (QMOM), 
     phase terms ('AUX_PHASE\_\ :math:`i`'), and atomic postions and velocities of the auxiliary trajectories
     ('AUX_MOVIE\_\ :math:`i`.xyz') where :math:`i` and :math:`j` represent BO states.
