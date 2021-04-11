@@ -107,7 +107,6 @@ class Tinker(MM_calculator):
                         field = line.split()
                         prm_file = field[1]
                 if (not is_prm):
-                    raise ValueError (f"( {self.mm_prog}.{call_name()} ) Force field file needed! {self.key_file}")
                     # TODO : Search error type in python, ValueError?
                     error_message = "Force field file must be set in key file!"
                     error_vars = f"parameters != {self.key_file}"
@@ -157,7 +156,7 @@ class Tinker(MM_calculator):
         else:
             error_message = "Initial tinker.xyz file not given, check file name!"
             error_vars = f"xyz_file = {self.xyz_file}"
-            raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
+            raise FileNotFoundError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Copy key file to currect directory
         if (os.path.isfile(self.key_file)):
@@ -165,7 +164,7 @@ class Tinker(MM_calculator):
         else:
             error_message = "Initial tinker.key file not given, check file name!"
             error_vars = f"key_file = {self.key_file}"
-            raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
+            raise FileNotFoundError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Write xyz file using current positions
         if (self.scheme == "additive"):
@@ -431,7 +430,7 @@ class Tinker(MM_calculator):
         else:
             error_message = "No testgrad (or testgrad.x) binary in the Tinker directory!"
             error_vars = f"mm_path = {self.mm_path}"
-            raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
+            raise FileNotFoundError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # OpenMP setting
         os.environ["OMP_NUM_THREADS"] = f"{self.nthreads}"

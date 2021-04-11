@@ -32,7 +32,7 @@ class DFTBplus(QM_calculator):
                 # TODO : In this case, name of variable is not determined, how to express?
                 error_message = "Please modify Python version in $PYUNIXMDHOME/src/qm/dftbplus/dftbplus.py!"
                 error_vars = f"lib_dir = {lib_dir}"
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+                raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
             error_message = "Other versions not implemented!"
             error_vars = f"version = {self.version}"

@@ -108,7 +108,6 @@ class DFTB(DFTBplus):
             elif (max_ang == 'd'):
                 self.nbasis += 9
             else:
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) Not added to basis sets for f orbitals! {max_ang}")
                 # TODO : In this case, name of variable is not determined, how to express?
                 error_message = "Basis sets for f orbitals not added, see $PYUNIXMDHOME/src/qm/dftbplus/dftb.py!"
                 error_vars = f"max_ang = {max_ang}"

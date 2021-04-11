@@ -40,7 +40,7 @@ class TeraChem(QM_calculator):
         else:
             error_message = "Type of GPU ID must be list consisting of integer!"
             error_vars = f"gpu_id = {self.gpu_id}"
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+            raise TypeError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.precision = precision
         self.version = version

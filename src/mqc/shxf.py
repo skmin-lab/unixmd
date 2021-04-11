@@ -135,7 +135,7 @@ class SHXF(MQC):
         else:
             error_message = "Type of sigma must be float or list consisting of float!"
             error_vars = f"sigma = {self.sigma}"
-            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+            raise TypeError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.upper_th = 1. - self.rho_threshold
         self.lower_th = self.rho_threshold

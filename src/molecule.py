@@ -300,7 +300,7 @@ class Molecule(object):
                         # TODO : numbering can begin from 0 or 1, this should be merged?
                         error_message = "Type of coefficient must be float or complex!"
                         error_vars = f"coef({ist}) = {coef[ist]}"
-                        raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                        raise TypeError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
                         
                 for ist in range(self.nst):
                     for jst in range(self.nst):
