@@ -17,7 +17,7 @@ The important thing is that sampled geometry files must be named in 'sample_(num
 
 **Ex.** Example of 'run_base.py' which reads geometry from 'geom.xyz'.
 
-.. code-block:: bash
+.. code-block:: python
   from molecule import Molecule
   import qm, mqc
   from thermostat import *
@@ -25,10 +25,7 @@ The important thing is that sampled geometry files must be named in 'sample_(num
 
   g = open('geom.xyz', 'r')
   geom = g.read()
-
-  mol = ...
-  qm = ...
-  ...
+  g.close()
 
 +---------------------+----------------------------------------------------------------+
 | Option              | Description                                                    |
@@ -205,7 +202,7 @@ If averaging option is given, averaged results can be found in current directory
 | **-d**, **--dihedeal** | Target dihedral angle between four or six atoms.                  |
 |                        | 4 or 6 target atom numbers must be given as option.               |
 +------------------------+-------------------------------------------------------------------+
-| **-m**, **--mean**     | Calculate averaged parameters through total trajectories.         |
+| **-m**, **--mean**     | Calculate averaged values through total trajectories.             |
 |                        | This is optional argument.                                        |
 +------------------------+-------------------------------------------------------------------+
 | **-h**                 | Call out help message.                                            |
