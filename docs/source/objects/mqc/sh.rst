@@ -197,6 +197,7 @@ Detailed description of the parameters
 
   This parameter defines the initial BO coefficients.
   The elements can be either real or complex values.
+  The length of this paramter should be same to ``molecule.nst``.
   If the parameter is not given, the BO coefficients and the density matrix are initialized according to the initial running state.
 
 \

@@ -198,8 +198,7 @@ Detailed description of parameters
 - **init_coefs** *(double/complex, 2D list)* - Default: *None*
 
   This parameter defines the initial BO coefficients. 
-  The data type of this parameter is list and
-  the data type of element in this parameter is list of which the elements are either real or complex values which means the initial coefficient for each trajecory.
+  The data type of element in this parameter must be list of which the elements are either real or complex values.
   The length of list, which is element of **init_coefs**, should be same to ``molecule.nst``.
   For example, if ``molecule.nst`` = *2* and the number of coupled trajectories is 3, **init_coefs** can be given *[[1.0, 0.0], [1.0, 0.0], [1.0, 0.0]]*.
   If the parameter is not given, the BO coefficients and the density matrix are initialized according to **istates**.
