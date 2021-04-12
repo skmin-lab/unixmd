@@ -95,7 +95,7 @@ Detailed description of parameters
   This parameter defines molecular information for coupled trajectories.
   The data type of **molecules** must be list of which the elements are instances for :ref:`Molecule <Objects Molecule>`.
   For example, if the number of coupled trajectories is 3, then **molecules** can be given *[mol1, mol2, mol3]* 
-  where *mol1*, *mole2*, and *mol3* are instances for :ref:`Molecule <Objects Molecule>`.
+  where *mol1*, *mol2*, and *mol3* are instances for :ref:`Molecule <Objects Molecule>`.
 
 \
 
