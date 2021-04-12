@@ -30,9 +30,8 @@ class DFTBplus(QM_calculator):
                 # Note that the Python version can be changed according to the users setting
                 lib_dir = os.path.join(self.install_path, "lib/python3.6/site-packages")
                 if (not os.path.exists(lib_dir)):
-                    # TODO : In this case, name of variable is not determined, how to express?
-                    error_message = "Please modify Python version in $PYUNIXMDHOME/src/qm/dftbplus/dftbplus.py!"
-                    error_vars = f"lib_dir = {lib_dir}"
+                    error_message = "Please use proper Python version in '$PYUNIXMDHOME/src/qm/dftbplus/dftbplus.py'!"
+                    error_vars = f"PYTHONPATH += {lib_dir}"
                     raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
             else:
                 error_message = "Other versions not implemented!"
