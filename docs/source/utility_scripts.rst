@@ -3,7 +3,7 @@ PyUNIxMD utility scripts
 ===========================
 
 PyUNIxMD provides utility scripts for user convenience such as preparing dynamics running script and post-processing MD data.
-These scripts are located in '$PYUNIXMDHOME/util'.
+These scripts are located in '$PYUNIXMDHOME/util/'.
 Different from PyUNIxMD running script, options of utility scripts are controlled by command line, not from script file itself.
 Short description of each script can be also found from using :code:`-h` command.
 Documents of detailed description of each script are as follows. 
@@ -12,10 +12,10 @@ input_gen.py
 ---------------------------
 Python utility script for PyUNIxMD running script generator.
 In this script, running script of each trajectory are generated from 1) sampled geometry files and 2) running script.
-After running a script, 'TRAJ_(number)' directories will be generated. Each directory contains extended XYZ coordinate file and PyUNIxMD running script.
+After running a script, 'TRAJ_(number)/' directories will be generated. Each directory contains extended XYZ coordinate file and PyUNIxMD running script.
 The important thing is that sampled geometry files must be named in 'sample_(number).xyz' and prepared running script must read geometry from 'geom.xyz' file.
 
-**Ex.** Example of 'run_base.py' which reads geometry from 'geom.xyz'.
+**Ex.** Example of 'run.py' which reads geometry from 'geom.xyz'.
 
 .. code-block:: python
 
@@ -29,7 +29,7 @@ The important thing is that sampled geometry files must be named in 'sample_(num
 | Option              | Description                                                    |
 +=====================+================================================================+
 | **-d**, **-dir**    | Directory name of sampled files, these files must be written   |
-|                     | in extended XYZ format. Default value is 'Sampled'             |
+|                     | in extended XYZ format. Default value is 'Sampled/'            |
 +---------------------+----------------------------------------------------------------+
 | **-f**, **-file**   | Filename of basic running script template, this file must be   |
 |                     | written in running script format. Default value is 'run.py'    |
@@ -48,9 +48,9 @@ The important thing is that sampled geometry files must be named in 'sample_(num
    $ ls
    Sampled/ run_base.py
 
-   $ python3 input_gen.py -dir Sampled -file run_base.py -ntrajs 100
+   $ python3 input_gen.py -dir Sampled/ -file run_base.py -ntrajs 100
 
-After running a script, 100 input directories with name 'TRAJ_001' to 'TRAJ_100' will be made.
+After running a script, 100 input directories with name 'TRAJ_001/' to 'TRAJ_100/' will be made.
 Each directory contains running script and extended XYZ file. 
 
 .. code-block:: bash
@@ -58,7 +58,7 @@ Each directory contains running script and extended XYZ file.
    $ ls
    Sampled/ run_base.py TRAJ_001/ TRAJ_002/ ... TRAJ_100/
 
-   $ ls TRAJ_001/
+   $ ls TRAJ_001/ 
    geom.xyz run.py
 
 statistical_analysis.py
@@ -180,7 +180,7 @@ Currently, three geometrical parameters can be measured: bond length, bond angle
    In six atom case, dihedral angle between (1,2,3),(4,5,6) plane will be calculated and dihedral axis will be atom3-atom4.
 
 After running a script, analysis results will be saved in md output directory in each trajectory ('TRAJ_(number)/md/').
-If averaging option is given, averaged results can be found in current directory.
+If averaging argument is given, averaged results can be found in current directory.
 
 +------------------------+-------------------------------------------------------------------+
 | Option                 | Description                                                       |
@@ -192,13 +192,13 @@ If averaging option is given, averaged results can be found in current directory
 |                        |                                                                   |
 +------------------------+-------------------------------------------------------------------+
 | **-b**, **--bond**     | Target bond length between two atoms.                             |
-|                        | Two target atom numbers must be given as option.                  |
+|                        | Two target atom numbers must be given as arguments.               |
 +------------------------+-------------------------------------------------------------------+
 | **-a**, **--angle**    | Target bond angle between three atoms.                            |
-|                        | Three target atom numbers must be given as option.                |
+|                        | Three target atom numbers must be given as arguments.             |
 +------------------------+-------------------------------------------------------------------+
 | **-d**, **--dihedeal** | Target dihedral angle between four or six atoms.                  |
-|                        | 4 or 6 target atom numbers must be given as option.               |
+|                        | 4 or 6 target atom numbers must be given as arguments.            |
 +------------------------+-------------------------------------------------------------------+
 | **-m**, **--mean**     | Calculate averaged values through total trajectories.             |
 |                        | This is optional argument.                                        |
