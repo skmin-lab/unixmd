@@ -231,7 +231,7 @@ class NHC(Thermostat):
             self.w[1:4] = self.w[0]
             self.w[2] = 1. - 4. * self.w[0]
         else:
-            error_message = "Invalid order for NHC thermostat given!"
+            error_message = "Invalid order for NHC thermostat!"
             error_vars = f"order = {self.order}"
             raise ValueError (f"( {self.thermostat_type}.{call_name()} ) {error_message} ( {error_vars} )")
 

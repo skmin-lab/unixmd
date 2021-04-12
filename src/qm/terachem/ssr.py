@@ -44,7 +44,7 @@ class SSR(TeraChem):
         if (self.l_ssr22):
             if (molecule.nst > 2):
                 error_message = "SSR(2,2) can calculate up to 2 electronic states!"
-                error_vars = f"nstates = {molecule.nst}"
+                error_vars = f"Molecule.nstates = {molecule.nst}"
                 raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
             self.reks_diis_tol = reks_diis_tol
             self.reks_max_iter = reks_max_iter
@@ -55,7 +55,7 @@ class SSR(TeraChem):
             self.guess = guess
             self.guess_file = guess_file
             if not (self.guess in ["dft", "read"]):
-                error_message = "Invalid initial guess for SSR given!"
+                error_message = "Invalid initial guess for SSR!"
                 error_vars = f"guess = {self.guess}"
                 raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 

@@ -45,13 +45,13 @@ class Molecule(object):
         # Conversion unit
         self.unit_pos = unit_pos
         if not (self.unit_pos in ["angs", "au"]):
-            error_message = "Invalid unit for position given!"
+            error_message = "Invalid unit for position!"
             error_vars = f"unit_pos = {self.unit_pos}"
             raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.unit_vel = unit_vel
         if not (self.unit_vel in ["angs/ps", "angs/fs", "au"]):
-            error_message = "Invalid unit for velocity given!"
+            error_message = "Invalid unit for velocity!"
             error_vars = f"unit_vel = {self.unit_vel}"
             raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
@@ -95,7 +95,7 @@ class Molecule(object):
         else:
             if (ndof == None):
                 if (self.nat == 1):
-                    error_message = "Too small number of atoms given, check geometry! Or Check l_model and ndof!"
+                    error_message = "Too small number of atoms, check geometry! Or Check l_model and ndof!"
                     error_vars = f"nat = {self.nat}"
                     raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
                 elif (self.nat == 2):

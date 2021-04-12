@@ -32,7 +32,7 @@ class DFT(Gaussian09):
         self.guess = guess
         self.guess_file = os.path.abspath(guess_file)
         if not (self.guess in ["Harris", "read"]):
-            error_message = "Invalid initial guess for DFT given!"
+            error_message = "Invalid initial guess for DFT!"
             error_vars = f"guess = {self.guess}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 

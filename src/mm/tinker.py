@@ -29,7 +29,7 @@ class Tinker(MM_calculator):
 
         if (self.scheme != None):
             if not (self.scheme in ["additive", "subtractive"]):
-                error_message = "Invalid scheme for QM/MM calculation given!"
+                error_message = "Invalid scheme for QM/MM calculation!"
                 error_vars = f"scheme = {self.scheme}"
                 raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
@@ -38,13 +38,13 @@ class Tinker(MM_calculator):
 
         if (self.embedding != None):
             if not (self.embedding in ["mechanical", "electrostatic"]):
-                error_message = "Invalid charge embedding for QM/MM calculation given!"
+                error_message = "Invalid charge embedding for QM/MM calculation!"
                 error_vars = f"embedding = {self.embedding}"
                 raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
         if (self.vdw != None):
             if (self.vdw != "lennardjones"):
-                error_message = "Invalid van der Waals interaction for QM/MM calculation given!"
+                error_message = "Invalid van der Waals interaction for QM/MM calculation!"
                 error_vars = f"vdw = {self.vdw}"
                 raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 

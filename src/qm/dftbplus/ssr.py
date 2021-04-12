@@ -72,7 +72,7 @@ class SSR(DFTBplus):
         self.guess = guess
         self.guess_file = guess_file
         if not (self.guess in ["h0", "read"]):
-            error_message = "Invalid initial guess for DFTB/SSR given!"
+            error_message = "Invalid initial guess for DFTB/SSR!"
             error_vars = f"guess = {self.guess}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
@@ -94,7 +94,7 @@ class SSR(DFTBplus):
         self.embedding = embedding
         if (self.embedding != None):
             if not (self.embedding in ["mechanical", "electrostatic"]):
-                error_message = "Invalid charge embedding for QM/MM calculation given!"
+                error_message = "Invalid charge embedding for QM/MM calculation!"
                 error_vars = f"embedding = {self.embedding}"
                 raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
@@ -304,7 +304,7 @@ class SSR(DFTBplus):
                 all_states = "Yes"
             else:
                 error_message = "SSR(2,2) can calculate up to 3 electronic states!"
-                error_vars = f"nstates = {molecule.nst}"
+                error_vars = f"Molecule.nstates = {molecule.nst}"
                 raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
             # Include state-interaction terms to SA-REKS; SI-SA-REKS
@@ -350,7 +350,7 @@ class SSR(DFTBplus):
             cpreks_alg = "Direct"
             preconditioner = "No"
         else:
-            error_message = "Invalid algorithms for CP-REKS problem given!"
+            error_message = "Invalid algorithms for CP-REKS problem!"
             error_vars = f"cpreks_grad_alg = {self.cpreks_grad_alg}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 

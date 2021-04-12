@@ -43,7 +43,7 @@ class MRCI(Columbus):
         self.guess = guess
         self.guess_file = guess_file
         if not (self.guess in ["hf", "read"]):
-            error_message = "Invalid initial guess for MRCI given!"
+            error_message = "Invalid initial guess for MRCI!"
             error_vars = f"guess = {self.guess}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
@@ -93,8 +93,8 @@ class MRCI(Columbus):
         # Check the closed shell for systems
         if (not int(molecule.nelec) % 2 == 0):
             # TODO : In this case, name of variable is not determined, how to express?
-            error_message = "Only closed shell configuration supported!"
-            error_vars = f"nelec = {int(molecule.nelec)}"
+            error_message = "Only closed shell configuration supported, check charge!"
+            error_vars = f"Molecule.nelec = {int(molecule.nelec)}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Set 'l_nacme' with respect to the computational method

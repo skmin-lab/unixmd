@@ -50,7 +50,7 @@ class MQC(object):
         elif (unit_dt == 'fs'):
             self.dt = dt * fs_to_au
         else:
-            error_message = "Invalid unit for time step given!"
+            error_message = "Invalid unit for time step!"
             error_vars = f"unit_dt = {unit_dt}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
@@ -63,12 +63,12 @@ class MQC(object):
         # None for BOMD case
         self.elec_object = elec_object
         if not (self.elec_object in [None, "coefficient", "density"]):
-            error_message = "Invalid electronic object given!"
+            error_message = "Invalid electronic object!"
             error_vars = f"elec_object = {self.elec_object}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         self.propagator = propagator
         if not (self.propagator in [None, "rk4"]):
-            error_message = "Invalid electronic propagator given!"
+            error_message = "Invalid electronic propagator!"
             error_vars = f"propagator = {self.propagator}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
@@ -97,7 +97,7 @@ class MQC(object):
         """
         # Check whether the restart option is right
         if not (restart in [None, "write", "append"]):
-            error_message = "Invalid restart option given!"
+            error_message = "Invalid restart option!"
             error_vars = f"restart = {restart}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
@@ -468,11 +468,11 @@ class MQC(object):
 
         if (do_qmmm):
             if (qm.embedding != mm.embedding):
-                error_message = "Inconsistent charge embedding between QM and MM objects given!"
+                error_message = "Inconsistent charge embedding between QM and MM objects!"
                 error_vars = f"(QM) embedding = {qm.embedding}, (MM) embedding = {mm.embedding}"
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
-            error_message = "Incompatible QM and MM objects for QM/MM calculation given!"
+            error_message = "Incompatible QM and MM objects for QM/MM calculation!"
             error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}, (MM) mm_prog = {mm.mm_prog}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
