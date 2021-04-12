@@ -128,7 +128,7 @@ class SHXF(MQC):
         self.phase = np.array(np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim)))
 
         # Debug variables
-        self.dotpopd = np.zeros(self.mol.nst)
+        self.dotpopdec = np.zeros(self.mol.nst)
         self.qmom = np.zeros((self.aux.nat, self.aux.ndim))
 
         # Initialize event to print
@@ -592,9 +592,10 @@ class SHXF(MQC):
             :param string unixmd_dir: PyUNIxMD directory
             :param integer istep: Current MD step
         """
-        # Write time-derivative density matrix elements in DOTPOTD
-        tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopd])
-        typewriter(tmp, unixmd_dir, "DOTPOPD", "a")
+        # Write time-derivative density matrix elements in DOTPOPDEC
+        if (self.verbosity >= 1):
+            tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopdec])
+            typewriter(tmp, unixmd_dir, "DOTPOPDEC", "a")
 
         # Write auxiliary trajectories
         if (self.verbosity >= 2 and True in self.l_coh):
@@ -639,20 +640,13 @@ class SHXF(MQC):
         """)
 
         # Print INIT for each step
-        INIT = f" #INFO{'STEP':>8s}{'State':>7s}{'Max. Prob.':>14s}{'Rand.':>12s}{'Kinetic(H)':>15s}{'Potential(H)':>15s}{'Total(H)':>13s}{'Temperature(K)':>17s}{'Norm.':>8s}"
+        INIT = f" #INFO{'STEP':>8s}{'State':>7s}{'Kinetic(H)':>14s}{'Potential(H)':>15s}{'Total(H)':>13s}{'Temperature(K)':>17s}{'Norm.':>8s}"
         dynamics_step_info += INIT
 
         # Print DEBUG1 for each step
         if (self.verbosity >= 1):
-            DEBUG1 = f" #DEBUG1{'STEP':>6s}"
-            for ist in range(self.mol.nst):
-                DEBUG1 += f"{'Potential_':>14s}{ist}(H)"
+            DEBUG1 = f" #DEBUG1{'STEP':>6s}{'Rand.':>11s}{'Acc. Hopping Prob.':>28s}"
             dynamics_step_info += "\n" + DEBUG1
-
-        # Print DEBUG2 for each step
-        if (self.verbosity >= 2):
-            DEBUG2 = f" #DEBUG2{'STEP':>6s}{'Acc. Hopping Prob.':>22s}"
-            dynamics_step_info += "\n" + DEBUG2
 
         print (dynamics_step_info, flush=True)
 
@@ -661,21 +655,14 @@ class SHXF(MQC):
 
             :param integer istep: Current MD step
         """
-        if (istep == -1):
-            max_prob = 0.
-            hstate = self.rstate
-        else:
-            max_prob = max(self.prob)
-            hstate = np.where(self.prob == max_prob)[0][0]
-
         ctemp = self.mol.ekin * 2. / float(self.mol.ndof) * au_to_K
         norm = 0.
         for ist in range(self.mol.nst):
             norm += self.mol.rho.real[ist, ist]
 
         # Print INFO for each step
-        INFO = f" INFO{istep + 1:>9d}{self.rstate:>5d}{max_prob:11.5f} ({self.rstate}->{hstate}){self.rand:11.5f}"
-        INFO += f"{self.mol.ekin:14.8f}{self.mol.epot:15.8f}{self.mol.etot:15.8f}"
+        INFO = f" INFO{istep + 1:>9d}{self.rstate:>5d}"
+        INFO += f"{self.mol.ekin:16.8f}{self.mol.epot:15.8f}{self.mol.etot:15.8f}"
         INFO += f"{ctemp:13.6f}"
         INFO += f"{norm:11.5f}"
         print (INFO, flush=True)
@@ -683,16 +670,10 @@ class SHXF(MQC):
         # Print DEBUG1 for each step
         if (self.verbosity >= 1):
             DEBUG1 = f" DEBUG1{istep + 1:>7d}"
+            DEBUG1 += f"{self.rand:11.5f}"
             for ist in range(self.mol.nst):
-                DEBUG1 += f"{self.mol.states[ist].energy:17.8f} "
+                DEBUG1 += f"{self.acc_prob[ist]:12.5f} ({self.rstate}->{ist})"
             print (DEBUG1, flush=True)
-
-        # Print DEBUG2 for each step
-        if (self.verbosity >= 2):
-            DEBUG2 = f" DEBUG2{istep + 1:>7d}"
-            for ist in range(self.mol.nst):
-                DEBUG2 += f"{self.acc_prob[ist]:12.5f} ({self.rstate}->{ist})"
-            print (DEBUG2, flush=True)
 
         # Print event in SHXF
         for category, events in self.event.items():
@@ -701,3 +682,5 @@ class SHXF(MQC):
                     print (f" {category}{istep + 1:>9d}  {ievent}", flush=True)
         self.event["HOP"] = []
         self.event["DECO"] = []
+
+

@@ -157,5 +157,5 @@ Detailed description of parameters
 
   This parameter determines the verbosity of the output files and stream.  
 
-  + **verbosity** :math:`\geq` *1*: Prints potential energy of all BO states.
   + **verbosity** :math:`\geq` *2*: Writes the NACVs ('NACV\_\ :math:`i`\_\ :math:`j`').
+

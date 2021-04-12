@@ -105,7 +105,5 @@ Detailed description of the parameters
 - **verbosity** *(integer)* - Default: *0*
 
   This parameter determines the verbosity of the output files and stream.
+  BOMD does not print or write any additional data.
 
-  + **verbosity** :math:`\geq` *1*: Prints potential energy of all BO states.
-
-\
