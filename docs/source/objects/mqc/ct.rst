@@ -94,15 +94,16 @@ Detailed description of parameters
   
   This parameter defines molecular information for coupled trajectories.
   The data type of **molecules** must be list of which the elements are instances for :ref:`Molecule <Objects Molecule>`.
-  For example, if the number of coupled trajectories is 3, then **molecules** can be given *[mol1, mol2, mol3]*.
+  For example, if the number of coupled trajectories is 3, then **molecules** can be given *[mol1, mol2, mol3]* 
+  where *mol1*, *mole2*, and *mol3* are instances for :ref:`Molecule <Objects Molecule>`.
 
 \
 
 - **istates** *(integer, list)* - Default: *None*
 
   The BO coefficients and BO density matrices for coupled trajectories are initialized according to this parameter. 
-  The data type of **istate** must be list of which the elements are integer.
-  Hence, the number of elements in **istates** must be the number of coupled trajectories.
+  The data type of **istates** must be list of which the elements are integer.
+  Hence, the number of elements in **istates** must be same to the number of coupled trajectories.
   The possible range for element in **istates** is from *0* to ``molecule.nst - 1``.
   For example, if the number of coupled trajectories is 3, then **istates** can be *[0, 0, 0]* 
   which means BO coefficients of ground state for all trajectories are initially set to 1.0.
@@ -130,7 +131,7 @@ Detailed description of parameters
 
 \
 
-- **elec_obj** *(string)* - Default: *'coefficient'*
+- **elec_object** *(string)* - Default: *'coefficient'*
 
   The **elec_object** parameter determines the representation for the electronic state.
   Now, CTMQC is only vaild for *'coefficient'*.
