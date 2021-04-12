@@ -3,7 +3,7 @@ PyUNIxMD utility scripts
 ===========================
 
 PyUNIxMD provides utility scripts for user convenience such as preparing dynamics running script and post-processing MD data.
-These scripts are located in `$PYUNIXMDHOME/util`.
+These scripts are located in '$PYUNIXMDHOME/util'.
 Different from PyUNIxMD running script, options of utility scripts are controlled by command line, not from script file itself.
 Short description of each script can be also found from using :code:`-h` command.
 Documents of detailed description of each script are as follows. 
@@ -12,38 +12,155 @@ input_gen.py
 ---------------------------
 Python utility script for PyUNIxMD running script generator.
 In this script, running script of each trajectory are generated from 1) sampled geometry files and 2) running script.
-After running a script, `TRAJ_(number)` directories will be generated. Each directory contains extended xyz coordinate file and PyUNIxMD running script.
-The important thing is that sampled geometry files must be named in "Sample_(number).xyz" and prepared running script must read geometry from "geom.xyz" file.
+After running a script, 'TRAJ_(number)' directories will be generated. Each directory contains extended XYZ coordinate file and PyUNIxMD running script.
+The important thing is that sampled geometry files must be named in 'sample_(number).xyz' and prepared running script must read geometry from 'geom.xyz' file.
 
-+---------------------+-----------------------------------------------------+-----------+
-| Option              | Description                                         | Default   |
-+=====================+=====================================================+===========+
-| **-d**, **-dir**    | Directory name of sampled files,                    | *Sampled* |
-| *(string)*          | these files must be written in extended xyz format. |           |
-+---------------------+-----------------------------------------------------+-----------+
-| **-f**, **-file**   | Filename of basic running script template,          | *run.py*  |
-| *(string)*          | this file must be written in running script format. |           |
-+---------------------+-----------------------------------------------------+-----------+
-| **-n**, **-ntrajs** | Total number of trajectories for sampling.          |           |
-| *(integer)*         |                                                     |           |
-+---------------------+-----------------------------------------------------+-----------+
-| **-h**              | Call out help message.                              |           |
-|                     |                                                     |           |
-+---------------------+-----------------------------------------------------+-----------+
++---------------------+----------------------------------------------------------------+
+| Option              | Description                                                    |
++=====================+================================================================+
+| **-d**, **-dir**    | Directory name of sampled files, these files must be written   |
+|                     | in extended XYZ format. Default value is 'Sampled'             |
++---------------------+----------------------------------------------------------------+
+| **-f**, **-file**   | Filename of basic running script template, this file must be   |
+|                     | written in running script format. Default value is 'run.py'    |
++---------------------+----------------------------------------------------------------+
+| **-n**, **-ntrajs** | Total number of trajectories for sampling.                     |
+|                     |                                                                |
++---------------------+----------------------------------------------------------------+
+| **-h**              | Call out help message.                                         |
+|                     |                                                                |
++---------------------+----------------------------------------------------------------+
 
-**Ex.** Making 100 trajectories of running scripts, based on XYZ from `Sampled/` and running script from `run_base.py`
+**Ex.** Making 100 trajectories of running scripts, based on XYZ from 'Sampled/' and running script from 'run_base.py'.
 
 .. code-block:: bash
 
+   $ ls
+   Sampled/ run_base.py
+
    $ python3 input_gen.py -dir Sampled -file run_base.py -ntrajs 100
 
-After running a script, 100 input directory with name `TRAJ_001` to `TRAJ_100` will be made.
-Each directory contains running script and extended xyz file. 
+After running a script, 100 input directory with name 'TRAJ_001' to 'TRAJ_100' will be made.
+Each directory contains running script and extended XYZ file. 
+
+.. code-block:: bash
+
+   $ ls
+   Sampled/ run_base.py TRAJ_001/ TRAJ_002/ ... TRAJ_100/
+
+   $ ls TRAJ_001/
+   geom.xyz run.py
+
+statistical_analysis.py
+---------------------------
+Python utility script for PyUNIxMD output analysis.
+In this script, PyUNIxMD output files are post-process into organized analysis data.
+Currently, three statistical parameters can be measured: BO population, BO coherence, NACME averaging.
+
+1. BO population analysis based on the running state of each trajectory or based on density matrix of each trajectory
+
+.. math::
+
+   P_{i}(t) = \frac{N_{i}(t)}{N_{traj}} 
+
+.. math::
+
+   <\rho_{ii}(t)> = \frac{\sum_{J}^{N_{traj}} \rho_{ii}^{(J)}(t)}{N_{traj}}
+
+2. BO coherence analysis based on density matrix of each trajectory
+
+.. math::
+
+   <\left\vert\rho_{ij}(t)\right\vert^{2}> = \frac{\sum_{K}^{N_{traj}} \rho_{ii}^{(K)}(t)\rho_{jj}^{(K)}(t)}{N_{traj}}
+
+3. Averaging NACME, phase is ignored with absolute value
+
+.. math::
+
+   <\left\vert\sigma_{ij}(t)\right\vert> = \frac{\sum_{K}^{N_{traj}} \left\vert\sigma_{ij}^{(K)}(t)\right\vert}{N_{traj}}
+
+Here, :math:`N_{traj}` represents total trajectory number, :math:`N_i(t)` represents the number of trajectories in :math:`i` state in time :math:`t`.
+After running a script, analysis results can be found in current directory.
+
++------------------------+---------------------------------------------------------------+
+| Option                 | Description                                                   |
++========================+===============================================================+
+| **-n**, **-ntrajs**    | Total number of trajectories for analysis.                    |
+|                        |                                                               |
++------------------------+---------------------------------------------------------------+
+| **-s**, **-nsteps**    | Total number of steps for analysis.                           |
+|                        |                                                               |
++------------------------+---------------------------------------------------------------+
+| **-t**, **-nstates**   | Total number of states for analysis.                          |
+|                        |                                                               |
++------------------------+---------------------------------------------------------------+
+| **-h**                 | Call out help message.                                        |
+|                        |                                                               |
++------------------------+---------------------------------------------------------------+
+
+**Ex.** Statistical analysis on 100 trajectories, first 10 steps in 3 states.
+
+.. code-block:: bash
+
+   $ ls
+   TRAJ_001/ TRAJ_002/ ... TRAJ_100/
+
+   $ python3 statistical_analysis.py -n 100 -s 10 -t 3
+
+After running a script, 'AVG_POPRUN', 'AVG_POPRHO', 'AVG_COHRHO', 'AVG_NACME' files will be generated in running directory.
+
+.. code-block:: bash
+
+   $ ls
+   AVG_POPRUN AVG_POPRHO AVG_COHRHO AVG_NACME TRAJ_001/ TRAJ_002/ ... TRAJ_100/
+
+Each generated file represents BO population based on running state, BO population based on density matrix, BO coherence based on density matrix, and averaged NACME, respectively.
+Format of output files are following.
+
+- AVG_POPRUN
+
+.. code-block:: bash
+
+     #   Running state based averaged BO population
+     <MD_step>   <population_state_0>   <population_state_1>   <population_state_2>
+     <MD_step>   <population_state_0>   <population_state_1>   <population_state_2>
+     <MD_step>   <population_state_0>   <population_state_1>   <population_state_2>
+     ...
+
+- AVG_POPRHO
+
+.. code-block:: bash
+
+     #   Density matrix based averaged BO population
+     <MD_step>   <population_state_0>   <population_state_1>   <population_state_2>
+     <MD_step>   <population_state_0>   <population_state_1>   <population_state_2>
+     <MD_step>   <population_state_0>   <population_state_1>   <population_state_2>
+     ...
+
+- AVG_COHRHO
+
+.. code-block:: bash
+
+     #   Averaged electronic coherence
+     <MD_step>   <coherence_state_0>   <coherence_state_1>   <coherence_state_2>
+     <MD_step>   <coherence_state_0>   <coherence_state_1>   <coherence_state_2>
+     <MD_step>   <coherence_state_0>   <coherence_state_1>   <coherence_state_2>
+     ...
+
+- AVG_NACME
+
+.. code-block:: bash
+
+     #   Averaged Non-Adiabatic Coupling Matrix Eliments: off-diagonal
+     <MD_step>   <NACME_(0, 1)>   <NACME_(0, 2)>   <NACME_(1, 2)>
+     <MD_step>   <NACME_(0, 1)>   <NACME_(0, 2)>   <NACME_(1, 2)>
+     <MD_step>   <NACME_(0, 1)>   <NACME_(0, 2)>   <NACME_(1, 2)>
+     ...
 
 motion_analysis.py
 ---------------------------
 Python utility script for PyUNIxMD output analysis.
-In this script, PyUNIxMD `MOVIE.xyz` output file is post-process into given geometry criterion.
+In this script, PyUNIxMD 'MOVIE.xyz' output file is post-process into given geometry criterion.
 Currently, three geometrical parameters can be measured: bond length, bond angle, and dihedral angle.
 
 1. In the bond length analysis, bond length between two given atoms will be calculated from given geometry information.
@@ -52,43 +169,55 @@ Currently, three geometrical parameters can be measured: bond length, bond angle
    In four atom case, dihedral angle between (1,2,3),(2,3,4) plane will be calculated and dihedreal axis will be atom2-atom3.
    In six atom case, dihedral angle between (1,2,3),(4,5,6) plane will be calculated and dihedral axis will be atom3-atom4.
 
-After running a script, analysis results will be saved in md output directory in each trajectory (`TRAJ_(number)/md/`).
+After running a script, analysis results will be saved in md output directory in each trajectory ('TRAJ_(number)/md/').
 If averaging option is given, averaged results can be found in current directory.
 
-+------------------------+--------------------------------------------------------+-----------+
-| Option                 | Description                                            | Default   |
-+========================+========================================================+===========+
-| **-n**, **--ntrajs**   | Total number of trajectories for analysis.             |           |
-| *(integer)*            |                                                        |           |
-+------------------------+--------------------------------------------------------+-----------+
-| **-s**, **--nsteps**   | Total number of steps.                                 |           |
-| *(integer)*            |                                                        |           |
-+------------------------+--------------------------------------------------------+-----------+
-| **-b**, **--bond**     | Target bond length between two atoms.                  |           |
-| *(integer)*            | Two target atom numbers must be given as option.       |           |
-+------------------------+--------------------------------------------------------+-----------+
-| **-a**, **--angle**    | Target bond angle between three atoms.                 |           |
-| *(integer)*            | Three target atom numbers must be given as option.     |           |
-+------------------------+--------------------------------------------------------+-----------+
-| **-d**, **--dihedeal** | Target dihedral angle between four or six atoms.       |           |
-| *(integer)*            | 4 or 6 target atom numbers must be given as option.    |           |
-+------------------------+--------------------------------------------------------+-----------+
-| **-m**, **--mean**     | Additional option for averaging through                |           |
-| *(boolean)*            | total trajectories.                                    |           |
-+------------------------+--------------------------------------------------------+-----------+
-| **-h**                 | Call out help message.                                 |           |
-|                        |                                                        |           |
-+------------------------+--------------------------------------------------------+-----------+
++------------------------+-------------------------------------------------------------------+
+| Option                 | Description                                                       |
++========================+===================================================================+
+| **-n**, **--ntrajs**   | Total number of trajectories for analysis.                        |
+|                        |                                                                   |
++------------------------+-------------------------------------------------------------------+
+| **-s**, **--nsteps**   | Total number of steps.                                            |
+|                        |                                                                   |
++------------------------+-------------------------------------------------------------------+
+| **-b**, **--bond**     | Target bond length between two atoms.                             |
+|                        | Two target atom numbers must be given as option.                  |
++------------------------+-------------------------------------------------------------------+
+| **-a**, **--angle**    | Target bond angle between three atoms.                            |
+|                        | Three target atom numbers must be given as option.                |
++------------------------+-------------------------------------------------------------------+
+| **-d**, **--dihedeal** | Target dihedral angle between four or six atoms.                  |
+|                        | 4 or 6 target atom numbers must be given as option.               |
++------------------------+-------------------------------------------------------------------+
+| **-m**, **--mean**     | Averaging through total trajectories.                             |
+|                        | This is optional argument.                                        |
++------------------------+-------------------------------------------------------------------+
+| **-h**                 | Call out help message.                                            |
+|                        |                                                                   |
++------------------------+-------------------------------------------------------------------+
 
 **Ex.** Analyze bond length between atom 1 and 4 in 100 trajectories, first 10 steps. Averaging through total trajectories either.
 
 .. code-block:: bash
 
+   $ ls
+   TRAJ_001/ TRAJ_002/ ... TRAJ_100/
+
    $ python3 motion_analysis.py -n 100 -s 10 -b 1 4 -m
 
-After running a script, `AVG_BOND` file will be generated in running directory and `BOND` file will be generated in each trajectory directory.
-`AVG_BOND` shows averaged bond length between two input atom number through total trajectories and 
-`BOND` shows bond length between two input atom number in each trajectory.
+After running a script, 'AVG_BOND' file will be generated in running directory and 'BOND' file will be generated in each trajectory directory.
+'AVG_BOND' shows averaged bond length between two input atom number through total trajectories and 
+'BOND' shows bond length between two input atom number in each trajectory.
+
+.. code-block:: bash
+
+   $ ls
+   AVG_BOND TRAJ_001/ TRAJ_002/ ... TRAJ_100/
+
+   $ ls TRAJ_001/md/
+   BOND (other MDoutputs) ...
+
 Format of output files are following. Ouput file of bond angle and dihedral angle has same template.
 
 - BOND
@@ -111,100 +240,3 @@ Format of output files are following. Ouput file of bond angle and dihedral angl
      <MD_step>  <Averaged_bond_length>
      ...
  
-statistical_analysis.py
----------------------------
-Python utility script for PyUNIxMD output analysis.
-In this script, PyUNIxMD output files are post-process into organized analysis data.
-Currently, three statistical parameters can be measured: BO population analysis, BO coherence analysis, NACME averaging.
-
-1. BO population analysis based on the running state of each trajectory or based on density matrix of each trajectory
-
-.. math::
-
-   P_{i}(t) = \frac{N_{i}(t)}{N_{traj}} 
-
-.. math::
-
-   <\rho_{ii}(t)> = \frac{\sum_{j}^{N_{traj}} \rho_{ii}^{(j)}(t)}{N_{traj}}
-
-2. BO coherence analysis based on density matrix of each trajectory
-
-.. math::
-
-   <\left\vert\rho_{ij}(t)\right\vert^{2}> = \frac{\sum_{k}^{N_{traj}} \rho_{ii}^{(k)}(t)\rho_{jj}^{(k)}(t)}{N_{traj}}
-
-3. Averaging NACME, phase is ignored with absolute value
-
-.. math::
-
-   <\left\vert\sigma_{ij}(t)\right\vert> = \frac{\sum_{k}^{N_{traj}} \left\vert\sigma_{ij}^{(k)}(t)\right\vert}{N_{traj}}
-
-Here, :math:`N_{traj}` represents total trajectory number, :math:`N_i(t)` represents number of trajectories in :math:`i` state in time :math:`t`.
-After running a script, analysis results can be found in current directory.
-
-+------------------------+----------------------------------------------------+-----------+
-| Option                 | Description                                        | Default   |
-+========================+====================================================+===========+
-| **-n**, **-ntrajs**    | Total number of trajectories for analysis.         |           |
-| *(integer)*            |                                                    |           |
-+------------------------+----------------------------------------------------+-----------+
-| **-s**, **-nsteps**    | Total number of steps.                             |           |
-| *(integer)*            |                                                    |           |
-+------------------------+----------------------------------------------------+-----------+
-| **-t**, **-nstates**   | Total number of states.                            |           |
-| *(integer)*            |                                                    |           |
-+------------------------+----------------------------------------------------+-----------+
-| **-h**                 | Call out help message.                             |           |
-|                        |                                                    |           |
-+------------------------+----------------------------------------------------+-----------+
-
-**Ex.** Statistical analysis on 100 trajectories, first 10 steps in 3 states.
-
-.. code-block:: bash
-
-   $ python3 statistical_analysis.py -n 100 -s 10 -t 3
-
-After running a script, `AVG_POPRUN`, `AVG_POPRHO`, `AVG_COHRHO`, `AVG_NACME` files will be generated in running directory.
-Each generated file represents BO population based on running state, BO population based on density matrix, BO coherence based on density matrix, and averaged NACME, respectively.
-Format of output files are following.
-
-- AVG_POPRUN
-
-.. code-block:: bash
-
-     #   Running state based averaged BO population
-     <MD_step>   <population_state_1>   <population_state_2>   <population_state_3>
-     <MD_step>   <population_state_1>   <population_state_2>   <population_state_3>
-     <MD_step>   <population_state_1>   <population_state_2>   <population_state_3>
-     ...
-
-- AVG_POPRHO
-
-.. code-block:: bash
-
-     #   Density matrix based averaged BO population
-     <MD_step>   <population_state_1>   <population_state_2>   <population_state_3>
-     <MD_step>   <population_state_1>   <population_state_2>   <population_state_3>
-     <MD_step>   <population_state_1>   <population_state_2>   <population_state_3>
-     ...
-
-- AVG_COHRHO
-
-.. code-block:: bash
-
-     #   Averaged electronic coherence
-     <MD_step>   <coherence_state_1>   <coherence_state_2>   <coherence_state_3>
-     <MD_step>   <coherence_state_1>   <coherence_state_2>   <coherence_state_3>
-     <MD_step>   <coherence_state_1>   <coherence_state_2>   <coherence_state_3>
-     ...
-
-- AVG_NACME
-
-.. code-block:: bash
-
-     #   Averaged Non-Adiabatic Coupling Matrix Eliments: off-diagonal
-     <MD_step>   <NACME_(1, 2)>   <NACME_(1, 3)>   <NACME_(2, 3)>
-     <MD_step>   <NACME_(1, 2)>   <NACME_(1, 3)>   <NACME_(2, 3)>
-     <MD_step>   <NACME_(1, 2)>   <NACME_(1, 3)>   <NACME_(2, 3)>
-     ...
-
