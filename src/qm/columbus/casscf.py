@@ -237,8 +237,8 @@ class CASSCF(Columbus):
                 new_mcscf += mcscfin[i]
 
         if (not calc_force_only):
-            new_mcscf += f"  NAVST(1) = {molecule.nst},\n"
-            for i in range(molecule.nst):
+            new_mcscf += f"  NAVST(1) = {self.state_avg},\n"
+            for i in range(self.state_avg):
                 new_mcscf += f"  WAVST(1,{i + 1})=1 ,\n"
             new_mcscf += " &end\n"
 
