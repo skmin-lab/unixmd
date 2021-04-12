@@ -56,7 +56,7 @@ class MQC(object):
 
         # Check number of state and initial state
         if (self.istate >= self.mol.nst):
-            error_message = "Index for initial state must be smaller than number of states!"
+            error_message = "Index for initial state must be smaller than number of states! The index for ground state is zero"
             error_vars = f"istate = {self.istate}, Molecule.nstates = {self.mol.nst}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
@@ -103,9 +103,8 @@ class MQC(object):
 
         # Check if NACVs are calculated for Ehrenfest dynamics
         if (self.md_type in ["Eh", "EhXF"] and self.mol.l_nacme):
-            # TODO : how to express l_nacme? l_nacme is local variable, not parameters
-            error_message = "Ehrenfest dynamics needs evaluation of NACVs!"
-            error_vars = f"l_nacme = {self.mol.l_nacme}"
+            error_message = "Ehrenfest dynamics needs evaluation of NACVs, check your QM object!"
+            error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check compatibility of variables for QM and MM calculation

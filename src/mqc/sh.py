@@ -73,12 +73,12 @@ class SH(MQC):
         if (self.mol.l_nacme):
             # No analytical nonadiabatic couplings exist
             if (self.hop_rescale in ["velocity", "momentum", "augment"]):
-                error_message = "Only isotropic rescaling is possible!"
+                error_message = "NACVs are not available with current QM object, only isotropic rescaling is possible!"
                 error_vars = f"hop_rescale = {self.hop_rescale}"
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
             if (self.hop_reject == "reverse"):
                 # TODO : Is there better error message than 'keep rescaling'?
-                error_message = "Only keep rescaling is possible!"
+                error_message = "NACVs are not available with current QM object, only keep rescaling is possible!"
                 error_vars = f"hop_reject = {self.hop_reject}"
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
