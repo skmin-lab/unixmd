@@ -6,17 +6,25 @@ Coupled-trajectory mixed quantum-classical (CTMQC) method is included in PyUNIxM
 Electronic equation of motion in CTMQC contains "decoherence term" which is derived from exact factorization,
 in addition to Eherenfest term, i.e.
 
-Here, add equation of motions for nuclei.
-
 < Nuclei >
 
-Here, add equation of motions for electrons.
+.. math::
+
+   \mathbf{F}_{\nu}^{(I)}=-\sum_{i} \nabla_{\nu}\mathbf{E}_{i}^{(I)}(t) + \sum_{i\neq j} C_{i}^{(I)}(t)C_{j}^{(I)}(t)(E_{i}^{(I)}(t)-E_{j}^{(I)}(t))\mathbf{d}_{ij\nu}^{(I)}(t)
+   - \sum_{i}|C_{i}^{(I)}(t)|^2\left(\sum^{N_n}_{\nu'=1}\frac{2}{\hbar M_{\nu'}}\mathbf{Q}^{(I)}_{\nu'}(t)\cdot\mathbf{f}^{(I)}_{i,\nu'}(t)\right)
+   \left[\sum_{j}|C_{j}^{(I)}(t)|^2\mathbf{f}_{j,\nu}^{(I)}(t)-\mathbf{f}_{i,\nu}^{(I)}(t)\right],
 
 < Electrons >
 
+.. math::
+
+    \dot C^{(I)}_k(t) = -\frac{i}{\hbar}E^{(I)}_k(t)C^{(I)}_k(t)
+    - \sum_j\sum_{\nu}{\bf d}^{(I)}_{kj\nu}(t)\cdot\dot{\bf R}^{(I)}_\nu(t)C^{(I)}_j(t)
+    - \sum_{\nu}^{N_n}\frac{\mathbf{Q}^{(I)}_{\nu}(t)}{\hbar M_{\nu}}\cdot\left[\sum_{j}|C^{(I)}_{j}(t)|^2\mathbf{f}^{(I)}_{j,\nu}(t)-\mathbf{f}^{(I)}_{k,\nu}(t)\right]C^{(I)}_{k}.
+
 Detailed description of CTMQC method is in the ref.?.
 
-.. note:: We recommend that users see detailed description for usage of paramters in CTMQC.
+.. note:: We recommend that users see detailed description for usage of some paramters in CTMQC.
 
 +--------------------------------+------------------------------------------------+-----------------+
 | Parameters                     | Work                                           | Default         |
@@ -95,8 +103,8 @@ Detailed description of parameters
 
 - **istates** *(integer, list)* - Default: *None*
 
-  The BO coefficients and BO density matrices for coupled trajectories are initialized according to **istate**, implying that the BO coefficient of **istate** is initially set to 1.0. 
-  The data type of this parameter must be list of which the elements are integer.
+  The BO coefficients and BO density matrices for coupled trajectories are initialized according to this parameter, implying that the BO coefficient of **istate** is initially set to 1.0. 
+  The data type of **istate** must be list of which the elements are integer.
   Hence, the number of elements in **istates** must be the number of coupled trajectories.
   The possible range for element in **istates** is from *0* to ``molecule.nst - 1``.
   For example, if the number of coupled trajectories is 3, then **istates** can be *[0, 0, 0]* 
@@ -187,7 +195,7 @@ Detailed description of parameters
 - **sigma** *(double)* - Default: *0.3*
 
   This parameter defines sigma to determine position of quantum momentum center. 
-  if a position difference between an atom :math:`\nu` in quantum momentum center and a given trajectory is larger than **dist_parameter** :math:`\times` **sigma**, quantum momentum is set to *0.0*
+  if a difference between position of an atom :math:`\nu` in quantum momentum center and a given trajectory is larger than **dist_parameter** :math:`\times` **sigma**, quantum momentum is set to *0.0*
 
 \
 
