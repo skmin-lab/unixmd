@@ -4,7 +4,7 @@ import numpy as np
 
 def statistical_analysis():
     """ Python utility script for PyUNIxMD output analysis
-        In this script, UNI-xMD output files are post-process into organized analysis data
+        In this script, PyUNIxMD output files are post-process into organized analysis data
         It includes BO population analysis, electron coherence analysis, nacme averaging 
     """
     parser = argparse.ArgumentParser(description="Python script for PyUNIxMD output analysis")
