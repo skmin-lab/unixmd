@@ -15,6 +15,21 @@ In this script, running script of each trajectory are generated from 1) sampled 
 After running a script, 'TRAJ_(number)' directories will be generated. Each directory contains extended XYZ coordinate file and PyUNIxMD running script.
 The important thing is that sampled geometry files must be named in 'sample_(number).xyz' and prepared running script must read geometry from 'geom.xyz' file.
 
+**Ex.** Example of 'run_base.py' which reads geometry from 'geom.xyz'.
+
+.. code-block:: bash
+  from molecule import Molecule
+  import qm, mqc
+  from thermostat import *
+  from misc import data
+
+  g = open('geom.xyz', 'r')
+  geom = g.read()
+
+  mol = ...
+  qm = ...
+  ...
+
 +---------------------+----------------------------------------------------------------+
 | Option              | Description                                                    |
 +=====================+================================================================+
@@ -40,7 +55,7 @@ The important thing is that sampled geometry files must be named in 'sample_(num
 
    $ python3 input_gen.py -dir Sampled -file run_base.py -ntrajs 100
 
-After running a script, 100 input directory with name 'TRAJ_001' to 'TRAJ_100' will be made.
+After running a script, 100 input directories with name 'TRAJ_001' to 'TRAJ_100' will be made.
 Each directory contains running script and extended XYZ file. 
 
 .. code-block:: bash
@@ -65,19 +80,19 @@ Currently, three statistical parameters can be measured: BO population, BO coher
 
 .. math::
 
-   <\rho_{ii}(t)> = \frac{\sum_{J}^{N_{traj}} \rho_{ii}^{(J)}(t)}{N_{traj}}
+   <\rho_{ii}(t)> = \frac{\sum_{I}^{N_{traj}} \rho_{ii}^{(I)}(t)}{N_{traj}}
 
 2. BO coherence analysis based on density matrix of each trajectory
 
 .. math::
 
-   <\left\vert\rho_{ij}(t)\right\vert^{2}> = \frac{\sum_{K}^{N_{traj}} \rho_{ii}^{(K)}(t)\rho_{jj}^{(K)}(t)}{N_{traj}}
+   <\left\vert\rho_{ij}(t)\right\vert^{2}> = \frac{\sum_{I}^{N_{traj}} \rho_{ii}^{(I)}(t)\rho_{jj}^{(I)}(t)}{N_{traj}}
 
 3. Averaging NACME, phase is ignored with absolute value
 
 .. math::
 
-   <\left\vert\sigma_{ij}(t)\right\vert> = \frac{\sum_{K}^{N_{traj}} \left\vert\sigma_{ij}^{(K)}(t)\right\vert}{N_{traj}}
+   <\left\vert\sigma_{ij}(t)\right\vert> = \frac{\sum_{I}^{N_{traj}} \left\vert\sigma_{ij}^{(I)}(t)\right\vert}{N_{traj}}
 
 Here, :math:`N_{traj}` represents total trajectory number, :math:`N_i(t)` represents the number of trajectories in :math:`i` state in time :math:`t`.
 After running a script, analysis results can be found in current directory.
@@ -190,7 +205,7 @@ If averaging option is given, averaged results can be found in current directory
 | **-d**, **--dihedeal** | Target dihedral angle between four or six atoms.                  |
 |                        | 4 or 6 target atom numbers must be given as option.               |
 +------------------------+-------------------------------------------------------------------+
-| **-m**, **--mean**     | Averaging through total trajectories.                             |
+| **-m**, **--mean**     | Calculate averaged parameters through total trajectories.         |
 |                        | This is optional argument.                                        |
 +------------------------+-------------------------------------------------------------------+
 | **-h**                 | Call out help message.                                            |
@@ -216,7 +231,7 @@ After running a script, 'AVG_BOND' file will be generated in running directory a
    AVG_BOND TRAJ_001/ TRAJ_002/ ... TRAJ_100/
 
    $ ls TRAJ_001/md/
-   BOND (other MDoutputs) ...
+   BOND (other MD outputs) ...
 
 Format of output files are following. Ouput file of bond angle and dihedral angle has same template.
 
