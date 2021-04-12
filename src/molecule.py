@@ -95,9 +95,8 @@ class Molecule(object):
         else:
             if (ndof == None):
                 if (self.nat == 1):
-                    # TODO : In this case, name of variable is not determined, how to express?
-                    error_message = "Too small number of atoms given, check geometry!"
-                    error_vars = f"natoms = {self.nat}"
+                    error_message = "Too small number of atoms given, check geometry! Or Check l_model and ndof!"
+                    error_vars = f"nat = {self.nat}"
                     raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
                 elif (self.nat == 2):
                     # Diatomic molecules
