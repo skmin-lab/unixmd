@@ -144,9 +144,8 @@ class MQC(object):
             # For MD output directory
             for md_idir in unixmd_dir:
                 if (not os.path.exists(md_idir)):
-                    # TODO : how to express directory?
-                    error_message = "Directory to be appended for restart not found!"
-                    error_vars = f"restart = {restart}, directory = {md_idir}"
+                    error_message = f"Directory {md_idir} to be appended for restart not found!"
+                    error_vars = f"restart = {restart}, output_dir = {output_dir}"
                     raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
             # For QM output directory
