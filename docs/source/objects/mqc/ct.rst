@@ -4,9 +4,7 @@ CTMQC
 
 Coupled-trajectory mixed quantum-classical (CTMQC) method is included in PyUNIxMD package.
 Electronic equation of motion in CTMQC contains "decoherence term" which is derived from exact factorization,
-in addition to Eherenfest term, i.e.
-
-< Nuclei >
+in addition to Eherenfest term. The propagation of nuclei and electrons is done as follows.
 
 .. math::
 
@@ -14,7 +12,6 @@ in addition to Eherenfest term, i.e.
    - \sum_{i}|C_{i}^{(I)}(t)|^2\left(\sum^{N_n}_{\nu'=1}\frac{2}{\hbar M_{\nu'}}\mathbf{Q}^{(I)}_{\nu'}(t)\cdot\mathbf{f}^{(I)}_{i,\nu'}(t)\right)
    \left[\sum_{j}|C_{j}^{(I)}(t)|^2\mathbf{f}_{j,\nu}^{(I)}(t)-\mathbf{f}_{i,\nu}^{(I)}(t)\right],
 
-< Electrons >
 
 .. math::
 
@@ -22,15 +19,15 @@ in addition to Eherenfest term, i.e.
     - \sum_j\sum_{\nu}{\bf d}^{(I)}_{kj\nu}(t)\cdot\dot{\bf R}^{(I)}_\nu(t)C^{(I)}_j(t)
     - \sum_{\nu}^{N_n}\frac{\mathbf{Q}^{(I)}_{\nu}(t)}{\hbar M_{\nu}}\cdot\left[\sum_{j}|C^{(I)}_{j}(t)|^2\mathbf{f}^{(I)}_{j,\nu}(t)-\mathbf{f}^{(I)}_{k,\nu}(t)\right]C^{(I)}_{k}.
 
-Detailed description of CTMQC method is in the ref.?.
+Detailed description of CTMQC method is in the :cite:`Agostini2016`.
 
-.. note:: We recommend that users see detailed description for usage of some paramters in CTMQC.
+.. note:: We recommend that users see detailed description of parameter.
 
 +--------------------------------+------------------------------------------------+-----------------+
 | Parameters                     | Work                                           | Default         |
 +================================+================================================+=================+
 | **molecules**                  | Molecule object                                |                 |
-| *(:class:`Molecule`, list)*    |                                                |                 |
+| *(*:class:`Molecule`, *list)*  |                                                |                 |
 +--------------------------------+------------------------------------------------+-----------------+
 | **thermostat**                 | Thermostat object                              | *None*          |
 | (:class:`Thermostat`)          |                                                |                 |
@@ -103,7 +100,7 @@ Detailed description of parameters
 
 - **istates** *(integer, list)* - Default: *None*
 
-  The BO coefficients and BO density matrices for coupled trajectories are initialized according to this parameter, implying that the BO coefficient of **istate** is initially set to 1.0. 
+  The BO coefficients and BO density matrices for coupled trajectories are initialized according to this parameter. 
   The data type of **istate** must be list of which the elements are integer.
   Hence, the number of elements in **istates** must be the number of coupled trajectories.
   The possible range for element in **istates** is from *0* to ``molecule.nst - 1``.
@@ -136,10 +133,9 @@ Detailed description of parameters
 - **elec_obj** *(string)* - Default: *'coefficient'*
 
   The **elec_object** parameter determines the representation for the electronic state.
+  Now, CTMQC is only vaild for *'coefficient'*.
 
   + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}^{(I)}(t)\}`
-
-  Now, CTMQC is only vaild for *'coefficient'*.
 
 \
 
