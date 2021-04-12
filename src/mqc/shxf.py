@@ -123,15 +123,13 @@ class SHXF(MQC):
         elif (isinstance(self.sigma, list)):
             # atom-resolved values for sigma
             if (len(self.sigma) != self.mol.nat_qm):
-                # TODO : how to express "number of initial coefficients"?
                 error_message = "Number of elements for sigma must be equal to number of atoms!"
-                error_vars = f"number of sigma = {len(self.sigma)}"
+                error_vars = f"len(sigma) = {len(self.sigma)}"
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
             if (self.l_xf1d):
-                # TODO : how to express "number of initial coefficients"?
                 error_message = "Sigma must be float, not list in XF-1D scheme!"
-                error_vars = f"number of sigma = {len(self.sigma)}"
-                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                error_vars = f"sigma = {self.sigma}"
+                raise TypeError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
             error_message = "Type of sigma must be float or list consisting of float!"
             error_vars = f"sigma = {self.sigma}"
