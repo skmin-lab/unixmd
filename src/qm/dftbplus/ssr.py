@@ -83,9 +83,8 @@ class SSR(DFTBplus):
         self.tuning = tuning
         if (self.tuning != None):
             if (len(self.tuning) != len(self.atom_type)):
-                # TODO : how to express "number of tuning or atom types"?
                 error_message = "Number of elements for scaling factor must be equal to number of atom types!"
-                error_vars = f"number of tuning = {len(self.tuning)}, number of atom types = {len(self.atom_type)}"
+                error_vars = f"len(tuning) = {len(self.tuning)}, len(atom_type) = {len(self.atom_type)}"
                 raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.cpreks_grad_alg = cpreks_grad_alg

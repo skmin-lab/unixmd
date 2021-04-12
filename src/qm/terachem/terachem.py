@@ -33,9 +33,8 @@ class TeraChem(QM_calculator):
 
         if (isinstance(self.gpu_id, list)):
             if (len(self.gpu_id) != self.ngpus):
-                # TODO : how to express "number of GPU IDs"?
                 error_message = "Number of elements for GPU ID must be equal to number of GPUs!"
-                error_vars = f"number of GPU ID = {len(self.gpu_id)}, ngpus = {self.ngpus}"
+                error_vars = f"len(gpu_id) = {len(self.gpu_id)}, ngpus = {self.ngpus}"
                 raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
             error_message = "Type of GPU ID must be list consisting of integer!"
