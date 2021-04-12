@@ -163,15 +163,5 @@ This file shows the running state at each MD step.
    <MD step> <running>
    ... 
 
-- DOTPOPD
-
-This file shows time-derivative populations by decoherence at each MD step.
-
-.. code-block:: bash
-
-   <MD step> <TD population of state 0> <TD population of state 1> ... <TD population of last state> 
-   <MD step> <TD population of state 0> <TD population of state 1> ... <TD population of last state> 
-   ... 
-
 For a quick test of PyUNIxMD, see :ref:`Quick Start<Quick Start>` . Also, you can refer to scripts and log files in '$PYUNIXMDHOME/examples/' directory for practical calculations.
 
