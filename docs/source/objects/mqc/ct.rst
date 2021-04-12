@@ -12,7 +12,6 @@ in addition to Eherenfest term. The propagation of nuclei and electrons is done 
    - \sum_{i}|C_{i}^{(I)}(t)|^2\left(\sum^{N_n}_{\nu'=1}\frac{2}{\hbar M_{\nu'}}\mathbf{Q}^{(I)}_{\nu'}(t)\cdot\mathbf{f}^{(I)}_{i,\nu'}(t)\right)
    \left[\sum_{j}|C_{j}^{(I)}(t)|^2\mathbf{f}_{j,\nu}^{(I)}(t)-\mathbf{f}_{i,\nu}^{(I)}(t)\right],
 
-
 .. math::
 
     \dot C^{(I)}_k(t) = -\frac{i}{\hbar}E^{(I)}_k(t)C^{(I)}_k(t)
@@ -196,10 +195,11 @@ Detailed description of parameters
 
 \
 
-- **init_coefs** *(double/complex, list, list)* - Default: *None*
+- **init_coefs** *(double/complex, 2D list)* - Default: *None*
 
-  This parameter defines the initial BO coefficients.
-  The data type of element in this parameter must be list of which the elements are either real or complex values which means the initial coefficient for each trajecory.
+  This parameter defines the initial BO coefficients. 
+  The data type of this parameter is list and
+  the data type of element in this parameter is list of which the elements are either real or complex values which means the initial coefficient for each trajecory.
   The length of list, which is element of **init_coefs**, should be same to ``molecule.nst``.
   For example, if ``molecule.nst`` = *2* and the number of coupled trajectories is 3, **init_coefs** can be given *[[1.0, 0.0], [1.0, 0.0], [1.0, 0.0]]*.
   If the parameter is not given, the BO coefficients and the density matrix are initialized according to **istates**.
