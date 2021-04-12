@@ -19,7 +19,7 @@ Thus, the driving force is given by
 
 .. math::
 
-   \mathbf{F}_{\nu}^{(I)}=-\sum_{i} \nabla_{\nu}\mathbf{E}_{i}^{(I)}(t) + \sum_{i\neq j} C_{i}^{(I)}(t)C_{j}^{(I)}(t)(E_{i}^{(I)}(t)-E_{j}^{(I)}(t))\mathbf{d}_{ij\nu}^{(I)}(t),
+   \mathbf{F}_{\nu}^{(I)}=-\sum_{i} \nabla_{\nu}\mathbf{E}_{i}^{(I)}(t) + \sum_{i\neq j} C_{i}^{(I)\ast}(t)C_{j}^{(I)}(t)(E_{i}^{(I)}(t)-E_{j}^{(I)}(t))\mathbf{d}_{ij\nu}^{(I)}(t),
 
 where :math:`\mathbf{d}_{ij\nu}^{(I)}(t) = \int d \underline{\underline{\mathbf{r}}}\Phi_{i}(\underline{\underline{\mathbf{r}}};\underline{\underline{\mathbf{R}}}^{(I)}(t))\nabla_{\nu}\Phi_{j}(\underline{\underline{\mathbf{r}}};\underline{\underline{\mathbf{R}}}^{(I)}(t))` is the nonadiabatic couping vector between the :math:`i`-th and the :math:`j`-th adiabatic state.
 

@@ -10,7 +10,7 @@ in addition to Eherenfest term, i.e.
 
 .. math::
 
-   \mathbf{F}_{\nu}^{(I)}=-\sum_{i} \nabla_{\nu}\mathbf{E}_{i}^{(I)}(t) + \sum_{i\neq j} C_{i}^{(I)}(t)C_{j}^{(I)}(t)(E_{i}^{(I)}(t)-E_{j}^{(I)}(t))\mathbf{d}_{ij\nu}^{(I)}(t)
+   \mathbf{F}_{\nu}^{(I)}=-\sum_{i} \nabla_{\nu}\mathbf{E}_{i}^{(I)}(t) + \sum_{i\neq j} C_{i}^{(I)\ast}(t)C_{j}^{(I)}(t)(E_{i}^{(I)}(t)-E_{j}^{(I)}(t))\mathbf{d}_{ij\nu}^{(I)}(t)
    - \sum_{i}|C_{i}^{(I)}(t)|^2\left(\sum^{N_n}_{\nu'=1}\frac{2}{\hbar M_{\nu'}}\mathbf{Q}^{(I)}_{\nu'}(t)\cdot\mathbf{f}^{(I)}_{i,\nu'}(t)\right)
    \left[\sum_{j}|C_{j}^{(I)}(t)|^2\mathbf{f}_{j,\nu}^{(I)}(t)-\mathbf{f}_{i,\nu}^{(I)}(t)\right],
 
