@@ -16,11 +16,13 @@ Here, add equation of motions for electrons.
 
 Detailed description of CTMQC method is in the ref.?.
 
+.. note:: We recommend that users see detailed description for usage of paramters in CTMQC.
+
 +--------------------------------+------------------------------------------------+-----------------+
 | Parameters                     | Work                                           | Default         |
 +================================+================================================+=================+
 | **molecules**                  | Molecule object                                |                 |
-| (:class:`Molecule`)            |                                                |                 |
+| *(:class:`Molecule`, list)*    |                                                |                 |
 +--------------------------------+------------------------------------------------+-----------------+
 | **thermostat**                 | Thermostat object                              | *None*          |
 | (:class:`Thermostat`)          |                                                |                 |
@@ -65,7 +67,7 @@ Detailed description of CTMQC method is in the ref.?.
 | *(double)*                     | center                                         |                 |
 +--------------------------------+------------------------------------------------+-----------------+
 | **init_coefs**                 | Initial BO coefficients                        | *None*          |
-| *(double/complex, list, list)* |                                                |                 |
+| *(double/complex, 2D list)*    |                                                |                 |
 +--------------------------------+------------------------------------------------+-----------------+
 | **unit_dt**                    | Unit of time step                              | *'fs'*          |
 | *(string)*                     |                                                |                 |
@@ -93,11 +95,12 @@ Detailed description of parameters
 
 - **istates** *(integer, list)* - Default: *None*
 
-  This parameter specifies the initial running state for coupled trajectories.
-  The data type of this parameter must be list of which the elements are integer which means the initial running state for each trajecory.
+  The BO coefficients and BO density matrices for coupled trajectories are initialized according to **istate**, implying that the BO coefficient of **istate** is initially set to 1.0. 
+  The data type of this parameter must be list of which the elements are integer.
   Hence, the number of elements in **istates** must be the number of coupled trajectories.
   The possible range for element in **istates** is from *0* to ``molecule.nst - 1``.
-  For example, if the number of coupled trajectories is 3 and they are initially on ground state, then **istates** is *[0, 0, 0]*.
+  For example, if the number of coupled trajectories is 3, then **istates** can be *[0, 0, 0]* 
+  which means BO coefficients of ground state for all trajectories are initially set to 1.0.
 
 \
 
@@ -177,14 +180,14 @@ Detailed description of parameters
 - **dist_parameter** *(double)* - Default: *10.0*
 
   This parameter defines distance parameter to determine position of quantum momentum center.
-  if a position of quantum momentum center is far from a given trajectory as **dist_parameter** :math:`\times` **sigma**, quantum momentum is set to *0.0*
+  if a position difference between an atom :math:`\nu` in quantum momentum center and a given trajectory is larger than **dist_parameter** :math:`\times` **sigma**, quantum momentum is set to *0.0*
 
 \
 
 - **sigma** *(double)* - Default: *0.3*
 
   This parameter defines sigma to determine position of quantum momentum center. 
-  if a position of quantum momentum center is far from a given trajectory as **dist_parameter** :math:`\times` **sigma**, quantum momentum is set to *0.0*
+  if a position difference between an atom :math:`\nu` in quantum momentum center and a given trajectory is larger than **dist_parameter** :math:`\times` **sigma**, quantum momentum is set to *0.0*
 
 \
 
@@ -193,7 +196,7 @@ Detailed description of parameters
   This parameter defines the initial BO coefficients.
   The data type of element in this parameter must be list of which the elements are either real or complex values which means the initial coefficient for each trajecory.
   The length of list, which is element of **init_coefs**, should be same to ``molecule.nst``.
-  For example, if ``molecule.nst`` and the number of coupled trajectories is *2* and 3, **init_coefs** can be given *[[1.0, 0.0], [1.0, 0.0], [1.0, 0.0]]*.
+  For example, if ``molecule.nst`` = *2* and the number of coupled trajectories is 3, **init_coefs** can be given *[[1.0, 0.0], [1.0, 0.0], [1.0, 0.0]]*.
   If the parameter is not given, the BO coefficients and the density matrix are initialized according to **istates**.
 
 \

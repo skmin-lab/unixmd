@@ -74,7 +74,8 @@ Detailed description of parameters
 
 - **istate** *(integer)* - Default: *0* (Ground state)
 
-  This parameter specifies the initial running state. The possible range is from *0* to ``molecule.nst - 1``.
+  The BO coefficient and BO density matrix are initialized according to **istate**, implying that the BO coefficient of **istate** is initially set to 1.0. 
+  The possible range is from *0* to ``molecule.nst - 1``.
 
 \
 
