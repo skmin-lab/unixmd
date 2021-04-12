@@ -18,14 +18,12 @@ The important thing is that sampled geometry files must be named in 'sample_(num
 **Ex.** Example of 'run_base.py' which reads geometry from 'geom.xyz'.
 
 .. code-block:: python
-  from molecule import Molecule
-  import qm, mqc
-  from thermostat import *
-  from misc import data
 
+  ...
   g = open('geom.xyz', 'r')
   geom = g.read()
   g.close()
+  ...
 
 +---------------------+----------------------------------------------------------------+
 | Option              | Description                                                    |
