@@ -287,9 +287,8 @@ class Molecule(object):
             self.rho[istate, istate] = 1. + 0.j
         else:
             if (len(coef) != self.nst):
-                # TODO : how to express "number of initial coefficients"?
                 error_message = "Number of initial coefficients must be equal to number of states!"
-                error_vars = f"number of initial coefficients = {len(coef)}, nstates = {self.nst}"
+                error_vars = f"len(init_coef) = {len(coef)}, nstates = {self.nst}"
                 raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
             else:
                 for ist in range(self.nst):
@@ -298,9 +297,8 @@ class Molecule(object):
                     elif (isinstance(coef[ist], complex)):
                         self.states[ist].coef = coef[ist]
                     else:
-                        # TODO : numbering can begin from 0 or 1, this should be merged?
                         error_message = "Type of coefficient must be float or complex!"
-                        error_vars = f"coef[{ist}] = {coef[ist]}"
+                        error_vars = f"init_coef[{ist}] = {coef[ist]}"
                         raise TypeError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
                         
                 for ist in range(self.nst):
