@@ -16,6 +16,7 @@ class CASSCF(Columbus):
         :param integer scf_max_iter: Maximum number of SCF iterations
         :param integer mcscf_en_tol: Energy convergence for (SA-)CASSCF iterations
         :param integer mcscf_max_iter: Maximum number of (SA-)CASSCF iterations
+        :param integer state_avg: Number of averaged state for (SA-)CASSCF
         :param integer cpscf_grad_tol: Gradient tolerance for CP-CASSCF equations
         :param integer cpscf_max_iter: Maximum number of iterations for CP-CASSCF equations
         :param integer active_elec: Number of electrons in active space
@@ -25,7 +26,7 @@ class CASSCF(Columbus):
     """
     def __init__(self, molecule, basis_set="6-31g*", memory=500, \
         guess="hf", guess_file="./mocoef", scf_en_tol=9, scf_max_iter=40, \
-        mcscf_en_tol=8, mcscf_max_iter=100, cpscf_grad_tol=6, cpscf_max_iter=100, \
+        mcscf_en_tol=8, mcscf_max_iter=100, state_avg=None, cpscf_grad_tol=6, cpscf_max_iter=100, \
         active_elec=2, active_orb=2, qm_path="./", version="7.0"):
         # Initialize Columbus common variables
         super(CASSCF, self).__init__(molecule, basis_set, memory, qm_path, version)
@@ -40,6 +41,14 @@ class CASSCF(Columbus):
         # HF calculation for initial guess of CASSCF calculation
         self.scf_en_tol = scf_en_tol
         self.scf_max_iter = scf_max_iter
+        self.state_avg = state_avg
+        if (self.state_avg == None):
+            # Set number of state-averaging to number of states
+            self.state_avg = molecule.nst
+        else:
+            if (self.state_avg < molecule.nst):
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) Too small number of state-averaging! {self.state_avg}")
+
 
         # CASSCF calculation
         self.mcscf_en_tol = mcscf_en_tol
@@ -228,8 +237,8 @@ class CASSCF(Columbus):
                 new_mcscf += mcscfin[i]
 
         if (not calc_force_only):
-            new_mcscf += f"  NAVST(1) = {molecule.nst},\n"
-            for i in range(molecule.nst):
+            new_mcscf += f"  NAVST(1) = {self.state_avg},\n"
+            for i in range(self.state_avg):
                 new_mcscf += f"  WAVST(1,{i + 1})=1 ,\n"
             new_mcscf += " &end\n"
 
