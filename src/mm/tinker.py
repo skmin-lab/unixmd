@@ -78,10 +78,8 @@ class Tinker(MM_calculator):
                 lines = f_xyz.readlines()
                 # Check the number of lines; Read only non-periodic format for tinker.xyz file
                 if (len(lines) != molecule.nat + 1):
-                    # TODO : Search error type in python, ValueError?
-                    # TODO : I add f-string to error_message
-                    error_message = f"Only non-periodic xyz file needed! Check {self.xyz_file}"
-                    error_vars = f"number of lines != {molecule.nat + 1}"
+                    error_message = "PyUNIxMD reads only non-periodic xyz file, the number of lines is not matched with non-periodic xyz file!"
+                    error_vars = f"number of lines != {molecule.nat + 1}, xyz_file = {self.xyz_file}"
                     raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
                 iline = 1
@@ -112,9 +110,8 @@ class Tinker(MM_calculator):
                         field = line.split()
                         prm_file = field[1]
                 if (not is_prm):
-                    # TODO : Search error type in python, ValueError?
-                    error_message = "Force field file must be set in key file!"
-                    error_vars = f"parameters != {self.key_file}"
+                    error_message = "To decide force field parameters, the keyword 'parameters' must exists in the key file!"
+                    error_vars = f"key_file = {self.key_file}"
                     raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
             # Save point charge values of current parameter file for electrostatic embedding

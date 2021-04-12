@@ -92,7 +92,6 @@ class MRCI(Columbus):
 
         # Check the closed shell for systems
         if (not int(molecule.nelec) % 2 == 0):
-            # TODO : In this case, name of variable is not determined, how to express?
             error_message = "Only closed shell configuration supported, check charge!"
             error_vars = f"Molecule.nelec = {int(molecule.nelec)}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
