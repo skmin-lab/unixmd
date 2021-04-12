@@ -56,9 +56,8 @@ class MQC(object):
 
         # Check number of state and initial state
         if (self.istate >= self.mol.nst):
-            # TODO : use original parameter for nstates used in Molecule class?
             error_message = "Index for initial state must be smaller than number of states!"
-            error_vars = f"istate = {self.istate}, nstates = {self.mol.nst}"
+            error_vars = f"istate = {self.istate}, Molecule.nstates = {self.mol.nst}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # None for BOMD case
@@ -470,14 +469,12 @@ class MQC(object):
 
         if (do_qmmm):
             if (qm.embedding != mm.embedding):
-                # TODO : how to distinguish qm.embedding and mm.embedding? Same parameter name
                 error_message = "Inconsistent charge embedding between QM and MM objects given!"
-                error_vars = f"embedding = {qm.embedding}, embedding = {mm.embedding}"
+                error_vars = f"(QM) embedding = {qm.embedding}, (MM) embedding = {mm.embedding}"
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
-            # TODO : how to express local variable name (qm_prog, qm_method, mm_prog)?
             error_message = "Incompatible QM and MM objects for QM/MM calculation given!"
-            error_vars = f"qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}, mm_prog = {mm.mm_prog}"
+            error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}, (MM) mm_prog = {mm.mm_prog}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
 
