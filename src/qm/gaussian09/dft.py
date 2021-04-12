@@ -271,8 +271,7 @@ class DFT(Gaussian09):
 
         # Check the convergence of the calculation
         if ("Convergence failure" in log):
-            # TODO : In this case, name of variable is not determined, how to express?
-            error_message = "SCF iteration not converged!"
+            error_message = "SCF iteration not converged, please see the output carefully!"
             error_vars = f"output file = {self.scr_qm_dir}/{file_name}"
             raise Exception (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
