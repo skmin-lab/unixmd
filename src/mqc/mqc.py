@@ -210,13 +210,13 @@ class MQC(object):
             :param object mm: MM object containing MM calculation infomation
             :param string restart: Option for controlling dynamics restarting
         """
-        # Print PyUNI-xMD version
+        # Print PyUNIxMD version
         cur_time = datetime.datetime.now()
         cur_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
         prog_info = textwrap.dedent(f"""\
         {"-" * 68}
 
-        {"PyUNI-xMD version 20.1":>43s}
+        {"PyUNIxMD version 20.1":>43s}
 
         {"< Developers >":>40s}
         {" " * 4}Seung Kyu Min,  In Seong Lee,  Jong-Kwon Ha,  Daeho Han,
@@ -224,10 +224,10 @@ class MQC(object):
 
         {"-" * 68}
 
-        {" " * 4}Please cite UNI-xMD as follows:
+        {" " * 4}Please cite PyUNIxMD as follows:
         {" " * 4}This is article
 
-        {" " * 4}PyUNI-xMD begins on {cur_time}
+        {" " * 4}PyUNIxMD begins on {cur_time}
         """)
         print (prog_info, flush=True)
 
@@ -361,8 +361,9 @@ class MQC(object):
 
         # file header for XF-based methods
         if (self.md_type == "SHXF"):
-            tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
-            typewriter(tmp, unixmd_dir, "DOTPOPD", "w")
+            if (self.verbosity >= 1):
+                tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
+                typewriter(tmp, unixmd_dir, "DOTPOPDEC", "w")
 
     def write_md_output(self, unixmd_dir, istep):
         """ Write output files

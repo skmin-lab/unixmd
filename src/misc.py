@@ -65,10 +65,10 @@ def call_name():
 def typewriter(string, dir_name, filename, mode):
     """ Function to open/write any string in dir_name/filename
 
-        :param string string: text string for input file
-        :param string dir_name: directory of input file
-        :param string filename: filename of input file
-        :param string mode: fileopen mode
+        :param string string: Text string for output file
+        :param string dir_name: Directory of output file
+        :param string filename: Filename of output file
+        :param string mode: Fileopen mode
     """
     tmp_name = os.path.join(dir_name, filename)
     with open(tmp_name, mode) as f:

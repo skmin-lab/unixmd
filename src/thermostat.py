@@ -307,7 +307,7 @@ class NHC(Thermostat):
 
         if (self.coup_str != None):
             thermostat_info += textwrap.indent(textwrap.dedent(f"""\
-              Coupling Strength  (cm^-1) = {self.coup_str:>18.3f}
+              Coupling Strength (cm^-1)  = {self.coup_str:>18.3f}
             """), "  ")
 
         if (self.time_scale != None):
