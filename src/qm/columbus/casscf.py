@@ -49,8 +49,9 @@ class CASSCF(Columbus):
             self.state_avg = molecule.nst
         else:
             if (self.state_avg < molecule.nst):
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) Too small number of state-averaging! {self.state_avg}")
-
+                error_message = "Number of state-averaging must be equal or larger than number of states!"
+                error_vars = f"state_avg = {self.state_avg}"
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # CASSCF calculation
         self.mcscf_en_tol = mcscf_en_tol
