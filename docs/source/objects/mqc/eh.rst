@@ -19,7 +19,7 @@ Thus, the driving force is given by
 
 .. math::
 
-   \mathbf{F}_{\nu}^{(I)}=-\sum_{i} \nabla_{\nu}\mathbf{E}_{i}^{(I)}(t) + \sum_{i\neq j} C_{i}^{(I)}(t)C_{j}^{(I)}(t)(E_{i}^{(I)}(t)-E_{j}^{(I)}(t))\mathbf{d}_{ij\nu}^{(I)}(t),
+   \mathbf{F}_{\nu}^{(I)}=-\sum_{i} \nabla_{\nu}\mathbf{E}_{i}^{(I)}(t) + \sum_{i\neq j} C_{i}^{(I)\ast}(t)C_{j}^{(I)}(t)(E_{i}^{(I)}(t)-E_{j}^{(I)}(t))\mathbf{d}_{ij\nu}^{(I)}(t),
 
 where :math:`\mathbf{d}_{ij\nu}^{(I)}(t) = \int d \underline{\underline{\mathbf{r}}}\Phi_{i}(\underline{\underline{\mathbf{r}}};\underline{\underline{\mathbf{R}}}^{(I)}(t))\nabla_{\nu}\Phi_{j}(\underline{\underline{\mathbf{r}}};\underline{\underline{\mathbf{R}}}^{(I)}(t))` is the nonadiabatic couping vector between the :math:`i`-th and the :math:`j`-th adiabatic state.
 
@@ -74,7 +74,8 @@ Detailed description of parameters
 
 - **istate** *(integer)* - Default: *0* (Ground state)
 
-  This parameter specifies the initial running state. The possible range is from *0* to ``molecule.nst - 1``.
+  The BO coefficient and BO density matrix are initialized according to **istate**, implying that the BO coefficient of **istate** is initially set to 1.0. 
+  The possible range is from *0* to ``molecule.nst - 1``.
 
 \
 
@@ -133,6 +134,7 @@ Detailed description of parameters
 
   This parameter defines the initial BO coefficients.
   The elements can be either real or complex values.
+  The length of this paramter should be same to ``molecule.nst``.
   If the parameter is not given, the BO coefficients and the density matrix are initialized according to **istate**.
 
 \
@@ -156,5 +158,5 @@ Detailed description of parameters
 
   This parameter determines the verbosity of the output files and stream.  
 
-  + **verbosity** :math:`\geq` *1*: Prints potential energy of all BO states.
   + **verbosity** :math:`\geq` *2*: Writes the NACVs ('NACV\_\ :math:`i`\_\ :math:`j`').
+

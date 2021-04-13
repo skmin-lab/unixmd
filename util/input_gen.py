@@ -3,12 +3,12 @@ import argparse
 import shutil
 
 def input_gen():
-    """ Python utility script for UNI-xMD input generator
+    """ Python utility script for PyUNIxMD input generator
         In this script, input trajectories are generated from sampled geometry files and running script
         WARNING: Sampled geom files must be named in "sample_(number).xyz"
                  running script must be read geom from "geom.xyz" file
     """
-    parser = argparse.ArgumentParser(description="Python script for UNI-xMD input generator", \
+    parser = argparse.ArgumentParser(description="Python script for PyUNIxMD input generator", \
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-d', '-dir', action='store', dest='sample_dir', type=str, default="Sampled", \
         help="Directory name of sampled files, sampled files must be written in extended xyz format.")

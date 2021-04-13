@@ -4,85 +4,108 @@ CTMQC
 
 Coupled-trajectory mixed quantum-classical (CTMQC) method is included in PyUNIxMD package.
 Electronic equation of motion in CTMQC contains "decoherence term" which is derived from exact factorization,
-in addition to Eherenfest term, i.e.
+in addition to Eherenfest term. The propagation of nuclei and electrons is done as follows.
 
-Here, add equation of motions for nuclei.
+.. math::
 
-< Nuclei >
+   \mathbf{F}_{\nu}^{(I)}=-\sum_{i} \nabla_{\nu}\mathbf{E}_{i}^{(I)}(t) + \sum_{i\neq j} C_{i}^{(I)\ast}(t)C_{j}^{(I)}(t)(E_{i}^{(I)}(t)-E_{j}^{(I)}(t))\mathbf{d}_{ij\nu}^{(I)}(t)
+   - \sum_{i}|C_{i}^{(I)}(t)|^2\left(\sum^{N_n}_{\nu'=1}\frac{2}{\hbar M_{\nu'}}\mathbf{Q}^{(I)}_{\nu'}(t)\cdot\mathbf{f}^{(I)}_{i,\nu'}(t)\right)
+   \left[\sum_{j}|C_{j}^{(I)}(t)|^2\mathbf{f}_{j,\nu}^{(I)}(t)-\mathbf{f}_{i,\nu}^{(I)}(t)\right],
 
-Here, add equation of motions for electrons.
+.. math::
 
-< Electrons >
+    \dot C^{(I)}_k(t) = -\frac{i}{\hbar}E^{(I)}_k(t)C^{(I)}_k(t)
+    - \sum_j\sum_{\nu}{\bf d}^{(I)}_{kj\nu}(t)\cdot\dot{\bf R}^{(I)}_\nu(t)C^{(I)}_j(t)
+    - \sum_{\nu}^{N_n}\frac{\mathbf{Q}^{(I)}_{\nu}(t)}{\hbar M_{\nu}}\cdot\left[\sum_{j}|C^{(I)}_{j}(t)|^2\mathbf{f}^{(I)}_{j,\nu}(t)-\mathbf{f}^{(I)}_{k,\nu}(t)\right]C^{(I)}_{k}.
 
-Detailed description of CTMQC method is in the ref.?.
+Detailed description of CTMQC method is in the :cite:`Agostini2016`.
 
-+----------------------------+------------------------------------------------+-----------------+
-| Parameters                 | Work                                           | Default         |
-+============================+================================================+=================+
-| **molecule**               | Molecule object                                |                 |
-| (:class:`Molecule`)        |                                                |                 |
-+----------------------------+------------------------------------------------+-----------------+
-| **thermostat**             | Thermostat object                              | *None*          |
-| (:class:`Thermostat`)      |                                                |                 |
-+----------------------------+------------------------------------------------+-----------------+
-| **istates**                | Initial states                                 | *None*          |
-| *(integer, list)*          |                                                |                 |
-+----------------------------+------------------------------------------------+-----------------+
-| **dt**                     | Time interval                                  | *0.5*           |
-| *(double)*                 |                                                |                 |
-+----------------------------+------------------------------------------------+-----------------+
-| **nsteps**                 | Total step of nuclear propagation              | *1000*          |
-| *(integer)*                |                                                |                 |
-+----------------------------+------------------------------------------------+-----------------+
-| **nesteps**                | Total step of electronic propagation           | *20*            |
-| *(integer)*                |                                                |                 |
-+----------------------------+------------------------------------------------+-----------------+
-| **rho_threshold**          | Electronic density threshold for decoherence   | *0.01*          |
-| *(double)*                 | term calculation                               |                 |
-+----------------------------+------------------------------------------------+-----------------+
-| **obj**                    | Representation for electronic state            | *'coefficient'* |
-| *(string)*                 |                                                |                 |
-+----------------------------+------------------------------------------------+-----------------+
-| **propagator**             | Electronic propagator                          | *'rk4'*         |
-| *(string)*                 |                                                |                 |
-+----------------------------+------------------------------------------------+-----------------+
-| **dist_threshold**         | Electronic density threshold for decoherence   | *0.25*          |
-| *(double)*                 | term calculation                               |                 |
-+----------------------------+------------------------------------------------+-----------------+
-| **dist_cutoff**            | Electronic density threshold for decoherence   | *0.5*           |
-| *(double)*                 | term calculation                               |                 |
-+----------------------------+------------------------------------------------+-----------------+
-| **dist_parameter**         | Electronic density threshold for decoherence   | *10.0*          |
-| *(double)*                 | term calculation                               |                 |
-+----------------------------+------------------------------------------------+-----------------+
-| **sigma**                  | Electronic density threshold for decoherence   | *0.3*           |
-| *(double)*                 | term calculation                               |                 |
-+----------------------------+------------------------------------------------+-----------------+
-| **l_print_dm**             | Logical to print BO population and coherence   | *True*          |
-| *(boolean)*                |                                                |                 |
-+----------------------------+------------------------------------------------+-----------------+
-| **l_adj_nac**              | Logical to adjust nonadiabatic coupling        | *True*          |
-| *(boolean)*                |                                                |                 |
-+----------------------------+------------------------------------------------+-----------------+
-| **init_coefs**             | Initial BO coefficients                        | *None*          |
-| *(double/complex, list)*   |                                                |                 |
-+----------------------------+------------------------------------------------+-----------------+
-| **unit_dt**                | Unit of time step                              | *'fs'*          |
-| *(string)*                 |                                                |                 |
-+----------------------------+------------------------------------------------+-----------------+
-| **out_freq**               | Frequency of printing output                   | *1*             |
-| *(integer)*                |                                                |                 |
-+----------------------------+------------------------------------------------+-----------------+
-| **verbosity**              | Verbosity of output                            | *2*             | 
-| *(integer)*                |                                                |                 |
-+----------------------------+------------------------------------------------+-----------------+
+.. note:: We strongly recommend that users see detailed description of parameter.
+
++--------------------------------+------------------------------------------------+-----------------+
+| Parameters                     | Work                                           | Default         |
++================================+================================================+=================+
+| **molecules**                  | Molecule object                                |                 |
+| *(*:class:`Molecule`, *list)*  |                                                |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **thermostat**                 | Thermostat object                              | *None*          |
+| (:class:`Thermostat`)          |                                                |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **istates**                    | Initial states                                 | *None*          |
+| *(integer, list)*              |                                                |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **dt**                         | Time interval                                  | *0.5*           |
+| *(double)*                     |                                                |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **nsteps**                     | Total step of nuclear propagation              | *1000*          |
+| *(integer)*                    |                                                |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **nesteps**                    | Total step of electronic propagation           | *20*            |
+| *(integer)*                    |                                                |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **elec_object**                | Electronic equation of motions                 | *'coefficient'* |
+| *(string)*                     |                                                |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **propagator**                 | Electronic propagator                          | *'rk4'*         |
+| *(string)*                     |                                                |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **l_print_dm**                 | Logical to print BO population and coherence   | *True*          |
+| *(boolean)*                    |                                                |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **l_adj_nac**                  | Logical to adjust nonadiabatic coupling        | *True*          |
+| *(boolean)*                    |                                                |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **rho_threshold**              | Electronic density threshold for decoherence   | *0.01*          |
+| *(double)*                     | term calculation                               |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **dist_cutoff**                | Distance cutoff for quantum momentum           | *0.5*           |
+| *(double)*                     | calculation                                    |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **sigma_threshold**            | Sigma thershold for quantum momentum           | *0.25*          |
+| *(double)*                     | calculation                                    |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **dist_parameter**             | Distance parameter to determine quantum        | *10.0*          |
+| *(double)*                     | momentum center                                |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **sigma**                      | Sigma to determine qunatum momentum            | *0.3*           |
+| *(double)*                     | center                                         |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **init_coefs**                 | Initial BO coefficients                        | *None*          |
+| *(double/complex, 2D list)*    |                                                |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **unit_dt**                    | Unit of time step                              | *'fs'*          |
+| *(string)*                     |                                                |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **out_freq**                   | Frequency of printing output                   | *1*             |
+| *(integer)*                    |                                                |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **verbosity**                  | Verbosity of output                            | *0*             | 
+| *(integer)*                    |                                                |                 |
++--------------------------------+------------------------------------------------+-----------------+
 
 Detailed description of parameters
 ''''''''''''''''''''''''''''''''''''
 
-- **istates** *(integer)* - Default: *0* (Ground state)
+.. note:: CTMQC requires multiple trajectories, different to other MQC methods. Therefore, The data type of **molecules**, and **istates** must be list. 
+   Also, the date type of elements in **init_coefs** must be list.
 
-  This parameter specifies the initial running state. The possible range is from *0* to ``molecule.nst - 1``.
+- **molecules** 
+  
+  This parameter defines molecular information for coupled trajectories.
+  The data type of **molecules** must be list of which the elements are objects for :ref:`Molecule <Objects Molecule>`.
+  For example, if the number of coupled trajectories is 3, then **molecules** can be given *[mol1, mol2, mol3]* 
+  where *mol1*, *mol2*, and *mol3* are objects for :ref:`Molecule <Objects Molecule>`.
+
+\
+
+- **istates** *(integer, list)* - Default: *None*
+
+  The BO coefficients and BO density matrices for coupled trajectories are initialized according to this parameter. 
+  The data type of **istates** must be list of which the elements are integer.
+  Hence, the number of elements in **istates** must be same to the number of coupled trajectories.
+  The possible range for element in **istates** is from *0* to ``molecule.nst - 1``.
+  For example, if the number of coupled trajectories is 3, then **istates** can be *[0, 0, 0]* 
+  which means BO coefficients of ground state for all trajectories are initially set to 1.0.
 
 \
 
@@ -107,18 +130,11 @@ Detailed description of parameters
 
 \
 
-- **rho_threshold** *(double)* - Default: *0.01*
+- **elec_object** *(string)* - Default: *'coefficient'*
 
-  This parameter defines the numerical threshold for the coherence. 
-  Specifically, if the populations of two or more states are larger than this value, the electronic state is 'coherent' and the decoherence term is calculated.
+  The **elec_object** parameter determines the representation for the electronic state.
+  Now, CTMQC is only vaild for *'coefficient'*.
 
-\
-
-- **obj** *(string)* - Default: *'density'*
-
-  The **obj** parameter determines the representation for the electronic state.
-
-  + *'density'*: Propagates the density matrix elements, i.e., :math:`\{\rho_{ij}^{(I)}(t)\}`
   + *'coefficient'*: Propagates the coefficients, i.e., :math:`\{C_{i}^{(I)}(t)\}`
 
 \
@@ -127,34 +143,6 @@ Detailed description of parameters
 
   This parameter determines the numerical integration method for the electronic equation of motion.
   Currently, only the RK4 algorithm (*'rk4'*) is available.
-
-\
-
-- **dist_threshold** *(double)* - Default: *0.25*
-
-  This parameter defines the numerical threshold for the coherence. 
-  Specifically, if the populations of two or more states are larger than this value, the electronic state is 'coherent' and the decoherence term is calculated.
-
-\
-
-- **dist_cutoff** *(double)* - Default: *0.5*
-
-  This parameter defines the numerical threshold for the coherence. 
-  Specifically, if the populations of two or more states are larger than this value, the electronic state is 'coherent' and the decoherence term is calculated.
-
-\
-
-- **dist_parameter** *(double)* - Default: *10.0*
-
-  This parameter defines the numerical threshold for the coherence. 
-  Specifically, if the populations of two or more states are larger than this value, the electronic state is 'coherent' and the decoherence term is calculated.
-
-\
-
-- **sigma** *(double)* - Default: *0.3*
-
-  This parameter defines the numerical threshold for the coherence. 
-  Specifically, if the populations of two or more states are larger than this value, the electronic state is 'coherent' and the decoherence term is calculated.
 
 \
 
@@ -172,11 +160,48 @@ Detailed description of parameters
 
 \
 
-- **init_coefs** *(double/complex, list)* - Default: *None*
+- **rho_threshold** *(double)* - Default: *0.01*
 
-  This parameter defines the initial BO coefficients.
-  The elements can be either real or complex values.
-  If the parameter is not given, the BO coefficients and the density matrix are initialized according to **istate**.
+  This parameter defines the numerical density threshold for the coherence. 
+  Specifically, if the populations of two or more states are larger than this value, the electronic state is 'coherent' and the decoherence term is calculated.
+
+\
+
+- **dist_cutoff** *(double)* - Default: *0.5*
+
+  This parameter defines the distance cutoff to construct Gaussian wavepacket from coupled trajectories.
+  The wavepacket for an atom :math:`\nu` in a given trajectory is constructed by using trajectories in which an atom :math:`\nu'` is in **dist_cutoff** 
+  from the atom :math:`\nu`.
+
+\
+
+- **sigma_threshold** *(double)* - Default: *0.25*
+
+  This parameter defines the sigma threshold for quantum momentum calculation.
+
+\
+
+- **dist_parameter** *(double)* - Default: *10.0*
+
+  This parameter defines distance parameter to determine position of quantum momentum center.
+  If a position difference between an atom :math:`\nu` in quantum momentum center and a given trajectory is larger than **dist_parameter** :math:`\times` **sigma**, quantum momentum is set to *0.0*.
+
+\
+
+- **sigma** *(double)* - Default: *0.3*
+
+  This parameter defines sigma to determine position of quantum momentum center. 
+  If a difference between position of an atom :math:`\nu` in quantum momentum center and a given trajectory is larger than **dist_parameter** :math:`\times` **sigma**, quantum momentum is set to *0.0*.
+
+\
+
+- **init_coefs** *(double/complex, 2D list)* - Default: *None*
+
+  This parameter defines the initial BO coefficients. 
+  The data type of element in this parameter must be list of which the elements are either real or complex values.
+  The length of list, which is element of **init_coefs**, should be same to ``molecule.nst``.
+  For example, if ``molecule.nst`` = *2* and the number of coupled trajectories is 3, **init_coefs** can be given *[[1.0, 0.0], [1.0, 0.0], [1.0, 0.0]]*.
+  If the parameter is not given, the BO coefficients and the density matrix are initialized according to **istates**.
 
 \
 

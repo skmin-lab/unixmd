@@ -9,7 +9,7 @@ cdef extern from "rk4_xf.c":
         bint *l_coh, double *mass, double *energy, double *energy_old, double *sigma, \
         double **nacme, double **nacme_old, double **pos, double **qmom, double ***aux_pos, \
         double ***phase, double complex *coef, double complex **rho, int verbosity, \
-        double *dotpopd)
+        double *dotpopdec)
 
 def el_run(md):
     cdef:
@@ -27,7 +27,7 @@ def el_run(md):
         double ***phase
         double complex *coef
         double complex **rho
-        double *dotpopd
+        double *dotpopdec
 
         bytes py_bytes
         int ist, jst, nst, nesteps, iat, aux_nat, aux_ndim, verbosity
@@ -70,7 +70,8 @@ def el_run(md):
     
     # Debug related
     verbosity = md.verbosity
-    dotpopd = <double*> PyMem_Malloc(nst * sizeof(double))
+    if (verbosity >= 1):
+        dotpopdec = <double*> PyMem_Malloc(nst * sizeof(double))
 
     # Assign variables from python to C
     for ist in range(nst):
@@ -121,7 +122,7 @@ def el_run(md):
     # Propagate electrons depending on the propagator
     if (md.propagator == "rk4"):
         rk4(aux_nat, aux_ndim, nst, nesteps, dt, elec_object_c, l_coh, mass, energy, \
-            energy_old, sigma, nacme, nacme_old, pos, qmom, aux_pos, phase, coef, rho, verbosity, dotpopd)
+            energy_old, sigma, nacme, nacme_old, pos, qmom, aux_pos, phase, coef, rho, verbosity, dotpopdec)
 
     # Assign variables from C to python
     if (md.elec_object == "coefficient"):
@@ -146,8 +147,9 @@ def el_run(md):
         PyMem_Free(rho)
 
     # Debug
-    for ist in range(nst):
-        md.dotpopd[ist] = dotpopd[ist]
+    if (verbosity >= 1):
+        for ist in range(nst):
+            md.dotpopdec[ist] = dotpopdec[ist]
 
     if (verbosity >= 2):
         for iat in range(aux_nat):
@@ -186,5 +188,6 @@ def el_run(md):
     PyMem_Free(aux_pos)
     PyMem_Free(phase)
 
-    PyMem_Free(dotpopd)
+    if (verbosity >= 1):
+        PyMem_Free(dotpopdec)
 

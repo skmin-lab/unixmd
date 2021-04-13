@@ -170,13 +170,6 @@ class Eh(MQC):
         INIT = f" #INFO{'STEP':>8s}{'Kinetic(H)':>15s}{'Potential(H)':>15s}{'Total(H)':>13s}{'Temperature(K)':>17s}{'norm':>8s}"
         dynamics_step_info += INIT
 
-        # Print DEBUG1 for each step
-        if (self.verbosity >= 1):
-            DEBUG1 = f" #DEBUG1{'STEP':>6s}"
-            for ist in range(self.mol.nst):
-                DEBUG1 += f"{'Potential_':>14s}{ist}(H)"
-            dynamics_step_info += "\n" + DEBUG1
-
         print (dynamics_step_info, flush=True)
 
     def print_step(self, istep):
@@ -196,10 +189,4 @@ class Eh(MQC):
         INFO += f"{norm:11.5f}"
         print (INFO, flush=True)
 
-        # Print DEBUG1 for each step
-        if (self.verbosity >= 1):
-            DEBUG1 = f" DEBUG1{istep + 1:>7d}"
-            for ist in range(self.mol.nst):
-                DEBUG1 += f"{self.mol.states[ist].energy:17.8f} "
-            print (DEBUG1, flush=True)
 

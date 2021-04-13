@@ -49,6 +49,9 @@ In the current version of PyUNIxMD, only (SA-)CASSCF method is available.
 | **mcscf_max_iter**     | Maximum number of (SA-)CASSCF iterations            | *100*          |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
+| **state_avg**          | Number of averaged state for (SA-)CASSCF            | *None*         |
+| *(integer)*            |                                                     |                |
++------------------------+-----------------------------------------------------+----------------+
 | **cpscf_grad_tol**     | Gradient tolerance for CP-CASSCF equations          | *6*            |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
@@ -123,6 +126,12 @@ Detailed description of parameters
 - **mcscf_max_iter** *(integer)* - Default: *100*
 
   This parameter determines the maximum number of The (SA-)CASSCF iterations.
+
+\
+
+- **state_avg** *(integer)* - Default: *None*
+
+  This parameter determines the number of averaged states for (SA-)CASSCF.
 
 \
 

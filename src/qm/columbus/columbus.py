@@ -35,42 +35,38 @@ class Columbus(QM_calculator):
         # Check the atomic species with sorted command
         self.atom_type = sorted(set(molecule.symbols))
 
-        # Check basis sets
-        for itype in self.atom_type:
-            try:
-                pass
-            except:
-                # TODO : Error messsage must be changed after test
-                error_message = "Data not found: Atom {itype} with basis!"
-                error_vars = f"basis_set = {self.basis_set}"
-                raise KeyError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
-
         # Set basis sets information
-        if (self.basis_set == "cc-pvdz"):
-            self.basis_nums = "\n".join([f"{cc_pvdz[f'{itype}']}" for itype in self.atom_type])
-        elif (self.basis_set == "cc-pvtz"):
-            self.basis_nums = "\n".join([f"{cc_pvtz[f'{itype}']}" for itype in self.atom_type])
-        elif (self.basis_set == "cc-pvqz"):
-            self.basis_nums = "\n".join([f"{cc_pvqz[f'{itype}']}" for itype in self.atom_type])
-        elif (self.basis_set == "3-21g*"):
-            self.basis_nums = "\n".join([f"{t_21gs[f'{itype}']}" for itype in self.atom_type])
-        elif (self.basis_set == "3-21+g*"):
-            self.basis_nums = "\n".join([f"{t_21pgs[f'{itype}']}" for itype in self.atom_type])
-        elif (self.basis_set == "6-31g"):
-            self.basis_nums = "\n".join([f"{s_31g[f'{itype}']}" for itype in self.atom_type])
-        elif (self.basis_set == "6-31g*"):
-            self.basis_nums = "\n".join([f"{s_31gs[f'{itype}']}" for itype in self.atom_type])
-        elif (self.basis_set == "6-31+g*"):
-            self.basis_nums = "\n".join([f"{s_31pgs[f'{itype}']}" for itype in self.atom_type])
-        elif (self.basis_set == "6-311g*"):
-            self.basis_nums = "\n".join([f"{s_311gs[f'{itype}']}" for itype in self.atom_type])
-        elif (self.basis_set == "6-311g+*"):
-            self.basis_nums = "\n".join([f"{s_311pgs[f'{itype}']}" for itype in self.atom_type])
-        else:
+        try:
+            if (self.basis_set == "cc-pvdz"):
+                self.basis_nums = "\n".join([f"{cc_pvdz[f'{itype}']}" for itype in self.atom_type])
+            elif (self.basis_set == "cc-pvtz"):
+                self.basis_nums = "\n".join([f"{cc_pvtz[f'{itype}']}" for itype in self.atom_type])
+            elif (self.basis_set == "cc-pvqz"):
+                self.basis_nums = "\n".join([f"{cc_pvqz[f'{itype}']}" for itype in self.atom_type])
+            elif (self.basis_set == "3-21g*"):
+                self.basis_nums = "\n".join([f"{t_21gs[f'{itype}']}" for itype in self.atom_type])
+            elif (self.basis_set == "3-21+g*"):
+                self.basis_nums = "\n".join([f"{t_21pgs[f'{itype}']}" for itype in self.atom_type])
+            elif (self.basis_set == "6-31g"):
+                self.basis_nums = "\n".join([f"{s_31g[f'{itype}']}" for itype in self.atom_type])
+            elif (self.basis_set == "6-31g*"):
+                self.basis_nums = "\n".join([f"{s_31gs[f'{itype}']}" for itype in self.atom_type])
+            elif (self.basis_set == "6-31+g*"):
+                self.basis_nums = "\n".join([f"{s_31pgs[f'{itype}']}" for itype in self.atom_type])
+            elif (self.basis_set == "6-311g*"):
+                self.basis_nums = "\n".join([f"{s_311gs[f'{itype}']}" for itype in self.atom_type])
+            elif (self.basis_set == "6-311g+*"):
+                self.basis_nums = "\n".join([f"{s_311pgs[f'{itype}']}" for itype in self.atom_type])
+            else:
+                # TODO : Error messsage must be changed after test
+                error_message = "No basis set in colbasis.py!"
+                error_vars = f"basis_set = {self.basis_set}"
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+        except KeyError:
             # TODO : Error messsage must be changed after test
-            error_message = "No basis set in colbasis.py!"
+            error_message = "Data not found: Atom {itype} with basis!"
             error_vars = f"basis_set = {self.basis_set}"
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+            raise KeyError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         if (isinstance(self.version, str)):
             if (self.version != "7.0"):
@@ -81,5 +77,4 @@ class Columbus(QM_calculator):
             error_message = "Type of version must be string!"
             error_vars = f"version = {self.version}"
             raise TypeError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
-
 

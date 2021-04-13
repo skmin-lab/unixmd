@@ -48,7 +48,7 @@ class Rescale1(Thermostat):
         md.mol.vel *= alpha
 
         # Rescale the auxiliary velocities
-        if (md.md_type in ["SHXF", "EhXF"]):
+        if (md.md_type in ["SHXF"]):
             md.aux.vel *= alpha
             md.aux.vel_old *= alpha
 
@@ -93,7 +93,7 @@ class Rescale2(Thermostat):
             md.mol.vel *= alpha
 
             # Rescale the auxiliary velocities
-            if (md.md_type in ["SHXF", "EhXF"]):
+            if (md.md_type in ["SHXF"]):
                 md.aux.vel *= alpha
                 md.aux.vel_old *= alpha
 
@@ -148,7 +148,7 @@ class Berendsen(Thermostat):
         md.mol.vel *= alpha
 
         # Rescale the auxiliary velocities
-        if (md.md_type in ["SHXF", "EhXF"]):
+        if (md.md_type in ["SHXF"]):
             md.aux.vel *= alpha
             md.aux.vel_old *= alpha
 
@@ -304,7 +304,7 @@ class NHC(Thermostat):
         md.mol.vel *= alpha
 
         # Rescale the auxiliary velocities
-        if (md.md_type in ["SHXF", "EhXF"]):
+        if (md.md_type in ["SHXF"]):
             md.aux.vel *= alpha
             md.aux.vel_old *= alpha
 
@@ -321,7 +321,7 @@ class NHC(Thermostat):
 
         if (self.coup_str != None):
             thermostat_info += textwrap.indent(textwrap.dedent(f"""\
-              Coupling Strength  (cm^-1) = {self.coup_str:>18.3f}
+              Coupling Strength (cm^-1)  = {self.coup_str:>18.3f}
             """), "  ")
 
         if (self.time_scale != None):

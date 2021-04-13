@@ -102,7 +102,7 @@ class MQC(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check if NACVs are calculated for Ehrenfest dynamics
-        if (self.md_type in ["Eh", "EhXF"] and self.mol.l_nacme):
+        if (self.md_type == "Eh" and self.mol.l_nacme):
             error_message = "Ehrenfest dynamics needs evaluation of NACVs, check your QM object!"
             error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
@@ -226,13 +226,13 @@ class MQC(object):
             :param object mm: MM object containing MM calculation infomation
             :param string restart: Option for controlling dynamics restarting
         """
-        # Print PyUNI-xMD version
+        # Print PyUNIxMD version
         cur_time = datetime.datetime.now()
         cur_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
         prog_info = textwrap.dedent(f"""\
         {"-" * 68}
 
-        {"PyUNI-xMD version 20.1":>43s}
+        {"PyUNIxMD version 20.1":>43s}
 
         {"< Developers >":>40s}
         {" " * 4}Seung Kyu Min,  In Seong Lee,  Jong-Kwon Ha,  Daeho Han,
@@ -240,10 +240,10 @@ class MQC(object):
 
         {"-" * 68}
 
-        {" " * 4}Please cite UNI-xMD as follows:
+        {" " * 4}Please cite PyUNIxMD as follows:
         {" " * 4}This is article
 
-        {" " * 4}PyUNI-xMD begins on {cur_time}
+        {" " * 4}PyUNIxMD begins on {cur_time}
         """)
         print (prog_info, flush=True)
 
@@ -303,7 +303,7 @@ class MQC(object):
             dynamics_info += f"  Rescaling after Reject   = {self.hop_reject:>16s}\n"
 
         # Print XF variables
-        if (self.md_type == "SHXF" or self.md_type == "EhXF"):
+        if (self.md_type == "SHXF"):
             # Print density threshold used in decoherence term
             dynamics_info += f"\n  Density Threshold        = {self.rho_threshold:>16.6f}"
             if (self.md_type == "SHXF" and self.l_xf1d):
@@ -376,9 +376,10 @@ class MQC(object):
             typewriter(tmp, unixmd_dir, "SHPROB", "w")
 
         # file header for XF-based methods
-        if (self.md_type == "SHXF" or self.md_type == "EhXF"):
-            tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
-            typewriter(tmp, unixmd_dir, "DOTPOPD", "w")
+        if (self.md_type == "SHXF"):
+            if (self.verbosity >= 1):
+                tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
+                typewriter(tmp, unixmd_dir, "DOTPOPDEC", "w")
 
     def write_md_output(self, unixmd_dir, istep):
         """ Write output files
