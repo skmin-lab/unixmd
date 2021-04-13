@@ -266,14 +266,18 @@ Detailed description of parameters
 
   This parameter determines the initial guess method for the MRCI calculations. 
 
-  + *'hf'*: Initial guess orbitals for the MRCI calculations are generated from the HF calculations.
-  + *'read'*: Initial guess orbitals are read from the 'mocoef' file which contains the orbitals calculated at the previous time step.
+  + *'hf'*: Initial guess orbitals for the MRCI calculations are generated from the HF calculations. 
+    After generating HF orbitals, MCSCF calculation will be performed from converged HF orbitals.
+    The MRCI uses converged MCSCF orbitals as an initial guess.
+  + *'read'*: Initial guess orbitals of MCSCF calculation are read from the 'mocoef' file
+    which contains the converged MCSCF orbitals calculated at the previous time step.
+    The MRCI uses converged MCSCF orbitals as an initial guess.
 
 \
 
 - **guess_file** *(string)* - Default: *'./mocoef'*
 
-  The **guess_file** determines the name of the file containing orbitals for the initial guess of orbitals for the MRCI calculation at the first MD step.
+  The **guess_file** determines the name of the file containing orbitals for the initial guess of orbitals for the MCSCF calculation at the first MD step.
   This parameter is effective only if **guess** = *'read'*.
   If the file does not exist, *'hf'* option is applied for the initial guess for the (SA-)CASSCF calculation at the first MD step.
 
