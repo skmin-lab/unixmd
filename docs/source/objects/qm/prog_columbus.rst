@@ -136,7 +136,8 @@ Detailed description of parameters
 
 - **state_avg** *(integer)* - Default: *None*
 
-  This parameter determines the number of averaged states for (SA-)CASSCF.
+  This parameter determines the number of states to be averaged for (SA-)CASSCF.
+  If it is not determined by a user, **state_avg** = **molecule.nst**.
 
 \
 
@@ -227,7 +228,7 @@ MRCI
 | **frozen_core_orb**    | Number of frozen core orbitals in                   | *0*            |
 | *(integer)*            | doubly occupied space                               |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **frozen_virt_orb**    | Number of forzen virtual orbitals in                | *0*            |
+| **frozen_virt_orb**    | Number of forzen virtual orbitals from the          | *0*            |
 | *(integer)*            | highest unoccupied space                            |                |
 +------------------------+-----------------------------------------------------+----------------+
 | **cpscf_grad_tol**     | Gradient tolerance for CP-MRCI equations            | *6*            |
@@ -310,12 +311,14 @@ Detailed description of parameters
 - **mrci_max_iter** *(integer)* - Default: *None*
 
   This parameter determines the maximum number of The MRCI iterations.
+  If it is not determined by a user, **mrci_max_iter** = 30 * **state_avg**.
 
 \
 
 - **state_avg** *(integer)* - Default: *None*
 
-  This parameter determines the number of averaged states for (SA-)CASSCF and MRCI.
+  This parameter determines the number of states to be averaged for (SA-)CASSCF and MRCI.
+  If it is not determined by a user, **state_avg** = **molecule.nst**.
 
 \
 
@@ -339,13 +342,13 @@ Detailed description of parameters
 
 - **frozen_virt_orb** *(integer)* - Default: *0*
 
-  This parameter determines the number of frozen virtual orbitals in highest unoccupied space.
+  This parameter determines the number of frozen virtual orbitals from the highest unoccupied space.
 
 \
 
 - **cpscf_grad_tol** *(integer)* - Default: *6*
 
-  CP-CASSCF is considered converged when the gradient error is less than :math:`10^{-\textbf{cpscf_grad_tol}}`.
+  CP-MRCI is considered converged when the gradient error is less than :math:`10^{-\textbf{cpscf_grad_tol}}`.
 
 \
 
