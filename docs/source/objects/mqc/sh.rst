@@ -20,7 +20,7 @@ The running state is chosen probabilistically at every MD step. The probabilitie
 .. math::
 
    P^{(I)}_{j{\rightarrow}k}[t,t+{\Delta}t] = {{2\Re[\rho^{(I)}_{jk}(t)\sum_\nu \mathbf{d}^{(I)}_{jk\nu}(t)\cdot\dot{\bf R}^{(I)}_\nu(t)]
-   {\Delta}t}\over{\rho^{(I)}_{jj}(t)}}, \rho^{(I)}_{jk}(t)=C^{(I)}_j(t) C^{(I)}_k(t)
+   {\Delta}t}\over{\rho^{(I)}_{jj}(t)}}, \rho^{(I)}_{jk}(t)=C^{(I)\ast}_j(t) C^{(I)}_k(t)
 
 :math:`{\rho}(t)` represents the electronic density matrix. In this algorithm, the hopping probabilities
 from the "current" running state to the others are considered and a random number is called to select the next
@@ -197,6 +197,7 @@ Detailed description of the parameters
 
   This parameter defines the initial BO coefficients.
   The elements can be either real or complex values.
+  The length of this paramter should be same to ``molecule.nst``.
   If the parameter is not given, the BO coefficients and the density matrix are initialized according to the initial running state.
 
 \
