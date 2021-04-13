@@ -58,15 +58,13 @@ class Columbus(QM_calculator):
             elif (self.basis_set == "6-311g+*"):
                 self.basis_nums = "\n".join([f"{s_311pgs[f'{itype}']}" for itype in self.atom_type])
             else:
-                # TODO : Error messsage must be changed after test
                 error_message = "Current basis set not implemented, check '$PYUNIXMDHOME/src/qm/columbus/colbasis.py'!"
                 error_vars = f"basis_set = {self.basis_set}"
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+                raise NotImplementedError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
         except KeyError:
-            # TODO : Error messsage must be changed after test
             error_message = "Current atom type in the basis set not implemented, check '$PYUNIXMDHOME/src/qm/columbus/colbasis.py'!"
-            error_vars = f"current atom = {molecule.symbols[itype]}, basis_set = {self.basis_set}"
-            raise KeyError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+            error_vars = f"basis_set = {self.basis_set}"
+            raise NotImplementedError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         if (isinstance(self.version, str)):
             if (self.version != "7.0"):
