@@ -20,10 +20,22 @@ class Molpro(QM_calculator):
 
         self.memory = memory
         self.qm_path = qm_path
+        if (not os.path.isdir(self.qm_path)):
+            error_message = "Directory for Molpro binary not found!"
+            error_vars = f"qm_path = {self.qm_path}"
+            raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
         self.nthreads = nthreads
         self.version = version
 
-        if (self.version != "2015.1"):
-            raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")
+        if (isinstance(self.version, str)):
+            if (self.version != "2015.1"):
+                error_message = "Other versions not implemented!"
+                error_vars = f"version = {self.version}"
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+        else:
+            error_message = "Type of version must be string!"
+            error_vars = f"version = {self.version}"
+            raise TypeError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
 

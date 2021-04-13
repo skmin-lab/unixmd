@@ -35,8 +35,10 @@ class CASSCF(Columbus):
         # Set initial guess for CASSCF calculation
         self.guess = guess
         self.guess_file = guess_file
-        if (not (self.guess == "hf" or self.guess == "read")):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
+        if not (self.guess in ["hf", "read"]):
+            error_message = "Invalid initial guess for CASSCF!"
+            error_vars = f"guess = {self.guess}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # HF calculation for initial guess of CASSCF calculation
         self.scf_en_tol = scf_en_tol
@@ -47,8 +49,9 @@ class CASSCF(Columbus):
             self.state_avg = molecule.nst
         else:
             if (self.state_avg < molecule.nst):
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) Too small number of state-averaging! {self.state_avg}")
-
+                error_message = "Number of state-averaging must be equal or larger than number of states!"
+                error_vars = f"state_avg = {self.state_avg}"
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # CASSCF calculation
         self.mcscf_en_tol = mcscf_en_tol
@@ -66,7 +69,9 @@ class CASSCF(Columbus):
 
         # Check the closed shell for systems
         if (not int(molecule.nelec) % 2 == 0):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Only closed shell configuration implemented! {int(molecule.nelec)}")
+            error_message = "Only closed shell configuration supported, check charge!"
+            error_vars = f"Molecule.nelec = {int(molecule.nelec)}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Set 'l_nacme' with respect to the computational method
         # CASSCF can produce NACs, so we do not need to get NACME from CIoverlap
@@ -289,7 +294,7 @@ class CASSCF(Columbus):
         shutil.copy("daltcomm", "daltcomm.new")
 
     def run_QM(self, base_dir, istep, bo_list):
-        """ Run CASSCF calculation and save the output files to QMlog directory
+        """ Run CASSCF calculation and save the output files to qm_log directory
 
             :param string base_dir: Base directory
             :param integer istep: Current MD step

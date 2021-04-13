@@ -22,6 +22,11 @@ class Columbus(QM_calculator):
 
         self.memory = memory
         self.qm_path = qm_path
+        if (not os.path.isdir(self.qm_path)):
+            error_message = "Directory for Columbus binary not found!"
+            error_vars = f"qm_path = {self.qm_path}"
+            raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
         self.version = version
 
         # qm_path should be saved in the environmental variable "COLUMBUS"
@@ -53,10 +58,21 @@ class Columbus(QM_calculator):
             elif (self.basis_set == "6-311g+*"):
                 self.basis_nums = "\n".join([f"{s_311pgs[f'{itype}']}" for itype in self.atom_type])
             else:
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) No basis set in colbasis.py! {self.basis_set}")
+                error_message = "Current basis set not implemented, check '$PYUNIXMDHOME/src/qm/columbus/colbasis.py'!"
+                error_vars = f"basis_set = {self.basis_set}"
+                raise NotImplementedError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
         except KeyError:
-            raise KeyError (f"( {self.qm_method}.{call_name()} ) Data not found: no Atom in basis! {self.basis_set}")
+            error_message = "Current atom type in the basis set not implemented, check '$PYUNIXMDHOME/src/qm/columbus/colbasis.py'!"
+            error_vars = f"basis_set = {self.basis_set}"
+            raise NotImplementedError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        if (self.version != "7.0"):
-            raise ValueError (f"( {self.qm_prog}.{call_name()} ) Other version not implemented! {self.version}")
+        if (isinstance(self.version, str)):
+            if (self.version != "7.0"):
+                error_message = "Other versions not implemented!"
+                error_vars = f"version = {self.version}"
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+        else:
+            error_message = "Type of version must be string!"
+            error_vars = f"version = {self.version}"
+            raise TypeError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 

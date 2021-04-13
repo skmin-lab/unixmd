@@ -40,7 +40,7 @@ Gaussian 09 :cite:`Frisch2009` has been a standard program for electronic struct
 | **guess_file**        | Initial guess file                          | *'./g09.chk'*     |
 | *(string)*            |                                             |                   |
 +-----------------------+---------------------------------------------+-------------------+
-| **G09_root_path**     | Path for Gaussian 09 root                   | *'./'*            |
+| **root_path**         | Path for Gaussian 09 root directory         | *'./'*            |
 | *(string)*            |                                             |                   |
 +-----------------------+---------------------------------------------+-------------------+
 | **nthreads**          | Number of threads in the calculations       | *1*               |
@@ -93,7 +93,7 @@ Detailed description of parameters
 
 \
 
-- **G09_root_path** *(string)* - Default: *'./'*
+- **root_path** *(string)* - Default: *'./'*
 
   This parameter designates the path for the Gaussian 09 root directory, that is, the top level directory (for example, '/my_disk/my_name/gaussian09/').
 

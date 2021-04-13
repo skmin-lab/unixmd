@@ -14,16 +14,14 @@ class DFT(Gaussian09):
         :param string memory: Allocatable memory
         :param string guess: Initial guess for SCF iterations
         :param string guess_file: Initial guess file
-        :param string g09_root_path: Path for Gaussian 09 root
+        :param string root_path: Path for Gaussian 09 root directory
         :param integer nthreads: Number of threads in the calculations
         :param string version: Version of Gaussian 09
     """
-    def __init__(self, molecule, nthreads=1, memory="1gb", \
-        functional="BLYP", basis_set="STO-3G", \
-        guess="Harris", guess_file="./g09.chk", \
-        g09_root_path="./", version="Revision A.02"):
+    def __init__(self, molecule, nthreads=1, memory="1gb", functional="BLYP", basis_set="STO-3G", \
+        guess="Harris", guess_file="./g09.chk", root_path="./", version="Revision A.02"):
         # Initialize Gaussian09 common variables
-        super(DFT, self).__init__(basis_set, memory, nthreads, g09_root_path, version)
+        super(DFT, self).__init__(basis_set, memory, nthreads, root_path, version)
 
         # Initialize Gaussian09 DFT variables
         self.functional = functional
@@ -31,8 +29,10 @@ class DFT(Gaussian09):
         # Set initial guess for DFT calculation
         self.guess = guess
         self.guess_file = os.path.abspath(guess_file)
-        if (not (self.guess == "Harris" or self.guess == "read")):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
+        if not (self.guess in ["Harris", "read"]):
+            error_message = "Invalid initial guess for DFT!"
+            error_vars = f"guess = {self.guess}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Set 'l_nacme' with respect to the computational method
         molecule.l_nacme = True
@@ -98,7 +98,7 @@ class DFT(Gaussian09):
                 os.path.join(self.scr_qm_dir, "../g09.chk.pre"))
 
     def get_input(self, molecule, istep, bo_list, calc_force_only):
-        """ Generate Gaussian09 input files: g09.inp
+        """ Generate Gaussian 09 input files: g09.inp
 
             :param object molecule: Molecule object
             :param integer istep: Current MD step
@@ -225,7 +225,7 @@ class DFT(Gaussian09):
             f.write(input_g09)
 
     def run_QM(self, base_dir, istep, bo_list):
-        """ Run (TD)DFT calculation and save the output files to QMlog directory
+        """ Run (TD)DFT calculation and save the output files to qm_log directory
 
             :param string base_dir: Base directory
             :param integer istep: Current MD step
@@ -233,16 +233,16 @@ class DFT(Gaussian09):
         """
         # Set environment variables
         if (istep == -1):
-            os.environ["g09root"] = self.g09_root_path
+            os.environ["g09root"] = self.root_path
             os.environ["GAUSS_SCDIR"] = self.scr_qm_dir
-            path_profile = os.path.join(self.g09_root_path, "g09/bsd/g09.profile")
+            path_profile = os.path.join(self.root_path, "g09/bsd/g09.profile")
             command = f'env -i sh -c "source {path_profile} && env"'
             for line in subprocess.getoutput(command).split("\n"):
                 key, value = line.split("=")
                 os.environ[key] = value
 
         # Set run command
-        qm_command = os.path.join(self.g09_root_path, "g09/g09")
+        qm_command = os.path.join(self.root_path, "g09/g09")
         command = f"{qm_command} < g09.inp > log"
 
         # Run Gaussian09
@@ -269,7 +269,9 @@ class DFT(Gaussian09):
 
         # Check the convergence of the calculation
         if ("Convergence failure" in log):
-            raise Exception (f"The SCF failed to converge! Check {file_name} in {self.scr_qm_dir}.")
+            error_message = "SCF iteration not converged, please see the output carefully!"
+            error_vars = f"output file = {self.scr_qm_dir}/{file_name}"
+            raise Exception (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Energy
         if (not calc_force_only):
@@ -337,7 +339,7 @@ class DFT(Gaussian09):
             :param integer istep: Current MD step
             :param double dt: Time interval
         """
-        path_rwfdump = os.path.join(self.g09_root_path, "g09/rwfdump")
+        path_rwfdump = os.path.join(self.root_path, "g09/rwfdump")
  
         # Read overlap
         self.ao_overlap = self.read_ao_overlap(path_rwfdump, "g09_double.rwf")

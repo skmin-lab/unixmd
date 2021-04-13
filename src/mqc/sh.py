@@ -23,7 +23,7 @@ class SH(MQC):
         :param string hop_reject: Velocity rescaling method after frustrated hop
         :param init_coef: Initial BO coefficient
         :type init_coef: double, list or complex, list
-        :param string deco_correction: Simple decoherence correction schemes
+        :param string dec_correction: Simple decoherence correction schemes
         :param double edc_parameter: Energy constant for rescaling coefficients in edc
         :param string unit_dt: Unit of time step 
         :param integer out_freq: Frequency of printing output
@@ -31,7 +31,7 @@ class SH(MQC):
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
-        hop_reject="reverse", init_coef=None, deco_correction=None, edc_parameter=0.1, \
+        hop_reject="reverse", init_coef=None, dec_correction=None, edc_parameter=0.1, \
         unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
@@ -50,26 +50,37 @@ class SH(MQC):
 
         self.hop_rescale = hop_rescale
         if not (self.hop_rescale in ["energy", "velocity", "momentum", "augment"]):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'hop_rescale'! {self.hop_rescale}")
+            error_message = "Invalid rescaling method for accepted hop!"
+            error_vars = f"hop_rescale = {self.hop_rescale}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.hop_reject = hop_reject
         if not (self.hop_reject in ["keep", "reverse"]):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) Invalid 'hop_reject'! {self.hop_reject}")
+            error_message = "Invalid rescaling method for frustrated hop!"
+            error_vars = f"hop_reject = {self.hop_reject}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Initialize decoherence variables
-        self.deco_correction = deco_correction
+        self.dec_correction = dec_correction
         self.edc_parameter = edc_parameter
 
-        if not (deco_correction in [None, "idc", "edc"]):
-            raise ValueError (f"( {self.deco_correction}.{call_name()} ) Invalid 'deco_correction'! {self.deco_correction}")
+        if not (dec_correction in [None, "idc", "edc"]):
+            error_message = "Invalid decoherence corrections in FSSH method!"
+            error_vars = f"dec_correction = {self.dec_correction}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check error for incompatible cases
         if (self.mol.l_nacme):
             # No analytical nonadiabatic couplings exist
             if (self.hop_rescale in ["velocity", "momentum", "augment"]):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'energy' rescaling for 'hop_rescale'! {self.hop_rescale}")
-            if (self.hop_reject == "reverse"):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'keep' rescaling for 'hop_reject'! {self.hop_reject}")
+                error_message = "NACVs are not available with current QM object, only isotropic rescaling is possible!"
+                error_vars = f"hop_rescale = {self.hop_rescale}"
+                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+            # TODO : This error will be used after adding the 'flip' option for hop_reject
+#            if (self.hop_reject == "reverse"):
+#                error_message = "NACVs are not available with current QM object, only keep rescaling is possible!"
+#                error_vars = f"hop_reject = {self.hop_reject}"
+#                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Initialize event to print
         self.event = {"HOP": []}
@@ -106,13 +117,13 @@ class SH(MQC):
             self.hop_check(bo_list)
             self.evaluate_hop(bo_list, self.istep)
 
-            if (self.deco_correction == "idc"):
+            if (self.dec_correction == "idc"):
                 if (self.l_hop or self.l_reject):
-                    self.correct_deco_idc()
-            elif (self.deco_correction == "edc"):
+                    self.correct_dec_idc()
+            elif (self.dec_correction == "edc"):
                 # If kinetic is 0, coefficient/density matrix are update into itself
                 if (self.mol.ekin_qm > eps):
-                    self.correct_deco_edc()
+                    self.correct_dec_edc()
 
             if (qm.re_calc and self.l_hop):
                 qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
@@ -163,13 +174,13 @@ class SH(MQC):
             self.hop_check(bo_list)
             self.evaluate_hop(bo_list, istep)
 
-            if (self.deco_correction == "idc"):
+            if (self.dec_correction == "idc"):
                 if (self.l_hop or self.l_reject):
-                    self.correct_deco_idc()
-            elif (self.deco_correction == "edc"):
+                    self.correct_dec_idc()
+            elif (self.dec_correction == "edc"):
                 # If kinetic is 0, coefficient/density matrix are update into itself
                 if (self.mol.ekin_qm > eps):
-                    self.correct_deco_edc()
+                    self.correct_dec_edc()
 
             if (qm.re_calc and self.l_hop):
                 qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
@@ -347,7 +358,7 @@ class SH(MQC):
         if (self.rstate != self.rstate_old):
             self.event["HOP"].append(f"Accept hopping: hop {self.rstate_old} -> {self.rstate}")
 
-    def correct_deco_idc(self):
+    def correct_dec_idc(self):
         """ Routine to decoherence correction, instantaneous decoherence correction(IDC) scheme
         """
         if (self.elec_object == "coefficient"):
@@ -358,7 +369,7 @@ class SH(MQC):
         self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex_)
         self.mol.rho[self.rstate, self.rstate] = 1. + 0.j
 
-    def correct_deco_edc(self):
+    def correct_dec_edc(self):
         """ Routine to decoherence correction, energy-based decoherence correction(EDC) scheme
         """
         # Save exp(-dt/tau) instead of tau itself

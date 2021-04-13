@@ -43,7 +43,9 @@ class MRCI(Columbus):
         self.guess = guess
         self.guess_file = guess_file
         if not (self.guess in ["hf", "read"]):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
+            error_message = "Invalid initial guess for MRCI!"
+            error_vars = f"guess = {self.guess}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # HF calculation for initial guess of CASSCF or MRCI calculations
         self.scf_en_tol = scf_en_tol
@@ -60,7 +62,9 @@ class MRCI(Columbus):
             self.state_avg = molecule.nst
         else:
             if (self.state_avg < molecule.nst):
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) Too small number of state-averaging! {self.state_avg}")
+                error_message = "Number of state-averaging must be equal or larger than number of states!"
+                error_vars = f"state_avg = {self.state_avg}"
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # CASSCF calculation
         self.mcscf_en_tol = mcscf_en_tol
@@ -88,7 +92,9 @@ class MRCI(Columbus):
 
         # Check the closed shell for systems
         if (not int(molecule.nelec) % 2 == 0):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Only closed shell configuration implemented! {int(molecule.nelec)}")
+            error_message = "Only closed shell configuration supported, check charge!"
+            error_vars = f"Molecule.nelec = {int(molecule.nelec)}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Set 'l_nacme' with respect to the computational method
         # MRCI can produce NACs, so we do not need to get NACME from CIoverlap
@@ -140,7 +146,7 @@ class MRCI(Columbus):
         for iat in range(molecule.nat_qm):
             atom_num = list(data.keys()).index(f"{molecule.symbols[iat]}")
             tmp_atom = f' {molecule.symbols[iat]:5s}{atom_num:7.2f}' \
-                + "".join([f'{molecule.pos[iat, isp]:15.8f}' for isp in range(molecule.nsp)]) \
+                + "".join([f'{molecule.pos[iat, isp]:15.8f}' for isp in range(molecule.ndim)]) \
                 + f'{molecule.mass[iat] / amu_to_au:15.8f}' + "\n"
             geom += tmp_atom
 
@@ -428,7 +434,7 @@ class MRCI(Columbus):
             file_name = f"GRADIENTS/cartgrd.drt1.state{ist + 1}.sp"
             with open(file_name, "r") as f:
                 log_out = f.read()
-                log_out = log_out.replace("D", "E", molecule.nat_qm * molecule.nsp)
+                log_out = log_out.replace("D", "E", molecule.nat_qm * molecule.ndim)
 
             tmp_f ='\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat_qm
             force = re.findall(tmp_f, log_out)
