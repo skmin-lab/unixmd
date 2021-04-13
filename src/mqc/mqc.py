@@ -347,6 +347,10 @@ class MQC(object):
                     tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
                     typewriter(tmp, unixmd_dir, "BOCOH", "w")
 
+            if (self.verbosity >= 1):
+                tmp = f'{"#":5s} Time-derivative Density Matrix by NAC: population; see the manual for detail orders'
+                typewriter(tmp, unixmd_dir, "DOTPOPNAC", "w")
+
             # NACME file header
             tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
             typewriter(tmp, unixmd_dir, "NACME", "w")
@@ -401,6 +405,10 @@ class MQC(object):
                     tmp = f'{istep + 1:9d}' + "".join([f"{self.mol.rho.real[ist, jst]:15.8f}{self.mol.rho.imag[ist, jst]:15.8f}" \
                         for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
                     typewriter(tmp, unixmd_dir, "BOCOH", "a")
+
+            if (self.verbosity >= 1):
+                tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopnac])
+                typewriter(tmp, unixmd_dir, "DOTPOPNAC", "a")
 
             # Write NACME file
             tmp = f'{istep + 1:10d}' + "".join([f'{self.mol.nacme[ist, jst]:15.8f}' \
