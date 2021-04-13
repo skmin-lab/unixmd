@@ -284,7 +284,7 @@ class CASSCF(Columbus):
         shutil.copy("daltcomm", "daltcomm.new")
 
     def run_QM(self, base_dir, istep, bo_list):
-        """ Run CASSCF calculation and save the output files to QMlog directory
+        """ Run CASSCF calculation and save the output files to qm_log directory
 
             :param string base_dir: Base directory
             :param integer istep: Current MD step

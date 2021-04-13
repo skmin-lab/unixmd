@@ -425,7 +425,7 @@ class SSR(DFTBplus):
             f.write(input_dftb)
 
     def run_QM(self, base_dir, istep, bo_list):
-        """ Run SSR calculation and save the output files to QMlog directory
+        """ Run SSR calculation and save the output files to qm_log directory
 
             :param string base_dir: Base directory
             :param integer istep: Current MD step

@@ -422,7 +422,7 @@ class Tinker(MM_calculator):
             f_xyz.write(input_interaction)
 
     def run_MM(self, base_dir, istep):
-        """ Run Tinker calculation and save the output files to MMlog directory
+        """ Run Tinker calculation and save the output files to mm_log directory
 
             :param string base_dir: Base directory
             :param integer istep: Current MD step

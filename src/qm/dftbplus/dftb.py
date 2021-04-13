@@ -536,7 +536,7 @@ class DFTB(DFTBplus):
                 f.write(input_dftb)
 
     def run_QM(self, molecule, base_dir, istep, bo_list, calc_force_only):
-        """ Run (TD)DFTB calculation and save the output files to QMlog directory
+        """ Run (TD)DFTB calculation and save the output files to qm_log directory
 
             :param object molecule: Molecule object
             :param string base_dir: Base directory

@@ -225,7 +225,7 @@ class DFT(Gaussian09):
             f.write(input_g09)
 
     def run_QM(self, base_dir, istep, bo_list):
-        """ Run (TD)DFT calculation and save the output files to QMlog directory
+        """ Run (TD)DFT calculation and save the output files to qm_log directory
 
             :param string base_dir: Base directory
             :param integer istep: Current MD step

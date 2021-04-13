@@ -180,7 +180,7 @@ class DFT(Turbomole):
             f.write(control)
 
     def run_QM(self, molecule, base_dir, istep, bo_list):
-        """ Run (TD)DFT calculation and save the output files to QMlog directory
+        """ Run (TD)DFT calculation and save the output files to qm_log directory
 
             :param object molecule: Molecule object
             :param string base_dir: Base directory
