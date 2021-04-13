@@ -108,10 +108,9 @@ class DFTB(DFTBplus):
             elif (max_ang == 'd'):
                 self.nbasis += 9
             else:
-                # TODO : In this case, name of variable is not determined, how to express?
-                error_message = "Basis sets for f orbitals not added, see $PYUNIXMDHOME/src/qm/dftbplus/dftb.py!"
-                error_vars = f"max_ang = {max_ang}"
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+                error_message = "Number of basis for f orbital not implemented, see '$PYUNIXMDHOME/src/qm/dftbplus/dftb.py'!"
+                error_vars = f"current atom = {molecule.symbols[iat]}, max_ang = {max_ang}"
+                raise NotImplementedError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
             self.check_atom.append(self.nbasis)
             # Check number of core electrons with respect to atomic number
             sym_index = list(data.keys()).index(molecule.symbols[iat])
@@ -126,10 +125,9 @@ class DFTB(DFTBplus):
             elif (sym_index > 36 and sym_index <= 54):
                 core_elec += 36.
             else:
-                # TODO : In this case, name of variable is not determined, how to express?
-                error_message = "Core electrons for current element not added, see $PYUNIXMDHOME/src/qm/dftbplus/dftb.py!"
-                error_vars = f"sym_index = {sym_index}"
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+                error_message = "Core electrons for current element not implemented, see '$PYUNIXMDHOME/src/qm/dftbplus/dftb.py'!"
+                error_vars = f"current atom = {molecule.symbols[iat]}, sym_index = {sym_index}"
+                raise NotImplementedError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Set new variable to decide the position of atoms in terms of basis functions
         self.check_basis = []
