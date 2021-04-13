@@ -59,13 +59,13 @@ class Columbus(QM_calculator):
                 self.basis_nums = "\n".join([f"{s_311pgs[f'{itype}']}" for itype in self.atom_type])
             else:
                 # TODO : Error messsage must be changed after test
-                error_message = "No basis set in colbasis.py!"
+                error_message = "Current basis set not implemented, check '$PYUNIXMDHOME/src/qm/columbus/colbasis.py'!"
                 error_vars = f"basis_set = {self.basis_set}"
                 raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
         except KeyError:
             # TODO : Error messsage must be changed after test
-            error_message = "Data not found: Atom {itype} with basis!"
-            error_vars = f"basis_set = {self.basis_set}"
+            error_message = "Current atom type in the basis set not implemented, check '$PYUNIXMDHOME/src/qm/columbus/colbasis.py'!"
+            error_vars = f"current atom = {molecule.symbols[itype]}, basis_set = {self.basis_set}"
             raise KeyError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         if (isinstance(self.version, str)):
