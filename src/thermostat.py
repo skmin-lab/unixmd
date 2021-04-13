@@ -40,9 +40,8 @@ class Rescale1(Thermostat):
 
         ctemp = md.mol.ekin * 2 / float(md.mol.ndof) * au_to_K
         if (ctemp < eps):
-            # TODO : In this case, name of variable is not determined, how to express?
             error_message = "Too small current temperature!"
-            error_vars = f"temperature = {ctemp}"
+            error_vars = f"current temperature {ctemp} < {eps}"
             raise ValueError (f"( {self.thermostat_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         alpha = np.sqrt(self.temp / ctemp)
@@ -85,9 +84,8 @@ class Rescale2(Thermostat):
         """
         ctemp = md.mol.ekin * 2 / float(md.mol.ndof) * au_to_K
         if (ctemp < eps):
-            # TODO : In this case, name of variable is not determined, how to express?
             error_message = "Too small current temperature!"
-            error_vars = f"temperature = {ctemp}"
+            error_vars = f"current temperature {ctemp} < {eps}"
             raise ValueError (f"( {self.thermostat_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         if (abs(self.temp - ctemp) > self.dtemp):
