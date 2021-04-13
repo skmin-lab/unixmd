@@ -23,4 +23,5 @@ Contents
    quick_start
    objects/main
    modules/main
+   utility_scripts
    references/main
