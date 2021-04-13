@@ -20,7 +20,7 @@ in addition to Eherenfest term. The propagation of nuclei and electrons is done 
 
 Detailed description of CTMQC method is in the :cite:`Agostini2016`.
 
-.. note:: We recommend that users see detailed description of parameter.
+.. note:: We strongly recommend that users see detailed description of parameter.
 
 +--------------------------------+------------------------------------------------+-----------------+
 | Parameters                     | Work                                           | Default         |
@@ -43,7 +43,7 @@ Detailed description of CTMQC method is in the :cite:`Agostini2016`.
 | **nesteps**                    | Total step of electronic propagation           | *20*            |
 | *(integer)*                    |                                                |                 |
 +--------------------------------+------------------------------------------------+-----------------+
-| **elec_object**                | Representation for electronic state            | *'coefficient'* |
+| **elec_object**                | Electronic equation of motions                 | *'coefficient'* |
 | *(string)*                     |                                                |                 |
 +--------------------------------+------------------------------------------------+-----------------+
 | **propagator**                 | Electronic propagator                          | *'rk4'*         |
@@ -92,9 +92,9 @@ Detailed description of parameters
 - **molecules** 
   
   This parameter defines molecular information for coupled trajectories.
-  The data type of **molecules** must be list of which the elements are instances for :ref:`Molecule <Objects Molecule>`.
+  The data type of **molecules** must be list of which the elements are objects for :ref:`Molecule <Objects Molecule>`.
   For example, if the number of coupled trajectories is 3, then **molecules** can be given *[mol1, mol2, mol3]* 
-  where *mol1*, *mol2*, and *mol3* are instances for :ref:`Molecule <Objects Molecule>`.
+  where *mol1*, *mol2*, and *mol3* are objects for :ref:`Molecule <Objects Molecule>`.
 
 \
 
@@ -184,14 +184,14 @@ Detailed description of parameters
 - **dist_parameter** *(double)* - Default: *10.0*
 
   This parameter defines distance parameter to determine position of quantum momentum center.
-  if a position difference between an atom :math:`\nu` in quantum momentum center and a given trajectory is larger than **dist_parameter** :math:`\times` **sigma**, quantum momentum is set to *0.0*
+  If a position difference between an atom :math:`\nu` in quantum momentum center and a given trajectory is larger than **dist_parameter** :math:`\times` **sigma**, quantum momentum is set to *0.0*.
 
 \
 
 - **sigma** *(double)* - Default: *0.3*
 
   This parameter defines sigma to determine position of quantum momentum center. 
-  if a difference between position of an atom :math:`\nu` in quantum momentum center and a given trajectory is larger than **dist_parameter** :math:`\times` **sigma**, quantum momentum is set to *0.0*
+  If a difference between position of an atom :math:`\nu` in quantum momentum center and a given trajectory is larger than **dist_parameter** :math:`\times` **sigma**, quantum momentum is set to *0.0*.
 
 \
 
