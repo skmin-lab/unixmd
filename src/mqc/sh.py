@@ -119,11 +119,11 @@ class SH(MQC):
 
             if (self.dec_correction == "idc"):
                 if (self.l_hop or self.l_reject):
-                    self.correct_deco_idc()
+                    self.correct_dec_idc()
             elif (self.dec_correction == "edc"):
                 # If kinetic is 0, coefficient/density matrix are update into itself
                 if (self.mol.ekin_qm > eps):
-                    self.correct_deco_edc()
+                    self.correct_dec_edc()
 
             if (qm.re_calc and self.l_hop):
                 qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
@@ -176,11 +176,11 @@ class SH(MQC):
 
             if (self.dec_correction == "idc"):
                 if (self.l_hop or self.l_reject):
-                    self.correct_deco_idc()
+                    self.correct_dec_idc()
             elif (self.dec_correction == "edc"):
                 # If kinetic is 0, coefficient/density matrix are update into itself
                 if (self.mol.ekin_qm > eps):
-                    self.correct_deco_edc()
+                    self.correct_dec_edc()
 
             if (qm.re_calc and self.l_hop):
                 qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
@@ -358,7 +358,7 @@ class SH(MQC):
         if (self.rstate != self.rstate_old):
             self.event["HOP"].append(f"Accept hopping: hop {self.rstate_old} -> {self.rstate}")
 
-    def correct_deco_idc(self):
+    def correct_dec_idc(self):
         """ Routine to decoherence correction, instantaneous decoherence correction(IDC) scheme
         """
         if (self.elec_object == "coefficient"):
@@ -369,7 +369,7 @@ class SH(MQC):
         self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex_)
         self.mol.rho[self.rstate, self.rstate] = 1. + 0.j
 
-    def correct_deco_edc(self):
+    def correct_dec_edc(self):
         """ Routine to decoherence correction, energy-based decoherence correction(EDC) scheme
         """
         # Save exp(-dt/tau) instead of tau itself

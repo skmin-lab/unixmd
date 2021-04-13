@@ -587,7 +587,7 @@ class SHXF(MQC):
         self.write_sh(unixmd_dir, istep)
 
         # Write decoherence information
-        self.write_deco(unixmd_dir, istep)
+        self.write_dec(unixmd_dir, istep)
 
     def write_sh(self, unixmd_dir, istep):
         """ Write hopping-related quantities into files
@@ -603,7 +603,7 @@ class SHXF(MQC):
         tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(self.mol.nst)])
         typewriter(tmp, unixmd_dir, "SHPROB", "a")
 
-    def write_deco(self, unixmd_dir, istep):
+    def write_dec(self, unixmd_dir, istep):
         """ Write XF-based decoherence information
 
             :param string unixmd_dir: PyUNIxMD directory
