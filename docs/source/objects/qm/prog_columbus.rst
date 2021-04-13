@@ -5,9 +5,13 @@ Columbus
 Columbus :cite:`Lischka2011` is one of open-source softwares for high-level ab initio
 quantum calculation. It is designed primarily for extended multi-reference (MR) calculations
 on electronic ground and excited states of atoms and molecules.
-In the current version of PyUNIxMD, state-averaged complete active space self-consistent field ((SA-)CASSCF) 
-and multireference configuration interaction (MRCI) methods are available.
-These methods provide analytical gradients as well as nonadiabatic couplings, thus it can be used for nonadiabatic molecular dynamics.
+In the current version of PyUNIxMD, (SA-)CASSCF and (MRCI) methods are available.
+
+- (SA-)CASSCF is the state-averaged complete active space self-consistent field method. It provides analytical gradients as
+  well as nonadiabatic couplings, thus it can be used for nonadiabatic molecular dynamics.
+
+- MRCI is the multireference configuration interaction field method. Simillar with (SA-)CASSCF, it supports analytical gradient and nonadiabatic couplings calculation,
+  thus excited states dynamics simulations are possible.  
 
 +-------------+------+--------+----+-----+
 |             | BOMD | SH(XF) | Eh | nac |
@@ -362,6 +366,4 @@ Detailed description of parameters
 - **version** *(string)* - Default: *'7.0'*
 
   This parameter determines the version of Columbus. PyUNIxMD is currently based on version 7.0.
-
-\
 
