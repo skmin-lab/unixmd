@@ -32,6 +32,9 @@ class Eh(MQC):
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
             elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
 
+        # Debug variables
+        self.dotpopnac = np.zeros(self.mol.nst)
+
     def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to Ehrenfest dynamics
 

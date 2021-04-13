@@ -71,6 +71,9 @@ class SH(MQC):
             if (self.hop_reject == "reverse"):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) Use 'keep' rescaling for 'hop_reject'! {self.hop_reject}")
 
+        # Debug variables
+        self.dotpopnac = np.zeros(self.mol.nst)
+
         # Initialize event to print
         self.event = {"HOP": []}
 
