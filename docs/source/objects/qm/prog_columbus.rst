@@ -5,12 +5,12 @@ Columbus
 Columbus :cite:`Lischka2011` is one of open-source softwares for high-level ab initio
 quantum calculation. It is designed primarily for extended multi-reference (MR) calculations
 on electronic ground and excited states of atoms and molecules.
-In the current version of PyUNIxMD, (SA-)CASSCF and (MRCI) methods are available.
+In the current version of PyUNIxMD, (SA-)CASSCF and MRCI methods are available.
 
 - (SA-)CASSCF is the state-averaged complete active space self-consistent field method. It provides analytical gradients as
   well as nonadiabatic couplings, thus it can be used for nonadiabatic molecular dynamics.
 
-- MRCI is the multireference configuration interaction field method. Simillar with (SA-)CASSCF, it supports analytical gradient and nonadiabatic couplings calculation,
+- MRCI is the multireference configuration interaction method. Simillar with (SA-)CASSCF, it supports analytical gradient and nonadiabatic couplings calculation,
   thus excited states dynamics simulations are possible.  
 
 +-------------+------+--------+----+-----+
@@ -54,7 +54,7 @@ In the current version of PyUNIxMD, (SA-)CASSCF and (MRCI) methods are available
 | **mcscf_max_iter**     | Maximum number of (SA-)CASSCF iterations            | *100*          |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **state_avg**          | Number of states to be averaged for (SA-)CASSCF     | *None*         |
+| **state_avg**          | Number of averaged state for (SA-)CASSCF            | *None*         |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
 | **cpscf_grad_tol**     | Gradient tolerance for CP-CASSCF equations          | *6*            |
@@ -137,7 +137,8 @@ Detailed description of parameters
 - **state_avg** *(integer)* - Default: *None*
 
   This parameter determines the number of states to be averaged for (SA-)CASSCF.
-  If it is not determined by a user, **state_avg** = **molecule.nst**.
+  The actual calculation is performed based on **state_avg**, not ``Molecule.nstates``.
+  If it is not determined by a user, **state_avg** = ``Molecule.nstates``.
 
 \
 
@@ -216,8 +217,8 @@ MRCI
 | **mrci_max_iter**      | Maximum number of MRCI iterations                   | *None*         |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **state_avg**          | Number of states to be averaged                     | *None*         |
-| *(integer)*            | for (SA-)CASSCF and MRCI                            |                |
+| **state_avg**          | Number of averaged state for (SA-)CASSCF and MRCI   | *None*         |
+| *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
 | **active_elec**        | Number of electrons in active space                 | *2*            |
 | *(integer)*            |                                                     |                |
@@ -228,7 +229,7 @@ MRCI
 | **frozen_core_orb**    | Number of frozen core orbitals in                   | *0*            |
 | *(integer)*            | doubly occupied space                               |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **frozen_virt_orb**    | Number of forzen virtual orbitals from the          | *0*            |
+| **frozen_virt_orb**    | Number of frozen virtual orbitals from the          | *0*            |
 | *(integer)*            | highest unoccupied space                            |                |
 +------------------------+-----------------------------------------------------+----------------+
 | **cpscf_grad_tol**     | Gradient tolerance for CP-MRCI equations            | *6*            |
@@ -318,7 +319,8 @@ Detailed description of parameters
 - **state_avg** *(integer)* - Default: *None*
 
   This parameter determines the number of states to be averaged for (SA-)CASSCF and MRCI.
-  If it is not determined by a user, **state_avg** = **molecule.nst**.
+  The actual calculation is performed based on **state_avg**, not ``Molecule.nstates``.
+  If it is not determined by a user, **state_avg** = ``Molecule.nstates``.
 
 \
 
@@ -354,7 +356,7 @@ Detailed description of parameters
 
 - **cpscf_max_iter** *(integer)* - Default: *100*
 
-  This parameter determines the maximum number of iterations for the CP-CASSCF equations.
+  This parameter determines the maximum number of iterations for the CP-MRCI equations.
 
 \
 
