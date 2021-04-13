@@ -54,7 +54,7 @@ In the current version of PyUNIxMD, (SA-)CASSCF and MRCI methods are available.
 | **mcscf_max_iter**     | Maximum number of (SA-)CASSCF iterations            | *100*          |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **state_avg**          | Number of averaged state for (SA-)CASSCF            | *None*         |
+| **state_avg**          | Number of states to be averaged for (SA-)CASSCF     | *None*         |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
 | **cpscf_grad_tol**     | Gradient tolerance for CP-CASSCF equations          | *6*            |
@@ -217,8 +217,8 @@ MRCI
 | **mrci_max_iter**      | Maximum number of MRCI iterations                   | *None*         |
 | *(integer)*            |                                                     |                |
 +------------------------+-----------------------------------------------------+----------------+
-| **state_avg**          | Number of averaged state for (SA-)CASSCF and MRCI   | *None*         |
-| *(integer)*            |                                                     |                |
+| **state_avg**          | Number of states to be averaged                     | *None*         |
+| *(integer)*            | for (SA-)CASSCF and MRCI                            |                |
 +------------------------+-----------------------------------------------------+----------------+
 | **active_elec**        | Number of electrons in active space                 | *2*            |
 | *(integer)*            |                                                     |                |
