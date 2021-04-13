@@ -76,11 +76,11 @@ class SH(MQC):
                 error_message = "NACVs are not available with current QM object, only isotropic rescaling is possible!"
                 error_vars = f"hop_rescale = {self.hop_rescale}"
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-            if (self.hop_reject == "reverse"):
-                # TODO : Is there better error message than 'keep rescaling'?
-                error_message = "NACVs are not available with current QM object, only keep rescaling is possible!"
-                error_vars = f"hop_reject = {self.hop_reject}"
-                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+            # TODO : This error will be used after adding the 'flip' option for hop_reject
+#            if (self.hop_reject == "reverse"):
+#                error_message = "NACVs are not available with current QM object, only keep rescaling is possible!"
+#                error_vars = f"hop_reject = {self.hop_reject}"
+#                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Initialize event to print
         self.event = {"HOP": []}
