@@ -18,11 +18,11 @@ class MRCI(Columbus):
         :param integer mcscf_max_iter: Maximum number of (SA-)CASSCF iterations
         :param integer mrci_en_tol: Energy convergence for MRCI iterations
         :param integer mrci_max_iter: Maximum number of MRCI iterations
-        :param integer state_avg: Number of averaged state for (SA-)CASSCF and MRCI
+        :param integer state_avg: Number of states to be averaged for (SA-)CASSCF and MRCI
         :param integer active_elec: Number of electrons in active space
         :param integer active_orb: Number of orbitals in active space
         :param integer frozen_core_orb: Number of frozen core orbitals in doubly occupied space
-        :param integer frozen_virt_orb: Number of frozen virtual orbitals in highest unoccupied space
+        :param integer frozen_virt_orb: Number of frozen virtual orbitals from the highest unoccupied space
         :param integer cpscf_grad_tol: Gradient tolerance for CP-MRCI equations
         :param integer cpscf_max_iter: Maximum number of iterations for CP-MRCI equations
         :param string qm_path: Path for QM binary
