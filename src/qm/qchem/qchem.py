@@ -7,11 +7,11 @@ class QChem(QM_calculator):
 
         :param string basis_set: Basis set information
         :param string memory: Allocatable memory in the calculation
-        :param string qm_path: Path for Q-Chem
+        :param string root_path: Path for Q-Chem root directory
         :param integer nthreads: Number of threads in the calculation
         :param string version: Version of Q-Chem
     """
-    def __init__(self, basis_set, memory, qm_path, nthreads, version):
+    def __init__(self, basis_set, memory, root_path, nthreads, version):
         # Save name of QM calculator and its method
         super().__init__()
 
@@ -19,7 +19,12 @@ class QChem(QM_calculator):
         self.basis_set = basis_set
 
         self.memory = memory
-        self.qm_path = qm_path
+        self.root_path = root_path
+        if (not os.path.isdir(self.root_path)):
+            error_message = "Root directory for Q-Chem not found!"
+            error_vars = f"root_path = {self.root_path}"
+            raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
         self.nthreads = nthreads
         self.version = version
 

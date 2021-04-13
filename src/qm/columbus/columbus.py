@@ -22,6 +22,11 @@ class Columbus(QM_calculator):
 
         self.memory = memory
         self.qm_path = qm_path
+        if (not os.path.isdir(self.qm_path)):
+            error_message = "Directory for Columbus binary not found!"
+            error_vars = f"qm_path = {self.qm_path}"
+            raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
         self.version = version
 
         # qm_path should be saved in the environmental variable "COLUMBUS"

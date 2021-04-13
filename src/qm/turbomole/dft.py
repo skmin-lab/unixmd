@@ -15,15 +15,15 @@ class DFT(Turbomole):
         :param integer scf_en_tol: Energy convergence for SCF iterations
         :param integer cis_max_iter: Maximum number of CIS iterations
         :param integer cis_en_tol: Energy convergence for CIS iterations
-        :param string qm_path: Path for QM binary
+        :param string root_path: Path for Turbomole root directory
         :param integer nthreads: Number of threads in the calculations
         :param string version: Version of Turbomole
     """
     def __init__(self, molecule, functional="b-lyp", basis_set="SV(P)", memory=50, \
         scf_max_iter=50, scf_en_tol=6, cis_max_iter=25, cis_en_tol=6, \
-        qm_path="./", nthreads=1, version="6.4"):
+        root_path="./", nthreads=1, version="6.4"):
         # Initialize Turbomole common variables
-        super(DFT, self).__init__(functional, basis_set, memory, qm_path, nthreads, version)
+        super(DFT, self).__init__(functional, basis_set, memory, root_path, nthreads, version)
 
         self.scf_max_iter = scf_max_iter
         self.scf_en_tol = scf_en_tol
@@ -68,7 +68,7 @@ class DFT(Turbomole):
             error_vars = f"qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        x2t_command = os.path.join(self.qm_scripts_path, "x2t")
+        x2t_command = os.path.join(self.scripts_path, "x2t")
         command = f"{x2t_command} geometry.xyz > coord"
         os.system(command)
 
@@ -133,7 +133,7 @@ class DFT(Turbomole):
         with open(file_name, "w") as f:
             f.write(input_define)
 
-        define_command = os.path.join(self.qm_bin_path, "define")
+        define_command = os.path.join(self.qm_path, "define")
         command = f"{define_command} < {file_name} >& define_log"
         os.system(command)
 
@@ -188,20 +188,20 @@ class DFT(Turbomole):
             :param integer,list bo_list: List of BO states for BO calculation
         """
         # Run dscf
-        scf_command = os.path.join(self.qm_bin_path, "dscf")
+        scf_command = os.path.join(self.qm_path, "dscf")
         command = f"{scf_command} >& dscf.out"
         os.system(command)
 
         if (bo_list[0] == 0):
-            grad_command = os.path.join(self.qm_bin_path, "grad")
+            grad_command = os.path.join(self.qm_path, "grad")
             command = f"{grad_command} >& grad.out"
             os.system(command)
             if (molecule.nst > 1):
-                grad_command = os.path.join(self.qm_bin_path, "escf")
+                grad_command = os.path.join(self.qm_path, "escf")
                 command = f"{grad_command} >& escf.out"
                 os.system(command)
         else:
-            egrad_command = os.path.join(self.qm_bin_path, "egrad")
+            egrad_command = os.path.join(self.qm_path, "egrad")
             command = f"{egrad_command} >& egrad.out"
             os.system(command)
 

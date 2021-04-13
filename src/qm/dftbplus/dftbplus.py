@@ -19,6 +19,10 @@ class DFTBplus(QM_calculator):
         # Initialize DFTB+ common variables
         self.sk_path = sk_path
         self.install_path = install_path
+        if (not os.path.isdir(self.install_path)):
+            error_message = "Install directory for DFTB+ not found!"
+            error_vars = f"install_path = {self.install_path}"
+            raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.nthreads = nthreads
         self.version = version

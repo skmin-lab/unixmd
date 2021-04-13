@@ -23,6 +23,11 @@ class TeraChem(QM_calculator):
         self.basis_set = basis_set
 
         self.qm_path = qm_path
+        if (not os.path.isdir(self.qm_path)):
+            error_message = "Directory for TeraChem binary not found!"
+            error_vars = f"qm_path = {self.qm_path}"
+            raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
         self.ngpus = ngpus
         self.gpu_id = gpu_id
         

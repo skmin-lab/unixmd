@@ -9,11 +9,11 @@ class Turbomole(QM_calculator):
         :param string functional: Exchange-correlation functional information
         :param string basis_set: Basis set information
         :param string memory: Allocatable memory in the calculations
-        :param string qm_path: Path for QM binary
+        :param string root_path: Path for Turbomole root directory
         :param integer nthreads: Number of threads in the calculations
         :param string version: Version of Turbomole
     """
-    def __init__(self, functional, basis_set, memory, qm_path, nthreads, version):
+    def __init__(self, functional, basis_set, memory, root_path, nthreads, version):
         # Save name of QM calculator and its method
         super().__init__()
 
@@ -25,15 +25,20 @@ class Turbomole(QM_calculator):
         self.nthreads = nthreads
         self.version = version
 
-        self.qm_path = qm_path
-        os.environ["TURBODIR"] = qm_path
-        self.qm_scripts_path = os.path.join(self.qm_path, "scripts/")
-        if (self.nthreads == 1):
-            self.qm_bin_path = os.path.join(self.qm_path, "bin/em64t-unknown-linux-gnu/")
+        self.root_path = root_path
+        if (not os.path.isdir(self.root_path)):
+            error_message = "Root directory for Turbomole not found!"
+            error_vars = f"root_path = {self.root_path}"
+            raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
-            os.environ["PARA_ARCH"] = "SMP"
-            os.environ["PARNODES"] = f"{self.nthreads}"
-            self.qm_bin_path = os.path.join(self.qm_path, "bin/em64t-unknown-linux-gnu_smp/")
+            os.environ["TURBODIR"] = root_path
+            self.scripts_path = os.path.join(self.root_path, "scripts/")
+            if (self.nthreads == 1):
+                self.qm_path = os.path.join(self.root_path, "bin/em64t-unknown-linux-gnu/")
+            else:
+                os.environ["PARA_ARCH"] = "SMP"
+                os.environ["PARNODES"] = f"{self.nthreads}"
+                self.qm_path = os.path.join(self.root_path, "bin/em64t-unknown-linux-gnu_smp/")
 
         if (isinstance(self.version, str)):
             if (self.version != "6.4"):

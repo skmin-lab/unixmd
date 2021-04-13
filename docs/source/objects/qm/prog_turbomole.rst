@@ -44,7 +44,7 @@ in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and a
 | **cis_en_tol**      | Energy convergence for CIS iterations       | *6*            |
 | *(integer)*         |                                             |                |
 +---------------------+---------------------------------------------+----------------+
-| **qm_path**         | Path for QM binary                          | *'./'*         |
+| **root_path**       | Path for Turbomole root directory           | *'./'*         |
 | *(string)*          |                                             |                |
 +---------------------+---------------------------------------------+----------------+
 | **nthreads**        | Number of threads in the calculations       | *1*            |
@@ -103,11 +103,11 @@ Detailed description of parameters
 
 \
 
-- **qm_path** *(string)* - Default: *'./'*
+- **root_path** *(string)* - Default: *'./'*
 
-  This parameter designates the path for QM binary file for Turbomole.
+  This parameter designates the path for Turbomole root directory.
   The `$TURBODIR` environment variable determines the directory where Turbomole is installed, not the binary files themselves (For example, `$TURBODIR` is '/my_disk/my_name/TURBOMOLE/').
-  Thus, **qm_path** must be a *'`$TURBODIR`'*, not a *'`$TURBODIR`/define'*. 
+  Thus, **root_path** must be a *'`$TURBODIR`'*, not a *'`$TURBODIR`/define'*. 
 
 \
 

@@ -55,6 +55,11 @@ class Tinker(MM_calculator):
         self.key_file = key_file
 
         self.mm_path = mm_path
+        if (not os.path.isdir(self.mm_path)):
+            error_message = "Directory for Tinker binary not found!"
+            error_vars = f"mm_path = {self.mm_path}"
+            raise FileNotFoundError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
+
         self.nthreads = nthreads
         self.version = version
 

@@ -18,14 +18,14 @@ class DFT(QChem):
         :param integer cis_en_tol: Energy convergence for CIS iterations
         :param integer cpscf_max_iter: Maximum number of CP iterations
         :param integer cpscf_grad_tol: Gradient convergence of CP iterations
-        :param string qm_path: Path for Q-Chem
+        :param string root_path: Path for Q-Chem root directory
         :param string version: Q-Chem version
     """
     def __init__(self, molecule, basis_set="sto-3g", memory=2000, nthreads=1, \
         functional="blyp", scf_max_iter=50, scf_wf_tol=8, cis_max_iter=30, cis_en_tol=6, \
-        cpscf_max_iter=30, cpscf_grad_tol=6, qm_path="./", version="5.2"):
+        cpscf_max_iter=30, cpscf_grad_tol=6, root_path="./", version="5.2"):
         # Initialize Q-Chem common variables
-        super(DFT, self).__init__(basis_set, memory, qm_path, nthreads, version)
+        super(DFT, self).__init__(basis_set, memory, root_path, nthreads, version)
 
         self.functional = functional
         self.scf_max_iter = scf_max_iter
@@ -178,8 +178,8 @@ class DFT(QChem):
             :param integer,list bo_list: List of BO states for BO calculation
         """
         # Set environment variable 
-        os.environ["QC"] = self.qm_path
-        path_qcenv = os.path.join(self.qm_path, "qcenv.sh")
+        os.environ["QC"] = self.root_path
+        path_qcenv = os.path.join(self.root_path, "qcenv.sh")
         command = f'env -i sh -c "source {path_qcenv} && env"'
         for line in subprocess.getoutput(command).split("\n"):
             key, value = line.split("=")
