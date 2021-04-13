@@ -78,8 +78,8 @@ This file shows MD energies and energies of adiabatic states.
 
 .. code-block:: bash
 
-   <MD step>   <kinetic energy>   <potential energy>   <total MD energy>   <adiabatic energy 1>   <adiabatic energy 2> ... <adiabatic energy last>
-   <MD step>   <kinetic energy>   <potential energy>   <total MD energy>   <adiabatic energy 1>   <adiabatic energy 2> ... <adiabatic energy last>
+   <MD step>   <kinetic energy>   <potential energy>   <total MD energy>   <adiabatic energy 0>   <adiabatic energy 1> ... <adiabatic energy last>
+   <MD step>   <kinetic energy>   <potential energy>   <total MD energy>   <adiabatic energy 0>   <adiabatic energy 1> ... <adiabatic energy last>
    ...
 
 - MOVIE.xyz
@@ -119,8 +119,8 @@ This file shows the adiabatic populations (diagonal elements of the density matr
 
 .. code-block:: bash
 
-   <MD step> <population of state 1> <population of state 2> ... <population of last state> 
-   <MD step> <population of state 1> <population of state 2> ... <population of last state> 
+   <MD step> <population of state 0> <population of state 1> ... <population of last state> 
+   <MD step> <population of state 0> <population of state 1> ... <population of last state> 
    ... 
 
 - BOCOH 
@@ -129,8 +129,8 @@ This file shows off-diagonal elements of the density matrix at each MD step. Onl
 
 .. code-block:: bash
 
-   <MD step> <Re. element 1, 2> <Im. element 1, 2> <Re. element 1, 3> <Im. element 1, 3> ... <Re. element last-1, last> <Im. element last-1, last> 
-   <MD step> <Re. element 1, 2> <Im. element 1, 2> <Re. element 1, 3> <Im. element 1, 3> ... <Re. element last-1, last> <Im. element last-1, last> 
+   <MD step> <Re. element 0, 1> <Im. element 0, 1> <Re. element 0, 2> <Im. element 0, 2> ... <Re. element last-1, last> <Im. element last-1, last> 
+   <MD step> <Re. element 0, 1> <Im. element 0, 1> <Re. element 0, 2> <Im. element 0, 2> ... <Re. element last-1, last> <Im. element last-1, last> 
    ... 
 
 - NACME
@@ -139,8 +139,8 @@ This file shows nonadiabatic coupling matrix elements at each MD step. Only the 
 
 .. code-block:: bash
 
-   <MD step> <element 1, 2> <element 1, 3> ... <element last-1, last> 
-   <MD step> <element 1, 2> <element 1, 3> ... <element last-1, last> 
+   <MD step> <element 0, 1> <element 0, 2> ... <element last-1, last> 
+   <MD step> <element 0, 1> <element 0, 2> ... <element last-1, last> 
    ... 
 
 - SHPROB
@@ -149,8 +149,8 @@ This file shows hopping probabilities from the running state to the others at ea
 
 .. code-block:: bash
 
-   <MD step> <P(running -> 1)> <P(running -> 2)> ... <P(running -> last)>
-   <MD step> <P(running -> 1)> <P(running -> 2)> ... <P(running -> last)>
+   <MD step> <P(running -> 0)> <P(running -> 1)> ... <P(running -> last)>
+   <MD step> <P(running -> 0)> <P(running -> 1)> ... <P(running -> last)>
    ... 
 
 - SHSTATE
