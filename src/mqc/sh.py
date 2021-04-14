@@ -48,13 +48,13 @@ class SH(MQC):
         self.l_hop = False
         self.l_reject = False
 
-        self.hop_rescale = hop_rescale
+        self.hop_rescale = hop_rescale.lower()
         if not (self.hop_rescale in ["energy", "velocity", "momentum", "augment"]):
             error_message = "Invalid rescaling method for accepted hop!"
             error_vars = f"hop_rescale = {self.hop_rescale}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        self.hop_reject = hop_reject
+        self.hop_reject = hop_reject.lower()
         if not (self.hop_reject in ["keep", "reverse"]):
             error_message = "Invalid rescaling method for frustrated hop!"
             error_vars = f"hop_reject = {self.hop_reject}"
@@ -64,7 +64,10 @@ class SH(MQC):
         self.dec_correction = dec_correction
         self.edc_parameter = edc_parameter
 
-        if not (dec_correction in [None, "idc", "edc"]):
+        if (self.dec_correction != None):
+            self.dec_correction = self.dec_correction.lower()
+
+        if not (self.dec_correction in [None, "idc", "edc"]):
             error_message = "Invalid decoherence corrections in FSSH method!"
             error_vars = f"dec_correction = {self.dec_correction}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")

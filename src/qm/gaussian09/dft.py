@@ -27,7 +27,7 @@ class DFT(Gaussian09):
         self.functional = functional
 
         # Set initial guess for DFT calculation
-        self.guess = guess
+        self.guess = guess.lower()
         self.guess_file = os.path.abspath(guess_file)
         if not (self.guess in ["Harris", "read"]):
             error_message = "Invalid initial guess for DFT!"

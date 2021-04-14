@@ -36,7 +36,7 @@ class CASSCF(Molpro):
 
         # Initialize Molpro CASSCF variables
         # Set initial guess for CASSCF calculation
-        self.guess = guess
+        self.guess = guess.lower()
         self.guess_file = guess_file
         if not (self.guess in ["hf", "read"]):
             error_message = "Invalid initial guess for CASSCF!"

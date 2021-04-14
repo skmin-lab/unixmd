@@ -79,13 +79,13 @@ class SHXF(MQC):
         self.l_hop = False
         self.l_reject = False
 
-        self.hop_rescale = hop_rescale
+        self.hop_rescale = hop_rescale.lower()
         if not (self.hop_rescale in ["energy", "velocity", "momentum", "augment"]):
             error_message = "Invalid rescaling method for accepted hop!"
             error_vars = f"hop_rescale = {self.hop_rescale}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        self.hop_reject = hop_reject
+        self.hop_reject = hop_reject.lower()
         if not (self.hop_reject in ["keep", "reverse"]):
             error_message = "Invalid rescaling method for frustrated hop!"
             error_vars = f"hop_reject = {self.hop_reject}"

@@ -52,7 +52,7 @@ class SSR(TeraChem):
             self.l_state_interactions = l_state_interactions
 
             # Set initial guess for REKS SCF iterations
-            self.guess = guess
+            self.guess = guess.lower()
             self.guess_file = guess_file
             if not (self.guess in ["dft", "read"]):
                 error_message = "Invalid initial guess for SSR!"

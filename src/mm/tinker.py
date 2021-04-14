@@ -26,27 +26,31 @@ class Tinker(MM_calculator):
         super().__init__()
 
         self.scheme = scheme
-
         if (self.scheme != None):
-            if not (self.scheme in ["additive", "subtractive"]):
-                error_message = "Invalid scheme for QM/MM calculation!"
-                error_vars = f"scheme = {self.scheme}"
-                raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
+            self.scheme = self.scheme.lower()
+
+        if not (self.scheme in ["additive", "subtractive"]):
+            error_message = "Invalid scheme for QM/MM calculation!"
+            error_vars = f"scheme = {self.scheme}"
+            raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.embedding = embedding
-        self.vdw = vdw
-
         if (self.embedding != None):
-            if not (self.embedding in ["mechanical", "electrostatic"]):
-                error_message = "Invalid charge embedding for QM/MM calculation!"
-                error_vars = f"embedding = {self.embedding}"
-                raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
+            self.embedding = self.embedding.lower()
 
+        if not (self.embedding in [None, "mechanical", "electrostatic"]):
+            error_message = "Invalid charge embedding for QM/MM calculation!"
+            error_vars = f"embedding = {self.embedding}"
+            raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        self.vdw = vdw
         if (self.vdw != None):
-            if (self.vdw != "lennardjones"):
-                error_message = "Invalid van der Waals interaction for QM/MM calculation!"
-                error_vars = f"vdw = {self.vdw}"
-                raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
+            self.vdw = self.vdw.lower()
+
+        if not (self.vdw in [None, "lennardjones"]):
+            error_message = "Invalid van der Waals interaction for QM/MM calculation!"
+            error_vars = f"vdw = {self.vdw}"
+            raise ValueError (f"( {self.mm_prog}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.l_periodic = l_periodic
         self.cell_par = cell_par

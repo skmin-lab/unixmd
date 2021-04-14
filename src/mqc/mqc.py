@@ -45,9 +45,10 @@ class MQC(object):
         self.fstep = -1
 
         # Decide unit of time step
-        if (unit_dt == 'au'):
+        self.unit_dt = unit_dt.lower()
+        if (self.unit_dt == 'au'):
             self.dt = dt
-        elif (unit_dt == 'fs'):
+        elif (self.unit_dt == 'fs'):
             self.dt = dt * fs_to_au
         else:
             error_message = "Invalid unit for time step!"
@@ -62,11 +63,18 @@ class MQC(object):
 
         # None for BOMD case
         self.elec_object = elec_object
+        if (self.elec_object != None):
+            self.elec_object = self.elec_object.lower()
+
         if not (self.elec_object in [None, "coefficient", "density"]):
             error_message = "Invalid electronic object!"
             error_vars = f"elec_object = {self.elec_object}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
         self.propagator = propagator
+        if (self.propagator != None):
+            self.propagator = self.propagator.lower()
+
         if not (self.propagator in [None, "rk4"]):
             error_message = "Invalid electronic propagator!"
             error_vars = f"propagator = {self.propagator}"
@@ -96,6 +104,9 @@ class MQC(object):
             :param string restart: Option for controlling dynamics restarting
         """
         # Check whether the restart option is right
+        if (restart != None):
+            restart = restart.lower()
+
         if not (restart in [None, "write", "append"]):
             error_message = "Invalid restart option!"
             error_vars = f"restart = {restart}"
