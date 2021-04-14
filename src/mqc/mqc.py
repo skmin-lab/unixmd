@@ -56,10 +56,11 @@ class MQC(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check number of state and initial state
-        if (self.istate >= self.mol.nst):
-            error_message = "Index for initial state must be smaller than number of states! The index for ground state is zero"
-            error_vars = f"istate = {self.istate}, Molecule.nstates = {self.mol.nst}"
-            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+        if (self.istate != None):
+            if (self.istate >= self.mol.nst):
+                error_message = "Index for initial state must be smaller than number of states! The index for ground state is zero"
+                error_vars = f"istate = {self.istate}, Molecule.nstates = {self.mol.nst}"
+                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # None for BOMD case
         self.elec_object = elec_object
