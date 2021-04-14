@@ -51,7 +51,7 @@ Q-Chem :cite:`qchem2015` is a comprehensive ab initio quantum chemistry software
 | **cpscf_grad_tol**    | Gradient convergence for CP iterations         | *6*          |
 | *(integer)*           |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
-| **qm_path**           | Path for Q-Chem                                | *'./'*       |
+| **root_path**         | Path for Q-Chem root directory                 | *'./'*       |
 | *(string)*            |                                                |              |
 +-----------------------+------------------------------------------------+--------------+
 | **version**           | Q-Chem version                                 | *'5.2'*      |
@@ -123,11 +123,11 @@ Detailed description of parameters
 
 \
 
-- **qm_path** *(string)* - Default : *'./'*
+- **root_path** *(string)* - Default : *'./'*
 
-  This parameter designates the path for the Q-Chem install directory. 
-  To execute Q-Chem binary file, the environment variables for Q-Chem are assigned by executing 'qcenv.sh' in the Q-Chem install directory.
-  Hence, You must set **qm_path** to *'/my_disk/my_name/qchem/'* not *'/my_disk/my_name/qchem/bin/'*.
+  This parameter designates the path for the Q-Chem root directory. 
+  To execute Q-Chem binary file, the environment variables for Q-Chem are assigned by executing 'qcenv.sh' in the Q-Chem root directory.
+  Hence, You must set **root_path** to *'/my_disk/my_name/qchem/'* not *'/my_disk/my_name/qchem/bin/'*.
 
 \
 

@@ -49,23 +49,32 @@ class SSR(DFTBplus):
 
         self.l_onsite = l_onsite
         if (self.l_onsite):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Onsite-correction not implemented! {self.l_onsite}")
+            error_message = "Onsite-correction not implemented!"
+            error_vars = f"l_onsite = {self.l_onsite}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.l_range_sep = l_range_sep
         self.lc_method = lc_method
 
         self.l_ssr22 = l_ssr22
+        # TODO : logical variable (l_ssr22, l_ssr44) must be changed for generality
+        if (not self.l_ssr22):
+            error_message = "Use (2,2) active space for SSR!"
+            error_vars = f"l_ssr22 = {self.l_ssr22}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
         self.l_ssr44 = l_ssr44
-        if (not (self.l_ssr22 or self.l_ssr44)):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Other active space not implemented! {self.l_ssr22 or self.l_ssr44}")
         if (self.l_ssr44):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) REKS(4,4) not implemented! {self.l_ssr44}")
+            error_message = "(4,4) active space for SSR not implemented!"
+            error_vars = f"l_ssr44 = {self.l_ssr44}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Set initial guess for eigenvectors
         self.guess = guess
         self.guess_file = guess_file
-        if (not (self.guess == "h0" or self.guess == "read")):
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong input for initial guess option! {self.guess}")
+        if not (self.guess in ["h0", "read"]):
+            error_message = "Invalid initial guess for DFTB/SSR!"
+            error_vars = f"guess = {self.guess}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.l_state_interactions = l_state_interactions
         self.shift = shift
@@ -74,7 +83,9 @@ class SSR(DFTBplus):
         self.tuning = tuning
         if (self.tuning != None):
             if (len(self.tuning) != len(self.atom_type)):
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong number of elements for scaling factors! {self.tuning}")
+                error_message = "Number of elements for scaling factor must be equal to number of atom types!"
+                error_vars = f"len(tuning) = {len(self.tuning)}, len(atom_type) = {len(self.atom_type)}"
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.cpreks_grad_alg = cpreks_grad_alg
         self.cpreks_grad_tol = cpreks_grad_tol
@@ -82,8 +93,10 @@ class SSR(DFTBplus):
 
         self.embedding = embedding
         if (self.embedding != None):
-            if (not (self.embedding == "mechanical" or self.embedding == "electrostatic")):
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong charge embedding given! {self.embedding}")
+            if not (self.embedding in ["mechanical", "electrostatic"]):
+                error_message = "Invalid charge embedding for QM/MM calculation!"
+                error_vars = f"embedding = {self.embedding}"
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.l_periodic = l_periodic
         self.a_axis = np.copy(cell_length[0:3])
@@ -290,7 +303,9 @@ class SSR(DFTBplus):
                 energy_functional = "{ 'PPS' 'OSS' }"
                 all_states = "Yes"
             else:
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) Too many electrnoic states! {molecule.nst}")
+                error_message = "SSR(2,2) can calculate up to 3 electronic states!"
+                error_vars = f"Molecule.nstates = {molecule.nst}"
+                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
             # Include state-interaction terms to SA-REKS; SI-SA-REKS
             if (self.l_state_interactions):
@@ -335,7 +350,9 @@ class SSR(DFTBplus):
             cpreks_alg = "Direct"
             preconditioner = "No"
         else:
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) Wrong CP-REKS algorithm given! {self.cpreks_grad_alg}")
+            error_message = "Invalid algorithms for CP-REKS problem!"
+            error_vars = f"cpreks_grad_alg = {self.cpreks_grad_alg}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Save memory in cache to reduce computational cost in CP-REKS
         if (self.l_save_memory):
@@ -389,7 +406,9 @@ class SSR(DFTBplus):
 
         # ParserOptions Block
         if (self.version == "19.1"):
-            raise ValueError (f"( {self.qm_prog}.{call_name()} ) SSR not implemented in this version! {self.version}")
+            error_message = "SSR not implemented in this version!"
+            error_vars = f"version = {self.version}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
         elif (self.version == "20.1"):
             parser_version = 8
 
@@ -406,7 +425,7 @@ class SSR(DFTBplus):
             f.write(input_dftb)
 
     def run_QM(self, base_dir, istep, bo_list):
-        """ Run SSR calculation and save the output files to QMlog directory
+        """ Run SSR calculation and save the output files to qm_log directory
 
             :param string base_dir: Base directory
             :param integer istep: Current MD step

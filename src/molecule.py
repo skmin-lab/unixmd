@@ -42,23 +42,40 @@ class Molecule(object):
         self.nst = nstates
         self.l_model = l_model
 
+        # Conversion unit
+        self.unit_pos = unit_pos
+        if not (self.unit_pos in ["angs", "au"]):
+            error_message = "Invalid unit for position!"
+            error_vars = f"unit_pos = {self.unit_pos}"
+            raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        self.unit_vel = unit_vel
+        if not (self.unit_vel in ["angs/ps", "angs/fs", "au"]):
+            error_message = "Invalid unit for velocity!"
+            error_vars = f"unit_vel = {self.unit_vel}"
+            raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
         # Initialize geometry
         self.pos = []
         self.vel = []
         self.mass = []
         self.symbols = []
-        self.read_geometry(geometry, unit_pos, unit_vel)
+        self.read_geometry(geometry)
 
         # Initialize QM/MM method
         self.l_qmmm = l_qmmm
         self.nat_mm = natoms_mm
         if (self.l_qmmm):
             if (self.nat_mm == None):
-                raise ValueError (f"( {self.mol_type}.{call_name()} ) Number of atoms in MM region is essential for QMMM! {self.nat_mm}")
+                error_message = "Number of atoms in MM region is essential for QMMM!"
+                error_vars = f"natoms_mm = {self.nat_mm}"
+                raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
             self.nat_qm = self.nat - self.nat_mm
         else:
             if (self.nat_mm != None):
-                raise ValueError (f"( {self.mol_type}.{call_name()} ) Number of atoms in MM region is not necessary! {self.nat_mm}")
+                error_message = "Number of atoms in MM region is not necessary!"
+                error_vars = f"natoms_mm = {self.nat_mm}"
+                raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
             self.nat_qm = self.nat
 
         # Initialize system charge and number of electrons
@@ -78,7 +95,9 @@ class Molecule(object):
         else:
             if (ndof == None):
                 if (self.nat == 1):
-                    raise ValueError (f"( {self.mol_type}.{call_name()} ) Too small number of atoms! {self.nat}")
+                    error_message = "Too small number of atoms, check geometry! Or Check l_model and ndof!"
+                    error_vars = f"nat = {self.nat}"
+                    raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
                 elif (self.nat == 2):
                     # Diatomic molecules
                     self.ndof = 1
@@ -115,7 +134,7 @@ class Molecule(object):
         if (self.l_qmmm):
             self.mm_charge = np.zeros(self.nat_mm)
 
-    def read_geometry(self, geometry, unit_pos, unit_vel):
+    def read_geometry(self, geometry):
         """ Routine to read the geometry in extended xyz format.\n
             Example:\n\n
             geometry = '''\n
@@ -127,8 +146,6 @@ class Molecule(object):
             self.read_geometry(geometry)
 
             :param string geometry: Cartesian coordinates for position and initial velocity in the extended xyz format
-            :param string unit_pos: Unit of position (A = angstrom, au = atomic unit [bohr])
-            :param string unit_vel: Unit of velocity (au = atomic unit, A/ps = angstrom per ps, A/fs = angstromm per fs)
         """
         f = geometry.split('\n')
 
@@ -164,23 +181,19 @@ class Molecule(object):
         self.mass = np.array(self.mass)
 
         # Conversion unit
-        if (unit_pos == 'au'):
+        if (self.unit_pos == 'au'):
             fac_pos = 1.
-        elif (unit_pos == 'angs'):
+        elif (self.unit_pos == 'angs'):
             fac_pos = A_to_au
-        else:
-            raise ValueError (f"( {self.mol_type}.{call_name()} ) Invalid unit for position! {unit_pos}")
 
         self.pos = np.array(self.pos) * fac_pos
 
-        if (unit_vel == 'au'):
+        if (self.unit_vel == 'au'):
             fac_vel = 1.
-        elif (unit_vel == 'angs/ps'):
+        elif (self.unit_vel == 'angs/ps'):
             fac_vel = A_to_au / (1000.0 * fs_to_au)
-        elif (unit_vel == 'angs/fs'):
+        elif (self.unit_vel == 'angs/fs'):
             fac_vel = A_to_au / fs_to_au
-        else:
-            raise ValueError (f"( {self.mol_type}.{call_name()} ) Invalid unit for velocity! {unit_vel}")
 
         self.vel = np.array(self.vel) * fac_vel
 
@@ -274,7 +287,9 @@ class Molecule(object):
             self.rho[istate, istate] = 1. + 0.j
         else:
             if (len(coef) != self.nst):
-                raise ValueError (f"( {self.mol_type}.{call_name()} ) The number of coefficiecnt should be same to nstates!: {len(coef)} != molecule.nst")
+                error_message = "Number of initial coefficients must be equal to number of states!"
+                error_vars = f"(MQC) len(init_coef) = {len(coef)}, nstates = {self.nst}"
+                raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
             else:
                 for ist in range(self.nst):
                     if (isinstance(coef[ist], float)):
@@ -282,7 +297,9 @@ class Molecule(object):
                     elif (isinstance(coef[ist], complex)):
                         self.states[ist].coef = coef[ist]
                     else:
-                        raise ValueError (f"( {self.mol_type}.{call_name()} ) The coefficiecnt should be float or complex: {coef[ist]}")
+                        error_message = "Type of coefficient must be float or complex!"
+                        error_vars = f"(MQC) init_coef[{ist}] = {coef[ist]}"
+                        raise TypeError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
                         
                 for ist in range(self.nst):
                     for jst in range(self.nst):
