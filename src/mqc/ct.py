@@ -98,7 +98,8 @@ class CT(MQC):
         self.dist_parameter = dist_parameter
         self.sigma = sigma
 
-        self.dotpopd = np.zeros(self.nst)
+        self.dotpopnac = np.zeros((self.ntrajs, self.nst))
+        self.dotpopdec = np.zeros((self.ntrajs, self.nst))
 
     def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to CTMQC dynamics
@@ -142,9 +143,7 @@ class CT(MQC):
 
                 self.write_md_output(itraj, unixmd_dirs[itraj], self.istep)
 
-                self.print_traj(self.istep, itraj)
-
-            self.print_step(self.istep)
+                self.print_step(self.istep, itraj)
 
         #TODO: restart
         else: 
@@ -194,11 +193,9 @@ class CT(MQC):
             for itraj in range(self.ntrajs):
                 if ((istep + 1) % self.out_freq == 0):
                     self.write_md_output(itraj, unixmd_dirs[itraj], istep)
-                    self.print_traj(istep, itraj)
+                    self.print_step(istep, itraj)
                 if (istep == self.nsteps - 1):
                     self.write_final_xyz(unixmd_dirs[itraj], istep)
-
-            self.print_step(istep)
 
         # Delete scratch directory
         if (not l_save_scr):
@@ -536,7 +533,7 @@ class CT(MQC):
 
         print (dynamics_step_info, flush=True)
 
-    def print_traj(self, istep, itrajectory):
+    def print_step(self, istep, itrajectory):
         """ Routine to print each trajectory infomation at each step about dynamics
 
             :param integer istep: Current MD step
@@ -553,22 +550,3 @@ class CT(MQC):
         INFO += f"{ctemp:13.6f}"
         INFO += f"{norm:11.5f}"
         print (INFO, flush=True)
-
-    def print_step(self, istep):
-        """ Routine to print each steps infomation about dynamics
-
-            :param integer istep: Current MD step
-        """
-        rho = np.zeros((self.nst, self.nst))
-        for itraj in range(self.ntrajs):
-            for ist in range(self.nst):
-                for jst in range(ist, self.nst):
-                    if (ist == jst):
-                        rho[ist, jst] += self.mols[itraj].rho[ist, jst].real
-                    else:
-                        rho[ist, jst] += self.mols[itraj].rho[ist, ist].real * self.mols[itraj].rho[jst, jst].real
-        rho /= self.ntrajs
-
-        DEBUG1 = f" INFO_AVG{istep + 1:9d}" + "".join([f'{rho[ist, ist]:15.8f}' for ist in range(self.nst)])
-        DEBUG1 += "".join([f'{rho[ist, jst]:15.8f}' for ist in range(self.nst) for jst in range(ist + 1, self.nst)])
-        print(DEBUG1, flush=True)
