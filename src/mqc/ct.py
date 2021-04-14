@@ -162,9 +162,9 @@ class CT(MQC):
 
         #TODO: restart
         else: 
-            error_message = "Only None is valid!"
+            error_message = "restart option with CTMQC not implemented!"
             error_vars = f"restart = {restart}"
-            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.istep += 1
 
