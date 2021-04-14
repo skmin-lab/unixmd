@@ -162,7 +162,7 @@ class CT(MQC):
 
         #TODO: restart
         else: 
-            error_message = "restart option with CTMQC not implemented!"
+            error_message = "Restart option with CTMQC not implemented!"
             error_vars = f"restart = {restart}"
             raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
