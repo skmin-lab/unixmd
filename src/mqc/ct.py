@@ -483,12 +483,15 @@ class CT(MQC):
             :param string unixmd_dir: PyUNIxMD directory
             :param integer istep: Current MD step
         """
-        # TODO
-        # Write time-derivative density matrix elements in DOTPOTD
-        #tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopd])
-        #typewriter(tmp, unixmd_dir, "DOTPOPD", "a")
+        if (self.verbosity >= 1):
+            # Write K_lk
+            for ist in range(self.nst):
+                for jst in range(self.nst):
+                    if (ist != jst):
+                        tmp = f'{istep + 1:9d}{self.K_lk[itrajectory, ist, jst]:15.8f}'
+                        typewriter(tmp, unixmd_dir, f"K_lk_{ist}_{jst}", "a")
 
-        # Write auxiliary trajectories
+        # Write detailed quantities related to decoherence
         if (self.verbosity >= 2):
             tmp = f'{self.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}sigma_x{"":5s}sigma_y{"":5s}sigma_z{"":5s}count_ntrajs' + \
                 "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
@@ -516,15 +519,8 @@ class CT(MQC):
                         "".join([f'{self.qmom[itrajectory, index_lk, iat, idim]:15.8f}' for idim in range(self.ndim)]) for iat in range(self.nat_qm)])
                     typewriter(tmp, unixmd_dir, f"QMOM_{ist}_{jst}", "a")
 
-            for ist in range(self.nst):
-                for jst in range(self.nst):
-                    if (ist != jst):
-                        tmp = f'{istep + 1:9d}{self.K_lk[itrajectory, ist, jst]:15.8f}'
-                        typewriter(tmp, unixmd_dir, f"K_lk_{ist}_{jst}", "a")
-
-            # Write auxiliary variables
+            # Write Phase
             for ist in range(self.mol.nst):
-                # Write auxiliary phase
                 tmp = f'{self.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Phase (au)' + \
                     "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
                     "".join([f'{self.phase[itrajectory, ist, iat, idim]:15.8f}' for idim in range(self.ndim)]) for iat in range(self.nat_qm)])
@@ -551,17 +547,6 @@ class CT(MQC):
         # Print INIT for each trajectory at each step
         INIT = f" #INFO_TRAJ{'STEP':>8s}{'Kinetic(H)':>15s}{'Potential(H)':>15s}{'Total(H)':>13s}{'Temperature(K)':>17s}{'norm':>8s}"
         dynamics_step_info += INIT
-
-        # Print INIT for averaged quantity at each step
-        DEBUG1 = f" #INFO_AVG{'STEP':>9s}"
-        for ist in range(self.nst):
-            DEBUG1 += f"{'BOPOP_':>13s}{ist}"
-
-        for ist in range(self.nst):
-            for jst in range(ist + 1, self.nst):
-                DEBUG1 += f"{'BOCOH_':>13s}{ist}_{jst}"
-
-        dynamics_step_info += "\n" + DEBUG1
 
         print (dynamics_step_info, flush=True)
 
