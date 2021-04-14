@@ -79,9 +79,9 @@ class CT(MQC):
             elec_object, propagator, l_print_dm, l_adj_nac, init_coefs[0], unit_dt, out_freq, verbosity)
 
         if (self.elec_object != "coefficient"):
-            error_message = "Number of elements of init_coefs must be equal to number of trajectories!"
-            error_vars = f"len(init_coefs) = {len(init_coefs)}, number of trajectories = {self.ntrajs}"
-            raise ValueError (f"( {self.md_type}.{call_name()} ) coefficient propagation is only valid! {self.elec_object}")
+            error_message = "Only coefficient is valid!"
+            error_vars = f"elec_object = {self.elec_object}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Initialize coefficient for other trajectories
         for itraj in range(1, self.ntrajs):
@@ -162,7 +162,9 @@ class CT(MQC):
 
         #TODO: restart
         else: 
-            raise ValueError (f"( {self.md_type}.{call_name()} ) restart is not valid in CTMQC ! {restart}")
+            error_message = "Only None is valid!"
+            error_vars = f"restart = {restart}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.istep += 1
 
