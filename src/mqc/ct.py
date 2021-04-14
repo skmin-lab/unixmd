@@ -441,10 +441,29 @@ class CT(MQC):
         # Write the common part
         super().write_md_output(unixmd_dir, istep)
 
-        # Write decoherence information
-        self.write_deco(itrajectory, unixmd_dir, istep)
+        # Write time-derivative BO population
+        self.write_dotpop(itrajectory, unixmd_dir, istep)
 
-    def write_deco(self, itrajectory, unixmd_dir, istep):
+        # Write decoherence information
+        self.write_dec(itrajectory, unixmd_dir, istep)
+
+    def write_dotpop(self, itrajectory, unixmd_dir, istep):
+        """ Write time-derivative BO population
+
+            :param integer itrajectory: Index for trajectories
+            :param string unixmd_dir: PyUNIxMD directory
+            :param integer istep: Current MD step
+        """
+        if (self.verbosity >= 1):
+            # Write NAC term in DOTPOPNAC
+            tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopnac[itrajectory]])
+            typewriter(tmp, unixmd_dir, "DOTPOPNAC", "a")
+
+            # Write decoherence term in DOTPOPDEC
+            tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopdec[itrajectory]])
+            typewriter(tmp, unixmd_dir, "DOTPOPDEC", "a")
+
+    def write_dec(self, itrajectory, unixmd_dir, istep):
         """ Write CT-based decoherence information
 
             :param integer itrajectory: Index for trajectories
