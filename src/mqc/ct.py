@@ -432,7 +432,7 @@ class CT(MQC):
         if (self.istates != None):
             if (isinstance(self.istates, list)):
                 if (len(self.istates) != self.ntrajs):
-                    error_message = "Number of elements of istates must be equal to number of trajectories!"
+                    error_message = "Number of elements of initial states must be equal to number of trajectories!"
                     error_vars = f"len(istates) = {len(self.istates)}, ntrajs = {self.ntrajs}"
                     raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
                 else:
@@ -444,7 +444,7 @@ class CT(MQC):
                     else:
                         self.init_coefs = [None] * self.ntrajs
             else:
-                error_message = "The type of istates must be list!"
+                error_message = "The type of initial states must be list!"
                 error_vars = f"istates = {self.istates}"
                 raise TypeError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
@@ -455,13 +455,13 @@ class CT(MQC):
             else:
                 if (isinstance(self.init_coefs, list)):
                     if (len(self.init_coefs) != self.ntrajs):
-                        error_message = "Number of elements of init_coefs must be equal to number of trajectories!"
+                        error_message = "Number of elements of initial coefficients must be equal to number of trajectories!"
                         error_vars = f"len(init_coefs) = {len(self.init_coefs)}, ntrajs = {self.ntrajs}"
                         raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
                     else:
                         self.istates = [None] * self.ntrajs
                 else:
-                    error_message = "The type of init_coefs must be list!"
+                    error_message = "Type of initial coefficients must be list!"
                     error_vars = f"init_coefs = {self.init_coefs}"
                     raise TypeError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
