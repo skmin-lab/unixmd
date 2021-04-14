@@ -298,7 +298,7 @@ class Molecule(object):
                         elif (isinstance(coef[ist], complex)):
                             self.states[ist].coef = coef[ist]
                         else:
-                            error_message = "Type of coefficient must be float or complex!"
+                            error_message = "Type of initial coefficients must be float or complex!"
                             error_vars = f"(MQC) init_coef[{ist}] = {coef[ist]}"
                             raise TypeError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
@@ -309,11 +309,11 @@ class Molecule(object):
                         norm += self.rho.real[ist, ist]
 
                     if (abs(norm - 1.0) >= eps):
-                        error_message = "norm should be 1.0!"
+                        error_message = "Norm for electronic wave function should be 1.0!"
                         error_vars = f"(MQC) init_coef = {coef}"
-                        raise TypeError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                        raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
             else:
-                error_message = "Type of init_coef must be list!"
+                error_message = "Type of initial coefficients must be list!"
                 error_vars = f"(MQC) init_coef = {coef}"
                 raise TypeError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
