@@ -154,6 +154,8 @@ class CT(MQC):
 
             for itraj in range(self.ntrajs):
 
+                self.mol = self.mols[itraj]
+
                 self.write_md_output(itraj, unixmd_dirs[itraj], self.istep)
 
                 self.print_step(self.istep, itraj)
@@ -204,6 +206,8 @@ class CT(MQC):
             self.calculate_qmom(istep)
 
             for itraj in range(self.ntrajs):
+                self.mol = self.mols[itraj]
+
                 if ((istep + 1) % self.out_freq == 0):
                     self.write_md_output(itraj, unixmd_dirs[itraj], istep)
                     self.print_step(istep, itraj)
