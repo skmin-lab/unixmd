@@ -369,7 +369,7 @@ by changing the MD setting in the above running script:
 .. code-block:: python
 
    md = mqc.SH(molecule=mol, nsteps=2890, nesteps=1, dt=0.5, unit_dt='au', \
-        , istate=1, elec_object="density")
+        istate=1, elec_object="density")
 
 Then the populations and the coherence will be shown like this.
 
