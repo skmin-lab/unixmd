@@ -421,7 +421,7 @@ class CT(MQC):
                             tmp_var = center_old_lk[itraj, index_lk, iat, idim] - self.mols[itraj].pos[iat, idim]
                             if (abs(tmp_var) > self.dist_parameter * self.sigma): 
                                 tmp_var = center_new_lk[itraj, index_lk, iat, idim] - self.mols[itraj].pos[iat, idim]
-                                if (abs(tmp_var) > self_dist_parameter * self.sigma): 
+                                if (abs(tmp_var) > self.dist_parameter * self.sigma): 
                                     self.center_lk[itraj, index_lk, iat, idim] = self.mols[itraj].pos[iat, idim]
                                 else:
                                     self.center_lk[itraj, index_lk, iat, idim] = center_new_lk[itraj, index_lk, iat, idim]
