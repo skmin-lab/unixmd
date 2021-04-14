@@ -114,7 +114,7 @@ def el_run(md, itrajectory):
                 if (jst != ist):
                     md.dotpopnac[itrajectory, ist] -= 2. * nacme[ist][jst] * md.mol.rho.real[jst, ist]
                     md.dotpopdec[itrajectory, ist] -= 0.5 * (k_lk[ist][jst] - k_lk[jst][ist]) * \
-                     md.mol.rho.real[jst, jst] * md.mol.rho.real[ist, ist]
+                        md.mol.rho.real[jst, jst] * md.mol.rho.real[ist, ist]
 
     # Deallocate variables
     for ist in range(nst):
