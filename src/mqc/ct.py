@@ -68,7 +68,7 @@ class CT(MQC):
                 error_vars = f"istates = {istates} and init_coefs = {init_coefs}"
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
             else:
-                istates = [0] * self.ntrajs
+                istates = [None] * self.ntrajs
                 if (len(init_coefs) != self.ntrajs):
                     error_message = "Number of elements of init_coefs must be equal to number of trajectories!"
                     error_vars = f"len(init_coefs) = {len(init_coefs)}, number of trajectories = {self.ntrajs}"

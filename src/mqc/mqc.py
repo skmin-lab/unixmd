@@ -302,9 +302,13 @@ class MQC(object):
 
           MQC Method               = {self.md_type:>16s}
           Time Interval (fs)       = {self.dt / fs_to_au:16.6f}
-          Initial State (0:GS)     = {self.istate:>16d}
           Nuclear Step             = {self.nsteps:>16d}
         """), "  ")
+        if (self.istate != None):
+          dynamics_info += f"  Initial State (0:GS)     = {self.istate:>16d}\n"
+        else:
+          dynamics_info += f"  Initial State (0:GS)     = {str(self.istate):>16s}\n"
+
         if (self.md_type != "BOMD"):
             dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
             dynamics_info += f"  Propagation Scheme       = {self.elec_object:>16s}\n"
