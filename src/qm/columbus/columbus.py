@@ -18,7 +18,7 @@ class Columbus(QM_calculator):
         super().__init__()
 
         # Initialize Columbus common variables
-        self.basis_set = basis_set
+        self.basis_set = basis_set.lower()
 
         self.memory = memory
         self.qm_path = qm_path

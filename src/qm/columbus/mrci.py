@@ -40,7 +40,7 @@ class MRCI(Columbus):
         # Set initial guess for MRCI calculation
         # read: Read MCSCF orbitals obtained from previous step -> MCSCF -> MRCI
         # hf: Start HF orbitals -> MCSCF -> MRCI
-        self.guess = guess
+        self.guess = guess.lower()
         self.guess_file = guess_file
         if not (self.guess in ["hf", "read"]):
             error_message = "Invalid initial guess for MRCI!"

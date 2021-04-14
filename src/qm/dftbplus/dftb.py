@@ -50,13 +50,13 @@ class DFTB(DFTBplus):
         self.l_onsite = l_onsite
 
         self.l_range_sep = l_range_sep
-        self.lc_method = lc_method
+        self.lc_method = lc_method.lower()
 
         self.l_spin_pol = l_spin_pol
         self.unpaired_elec = unpaired_elec
 
         # Set initial guess for SCC term
-        self.guess = guess
+        self.guess = guess.lower()
         self.guess_file = guess_file
         if not (self.guess in ["h0", "read"]):
             error_message = "Invalid initial guess for DFTB!"
@@ -64,9 +64,9 @@ class DFTB(DFTBplus):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.elec_temp = elec_temp
-        self.mixer = mixer
+        self.mixer = mixer.lower()
 
-        self.ex_symmetry = ex_symmetry
+        self.ex_symmetry = ex_symmetry.lower()
         self.e_window = e_window
 
         self.k_point = k_point

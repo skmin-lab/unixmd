@@ -54,7 +54,7 @@ class SSR(DFTBplus):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.l_range_sep = l_range_sep
-        self.lc_method = lc_method
+        self.lc_method = lc_method.lower()
 
         self.l_ssr22 = l_ssr22
         # TODO : logical variable (l_ssr22, l_ssr44) must be changed for generality
@@ -69,7 +69,7 @@ class SSR(DFTBplus):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Set initial guess for eigenvectors
-        self.guess = guess
+        self.guess = guess.lower()
         self.guess_file = guess_file
         if not (self.guess in ["h0", "read"]):
             error_message = "Invalid initial guess for DFTB/SSR!"
@@ -87,16 +87,18 @@ class SSR(DFTBplus):
                 error_vars = f"len(tuning) = {len(self.tuning)}, len(atom_type) = {len(self.atom_type)}"
                 raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        self.cpreks_grad_alg = cpreks_grad_alg
+        self.cpreks_grad_alg = cpreks_grad_alg.lower()
         self.cpreks_grad_tol = cpreks_grad_tol
         self.l_save_memory = l_save_memory
 
         self.embedding = embedding
         if (self.embedding != None):
-            if not (self.embedding in ["mechanical", "electrostatic"]):
-                error_message = "Invalid charge embedding for QM/MM calculation!"
-                error_vars = f"embedding = {self.embedding}"
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+            self.embedding = self.embedding.lower()
+
+        if not (self.embedding in [None, "mechanical", "electrostatic"]):
+            error_message = "Invalid charge embedding for QM/MM calculation!"
+            error_vars = f"embedding = {self.embedding}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.l_periodic = l_periodic
         self.a_axis = np.copy(cell_length[0:3])
