@@ -16,7 +16,7 @@ class CASSCF(Columbus):
         :param integer scf_max_iter: Maximum number of SCF iterations
         :param integer mcscf_en_tol: Energy convergence for (SA-)CASSCF iterations
         :param integer mcscf_max_iter: Maximum number of (SA-)CASSCF iterations
-        :param integer state_avg: Number of averaged state for (SA-)CASSCF
+        :param integer state_avg: Number of states to be averaged for (SA-)CASSCF
         :param integer cpscf_grad_tol: Gradient tolerance for CP-CASSCF equations
         :param integer cpscf_max_iter: Maximum number of iterations for CP-CASSCF equations
         :param integer active_elec: Number of electrons in active space
