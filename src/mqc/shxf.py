@@ -538,7 +538,7 @@ class SHXF(MQC):
                 else:
                     if (self.l_first[ist]):
                         alpha = self.mol.ekin_qm
-                        if (not self.l_econs_state):
+                        if (self.l_econs_state):
                             alpha += self.mol.states[self.rstate].energy - self.mol.states[ist].energy
                     else:
                         ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
