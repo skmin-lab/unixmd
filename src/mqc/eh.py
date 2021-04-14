@@ -1,7 +1,7 @@
 from __future__ import division
 from build.el_propagator import el_run
 from mqc.mqc import MQC
-from misc import au_to_K, call_name
+from misc import au_to_K, call_name, typewriter
 import os, shutil, textwrap
 import numpy as np
 import pickle
@@ -150,6 +150,29 @@ class Eh(MQC):
         for ist, istate in enumerate(self.mol.states):
             self.mol.epot += self.mol.rho.real[ist, ist] * self.mol.states[ist].energy
         self.mol.etot = self.mol.epot + self.mol.ekin
+
+    def write_md_output(self, unixmd_dir, istep):
+        """ Write output files
+
+            :param string unixmd_dir: PyUNIxMD directory
+            :param integer istep: Current MD step
+        """
+        # Write the common part
+        super().write_md_output(unixmd_dir, istep)
+
+        # Write time-derivative BO population
+        self.write_dotpop(unixmd_dir, istep)
+
+    def write_dotpop(self, unixmd_dir, istep):
+        """ Write time-derivative BO population
+
+            :param string unixmd_dir: PyUNIxMD directory
+            :param integer istep: Current MD step
+        """
+        # Write NAC term in DOTPOPNAC
+        if (self.verbosity >= 1):
+            tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopnac])
+            typewriter(tmp, unixmd_dir, "DOTPOPNAC", "a")
 
     def print_init(self, qm, mm, restart):
         """ Routine to print the initial information of dynamics
