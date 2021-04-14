@@ -26,6 +26,8 @@ The names of directories where the interface packages are and the classes of met
 | QM programs       | Interface directories  | QM methods     | Class names    |
 +===================+========================+================+================+
 | COLUMBUS          | columbus               | (SA-)CASSCF    | CASSCF         |
+|                   |                        |                |                |
+|                   |                        | MRCI           | MRCI           |
 +-------------------+------------------------+----------------+----------------+
 | Molpro            | molpro                 | (SA-)CASSCF    | CASSCF         |
 +-------------------+------------------------+----------------+----------------+
