@@ -43,13 +43,13 @@ class Molecule(object):
         self.l_model = l_model
 
         # Conversion unit
-        self.unit_pos = unit_pos
+        self.unit_pos = unit_pos.lower()
         if not (self.unit_pos in ["angs", "au"]):
             error_message = "Invalid unit for position!"
             error_vars = f"unit_pos = {self.unit_pos}"
             raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        self.unit_vel = unit_vel
+        self.unit_vel = unit_vel.lower()
         if not (self.unit_vel in ["angs/ps", "angs/fs", "au"]):
             error_message = "Invalid unit for velocity!"
             error_vars = f"unit_vel = {self.unit_vel}"
