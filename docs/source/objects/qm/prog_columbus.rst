@@ -267,7 +267,7 @@ Detailed description of parameters
   This parameter determines the initial guess method for the MRCI calculations. 
   MRCI calculation requires MCSCF orbital as a initial guess and MCSCF calculation requires HF guess orbital, so watch out for confuse HF and MCSCF guess.
 
-  + *'hf'*: Initial guess orbitals for the MRCI calculations are generated from the HF calculations.
+  + *'hf'*: Initial guess orbitals of MCSCF calculations are generated from the HF calculations.
     In every step, both HF and MCSCF calculation are perferomed for generating initial guess for MRCI calculation.
   + *'read'*: Initial guess orbitals of MCSCF calculation are read from the 'mocoef' file
     which contains the converged MCSCF orbitals calculated at the previous time step.
