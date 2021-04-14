@@ -74,5 +74,3 @@ If you have Sphinx, you can locally build the manual of PyUNIxMD by the followin
   $ cd docs
   $ make html
 
-License
-=======
