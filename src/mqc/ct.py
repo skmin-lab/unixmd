@@ -55,9 +55,9 @@ class CT(MQC):
             elec_object, propagator, l_print_dm, l_adj_nac, self.init_coefs[0], unit_dt, out_freq, verbosity)
 
         if (self.elec_object != "coefficient"):
-            error_message = "Only coefficient is valid!"
+            error_message = "Electronic equation motion in CTMQC is only solved with respect to coefficient!"
             error_vars = f"elec_object = {self.elec_object}"
-            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Initialize coefficient for other trajectories
         for itraj in range(1, self.ntrajs):
