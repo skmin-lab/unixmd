@@ -85,6 +85,9 @@ class SH(MQC):
 #                error_vars = f"hop_reject = {self.hop_reject}"
 #                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
+        # Debug variables
+        self.dotpopnac = np.zeros(self.mol.nst)
+
         # Initialize event to print
         self.event = {"HOP": []}
 
@@ -440,6 +443,9 @@ class SH(MQC):
         # Write hopping-related quantities
         self.write_sh(unixmd_dir, istep)
 
+        # Write time-derivative BO population
+        self.write_dotpop(unixmd_dir, istep)
+
     def write_sh(self, unixmd_dir, istep):
         """ Write hopping-related quantities into files
 
@@ -453,6 +459,17 @@ class SH(MQC):
         # Write SHPROB file
         tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(self.mol.nst)])
         typewriter(tmp, unixmd_dir, "SHPROB", "a")
+
+    def write_dotpop(self, unixmd_dir, istep):
+        """ Write time-derivative BO population
+
+            :param string unixmd_dir: PyUNIxMD directory
+            :param integer istep: Current MD step
+        """
+        # Write NAC term in DOTPOPNAC
+        if (self.verbosity >= 1):
+            tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopnac])
+            typewriter(tmp, unixmd_dir, "DOTPOPNAC", "a")
 
     def print_init(self, qm, mm, restart):
         """ Routine to print the initial information of dynamics

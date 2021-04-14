@@ -378,6 +378,11 @@ class MQC(object):
             tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
             typewriter(tmp, unixmd_dir, "NACME", "w")
 
+            # DOTPOPNAC file header
+            if (self.verbosity >= 1):
+                tmp = f'{"#":5s} Time-derivative Density Matrix by NAC: population; see the manual for detail orders'
+                typewriter(tmp, unixmd_dir, "DOTPOPNAC", "w")
+
         # file header for SH-based methods
         if (self.md_type == "SH" or self.md_type == "SHXF"):
             tmp = f'{"#":5s}{"Step":8s}{"Running State":10s}'

@@ -20,7 +20,7 @@ def el_run(md):
         double complex **rho
 
         bytes py_bytes
-        int ist, jst, nst, nesteps
+        int ist, jst, nst, nesteps, verbosity
         double dt
 
     # Assign size variables
@@ -47,6 +47,9 @@ def el_run(md):
         for jst in range(nst):
             nacme[ist][jst] = md.mol.nacme[ist, jst]
             nacme_old[ist][jst] = md.mol.nacme_old[ist, jst]
+
+    # Debug related
+    verbosity = md.verbosity
 
     # Assign coef or rho with respect to propagation scheme
     if (md.elec_object == "coefficient"):
@@ -94,6 +97,14 @@ def el_run(md):
         for ist in range(nst):
             PyMem_Free(rho[ist])
         PyMem_Free(rho)
+
+    # Debug
+    if (verbosity >= 1):
+        for ist in range(nst):
+            md.dotpopnac[ist] = 0.
+            for jst in range(nst):
+                if (jst != ist):
+                    md.dotpopnac[ist] -= 2. * nacme[ist][jst] * md.mol.rho.real[jst, ist]
 
     # Deallocate variables
     for ist in range(nst):

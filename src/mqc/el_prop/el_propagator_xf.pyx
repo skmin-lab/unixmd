@@ -150,6 +150,10 @@ def el_run(md):
     if (verbosity >= 1):
         for ist in range(nst):
             md.dotpopdec[ist] = dotpopdec[ist]
+            md.dotpopnac[ist] = 0.
+            for jst in range(nst):
+                if (jst != ist):
+                    md.dotpopnac[ist] -= 2. * nacme[ist][jst] * md.mol.rho.real[jst, ist]
 
     if (verbosity >= 2):
         for iat in range(aux_nat):

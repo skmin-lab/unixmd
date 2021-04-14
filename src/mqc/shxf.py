@@ -146,6 +146,7 @@ class SHXF(MQC):
 
         # Debug variables
         self.dotpopdec = np.zeros(self.mol.nst)
+        self.dotpopnac = np.zeros(self.mol.nst)
         self.qmom = np.zeros((self.aux.nat, self.aux.ndim))
 
         # Initialize event to print
@@ -586,6 +587,9 @@ class SHXF(MQC):
         # Write hopping-related quantities
         self.write_sh(unixmd_dir, istep)
 
+        # Write DOTPOP
+        self.write_dotpop(unixmd_dir, istep)
+
         # Write decoherence information
         self.write_dec(unixmd_dir, istep)
 
@@ -603,17 +607,27 @@ class SHXF(MQC):
         tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(self.mol.nst)])
         typewriter(tmp, unixmd_dir, "SHPROB", "a")
 
+    def write_dotpop(self, unixmd_dir, istep):
+        """ Write time-derivative BO population
+
+            :param string unixmd_dir: PyUNIxMD directory
+            :param integer istep: Current MD step
+        """
+        if (self.verbosity >= 1):
+            # Write NAC term in DOTPOPNAC
+            tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopnac])
+            typewriter(tmp, unixmd_dir, "DOTPOPNAC", "a")
+
+            # Write decoherence term in DOTPOPDEC
+            tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopdec])
+            typewriter(tmp, unixmd_dir, "DOTPOPDEC", "a")
+
     def write_dec(self, unixmd_dir, istep):
         """ Write XF-based decoherence information
 
             :param string unixmd_dir: PyUNIxMD directory
             :param integer istep: Current MD step
         """
-        # Write time-derivative density matrix elements in DOTPOPDEC
-        if (self.verbosity >= 1):
-            tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopdec])
-            typewriter(tmp, unixmd_dir, "DOTPOPDEC", "a")
-
         # Write auxiliary trajectories
         if (self.verbosity >= 2 and True in self.l_coh):
             # Write quantum momenta
