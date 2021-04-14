@@ -25,8 +25,8 @@ qm = qm.model.Shin_Metiu(molecule=mol)
 
 
 # Determine MD method.
-md = mqc.SHXF(molecule=mol, nsteps=2890, nesteps=1, dt=0.5, unit_dt='au', \
-     sigma=0.1, istate=1, elec_object="density")
+md = mqc.SH(molecule=mol, nsteps=2890, nesteps=1, dt=0.5, unit_dt='au', \
+     istate=1, elec_object="density")
 
 
 # Execute the simulation.

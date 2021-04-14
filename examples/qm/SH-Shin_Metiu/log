@@ -11,7 +11,7 @@
     Please cite PyUNIxMD as follows:
     This is article
 
-    PyUNIxMD begins on 2021-04-14 10:33:25
+    PyUNIxMD begins on 2021-04-14 11:04:05
 
 --------------------------------------------------------------------
                       Initial Coordinate (au)
@@ -40,7 +40,7 @@
   QM Program               =            model
   QM Method                =       Shin_Metiu
 
-  MQC Method               =             SHXF
+  MQC Method               =               SH
   Time Interval (fs)       =         0.012094
   Initial State (0:GS)     =                1
   Nuclear Step             =             2890
@@ -49,9 +49,6 @@
 
   Rescaling after Hop      =          augment
   Rescaling after Reject   =          reverse
-
-  Density Threshold        =         0.010000
-  Sigma                    =            0.100
 
   No Thermostat: Total energy is conserved!
 
@@ -931,7 +928,6 @@
  INFO      868    1      0.04325514    -0.21596692    -0.17271178 27317.754302    1.00000
  INFO      869    1      0.04332546    -0.21603723    -0.17271178 27362.163214    1.00000
  INFO      870    1      0.04339573    -0.21610750    -0.17271178 27406.540267    1.00000
- DECO      870  Generate auxiliary trajectory on 0, 1 state
  INFO      871    1      0.04346594    -0.21617772    -0.17271178 27450.884783    1.00000
  INFO      872    1      0.04353610    -0.21624788    -0.17271178 27495.196068    1.00000
  INFO      873    1      0.04360621    -0.21631799    -0.17271178 27539.473414    1.00000
@@ -1178,8 +1174,6 @@
  INFO     1114    1      0.05142527    -0.22413705    -0.17271178 32477.593291    1.00000
  INFO     1115    0      0.06187399    -0.23458577    -0.17271178 39076.475369    1.00000
  HOP     1115  Accept hopping: hop 1 -> 0
- DECO     1115  Destroy auxiliary trajectories: hopping occurs
- DECO     1115  Generate auxiliary trajectory on 0, 1 state
  INFO     1116    0      0.06194070    -0.23465248    -0.17271178 39118.607116    1.00000
  INFO     1117    0      0.06200746    -0.23471924    -0.17271178 39160.766500    1.00000
  INFO     1118    0      0.06207426    -0.23478604    -0.17271178 39202.952551    1.00000
@@ -2059,7 +2053,6 @@
  INFO     1992    0      0.10132904    -0.27404084    -0.17271180 63994.281849    1.00000
  INFO     1993    0      0.10132290    -0.27403470    -0.17271180 63990.408237    1.00000
  INFO     1994    0      0.10131656    -0.27402836    -0.17271180 63986.400657    1.00000
- DECO     1994  Destroy auxiliary trajectories: decohered to 0 state
  INFO     1995    0      0.10131000    -0.27402180    -0.17271180 63982.258818    1.00000
  INFO     1996    0      0.10130323    -0.27401503    -0.17271180 63977.982431    1.00000
  INFO     1997    0      0.10129624    -0.27400804    -0.17271180 63973.571206    1.00000
