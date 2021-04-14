@@ -137,8 +137,8 @@ Detailed description of parameters
 - **state_avg** *(integer)* - Default: *None*
 
   This parameter determines the number of states to be averaged for (SA-)CASSCF.
-  The actual calculation is performed based on **state_avg**, not ``molecule.nst``.
-  If it is not determined by a user, **state_avg** = ``molecule.nst``.
+  The actual calculation is performed based on **state_avg**, not **nstates**.
+  If it is not determined by a user, **state_avg** = **nstates**.
 
 \
 
@@ -316,15 +316,15 @@ Detailed description of parameters
 - **mrci_max_iter** *(integer)* - Default: *None*
 
   This parameter determines the maximum number of The MRCI iterations.
-  If it is not determined by a user, **mrci_max_iter** = 30 * **state_avg**.
+  If it is not determined by a user, **mrci_max_iter** :math:`= 30\,\times` **state_avg**.
 
 \
 
 - **state_avg** *(integer)* - Default: *None*
 
   This parameter determines the number of states to be averaged for (SA-)CASSCF and MRCI.
-  The actual calculation is performed based on **state_avg**, not ``molecule.nst``.
-  If it is not determined by a user, **state_avg** = ``molecule.nst``.
+  The actual calculation is performed based on **state_avg**, not **nstates**.
+  If it is not determined by a user, **state_avg** = **nstates**.
 
 \
 
