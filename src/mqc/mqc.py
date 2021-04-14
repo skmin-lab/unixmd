@@ -428,11 +428,6 @@ class MQC(object):
                 for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
             typewriter(tmp, unixmd_dir, "NACME", "a")
 
-            # Write DOTPOPNAC file
-            if (self.verbosity >= 1):
-                tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopnac])
-                typewriter(tmp, unixmd_dir, "DOTPOPNAC", "a")
-
             # Write NACV file
             if (not self.mol.l_nacme and self.verbosity >= 2):
                 for ist in range(self.mol.nst):
