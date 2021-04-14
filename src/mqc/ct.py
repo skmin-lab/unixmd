@@ -25,7 +25,7 @@ class CT(MQC):
         :param double dist_parameter: Distance parameter to determine quantum momentum center
         :param double sigma: Sigma to determine quantum momentum center
         :param init_coefs: Initial BO coefficient
-        :type init_coefs: double, list, list or complex, list, list
+        :type init_coefs: double, 2D list or complex, 2D list
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
@@ -45,38 +45,14 @@ class CT(MQC):
         self.nat_qm = self.mols[0].nat_qm
         self.ndim = self.mols[0].ndim
 
-        if (istates != None):
-            if (isinstance(istates, list)):
-                if (len(istates) != self.ntrajs):
-                    raise ValueError (f"( {self.md_type}.{call_name()} ) The length of istates should be same to total number of trajectories! {istates}")
-                else:
-                    max_tmp = max(istates)
-                    if (max_tmp >= self.nst):
-                        error_message = "Index for initial state must be smaller than number of states! The index for ground state is zero"
-                        error_vars = f"istates[{istates.index(max_tmp)}] = {max_tmp}, Molecule.nstates = {self.nst}"
-                        raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-            else:
-                error_message = "The type of istates must be list!"
-                error_vars = f"istates = {istates}"
-                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-      
-            init_coefs = [None] * self.ntrajs
-
-        else:
-            if (init_coefs == None):
-                error_message = "Either istates or init_coefs must be given!"
-                error_vars = f"istates = {istates} and init_coefs = {init_coefs}"
-                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-            else:
-                istates = [None] * self.ntrajs
-                if (len(init_coefs) != self.ntrajs):
-                    error_message = "Number of elements of init_coefs must be equal to number of trajectories!"
-                    error_vars = f"len(init_coefs) = {len(init_coefs)}, number of trajectories = {self.ntrajs}"
-                    raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+        # Check compatibility between istates and init_coefs
+        self.istates = istates
+        self.init_coefs = init_coefs
+        self.check_istates()
 
         # Initialize input values and coefficient for first trajectory
-        super().__init__(self.mols[0], thermostat, istates[0], dt, nsteps, nesteps, \
-            elec_object, propagator, l_print_dm, l_adj_nac, init_coefs[0], unit_dt, out_freq, verbosity)
+        super().__init__(self.mols[0], thermostat, self.istates[0], dt, nsteps, nesteps, \
+            elec_object, propagator, l_print_dm, l_adj_nac, self.init_coefs[0], unit_dt, out_freq, verbosity)
 
         if (self.elec_object != "coefficient"):
             error_message = "Only coefficient is valid!"
@@ -85,7 +61,7 @@ class CT(MQC):
 
         # Initialize coefficient for other trajectories
         for itraj in range(1, self.ntrajs):
-            self.mols[itraj].get_coefficient(init_coefs[itraj], istates[itraj])
+            self.mols[itraj].get_coefficient(self.init_coefs[itraj], self.istates[itraj])
 
         # Initialize variables for CTMQC
         self.phase = np.zeros((self.ntrajs, self.nst, self.nat_qm, self.ndim))
@@ -449,6 +425,45 @@ class CT(MQC):
                         np.sum(self.qmom[itraj, index_lk] * self.phase[itraj, ist], axis = 1))
                     self.K_lk[itraj, jst, ist] += 2. * np.sum(1. / self.mol.mass[0:self.nat_qm] * \
                         np.sum(self.qmom[itraj, index_lk] * self.phase[itraj, jst], axis = 1))
+
+    def check_istates(self):
+        """ Routine to check istates and init_coefs
+        """
+        if (self.istates != None):
+            if (isinstance(self.istates, list)):
+                if (len(self.istates) != self.ntrajs):
+                    error_message = "Number of elements of istates must be equal to number of trajectories!"
+                    error_vars = f"len(istates) = {len(self.istates)}, ntrajs = {self.ntrajs}"
+                    raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                else:
+                    max_istate = max(self.istates)
+                    if (max_istate >= self.nst):
+                        error_message = "Index for initial state must be smaller than number of states! The index for ground state is zero"
+                        error_vars = f"istates[{self.istates.index(max_istate)}] = {max_istate}, Molecule.nstates = {self.nst}"
+                        raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                    else:
+                        self.init_coefs = [None] * self.ntrajs
+            else:
+                error_message = "The type of istates must be list!"
+                error_vars = f"istates = {self.istates}"
+                raise TypeError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+        else:
+            if (self.init_coefs == None):
+                error_message = "Either initial states or coefficients must be given!"
+                error_vars = f"istates = {self.istates}, init_coefs = {self.init_coefs}"
+                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+            else:
+                if (isinstance(self.init_coefs, list)):
+                    if (len(self.init_coefs) != self.ntrajs):
+                        error_message = "Number of elements of init_coefs must be equal to number of trajectories!"
+                        error_vars = f"len(init_coefs) = {len(self.init_coefs)}, ntrajs = {self.ntrajs}"
+                        raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                    else:
+                        self.istates = [None] * self.ntrajs
+                else:
+                    error_message = "The type of init_coefs must be list!"
+                    error_vars = f"init_coefs = {self.init_coefs}"
+                    raise TypeError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
     def write_md_output(self, itrajectory, unixmd_dir, istep):
         """ Write output files
