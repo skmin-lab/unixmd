@@ -1,6 +1,11 @@
 *****************************************************************
 PyUNIxMD: Python-based UNIversal eXcited state Molecular Dynamics
 *****************************************************************
+
+.. image:: image/logo.svg
+      :width: 600pt
+      :align: center
+      
 PyUNIxMD is an object-oriented Python program for molecular dynamics simulations involving multiple electronic states.
 It is mainly for studying the nonadiabatic dynamics of excited molecules.
 
