@@ -307,7 +307,7 @@ class MQC(object):
             dynamics_info += f"  Propagation Scheme       = {self.elec_object:>16s}\n"
 
         # Print surface hopping variables
-        if (self.md_type == "SH" or self.md_type == "SHXF"):
+        if (self.md_type in ["SH", "SHXF"]):
             dynamics_info += f"\n  Rescaling after Hop      = {self.hop_rescale:>16s}\n"
             dynamics_info += f"  Rescaling after Reject   = {self.hop_reject:>16s}\n"
 
@@ -382,7 +382,7 @@ class MQC(object):
                 typewriter(tmp, unixmd_dir, "DOTPOPNAC", "w")
 
         # file header for SH-based methods
-        if (self.md_type == "SH" or self.md_type == "SHXF"):
+        if (self.md_type in ["SH", "SHXF"]):
             tmp = f'{"#":5s}{"Step":8s}{"Running State":10s}'
             typewriter(tmp, unixmd_dir, "SHSTATE", "w")
 
@@ -390,7 +390,7 @@ class MQC(object):
             typewriter(tmp, unixmd_dir, "SHPROB", "w")
 
         # file header for XF-based methods
-        if (self.md_type == "SHXF" or self.md_type == "CT"):
+        if (self.md_type in ["SHXF", "CT"]):
             if (self.verbosity >= 1):
                 tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "DOTPOPDEC", "w")
