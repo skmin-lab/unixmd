@@ -587,7 +587,7 @@ class SHXF(MQC):
         # Write hopping-related quantities
         self.write_sh(unixmd_dir, istep)
 
-        # Write DOTPOP
+        # Write time-derivative BO population
         self.write_dotpop(unixmd_dir, istep)
 
         # Write decoherence information

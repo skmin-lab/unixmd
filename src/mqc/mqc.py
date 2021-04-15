@@ -55,12 +55,6 @@ class MQC(object):
             error_vars = f"unit_dt = {unit_dt}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        # Check number of state and initial state
-        if (self.istate >= self.mol.nst):
-            error_message = "Index for initial state must be smaller than number of states! The index for ground state is zero"
-            error_vars = f"istate = {self.istate}, Molecule.nstates = {self.mol.nst}"
-            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-
         # None for BOMD case
         self.elec_object = elec_object
         if (self.elec_object != None):
@@ -301,15 +295,19 @@ class MQC(object):
 
           MQC Method               = {self.md_type:>16s}
           Time Interval (fs)       = {self.dt / fs_to_au:16.6f}
-          Initial State (0:GS)     = {self.istate:>16d}
           Nuclear Step             = {self.nsteps:>16d}
         """), "  ")
+        if (self.istate != None):
+            dynamics_info += f"  Initial State (0:GS)     = {self.istate:>16d}\n"
+        else:
+            dynamics_info += f"  Initial State (0:GS)     = {str(self.istate):>16s}\n"
+
         if (self.md_type != "BOMD"):
             dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
             dynamics_info += f"  Propagation Scheme       = {self.elec_object:>16s}\n"
 
         # Print surface hopping variables
-        if (self.md_type == "SH" or self.md_type == "SHXF"):
+        if (self.md_type in ["SH", "SHXF"]):
             dynamics_info += f"\n  Rescaling after Hop      = {self.hop_rescale:>16s}\n"
             dynamics_info += f"  Rescaling after Reject   = {self.hop_reject:>16s}\n"
 
@@ -384,7 +382,7 @@ class MQC(object):
                 typewriter(tmp, unixmd_dir, "DOTPOPNAC", "w")
 
         # file header for SH-based methods
-        if (self.md_type == "SH" or self.md_type == "SHXF"):
+        if (self.md_type in ["SH", "SHXF"]):
             tmp = f'{"#":5s}{"Step":8s}{"Running State":10s}'
             typewriter(tmp, unixmd_dir, "SHSTATE", "w")
 
@@ -392,7 +390,7 @@ class MQC(object):
             typewriter(tmp, unixmd_dir, "SHPROB", "w")
 
         # file header for XF-based methods
-        if (self.md_type == "SHXF"):
+        if (self.md_type in ["SHXF", "CT"]):
             if (self.verbosity >= 1):
                 tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "DOTPOPDEC", "w")

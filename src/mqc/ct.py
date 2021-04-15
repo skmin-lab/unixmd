@@ -25,7 +25,7 @@ class CT(MQC):
         :param double dist_parameter: Distance parameter to determine quantum momentum center
         :param double sigma: Sigma to determine quantum momentum center
         :param init_coefs: Initial BO coefficient
-        :type init_coefs: double, list, list or complex, list, list
+        :type init_coefs: double, 2D list or complex, 2D list
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
@@ -45,34 +45,23 @@ class CT(MQC):
         self.nat_qm = self.mols[0].nat_qm
         self.ndim = self.mols[0].ndim
 
-        if (istates == None):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) istates should be required! {istates}")
-
-        if (isinstance(istates, list)):
-            if (len(istates) != self.ntrajs):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) The length of istates should be same to total number of trajectories! {istates}")
-            else:
-                if (max(istates) >= self.nst):
-                    raise ValueError (f"( {self.md_type}.{call_name()} ) Index for initial state must be smaller than number of states! {max(istates)}")
-        else:
-            raise ValueError (f"( {self.md_type}.{call_name()} ) The type of istates should be list! {istates}")
-
-        if (init_coefs == None):
-            init_coefs = [None] * self.ntrajs
-        else:
-            if (len(init_coefs) != self.ntrajs):
-                raise ValueError (f"( {self.md_type}.{call_name()} ) The length of init_coefs should be same to total number of trajectories! {len(init_coefs)}")
+        # Check compatibility between istates and init_coefs
+        self.istates = istates
+        self.init_coefs = init_coefs
+        self.check_istates()
 
         # Initialize input values and coefficient for first trajectory
-        super().__init__(self.mols[0], thermostat, istates[0], dt, nsteps, nesteps, \
-            elec_object, propagator, l_print_dm, l_adj_nac, init_coefs[0], unit_dt, out_freq, verbosity)
+        super().__init__(self.mols[0], thermostat, self.istates[0], dt, nsteps, nesteps, \
+            elec_object, propagator, l_print_dm, l_adj_nac, self.init_coefs[0], unit_dt, out_freq, verbosity)
 
         if (self.elec_object != "coefficient"):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) coefficient propagation is only valid! {self.elec_object}")
+            error_message = "Electronic equation motion in CTMQC is only solved with respect to coefficient!"
+            error_vars = f"elec_object = {self.elec_object}"
+            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Initialize coefficient for other trajectories
         for itraj in range(1, self.ntrajs):
-            self.mols[itraj].get_coefficient(init_coefs[itraj], istates[itraj])
+            self.mols[itraj].get_coefficient(self.init_coefs[itraj], self.istates[itraj])
 
         # Initialize variables for CTMQC
         self.phase = np.zeros((self.ntrajs, self.nst, self.nat_qm, self.ndim))
@@ -98,7 +87,8 @@ class CT(MQC):
         self.dist_parameter = dist_parameter
         self.sigma = sigma
 
-        self.dotpopd = np.zeros(self.nst)
+        self.dotpopnac = np.zeros((self.ntrajs, self.nst))
+        self.dotpopdec = np.zeros((self.ntrajs, self.nst))
 
     def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to CTMQC dynamics
@@ -140,15 +130,17 @@ class CT(MQC):
 
             for itraj in range(self.ntrajs):
 
+                self.mol = self.mols[itraj]
+
                 self.write_md_output(itraj, unixmd_dirs[itraj], self.istep)
 
-                self.print_traj(self.istep, itraj)
-
-            self.print_step(self.istep)
+                self.print_step(self.istep, itraj)
 
         #TODO: restart
         else: 
-            raise ValueError (f"( {self.md_type}.{call_name()} ) restart is not valid in CTMQC ! {restart}")
+            error_message = "Restart option with CTMQC not implemented!"
+            error_vars = f"restart = {restart}"
+            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.istep += 1
 
@@ -192,13 +184,13 @@ class CT(MQC):
             self.calculate_qmom(istep)
 
             for itraj in range(self.ntrajs):
+                self.mol = self.mols[itraj]
+
                 if ((istep + 1) % self.out_freq == 0):
                     self.write_md_output(itraj, unixmd_dirs[itraj], istep)
-                    self.print_traj(istep, itraj)
+                    self.print_step(istep, itraj)
                 if (istep == self.nsteps - 1):
                     self.write_final_xyz(unixmd_dirs[itraj], istep)
-
-            self.print_step(istep)
 
         # Delete scratch directory
         if (not l_save_scr):
@@ -407,7 +399,7 @@ class CT(MQC):
                             tmp_var = center_old_lk[itraj, index_lk, iat, idim] - self.mols[itraj].pos[iat, idim]
                             if (abs(tmp_var) > self.dist_parameter * self.sigma): 
                                 tmp_var = center_new_lk[itraj, index_lk, iat, idim] - self.mols[itraj].pos[iat, idim]
-                                if (abs(tmp_var) > self_dist_parameter * self.sigma): 
+                                if (abs(tmp_var) > self.dist_parameter * self.sigma): 
                                     self.center_lk[itraj, index_lk, iat, idim] = self.mols[itraj].pos[iat, idim]
                                 else:
                                     self.center_lk[itraj, index_lk, iat, idim] = center_new_lk[itraj, index_lk, iat, idim]
@@ -434,6 +426,39 @@ class CT(MQC):
                     self.K_lk[itraj, jst, ist] += 2. * np.sum(1. / self.mol.mass[0:self.nat_qm] * \
                         np.sum(self.qmom[itraj, index_lk] * self.phase[itraj, jst], axis = 1))
 
+    def check_istates(self):
+        """ Routine to check istates and init_coefs
+        """
+        if (self.istates != None):
+            if (isinstance(self.istates, list)):
+                if (len(self.istates) != self.ntrajs):
+                    error_message = "Number of elements of initial states must be equal to number of trajectories!"
+                    error_vars = f"len(istates) = {len(self.istates)}, ntrajs = {self.ntrajs}"
+                    raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                else:
+                    self.init_coefs = [None] * self.ntrajs
+            else:
+                error_message = "The type of initial states must be list!"
+                error_vars = f"istates = {self.istates}"
+                raise TypeError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+        else:
+            if (self.init_coefs == None):
+                error_message = "Either initial states or coefficients must be given!"
+                error_vars = f"istates = {self.istates}, init_coefs = {self.init_coefs}"
+                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+            else:
+                if (isinstance(self.init_coefs, list)):
+                    if (len(self.init_coefs) != self.ntrajs):
+                        error_message = "Number of elements of initial coefficients must be equal to number of trajectories!"
+                        error_vars = f"len(init_coefs) = {len(self.init_coefs)}, ntrajs = {self.ntrajs}"
+                        raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                    else:
+                        self.istates = [None] * self.ntrajs
+                else:
+                    error_message = "Type of initial coefficients must be list!"
+                    error_vars = f"init_coefs = {self.init_coefs}"
+                    raise TypeError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
     def write_md_output(self, itrajectory, unixmd_dir, istep):
         """ Write output files
 
@@ -444,22 +469,44 @@ class CT(MQC):
         # Write the common part
         super().write_md_output(unixmd_dir, istep)
 
-        # Write decoherence information
-        self.write_deco(itrajectory, unixmd_dir, istep)
+        # Write time-derivative BO population
+        self.write_dotpop(itrajectory, unixmd_dir, istep)
 
-    def write_deco(self, itrajectory, unixmd_dir, istep):
+        # Write decoherence information
+        self.write_dec(itrajectory, unixmd_dir, istep)
+
+    def write_dotpop(self, itrajectory, unixmd_dir, istep):
+        """ Write time-derivative BO population
+
+            :param integer itrajectory: Index for trajectories
+            :param string unixmd_dir: PyUNIxMD directory
+            :param integer istep: Current MD step
+        """
+        if (self.verbosity >= 1):
+            # Write NAC term in DOTPOPNAC
+            tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopnac[itrajectory]])
+            typewriter(tmp, unixmd_dir, "DOTPOPNAC", "a")
+
+            # Write decoherence term in DOTPOPDEC
+            tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopdec[itrajectory]])
+            typewriter(tmp, unixmd_dir, "DOTPOPDEC", "a")
+
+    def write_dec(self, itrajectory, unixmd_dir, istep):
         """ Write CT-based decoherence information
 
             :param integer itrajectory: Index for trajectories
             :param string unixmd_dir: PyUNIxMD directory
             :param integer istep: Current MD step
         """
-        # TODO
-        # Write time-derivative density matrix elements in DOTPOTD
-        #tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopd])
-        #typewriter(tmp, unixmd_dir, "DOTPOPD", "a")
+        if (self.verbosity >= 1):
+            # Write K_lk
+            for ist in range(self.nst):
+                for jst in range(self.nst):
+                    if (ist != jst):
+                        tmp = f'{istep + 1:9d}{self.K_lk[itrajectory, ist, jst]:15.8f}'
+                        typewriter(tmp, unixmd_dir, f"K_lk_{ist}_{jst}", "a")
 
-        # Write auxiliary trajectories
+        # Write detailed quantities related to decoherence
         if (self.verbosity >= 2):
             tmp = f'{self.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}sigma_x{"":5s}sigma_y{"":5s}sigma_z{"":5s}count_ntrajs' + \
                 "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
@@ -487,15 +534,8 @@ class CT(MQC):
                         "".join([f'{self.qmom[itrajectory, index_lk, iat, idim]:15.8f}' for idim in range(self.ndim)]) for iat in range(self.nat_qm)])
                     typewriter(tmp, unixmd_dir, f"QMOM_{ist}_{jst}", "a")
 
-            for ist in range(self.nst):
-                for jst in range(self.nst):
-                    if (ist != jst):
-                        tmp = f'{istep + 1:9d}{self.K_lk[itrajectory, ist, jst]:15.8f}'
-                        typewriter(tmp, unixmd_dir, f"K_lk_{ist}_{jst}", "a")
-
-            # Write auxiliary variables
+            # Write Phase
             for ist in range(self.mol.nst):
-                # Write auxiliary phase
                 tmp = f'{self.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Phase (au)' + \
                     "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
                     "".join([f'{self.phase[itrajectory, ist, iat, idim]:15.8f}' for idim in range(self.ndim)]) for iat in range(self.nat_qm)])
@@ -523,20 +563,9 @@ class CT(MQC):
         INIT = f" #INFO_TRAJ{'STEP':>8s}{'Kinetic(H)':>15s}{'Potential(H)':>15s}{'Total(H)':>13s}{'Temperature(K)':>17s}{'norm':>8s}"
         dynamics_step_info += INIT
 
-        # Print INIT for averaged quantity at each step
-        DEBUG1 = f" #INFO_AVG{'STEP':>9s}"
-        for ist in range(self.nst):
-            DEBUG1 += f"{'BOPOP_':>13s}{ist}"
-
-        for ist in range(self.nst):
-            for jst in range(ist + 1, self.nst):
-                DEBUG1 += f"{'BOCOH_':>13s}{ist}_{jst}"
-
-        dynamics_step_info += "\n" + DEBUG1
-
         print (dynamics_step_info, flush=True)
 
-    def print_traj(self, istep, itrajectory):
+    def print_step(self, istep, itrajectory):
         """ Routine to print each trajectory infomation at each step about dynamics
 
             :param integer istep: Current MD step
@@ -553,22 +582,3 @@ class CT(MQC):
         INFO += f"{ctemp:13.6f}"
         INFO += f"{norm:11.5f}"
         print (INFO, flush=True)
-
-    def print_step(self, istep):
-        """ Routine to print each steps infomation about dynamics
-
-            :param integer istep: Current MD step
-        """
-        rho = np.zeros((self.nst, self.nst))
-        for itraj in range(self.ntrajs):
-            for ist in range(self.nst):
-                for jst in range(ist, self.nst):
-                    if (ist == jst):
-                        rho[ist, jst] += self.mols[itraj].rho[ist, jst].real
-                    else:
-                        rho[ist, jst] += self.mols[itraj].rho[ist, ist].real * self.mols[itraj].rho[jst, jst].real
-        rho /= self.ntrajs
-
-        DEBUG1 = f" INFO_AVG{istep + 1:9d}" + "".join([f'{rho[ist, ist]:15.8f}' for ist in range(self.nst)])
-        DEBUG1 += "".join([f'{rho[ist, jst]:15.8f}' for ist in range(self.nst) for jst in range(ist + 1, self.nst)])
-        print(DEBUG1, flush=True)
