@@ -436,13 +436,7 @@ class CT(MQC):
                     error_vars = f"len(istates) = {len(self.istates)}, ntrajs = {self.ntrajs}"
                     raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
                 else:
-                    max_istate = max(self.istates)
-                    if (max_istate >= self.nst):
-                        error_message = "Index for initial state must be smaller than number of states! The index for ground state is zero"
-                        error_vars = f"istates[{self.istates.index(max_istate)}] = {max_istate}, Molecule.nstates = {self.nst}"
-                        raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-                    else:
-                        self.init_coefs = [None] * self.ntrajs
+                    self.init_coefs = [None] * self.ntrajs
             else:
                 error_message = "The type of initial states must be list!"
                 error_vars = f"istates = {self.istates}"

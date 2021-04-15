@@ -291,7 +291,7 @@ class Molecule(object):
                 if (istate >= self.nst):
                     error_message = "Index for initial state must be smaller than number of states! The index for ground state is zero"
                     error_vars = f"istate = {istate}, Molecule.nstates = {self.nst}"
-                    raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                    raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
                 else:
                     self.states[istate].coef = 1. + 0.j
                     self.rho[istate, istate] = 1. + 0.j
