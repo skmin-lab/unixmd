@@ -73,6 +73,8 @@ class CT(MQC):
         self.count_ntrajs = np.zeros((self.ntrajs, self.nat_qm))
         self.sigma_lk = np.ones((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim))
         self.slope_i = np.zeros((self.ntrajs, self.nat_qm, self.ndim))
+        self.g_i = np.zeros((self.ntrajs)) 
+        self.prod_g_i = np.ones((self.ntrajs, self.ntrajs))
         self.center_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim))
 
         # Determine parameters to calculate decoherenece effect
@@ -265,17 +267,17 @@ class CT(MQC):
         # (2-1) Calculate w_ij
         # g_i means nuclear density at the position of i-th classical trajectory.
         # prod_g_i is to multiply gaussians with respect to atoms and spaces.
-        g_i = np.zeros((self.ntrajs)) 
-        prod_g_i = np.ones((self.ntrajs, self.ntrajs))
+        self.g_i = np.zeros((self.ntrajs)) 
+        self.prod_g_i = np.ones((self.ntrajs, self.ntrajs))
         for itraj in range(self.ntrajs):
             for jtraj in range(self.ntrajs):
                 for iat in range(self.nat_qm):
                     for idim in range(self.ndim):
                         # gaussian1d(x, pre-factor, sigma, mean)
                         # gaussian1d(R^{itraj}, 1.0, sigma^{jtraj}, R^{jtraj})
-                        prod_g_i[itraj, jtraj] *= gaussian1d(self.mols[itraj].pos[iat, idim], 1., \
+                        self.prod_g_i[itraj, jtraj] *= gaussian1d(self.mols[itraj].pos[iat, idim], 1., \
                             self.sigma_lk[jtraj, 0, iat, idim], self.mols[jtraj].pos[iat, idim])
-                g_i[itraj] += prod_g_i[itraj, jtraj]
+                self.g_i[itraj] += self.prod_g_i[itraj, jtraj]
 
         # w_ij is defined as W_IJ in SI of J. Phys. Chem. Lett., 2017, 8, 3048-3055.
         w_ij = np.zeros((self.ntrajs, self.ntrajs, self.nat_qm, self.ndim))
@@ -283,8 +285,8 @@ class CT(MQC):
             for jtraj in range(self.ntrajs):
                 for iat in range(self.nat_qm):
                     for idim in range(self.ndim):
-                        w_ij[itraj, jtraj, iat, idim] = prod_g_i[itraj, jtraj] /\
-                        (2. * self.sigma_lk[jtraj, 0, iat, idim] ** 2 * g_i[itraj])
+                        w_ij[itraj, jtraj, iat, idim] = self.prod_g_i[itraj, jtraj] /\
+                        (2. * self.sigma_lk[jtraj, 0, iat, idim] ** 2 * self.g_i[itraj])
 
         # (2-2) Calculate slope_i
         # the slope is calculated as a sum over j of w_ij
@@ -356,8 +358,8 @@ class CT(MQC):
                                 center_new_lk[itraj, index_lk, iat, idim] = self.mols[itraj].pos[iat, idim]
                             else:
                                 for jtraj in range(self.ntrajs):
-                                    center_new_lk[itraj, index_lk, iat, idim] += self.mols[jtraj].pos[iat, idim] * prod_g_i[itraj, jtraj] /\
-                                        (2. * self.sigma_lk[jtraj, 0, iat, idim] ** 2 * g_i[itraj] * (- self.slope_i[itraj, iat, idim]))
+                                    center_new_lk[itraj, index_lk, iat, idim] += self.mols[jtraj].pos[iat, idim] * self.prod_g_i[itraj, jtraj] /\
+                                        (2. * self.sigma_lk[jtraj, 0, iat, idim] ** 2 * self.g_i[itraj] * (- self.slope_i[itraj, iat, idim]))
 
         # (3-3) Determine qauntum momentum center TODO: atomistic flag
         self.center_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim)) # Finally, qmom_center
