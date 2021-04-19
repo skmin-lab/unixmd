@@ -221,10 +221,12 @@ class CT(MQC):
         # CT forces
         ctforce = np.zeros((self.nat_qm, self.ndim))
         for ist in range(self.nst):
-            for jst in range(self.nst):
-                ctforce += 0.5 * self.K_lk[itrajectory, ist, jst] * \
+            for jst in range(ist + 1, self.nst):
+                ctforce += self.K_lk[itrajectory, ist, jst] * \
                     (self.phase[itrajectory, jst] - self.phase[itrajectory, ist]) * \
-                    self.mol.rho.real[ist, ist]  * self.mol.rho.real[jst, jst]
+                    self.mol.rho.real[ist, ist]  * self.mol.rho.real[jst, jst] * \
+                    (self.mol.rho.real[ist, ist] + self.mol.rho.real[jst, jst])
+        ctforce /= 2. * (self.nst - 1)
 
         # Finally, force is Ehrenfest force + CT force
         self.rforce += ctforce
