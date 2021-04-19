@@ -264,36 +264,6 @@ class CT(MQC):
         self.calculate_sigma()
 
         # 2. Calculate slope
-        # (2-1) Calculate w_ij
-        # g_i means nuclear density at the position of i-th classical trajectory.
-        # prod_g_i is to multiply gaussians with respect to atoms and spaces.
-        self.g_i = np.zeros((self.ntrajs)) 
-        self.prod_g_i = np.ones((self.ntrajs, self.ntrajs))
-        for itraj in range(self.ntrajs):
-            for jtraj in range(self.ntrajs):
-                for iat in range(self.nat_qm):
-                    for idim in range(self.ndim):
-                        # gaussian1d(x, pre-factor, sigma, mean)
-                        # gaussian1d(R^{itraj}, 1.0, sigma^{jtraj}, R^{jtraj})
-                        self.prod_g_i[itraj, jtraj] *= gaussian1d(self.mols[itraj].pos[iat, idim], 1., \
-                            self.sigma_lk[jtraj, 0, iat, idim], self.mols[jtraj].pos[iat, idim])
-                self.g_i[itraj] += self.prod_g_i[itraj, jtraj]
-
-        # w_ij is defined as W_IJ in SI of J. Phys. Chem. Lett., 2017, 8, 3048-3055.
-        w_ij = np.zeros((self.ntrajs, self.ntrajs, self.nat_qm, self.ndim))
-        for itraj in range(self.ntrajs):
-            for jtraj in range(self.ntrajs):
-                for iat in range(self.nat_qm):
-                    for idim in range(self.ndim):
-                        w_ij[itraj, jtraj, iat, idim] = self.prod_g_i[itraj, jtraj] /\
-                        (2. * self.sigma_lk[jtraj, 0, iat, idim] ** 2 * self.g_i[itraj])
-
-        # (2-2) Calculate slope_i
-        # the slope is calculated as a sum over j of w_ij
-        self.slope_i = np.zeros((self.ntrajs, self.nat_qm, self.ndim))
-        for itraj in range(self.ntrajs):
-            for jtraj in range(self.ntrajs):
-                self.slope_i[itraj] -= w_ij[itraj, jtraj]
 
         # 3. Calculate the center of quantum momentum
         rho = np.zeros((self.ntrajs, self.nst))
@@ -433,6 +403,40 @@ class CT(MQC):
                     if (self.sigma_lk[itraj, 0, iat, idim] <= self.sigma_threshold):
                         self.sigma_lk[itraj, 0, iat, idim] = self.dist_cutoff
 
+    def calculate_slope(self):
+        """ Routine to calculate slope
+        """
+        # (2-1) Calculate w_ij
+        # g_i means nuclear density at the position of i-th classical trajectory.
+        # prod_g_i is to multiply gaussians with respect to atoms and spaces.
+        self.g_i = np.zeros((self.ntrajs)) 
+        self.prod_g_i = np.ones((self.ntrajs, self.ntrajs))
+        for itraj in range(self.ntrajs):
+            for jtraj in range(self.ntrajs):
+                for iat in range(self.nat_qm):
+                    for idim in range(self.ndim):
+                        # gaussian1d(x, pre-factor, sigma, mean)
+                        # gaussian1d(R^{itraj}, 1.0, sigma^{jtraj}, R^{jtraj})
+                        self.prod_g_i[itraj, jtraj] *= gaussian1d(self.mols[itraj].pos[iat, idim], 1., \
+                            self.sigma_lk[jtraj, 0, iat, idim], self.mols[jtraj].pos[iat, idim])
+                self.g_i[itraj] += self.prod_g_i[itraj, jtraj]
+
+        # w_ij is defined as W_IJ in SI of J. Phys. Chem. Lett., 2017, 8, 3048-3055.
+        w_ij = np.zeros((self.ntrajs, self.ntrajs, self.nat_qm, self.ndim))
+        for itraj in range(self.ntrajs):
+            for jtraj in range(self.ntrajs):
+                for iat in range(self.nat_qm):
+                    for idim in range(self.ndim):
+                        w_ij[itraj, jtraj, iat, idim] = self.prod_g_i[itraj, jtraj] /\
+                        (2. * self.sigma_lk[jtraj, 0, iat, idim] ** 2 * self.g_i[itraj])
+
+        # (2-2) Calculate slope_i
+        # the slope is calculated as a sum over j of w_ij
+        self.slope_i = np.zeros((self.ntrajs, self.nat_qm, self.ndim))
+        for itraj in range(self.ntrajs):
+            for jtraj in range(self.ntrajs):
+                self.slope_i[itraj] -= w_ij[itraj, jtraj]
+      
     def check_istates(self):
         """ Routine to check istates and init_coefs
         """
