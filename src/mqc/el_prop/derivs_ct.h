@@ -24,7 +24,7 @@ static double dot(int nst, double complex *u, double complex *v){
 static void ct_cdot(int nst, double *e, double **dv, double **k_lk, double complex *c, double complex *c_dot){
 
     double complex *na_term = malloc(nst * sizeof(double complex));
-    double complex *ct_term = malloc(nst * sizeof(double complex));
+    double *ct_term = malloc(nst * sizeof(double));
 
     int ist, jst;
     double egs;
