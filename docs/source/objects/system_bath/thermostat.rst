@@ -35,6 +35,7 @@ Detailed description of parameters
 - **temperature** *(double)* - Default: *300.0*
 
   This parameter specifies the target temperature. The unit is K.
+  **temperature** is stored as ``thermostat.temp`` in the PyUNIxMD, thus ``thermostat.temp`` will be used throughout the code and manual.
 
 \
 
@@ -64,6 +65,7 @@ Detailed description of parameters
 - **temperature** *(double)* - Default: *300.0*
 
   This parameter specifies the target temperature in unit of K.
+  **temperature** is stored as ``thermostat.temp`` in the PyUNIxMD, thus ``thermostat.temp`` will be used throughout the code and manual.
 
 \
 
@@ -71,6 +73,7 @@ Detailed description of parameters
 
   This parameter specifies the deviation to rescale the velocities, that is,
   the velocities are rescaled when the temperature difference exceeds **dtemperature**. The unit is K.
+  **dtemperature** is stored as ``thermostat.dtemp`` in the PyUNIxMD, thus ``thermostat.dtemp`` will be used throughout the code and manual.
 
 Berendsen
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -103,6 +106,7 @@ Detailed description of parameters
 - **temperature** *(double)* - Default: *300.0*
 
   This parameter specifies the target temperature in the unit of K.
+  **temperature** is stored as ``thermostat.temp`` in the PyUNIxMD, thus ``thermostat.temp`` will be used throughout the code and manual.
 
 \
 
@@ -111,6 +115,7 @@ Detailed description of parameters
   The **coupling_parameter**, :math:`\tau`, is characteristic time to damp the temperature toward the target temperature.
   It can be set directly as the characteristic length of time to damp the temperature. The unit is fs.
   Either **coupling_parameter** or **coupling_strength** should be set and only **coupling_parameter** or **coupling_strength** can be set.
+  **coupling_parameter** is stored as ``thermostat.coup_prm`` in the PyUNIxMD, thus ``thermostat.coup_prm`` will be used throughout the code and manual.
 
 \
 
@@ -119,6 +124,7 @@ Detailed description of parameters
   This parameter is the dimensionless coupling strength, **coupling_strength**, for the thermostat given by :math:`\frac{dt}{\tau}`, 
   where :math:`dt` is the time interval of the dynamics and :math:`\tau` is **coupling_parameter**.
   Either **coupling_parameter** or **coupling_strength** should be set and only **coupling_parameter** or **coupling_strength** can be set.
+  **coupling_strength** is stored as ``thermostat.coup_str`` in the PyUNIxMD, thus ``thermostat.coup_str`` will be used throughout the code and manual.
 
 NHC
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -152,6 +158,7 @@ Detailed description of parameters
 - **temperature** *(double)* - Default: *300.0*
 
   This parameter specifies the target temperature in the unit of K.
+  **temperature** is stored as ``thermostat.temp`` in the PyUNIxMD, thus ``thermostat.temp`` will be used throughout the code and manual.
 
 \
 
@@ -160,6 +167,7 @@ Detailed description of parameters
   This parameter specifies the coupling strength which indicates the oscillation frequency of the bath particles.
   The coupling strength is typically related to the highest vibrational mode frequency of a given system. The unit is cm :sup:`-1`.
   **coupling_strength** or **time_scale** should be set and only **coupling_strength** or **time_scale** can be set.
+  **coupling_strength** is stored as ``thermostat.coup_str`` in the PyUNIxMD, thus ``thermostat.coup_str`` will be used throughout the code and manual.
 
 \
 
