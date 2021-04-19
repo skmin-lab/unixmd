@@ -22,7 +22,10 @@ def statistical_analysis():
     # Include step 0 
     nsteps1 = args.nsteps + 1
 
-    averaged_running_state(args.ntrajs, digit, nsteps1, args.nstates)
+    try:
+        averaged_running_state(args.ntrajs, digit, nsteps1, args.nstates)
+    except FileNotFoundError as e_message:
+        print(f"Running state averaging skipped. {e_message}")
     averaged_density_matrix(args.ntrajs, digit, nsteps1, args.nstates)
     averaged_nacme(args.ntrajs, digit, nsteps1, args.nstates)
 
@@ -42,16 +45,11 @@ def averaged_running_state(ntrajs, digit, nsteps, nstates):
     for itraj in range(ntrajs):
         path = os.path.join(f"./TRAJ_{itraj + 1:0{digit}d}/md/", "SHSTATE")
 
-        try:
-            with open(path, 'r') as f:
-                # Skip header and read rest
-                line = f.readline()
-                line = f.read()
-                lines = line.split()
-
-        except FileNotFoundError:
-            print(f"Running state averaging skipped. No such file: {path}")
-            return 0
+        with open(path, 'r') as f:
+            # Skip header and read rest
+            line = f.readline()
+            line = f.read()
+            lines = line.split()
 
         # read state information of entire step
         rstate = np.array(lines[1::2][:nsteps], dtype=np.int)
