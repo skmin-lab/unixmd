@@ -86,6 +86,7 @@ Detailed description of the parameters
 - **nstates** *(integer)* - Default: *3*
 
   This parameter specifies the number of BO states treated in the dynamics.
+  **nstates** is stored as ``molecule.nst`` in the PyUNIxMD, thus ``molecule.nst`` will be used throughout the code and manual.
 
 \
 
@@ -98,6 +99,7 @@ Detailed description of the parameters
 - **natoms_mm** *(integer)* - Default: *None*
 
   This parameter specifies the number of atoms in the MM region when **l_qmmm** is *True*. 
+  **natoms_mm** is stored as ``molecule.nat_mm`` in the PyUNIxMD, thus ``molecule.nat_mm`` will be used throughout the code and manual.
 
 \
 

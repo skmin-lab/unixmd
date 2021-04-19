@@ -285,12 +285,12 @@ class Molecule(object):
         if (coef == None):
             if (istate == None): 
                 error_message = "Either initial states or coefficients must be given!"
-                error_vars = f"istate = {istate}, coef = {coef}"
+                error_vars = f"(MQC) istate = {istate}, (MQC) init_coef = {coef}"
                 raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
             else:
                 if (istate >= self.nst):
                     error_message = "Index for initial state must be smaller than number of states! The index for ground state is zero"
-                    error_vars = f"istate = {istate}, Molecule.nstates = {self.nst}"
+                    error_vars = f"(MQC) istate = {istate}, nstates = {self.nst}"
                     raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
                 else:
                     self.states[istate].coef = 1. + 0.j
@@ -318,7 +318,7 @@ class Molecule(object):
                             self.rho[ist, jst] = self.states[ist].coef.conjugate() * self.states[jst].coef
                         norm += self.rho.real[ist, ist]
 
-                    if (abs(norm - 1.0) >= eps):
+                    if (abs(norm - 1.) >= eps):
                         error_message = "Norm for electronic wave function should be 1.0!"
                         error_vars = f"(MQC) init_coef = {coef}"
                         raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")

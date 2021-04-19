@@ -19,11 +19,17 @@ The important thing is that sampled geometry files must be named in 'sample_(num
 
 .. code-block:: python
 
-  ...
-  g = open('geom.xyz', 'r')
-  geom = g.read()
-  g.close()
-  ...
+   from molecule import Molecule
+
+   ...
+
+   g = open('geom.xyz', 'r')
+   geom = g.read()
+   g.close()
+
+   ...
+
+   mol = Molecule(geometry=geom, ...)
 
 +---------------------+----------------------------------------------------------------+
 | Option              | Description                                                    |

@@ -109,4 +109,3 @@ Detailed description of parameters
 
   This parameter determines the version of Gaussian 09. PyUNIxMD is currently based on version Revision A.02 of Gaussian 09.
 
-\
