@@ -80,8 +80,10 @@ class CT(MQC):
         # Determine parameters to calculate decoherenece effect
         self.small = 1.0E-08
 
-        self.upper_th = 1. - rho_threshold
-        self.lower_th = rho_threshold
+        self.rho_threshold = rho_threshold
+
+        self.upper_th = 1. - self.rho_threshold
+        self.lower_th = self.rho_threshold
 
         self.sigma_threshold = sigma_threshold
         self.dist_cutoff = dist_cutoff

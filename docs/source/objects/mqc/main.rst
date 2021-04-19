@@ -111,7 +111,7 @@ You can restart the dynamics simulation by reading the 'RESTART.bin' file using 
 
 - **output_dir** *(string)* - Default: *'./'*
 
-  This parameter designates the directory for dynamics output. All subdirectories ('md', 'qm_log', and 'mm_log') for output files will be generated under **output_dir**.
+  This parameter designates the directory for dynamics output. All subdirectories ('md/', 'qm_log/', and 'mm_log/') for output files will be generated under **output_dir**.
   If the subdirectories are already present, old subdirectories will be renamed with '_old' and new subdirectories will be made.
 
 \
@@ -143,5 +143,4 @@ You can restart the dynamics simulation by reading the 'RESTART.bin' file using 
   + *'write'*: The dynamics simulation is restarted at resetting the time step to zero and writing new MD output files.
   + *'append'*: The dynamics simulation is continued from the image appending the existing MD output files.
 
-\
 

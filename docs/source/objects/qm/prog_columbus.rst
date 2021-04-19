@@ -137,8 +137,8 @@ Detailed description of parameters
 - **state_avg** *(integer)* - Default: *None*
 
   This parameter determines the number of states to be averaged for (SA-)CASSCF.
-  The actual calculation is performed based on **state_avg**, not **nstates**.
-  If it is not determined by a user, **state_avg** = **nstates**.
+  The actual calculation is performed based on **state_avg**, not ``molecule.nst``.
+  If it is not determined by a user, **state_avg** = ``molecule.nst``.
 
 \
 
@@ -321,8 +321,8 @@ Detailed description of parameters
 - **state_avg** *(integer)* - Default: *None*
 
   This parameter determines the number of states to be averaged for (SA-)CASSCF and MRCI.
-  The actual calculation is performed based on **state_avg**, not **nstates**.
-  If it is not determined by a user, **state_avg** = **nstates**.
+  The actual calculation is performed based on **state_avg**, not ``molecule.nst``.
+  If it is not determined by a user, **state_avg** = ``molecule.nst``.
 
 \
 

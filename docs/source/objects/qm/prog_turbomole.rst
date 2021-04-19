@@ -121,5 +121,4 @@ Detailed description of parameters
 
   This parameter determines the version of Turbomole. PyUNIxMD is currently based on version 7.0 of Turbomole.
 
-\
 
