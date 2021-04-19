@@ -25,7 +25,7 @@ def statistical_analysis():
     try:
         averaged_running_state(args.ntrajs, digit, nsteps1, args.nstates)
     except FileNotFoundError as e_message:
-        print(f"Running state averaging skipped. {e_message}")
+        print(f"Running state averaging skipped. {e_message}", flush=True)
     averaged_density_matrix(args.ntrajs, digit, nsteps1, args.nstates)
     averaged_nacme(args.ntrajs, digit, nsteps1, args.nstates)
 
