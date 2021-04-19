@@ -42,11 +42,16 @@ def averaged_running_state(ntrajs, digit, nsteps, nstates):
     for itraj in range(ntrajs):
         path = os.path.join(f"./TRAJ_{itraj + 1:0{digit}d}/md/", "SHSTATE")
 
-        with open(path, 'r') as f:
-            # Skip header and read rest
-            line = f.readline()
-            line = f.read()
-            lines = line.split()
+        try:
+            with open(path, 'r') as f:
+                # Skip header and read rest
+                line = f.readline()
+                line = f.read()
+                lines = line.split()
+
+        except FileNotFoundError:
+            print(f"Running state averaging skipped. No such file: {path}")
+            return 0
 
         # read state information of entire step
         rstate = np.array(lines[1::2][:nsteps], dtype=np.int)
