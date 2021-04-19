@@ -264,8 +264,99 @@ class CT(MQC):
         self.calculate_sigma()
 
         # 2. Calculate slope
+        self.calculate_slope()
 
         # 3. Calculate the center of quantum momentum
+        self.calculate_center()
+
+        # 4. Compute quantum momentum
+        for itraj in range(self.ntrajs):
+            index_lk = -1
+            for ist in range(self.nst):
+                for jst in range(ist + 1, self.nst):
+                    index_lk += 1
+                    self.qmom[itraj, index_lk] = self.slope_i[itraj] * (self.mols[itraj].pos - self.center_lk[itraj, index_lk])
+
+        # 5. Calculate 2 * Qmom * phase / mass
+        self.K_lk = np.zeros((self.ntrajs, self.nst, self.nst))
+        for itraj in range(self.ntrajs):
+            index_lk = -1
+            for ist in range(self.nst):
+                for jst in range(ist + 1, self.nst):
+                    index_lk += 1
+                    self.K_lk[itraj, ist, jst] += 2. * np.sum(1. / self.mol.mass[0:self.nat_qm] * \
+                        np.sum(self.qmom[itraj, index_lk] * self.phase[itraj, ist], axis = 1))
+                    self.K_lk[itraj, jst, ist] += 2. * np.sum(1. / self.mol.mass[0:self.nat_qm] * \
+                        np.sum(self.qmom[itraj, index_lk] * self.phase[itraj, jst], axis = 1))
+
+    def calculate_sigma(self):
+        """ Routine to calculate variance
+        """
+        self.sigma_lk = np.ones((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim)) # TODO: state-pair
+        for itraj in range(self.ntrajs):
+            # Variable to determine how many trajecories are in cutoff.
+            self.count_ntrajs[itraj] = np.zeros((self.nat_qm)) 
+
+            R2_tmp = np.zeros((self.nat_qm, self.ndim)) # Temporary variable for R**2
+            R_tmp = np.zeros((self.nat_qm, self.ndim))  # Temporary variable for R
+
+            for jtraj in range(self.ntrajs):
+                pos_diff = self.mols[jtraj].pos - self.mols[itraj].pos # Dimension = (self.nat_qm, self.ndim)
+                pos_diff2 = np.sum(pos_diff * pos_diff, axis=1) # Dimension = (self.nat_qm)
+
+                for iat in range(self.nat_qm):
+                    distance = np.sqrt(pos_diff2[iat]) # Distance between i-th atom in itraj and jtraj
+                    if (distance <= self.dist_cutoff):
+                        R_tmp[iat] += self.mols[jtraj].pos[iat] # Dimension = (self.nat_qm, self.ndim)
+                        R2_tmp[iat] += self.mols[jtraj].pos[iat] * self.mols[jtraj].pos[iat] # Dimension = (self.nat_qm, self.ndim)
+                        self.count_ntrajs[itraj, iat] += 1
+
+            for iat in range(self.nat_qm):
+                avg_R = R_tmp[iat] / self.count_ntrajs[itraj, iat]
+                avg_R2 = R2_tmp[iat] / self.count_ntrajs[itraj, iat]
+                for idim in range(self.ndim):
+                    self.sigma_lk[itraj, 0, iat, idim] = np.sqrt((avg_R2[idim] - avg_R[idim] ** 2)) \
+                        / np.sqrt(np.sqrt(self.count_ntrajs[itraj, iat])) # / np.sqrt(np.sqrt(count_ntrajs)) is artifact to modulate sigma.
+                    if (self.sigma_lk[itraj, 0, iat, idim] <= self.sigma_threshold):
+                        self.sigma_lk[itraj, 0, iat, idim] = self.dist_cutoff
+
+    def calculate_slope(self):
+        """ Routine to calculate slope
+        """
+        # (2-1) Calculate w_ij
+        # g_i means nuclear density at the position of i-th classical trajectory.
+        # prod_g_i is to multiply gaussians with respect to atoms and spaces.
+        self.g_i = np.zeros((self.ntrajs)) 
+        self.prod_g_i = np.ones((self.ntrajs, self.ntrajs))
+        for itraj in range(self.ntrajs):
+            for jtraj in range(self.ntrajs):
+                for iat in range(self.nat_qm):
+                    for idim in range(self.ndim):
+                        # gaussian1d(x, pre-factor, sigma, mean)
+                        # gaussian1d(R^{itraj}, 1.0, sigma^{jtraj}, R^{jtraj})
+                        self.prod_g_i[itraj, jtraj] *= gaussian1d(self.mols[itraj].pos[iat, idim], 1., \
+                            self.sigma_lk[jtraj, 0, iat, idim], self.mols[jtraj].pos[iat, idim])
+                self.g_i[itraj] += self.prod_g_i[itraj, jtraj]
+
+        # w_ij is defined as W_IJ in SI of J. Phys. Chem. Lett., 2017, 8, 3048-3055.
+        w_ij = np.zeros((self.ntrajs, self.ntrajs, self.nat_qm, self.ndim))
+        for itraj in range(self.ntrajs):
+            for jtraj in range(self.ntrajs):
+                for iat in range(self.nat_qm):
+                    for idim in range(self.ndim):
+                        w_ij[itraj, jtraj, iat, idim] = self.prod_g_i[itraj, jtraj] /\
+                        (2. * self.sigma_lk[jtraj, 0, iat, idim] ** 2 * self.g_i[itraj])
+
+        # (2-2) Calculate slope_i
+        # the slope is calculated as a sum over j of w_ij
+        self.slope_i = np.zeros((self.ntrajs, self.nat_qm, self.ndim))
+        for itraj in range(self.ntrajs):
+            for jtraj in range(self.ntrajs):
+                self.slope_i[itraj] -= w_ij[itraj, jtraj]
+
+    def calculate_center(self):
+        """ Routin to calculate center of quantum momentum
+        """
         rho = np.zeros((self.ntrajs, self.nst))
         for itraj in range(self.ntrajs):
             for ist in range(self.nst):
@@ -352,91 +443,6 @@ class CT(MQC):
                             else: 
                                 self.center_lk[itraj, index_lk, iat, idim] = center_old_lk[itraj, index_lk, iat, idim]
 
-        # 4. Compute quantum momentum
-        for itraj in range(self.ntrajs):
-            index_lk = -1
-            for ist in range(self.nst):
-                for jst in range(ist + 1, self.nst):
-                    index_lk += 1
-                    self.qmom[itraj, index_lk] = self.slope_i[itraj] * (self.mols[itraj].pos - self.center_lk[itraj, index_lk])
-
-        # 5. Calculate 2 * Qmom * phase / mass
-        self.K_lk = np.zeros((self.ntrajs, self.nst, self.nst))
-        for itraj in range(self.ntrajs):
-            index_lk = -1
-            for ist in range(self.nst):
-                for jst in range(ist + 1, self.nst):
-                    index_lk += 1
-                    self.K_lk[itraj, ist, jst] += 2. * np.sum(1. / self.mol.mass[0:self.nat_qm] * \
-                        np.sum(self.qmom[itraj, index_lk] * self.phase[itraj, ist], axis = 1))
-                    self.K_lk[itraj, jst, ist] += 2. * np.sum(1. / self.mol.mass[0:self.nat_qm] * \
-                        np.sum(self.qmom[itraj, index_lk] * self.phase[itraj, jst], axis = 1))
-
-    def calculate_sigma(self):
-        """ Routine to calculate variance
-        """
-        self.sigma_lk = np.ones((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim)) # TODO: state-pair
-        for itraj in range(self.ntrajs):
-            # Variable to determine how many trajecories are in cutoff.
-            self.count_ntrajs[itraj] = np.zeros((self.nat_qm)) 
-
-            R2_tmp = np.zeros((self.nat_qm, self.ndim)) # Temporary variable for R**2
-            R_tmp = np.zeros((self.nat_qm, self.ndim))  # Temporary variable for R
-
-            for jtraj in range(self.ntrajs):
-                pos_diff = self.mols[jtraj].pos - self.mols[itraj].pos # Dimension = (self.nat_qm, self.ndim)
-                pos_diff2 = np.sum(pos_diff * pos_diff, axis=1) # Dimension = (self.nat_qm)
-
-                for iat in range(self.nat_qm):
-                    distance = np.sqrt(pos_diff2[iat]) # Distance between i-th atom in itraj and jtraj
-                    if (distance <= self.dist_cutoff):
-                        R_tmp[iat] += self.mols[jtraj].pos[iat] # Dimension = (self.nat_qm, self.ndim)
-                        R2_tmp[iat] += self.mols[jtraj].pos[iat] * self.mols[jtraj].pos[iat] # Dimension = (self.nat_qm, self.ndim)
-                        self.count_ntrajs[itraj, iat] += 1
-
-            for iat in range(self.nat_qm):
-                avg_R = R_tmp[iat] / self.count_ntrajs[itraj, iat]
-                avg_R2 = R2_tmp[iat] / self.count_ntrajs[itraj, iat]
-                for idim in range(self.ndim):
-                    self.sigma_lk[itraj, 0, iat, idim] = np.sqrt((avg_R2[idim] - avg_R[idim] ** 2)) \
-                        / np.sqrt(np.sqrt(self.count_ntrajs[itraj, iat])) # / np.sqrt(np.sqrt(count_ntrajs)) is artifact to modulate sigma.
-                    if (self.sigma_lk[itraj, 0, iat, idim] <= self.sigma_threshold):
-                        self.sigma_lk[itraj, 0, iat, idim] = self.dist_cutoff
-
-    def calculate_slope(self):
-        """ Routine to calculate slope
-        """
-        # (2-1) Calculate w_ij
-        # g_i means nuclear density at the position of i-th classical trajectory.
-        # prod_g_i is to multiply gaussians with respect to atoms and spaces.
-        self.g_i = np.zeros((self.ntrajs)) 
-        self.prod_g_i = np.ones((self.ntrajs, self.ntrajs))
-        for itraj in range(self.ntrajs):
-            for jtraj in range(self.ntrajs):
-                for iat in range(self.nat_qm):
-                    for idim in range(self.ndim):
-                        # gaussian1d(x, pre-factor, sigma, mean)
-                        # gaussian1d(R^{itraj}, 1.0, sigma^{jtraj}, R^{jtraj})
-                        self.prod_g_i[itraj, jtraj] *= gaussian1d(self.mols[itraj].pos[iat, idim], 1., \
-                            self.sigma_lk[jtraj, 0, iat, idim], self.mols[jtraj].pos[iat, idim])
-                self.g_i[itraj] += self.prod_g_i[itraj, jtraj]
-
-        # w_ij is defined as W_IJ in SI of J. Phys. Chem. Lett., 2017, 8, 3048-3055.
-        w_ij = np.zeros((self.ntrajs, self.ntrajs, self.nat_qm, self.ndim))
-        for itraj in range(self.ntrajs):
-            for jtraj in range(self.ntrajs):
-                for iat in range(self.nat_qm):
-                    for idim in range(self.ndim):
-                        w_ij[itraj, jtraj, iat, idim] = self.prod_g_i[itraj, jtraj] /\
-                        (2. * self.sigma_lk[jtraj, 0, iat, idim] ** 2 * self.g_i[itraj])
-
-        # (2-2) Calculate slope_i
-        # the slope is calculated as a sum over j of w_ij
-        self.slope_i = np.zeros((self.ntrajs, self.nat_qm, self.ndim))
-        for itraj in range(self.ntrajs):
-            for jtraj in range(self.ntrajs):
-                self.slope_i[itraj] -= w_ij[itraj, jtraj]
-      
     def check_istates(self):
         """ Routine to check istates and init_coefs
         """
