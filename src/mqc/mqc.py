@@ -319,9 +319,9 @@ class MQC(object):
             dynamics_info += f"\n  Density Threshold        = {self.rho_threshold:>16.6f}"
             # Print auxiliary trajectory setting
             if (self.l_econs_state):
-                dynamics_info += f"\n  Aux. Total Energy        = Real Total Energy"
+                dynamics_info += f"\n  Aux. Total E             = {'Real Total E':>16s}"
             else:
-                dynamics_info += f"\n  Aux. Velocities          = Real Velocities"
+                dynamics_info += f"\n  Aux. Velocity            = {'Real Velocity':>16s}"
             # Print reduced mass
             if (self.md_type == "SHXF" and self.l_xf1d):
                 dynamics_info += f"\n  Reduced Mass             = {self.aux.mass[0]:16.6f}"
@@ -345,7 +345,7 @@ class MQC(object):
                 dynamics_info += sigma_info
 
         # Print system information
-        dynamics_info += f"  Output Frequency         = {self.out_freq:>16d}\n"
+        dynamics_info += f"\n  Output Frequency         = {self.out_freq:>16d}\n"
         dynamics_info += f"  Verbosity Level          = {self.verbosity:>16d}\n"
 
         print (dynamics_info, flush=True)
