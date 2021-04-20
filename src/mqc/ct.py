@@ -81,7 +81,6 @@ class CT(MQC):
         self.small = 1.0E-08
 
         self.rho_threshold = rho_threshold
-
         self.upper_th = 1. - self.rho_threshold
         self.lower_th = self.rho_threshold
 
@@ -571,6 +570,40 @@ class CT(MQC):
         """
         # Print initial information about molecule, qm, mm and thermostat
         super().print_init(qm, mm, restart)
+
+        # Print CTMQC info.
+        ct_info = textwrap.dedent(f"""\
+        {"-" * 68}
+        {"CTMQC Information":>43s}
+        {"-" * 68}
+          rho_threshold            = {self.rho_threshold:>16f}
+          sigma_threshold          = {self.sigma_threshold:>16f}
+          dist_cutoff              = {self.dist_cutoff:>16f} 
+          dist_parameter           = {self.dist_parameter:>16f}
+          sigma                    = {self.sigma:>16f}
+        """)
+        print (ct_info, flush=True)
+
+        # Print istate
+        istate_info = textwrap.dedent(f"""\
+        {"-" * 68}
+        {"Initial state Information":>43s}
+        {"-" * 68}
+        """)
+        istate_info += f"\n  istates (1:{self.ntrajs})             =\n"
+        nlines = self.ntrajs // 6
+        if (self.ntrajs % 6 == 0):
+            nlines -= 1
+
+        for iline in range(nlines + 1):
+            iline1 = iline * 6
+            iline2 = (iline + 1) * 6
+            if (iline2 > self.ntrajs):
+                iline2 = self.ntrajs
+            istate_info += f"  {iline1 + 1:>4d}:{iline2:<4d};"
+            istate_info += "".join([f'{str(istate):7s}' for istate in self.istates[iline1:iline2]])
+            istate_info += "\n"
+        print (istate_info, flush=True)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
