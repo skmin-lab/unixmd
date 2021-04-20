@@ -23,11 +23,18 @@ If you don't have Numpy or Cython, you can install them using :code:`pip` comman
 Compilation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+You can obtain PyUNIxMD code by putting following command.
+
+.. code-block:: bash
+
+   $ git clone https://github.com/skmin-lab/unixmd.git
+
 You can compile the C routines by typing the following
 command in the top-level directory of the program which contains setup.py file.
 
 .. code-block:: bash
 
+   $ cd unixmd/
    $ python3 setup.py build_ext -b ./src/build
 
 You will need to add the source directory(:code:`$PYUNIXMDHOME/src`) to your Python path, where :code:`$PYUNIXMDHOME` is an enviroment variable for the top-level directory.
