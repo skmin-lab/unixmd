@@ -98,7 +98,7 @@ and
 | **dec_correction**         | Simple decoherence correction schemes            | *None*         |
 | *(string)*                 |                                                  |                |
 +----------------------------+--------------------------------------------------+----------------+
-| **edc_parameter**          | Energy constant for rescaling coefficients       | *0.1*          |
+| **edc_parameter**          | Energy constant (H) for rescaling coefficients   | *0.1*          |
 | *(double)*                 | in edc                                           |                |
 +----------------------------+--------------------------------------------------+----------------+
 | **unit_dt**                | Unit of time interval                            | *'fs'*         |
@@ -213,7 +213,7 @@ Detailed description of the parameters
 
 - **edc_parameter** *(double)* - Default: *0.1*
 
-  This parameter defines the energy parameter in the EDC equation.
+  This parameter defines the energy parameter in the EDC equation in unit of H.
 
 \
 
