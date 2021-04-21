@@ -313,7 +313,7 @@ class MQC(object):
             if (self.dec_correction != None):
                 dynamics_info += f"\n  Decoherence Scheme       = {self.dec_correction:>16s}\n"
                 if (self.dec_correction == "edc"):
-                    dynamics_info += f"\n  Energy Constant          = {self.edc_parameter:>16.6f}\n"
+                    dynamics_info += f"  Energy Constant          = {self.edc_parameter:>16.6f}\n"
 
         # Print XF variables
         if (self.md_type == "SHXF"):
