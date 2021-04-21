@@ -317,11 +317,6 @@ class MQC(object):
         if (self.md_type == "SHXF"):
             # Print density threshold used in decoherence term
             dynamics_info += f"\n  Density Threshold        = {self.rho_threshold:>16.6f}"
-            # Print auxiliary trajectory setting
-            if (self.l_econs_state):
-                dynamics_info += f"\n  Aux. Total E             = {'Real Total E':>16s}"
-            else:
-                dynamics_info += f"\n  Aux. Velocity            = {'Real Velocity':>16s}"
             # Print reduced mass
             if (self.md_type == "SHXF" and self.l_xf1d):
                 dynamics_info += f"\n  Reduced Mass             = {self.aux.mass[0]:16.6f}"
@@ -343,6 +338,12 @@ class MQC(object):
                     sigma_info += "".join([f'{sigma:7.3f}' for sigma in self.sigma[iline1:iline2]])
                     sigma_info += "\n"
                 dynamics_info += sigma_info
+            # Print auxiliary trajectory setting
+            if (self.l_econs_state):
+                dynamics_info += f"\n  Aux. Total E             = {'Real Total E':>16s}\n"
+            else:
+                dynamics_info += f"\n  Aux. Total E             = {'Real Total E':>16s}" \
+                    + f"\n                             {'+ Pot. E Diff.':>16s}\n"
 
         # Print system information
         dynamics_info += f"\n  Output Frequency         = {self.out_freq:>16d}\n"
