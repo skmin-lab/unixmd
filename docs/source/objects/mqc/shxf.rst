@@ -193,6 +193,7 @@ Detailed description of the parameters
 
   This parameter determines whether the total energies of all auxiliary trajectories are identical or not.
   If this is set to *True*, auxiliary trajectories have same total energy, or they all have different total energy.
+  In various system, *True* is recommended for **l_econs_state**.
 
 \
 
