@@ -24,7 +24,7 @@ class SH(MQC):
         :param init_coef: Initial BO coefficient
         :type init_coef: double, list or complex, list
         :param string dec_correction: Simple decoherence correction schemes
-        :param double edc_parameter: Energy constant for rescaling coefficients in edc
+        :param double edc_parameter: Energy constant (H) for rescaling coefficients in edc
         :param string unit_dt: Unit of time step 
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
