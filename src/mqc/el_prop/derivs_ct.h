@@ -37,10 +37,11 @@ static void ct_cdot(int nst, double *e, double **dv, double **k_lk, double compl
 
     for(ist = 0; ist < nst; ist++){
         na_term[ist] = 0.0 + 0.0 * I;
+        ct_term[ist] = 0.0;
         for(jst = 0; jst < nst; jst++){
             if(ist != jst){
                 na_term[ist] -= dv[ist][jst] * c[jst];
-                ct_term[ist] += 0.25 * (k_lk[ist][jst] - k_lk[jst][ist]) * rho[jst]
+                ct_term[ist] += 0.25 * (k_lk[jst][ist] - k_lk[ist][jst]) * rho[jst]
                     * (rho[ist] + rho[jst]) / (nst - 1);
             }
         }
