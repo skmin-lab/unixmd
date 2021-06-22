@@ -268,8 +268,6 @@ class SHXF(MQC):
             with open(restart_file, 'wb') as f:
                 pickle.dump({'qm':qm, 'md':self}, f)
 
-            if (istep == 1): self.rstate = 0
-
         # Delete scratch directory
         if (not l_save_scr):
             tmp_dir = os.path.join(unixmd_dir, "scr_qm")
