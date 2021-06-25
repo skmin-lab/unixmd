@@ -56,7 +56,6 @@ class SHXF(MQC):
         :param init_coef: Initial BO coefficient
         :type init_coef: double, list or complex, list
         :param boolean l_econs_state: Logical to use identical total energies for all auxiliary trajectories
-        :param boolean l_collapse: Logical to reset the density when a forced hop is classically forbidden
         :param string unit_dt: Unit of time interval
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
@@ -64,7 +63,7 @@ class SHXF(MQC):
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
         hop_reject="reverse", rho_threshold=0.01, sigma=None, l_xf1d=False, init_coef=None, \
-        l_econs_state=True, l_collapse=False, unit_dt="fs", out_freq=1, verbosity=0):
+        l_econs_state=True, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
             elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
@@ -107,7 +106,6 @@ class SHXF(MQC):
 
         # Initialize XF related variables
         self.force_hop = False
-        self.l_collapse = l_collapse
         self.l_econs_state = l_econs_state
         self.l_xf1d = l_xf1d
         self.l_coh = [False] * self.mol.nst
@@ -391,7 +389,7 @@ class SHXF(MQC):
                 # Recover old running state
                 self.l_hop = False
 
-                if (self.force_hop and self.l_collapse):
+                if (self.force_hop):
                     if (self.elec_object == "coefficient"):
                         for ist in range(self.mol.nst):
                             if (ist == self.rstate_old):
