@@ -79,7 +79,7 @@ class Tinker(MM_calculator):
 
         if (self.embedding == "electrostatic"):
             # Save current atom type for electrostatic embedding
-            self.atom_type = np.zeros(molecule.nat, dtype=np.integer)
+            self.atom_type = np.zeros(molecule.nat, dtype=np.int32)
 
             # Read 'tinker.xyz' file to obtain atom type for QM part
             file_name = self.xyz_file

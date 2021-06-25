@@ -52,10 +52,10 @@ def averaged_running_state(ntrajs, digit, nsteps, nstates):
             lines = line.split()
 
         # read state information of entire step
-        rstate = np.array(lines[1::2][:nsteps], dtype=np.int)
+        rstate = np.array(lines[1::2][:nsteps], dtype=np.int32)
         try:
             # sum over counted state number of each states 
-            avg_state += np.array([(rstate == ist) for ist in range(nstates)], dtype=np.float)
+            avg_state += np.array([(rstate == ist) for ist in range(nstates)], dtype=np.float64)
         except ValueError:
             # exclude halted trajectories from total trajectory number
             mtrajs -= 1
@@ -101,7 +101,7 @@ def averaged_density_matrix(ntrajs, digit, nsteps, nstates):
 
         try:
             # sum over population of each states
-            avg_pop += np.array([lines[istate::(nstates + 1)][:nsteps] for istate in range(1, nstates + 1)], dtype=np.float)
+            avg_pop += np.array([lines[istate::(nstates + 1)][:nsteps] for istate in range(1, nstates + 1)], dtype=np.float64)
             # sum over coherence of each states, obtained from multiply istate population and jstate population
             avg_coh += np.array([np.multiply(lines_list[istate::(nstates + 1)][:nsteps], lines_list[jstate::(nstates + 1)][:nsteps]) \
                 for istate in range(1, nstates + 1) for jstate in range(istate + 1, nstates + 1)])
@@ -151,7 +151,7 @@ def averaged_nacme(ntrajs, digit, nsteps, nstates):
 
         try:
             # sum over nacme of each state-state pair
-            avg_nacme += abs(np.array([lines[istate::(nstates_pair + 1)][:nsteps] for istate in range(1, nstates_pair + 1)], dtype=np.float))
+            avg_nacme += abs(np.array([lines[istate::(nstates_pair + 1)][:nsteps] for istate in range(1, nstates_pair + 1)], dtype=np.float64))
         except ValueError:
             # exclude halted trajectories from total trajectory number
             mtrajs -= 1

@@ -372,7 +372,7 @@ class SH(MQC):
                 states.coef = 0. + 0.j
             self.mol.states[self.rstate].coef = 1. + 0.j
 
-        self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex_)
+        self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex128)
         self.mol.rho[self.rstate, self.rstate] = 1. + 0.j
 
     def correct_dec_edc(self):

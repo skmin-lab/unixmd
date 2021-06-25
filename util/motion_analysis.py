@@ -80,9 +80,9 @@ def calculate_bond_length(ntrajs, digit, nimages, atom_index, l_mean):
                     break
                 # save xyz coordinates in every isteps
                 if (iline % (natoms + 2) == atom_index[0]):
-                    atom1 = np.array(line.split()[1:4], dtype=float)
+                    atom1 = np.array(line.split()[1:4], dtype=np.float64)
                 elif (iline % (natoms + 2) == atom_index[1]):
-                    atom2 = np.array(line.split()[1:4], dtype=float)
+                    atom2 = np.array(line.split()[1:4], dtype=np.float64)
                 # every istep, calculate it
                 if (iline % (natoms + 2) == natoms):
                     # calculate bond length after both point1/2 extracted
@@ -148,11 +148,11 @@ def calculate_angle(ntrajs, digit, nimages, atom_index, l_mean):
                     break
                 # save xyz coordinates in every isteps
                 if (iline % (natoms + 2) == atom_index[0]):
-                    atom1 = np.array(line.split()[1:4], dtype=float)
+                    atom1 = np.array(line.split()[1:4], dtype=np.float64)
                 elif (iline % (natoms + 2) == atom_index[1]):
-                    atom2 = np.array(line.split()[1:4], dtype=float)
+                    atom2 = np.array(line.split()[1:4], dtype=np.float64)
                 elif (iline % (natoms + 2) == atom_index[2]):
-                    atom3 = np.array(line.split()[1:4], dtype=float)
+                    atom3 = np.array(line.split()[1:4], dtype=np.float64)
                 # every istep, calculate it
                 if (iline % (natoms + 2) == natoms):
                     # calculate angle with vector calculation
@@ -229,18 +229,18 @@ def calculate_dihedral(ntrajs, digit, nimages, atom_index, l_mean):
                     break
                 # save xyz coordinates in every isteps
                 if (iline % (natoms + 2) == atom_index[0]):
-                    atom1 = np.array(line.split()[1:4], dtype=float)
+                    atom1 = np.array(line.split()[1:4], dtype=np.float64)
                 elif (iline % (natoms + 2) == atom_index[1]):
-                    atom2 = np.array(line.split()[1:4], dtype=float)
+                    atom2 = np.array(line.split()[1:4], dtype=np.float64)
                 elif (iline % (natoms + 2) == atom_index[2]):
-                    atom3 = np.array(line.split()[1:4], dtype=float)
+                    atom3 = np.array(line.split()[1:4], dtype=np.float64)
                 elif (iline % (natoms + 2) == atom_index[3]):
-                    atom4 = np.array(line.split()[1:4], dtype=float)
+                    atom4 = np.array(line.split()[1:4], dtype=np.float64)
                 if (len(atom_index) == 6):
                     if (iline % (natoms + 2) == atom_index[4]):
-                        atom5 = np.array(line.split()[1:4], dtype=float)
+                        atom5 = np.array(line.split()[1:4], dtype=np.float64)
                     elif (iline % (natoms + 2) == atom_index[5]):
-                        atom6 = np.array(line.split()[1:4], dtype=float)
+                        atom6 = np.array(line.split()[1:4], dtype=np.float64)
                 # every istep, calculate it
                 if (iline % (natoms + 2) == natoms):
                     if (len(atom_index) == 4):
