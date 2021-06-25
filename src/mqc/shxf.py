@@ -500,7 +500,7 @@ class SHXF(MQC):
         self.l_coh = [False] * self.mol.nst
         self.l_first = [False] * self.mol.nst
 
-        if (self.elec_object == "coefficient")
+        if (self.elec_object == "coefficient"):
             for ist in range(self.mol.nst):
                 if (ist == one_st):
                     self.mol.states[ist].coef /= np.absolute(self.mol.states[ist].coef).real
