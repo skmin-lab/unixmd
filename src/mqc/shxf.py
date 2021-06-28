@@ -388,7 +388,21 @@ class SHXF(MQC):
                     x = - b / a
                 # Recover old running state
                 self.l_hop = False
+
+                if (self.force_hop):
+                    if (self.elec_object == "coefficient"):
+                        for ist in range(self.mol.nst):
+                            if (ist == self.rstate_old):
+                                self.mol.states[ist].coef = 1. + 0.j
+                            else:
+                                self.mol.states[ist].coef = 0. + 0.j
+                    else:
+                        self.mol.rho[:,:] = 0. + 0.j
+                        self.mol.rho[self.rstate_old, self.rstate_old] = 1. + 0.j
+                    self.event["HOP"].append(f"Collapse density: reset the density according to the current state {self.rstate_old}")
+
                 self.force_hop = False
+
                 self.rstate = self.rstate_old
                 bo_list[0] = self.rstate
             else:
