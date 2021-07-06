@@ -551,6 +551,7 @@ class SHXF(MQC):
         self.pos_0 = np.copy(self.aux.pos[self.rstate])
 
         # Get auxiliary velocity
+        self.l_collapse = False
         self.aux.vel_old = np.copy(self.aux.vel)
         for ist in range(self.mol.nst):
             # Calculate propagation factor alpha
