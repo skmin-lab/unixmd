@@ -423,7 +423,7 @@ class MRCI(Columbus):
                     tmp_e += ' mr-sdci [#]\s*\S+\s+\S+\s+[-]\S+\s+[-]*\S+\s+[-]*\S+\s+[-]*\S+\s+[-]*\S+\s+\n'
             tmp_e += '\n number of'
             energy = re.findall(tmp_e, log_out)
-            energy = np.array(energy, dtype=np.float64)
+            energy = np.array(energy[0], dtype=np.float64)
             for ist in range(molecule.nst):
                 molecule.states[ist].energy = energy[ist]
 
