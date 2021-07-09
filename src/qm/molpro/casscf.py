@@ -274,8 +274,7 @@ class CASSCF(Molpro):
         if (not calc_force_only):
             tmp_e = 'SETTING EN\(\d+\)\s+[=]\s+([-]\S+)\s+HARTREE'
             energy = re.findall(tmp_e, log_out)
-            energy = np.array(energy)
-            energy = energy.astype(float)
+            energy = np.array(energy, dtype=np.float64)
             for ist in range(molecule.nst):
                 molecule.states[ist].energy = energy[ist]
 
@@ -285,8 +284,7 @@ class CASSCF(Molpro):
                 '\s+Atom\s+dE\/dx\s+dE\/dy\s+dE\/dz\n\n' + \
                 '\s+\d+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat_qm
             force = re.findall(tmp_f, log_out)
-            force = np.array(force[0])
-            force = force.astype(float)
+            force = np.array(force[0], dtype=np.float64)
             force = force.reshape(molecule.nat_qm, 3, order='C')
             molecule.states[ist].force = - np.copy(force)
 
@@ -298,8 +296,7 @@ class CASSCF(Molpro):
                         '\s+Atom\s+dE\/dx\s+dE\/dy\s+dE\/dz\n\n' + \
                         '\s+\d+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat_qm
                     nac = re.findall(tmp_c, log_out)
-                    nac = np.array(nac[0])
-                    nac = nac.astype(float)
+                    nac = np.array(nac[0], dtype=np.float64)
                     nac = nac.reshape(molecule.nat_qm, 3, order='C')
                     molecule.nac[ist, jst] = nac
                     molecule.nac[jst, ist] = - nac

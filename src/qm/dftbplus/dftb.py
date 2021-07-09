@@ -605,15 +605,13 @@ class DFTB(DFTBplus):
         # Energy
         if (not calc_force_only):
             energy = re.findall('Total energy:\s+([-]\S+) H', detailed_out)
-            energy = np.array(energy[0])
-            energy = energy.astype(float)
+            energy = np.array(energy[0], dtype=np.float64)
             molecule.states[0].energy = energy
 
             if (molecule.nst > 1):
                 tmp_e = f'[=]+\n' + ('\s+([-]*\S+)\s+\S+\s+\d+\s+->\s+\d+\s+\S+\s+\S+\s+[ST]') * molecule.nst
                 energy = re.findall(tmp_e, exc_out)
-                energy = np.array(energy[0])
-                energy = energy.astype(float)
+                energy = np.array(energy[0], dtype=np.float64)
                 energy *= eV_to_au
                 for ist in range(1, molecule.nst):
                     molecule.states[ist].energy = molecule.states[0].energy + energy[ist - 1]
@@ -621,8 +619,7 @@ class DFTB(DFTBplus):
         # Force
         tmp_f = 'Total Forces' + '\n\s+\d*\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
         force = re.findall(tmp_f, detailed_out)
-        force = np.array(force[0])
-        force = force.astype(float)
+        force = np.array(force[0], dtype=np.float64)
         force = force.reshape(molecule.nat_qm, 3, order='C')
         molecule.states[bo_list[0]].force = np.copy(force)
 

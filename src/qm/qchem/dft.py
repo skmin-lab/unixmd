@@ -212,15 +212,13 @@ class DFT(QChem):
         if (not calc_force_only):
             # Ground state energy
             energy = re.findall('Total energy in the final basis set =\s*([-]*\S*)', log)
-            energy = np.array(energy)
-            energy = energy.astype(float)
+            energy = np.array(energy, dtype=np.float64)
             molecule.states[0].energy = energy[0]
 
             # Excited state energy
             if (molecule.nst > 1):
                 energy = re.findall('Total energy for state\s*\d*.\s*([-]*\S*)', log)
-                energy = np.array(energy)
-                energy = energy.astype(float)
+                energy = np.array(energy, dtype=np.float64)
 
                 for ist, en in enumerate(energy):
                     if ist < molecule.nst - 1:
@@ -238,8 +236,7 @@ class DFT(QChem):
         tmp_f += ("\s*\d?\s*" + "([-]*\S*)\s*" * dnum) * 3
 
         force = re.findall(tmp_f, log)
-        force = np.array(force)
-        force = force.astype(float)
+        force = np.array(force, dtype=np.float64)
 
         # Q-Chem provides energy gradient not force
         force = -force
@@ -265,8 +262,7 @@ class DFT(QChem):
         if (not calc_force_only and self.calc_coupling):
             tmp_nac = "with ETF[:]*\s*Atom\s*X\s*Y\s*Z\s*[-]*" + ("\s*\d*\s*" + "([-]*\S*)\s*"*3) * molecule.nat_qm
             nac = re.findall(tmp_nac, log)
-            nac = np.array(nac)
-            nac = nac.astype(float)
+            nac = np.array(nac, dtype=np.float64)
 
             kst = 0
             for ist in range(molecule.nst):

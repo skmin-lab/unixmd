@@ -486,8 +486,7 @@ class Tinker(MM_calculator):
 
                 tmp_e = 'Total Potential Energy :' + '\s+([-]*\S+)\s+' + 'Kcal/mole'
                 energy = re.findall(tmp_e, tinker_out2)
-                energy = np.array(energy)
-                energy = energy.astype(float)
+                energy = np.array(energy, dtype=np.float64)
                 mm_energy += energy[0]
 
             elif (self.scheme == "subtractive"):
@@ -499,8 +498,7 @@ class Tinker(MM_calculator):
 
                 tmp_e = 'Total Potential Energy :' + '\s+([-]*\S+)\s+' + 'Kcal/mole'
                 energy = re.findall(tmp_e, tinker_out12)
-                energy = np.array(energy)
-                energy = energy.astype(float)
+                energy = np.array(energy, dtype=np.float64)
                 mm_energy += energy[0]
 
                 # Read 'tinker.out.1' file
@@ -510,8 +508,7 @@ class Tinker(MM_calculator):
 
                 tmp_e = 'Total Potential Energy :' + '\s+([-]*\S+)\s+' + 'Kcal/mole'
                 energy = re.findall(tmp_e, tinker_out1)
-                energy = np.array(energy)
-                energy = energy.astype(float)
+                energy = np.array(energy, dtype=np.float64)
                 mm_energy -= energy[0]
 
             # Add energy of MM part to total energy; kcal/mol to hartree
@@ -527,8 +524,7 @@ class Tinker(MM_calculator):
                 '\n\n\s+Type\s+Atom\s+dE/dX\s+dE/dY\s+dE/dZ\s+Norm\n\n' + \
                 '\s+Anlyt\s+\S+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\s+\S+\n' * molecule.nat_mm
             grad = re.findall(tmp_g, tinker_out2)
-            grad = np.array(grad[0])
-            grad = grad.astype(float)
+            grad = np.array(grad[0], dtype=np.float64)
             grad = grad.reshape(molecule.nat_mm, 3, order='C')
             # Tinker calculates gradient, not force
             for iat in range(molecule.nat_mm):
@@ -540,8 +536,7 @@ class Tinker(MM_calculator):
                 '\n\n\s+Type\s+Atom\s+dE/dX\s+dE/dY\s+dE/dZ\s+Norm\n\n' + \
                 '\s+Anlyt\s+\S+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\s+\S+\n' * molecule.nat
             grad = re.findall(tmp_g, tinker_out12)
-            grad = np.array(grad[0])
-            grad = grad.astype(float)
+            grad = np.array(grad[0], dtype=np.float64)
             grad = grad.reshape(molecule.nat, 3, order='C')
             # Tinker calculates gradient, not force
             mm_force -= np.copy(grad)
@@ -550,8 +545,7 @@ class Tinker(MM_calculator):
                 '\n\n\s+Type\s+Atom\s+dE/dX\s+dE/dY\s+dE/dZ\s+Norm\n\n' + \
                 '\s+Anlyt\s+\S+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\s+\S+\n' * molecule.nat_qm
             grad = re.findall(tmp_g, tinker_out1)
-            grad = np.array(grad[0])
-            grad = grad.astype(float)
+            grad = np.array(grad[0], dtype=np.float64)
             grad = grad.reshape(molecule.nat_qm, 3, order='C')
             # Tinker calculates gradient, not force
             for iat in range(molecule.nat_qm):
