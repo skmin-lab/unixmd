@@ -473,16 +473,26 @@ class Tinker(MM_calculator):
             :param integer,list bo_list: List of BO states for BO calculation
             :param boolean calc_force_only: Logical to decide whether calculate force only
         """
+        if (self.scheme == "additive"):
+            # Read 'tinker.out.2' file
+            file_name = "tinker.out.2"
+            with open(file_name, "r") as f:
+                tinker_out2 = f.read()
+        elif (self.scheme == "subtractive"):
+            # Read 'tinker.out.12' file
+            file_name = "tinker.out.12"
+            with open(file_name, "r") as f:
+                tinker_out12 = f.read()
+            # Read 'tinker.out.1' file
+            file_name = "tinker.out.1"
+            with open(file_name, "r") as f:
+                tinker_out1 = f.read()
+
         if (not calc_force_only):
             # Energy; initialize the energy at MM level
             mm_energy = 0.
 
             if (self.scheme == "additive"):
-
-                # Read 'tinker.out.2' file
-                file_name = "tinker.out.2"
-                with open(file_name, "r") as f:
-                    tinker_out2 = f.read()
 
                 tmp_e = 'Total Potential Energy :' + '\s+([-]*\S+)\s+' + 'Kcal/mole'
                 energy = re.findall(tmp_e, tinker_out2)
@@ -491,20 +501,10 @@ class Tinker(MM_calculator):
 
             elif (self.scheme == "subtractive"):
 
-                # Read 'tinker.out.12' file
-                file_name = "tinker.out.12"
-                with open(file_name, "r") as f:
-                    tinker_out12 = f.read()
-
                 tmp_e = 'Total Potential Energy :' + '\s+([-]*\S+)\s+' + 'Kcal/mole'
                 energy = re.findall(tmp_e, tinker_out12)
                 energy = np.array(energy, dtype=np.float64)
                 mm_energy += energy[0]
-
-                # Read 'tinker.out.1' file
-                file_name = "tinker.out.1"
-                with open(file_name, "r") as f:
-                    tinker_out1 = f.read()
 
                 tmp_e = 'Total Potential Energy :' + '\s+([-]*\S+)\s+' + 'Kcal/mole'
                 energy = re.findall(tmp_e, tinker_out1)
