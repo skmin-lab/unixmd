@@ -260,28 +260,24 @@ class SSR(TeraChem):
             # Single-state REKS
             tmp_e = 'REKS energy:\s+([-]\S+)'
             energy = re.findall(tmp_e, log_out)
-            energy = np.array(energy)
-            energy = energy.astype(float)
+            energy = np.array(energy, dtype=np.float64)
             molecule.states[0].energy = energy[0]
         else:
             if (self.l_state_interactions):
                 # SSR state
                 energy = re.findall('SSR state\s\d\s+([-]\S+)', log_out)
-                energy = np.array(energy)
-                energy = energy.astype(float)
+                energy = np.array(energy, dtype=np.float64)
                 for ist in range(molecule.nst):
                     molecule.states[ist].energy = energy[ist]
             else:
                 # SA-REKS state
                 tmp_e = '\(GSS\):\s+([-]\S+)'
                 energy = re.findall(tmp_e, log_out)
-                energy = np.array(energy)
-                energy = energy.astype(float)
+                energy = np.array(energy, dtype=np.float64)
                 molecule.states[0].energy = energy[0]
                 tmp_e = '\(OSS\):\s+([-]\S+)'
                 energy = re.findall(tmp_e, log_out)
-                energy = np.array(energy)
-                energy = energy.astype(float)
+                energy = np.array(energy, dtype=np.float64)
                 molecule.states[1].energy = energy[0]
 
         # Force
@@ -291,8 +287,7 @@ class SSR(TeraChem):
                 tmp_f = f'Eigen state {ist + 1} gradient\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
                     '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
                 force = re.findall(tmp_f, log_out)
-                force = np.array(force[0])
-                force = force.astype(float)
+                force = np.array(force[0], dtype=np.float64)
                 force = force.reshape(molecule.nat_qm, 3, order='C')
                 molecule.states[ist].force = - np.copy(force)
         else:
@@ -300,8 +295,7 @@ class SSR(TeraChem):
             tmp_f = 'Gradient units are Hartree/Bohr\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
 	              '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
             force = re.findall(tmp_f, log_out)
-            force = np.array(force[0])
-            force = force.astype(float)
+            force = np.array(force[0], dtype=np.float64)
             force = force.reshape(molecule.nat_qm, 3, order='C')
             molecule.states[bo_list[0]].force = - np.copy(force)
 
@@ -323,13 +317,11 @@ class SSR(TeraChem):
             #    tmp_c = 'Coupling gradient\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
 	          #        '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
             #    hvec = re.findall(tmp_c, log_out)
-            #    hvec = np.array(hvec[0])
-            #    hvec = hvec.astype(float)
+            #    hvec = np.array(hvec[0], dtype=np.float64)
             #    hvec = hvec.reshape(molecule.nat_qm, 3, order='C')
             #    # Read coefficients of SSR state
             #    ssr_coef = re.findall('SSR state\s\d\s+[-]\S+\s+([-]*\S+)\s+([-]*\S+)', log_out)
-            #    ssr_coef = np.array(ssr_coef)
-            #    ssr_coef = ssr_coef.astype(float)
+            #    ssr_coef = np.array(ssr_coef, dtype=np.float64)
             #    # Calculate H vector from G, h vector
             #    Hvec = 1. / (molecule.states[1].energy - molecule.states[0].energy) * \
             #        ((2. * ssr_coef[0, 0] * ssr_coef[1, 0] * Gvec + hvec) / \
@@ -345,8 +337,7 @@ class SSR(TeraChem):
                     tmp_c = '>\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
                         '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
                     nac = re.findall(tmp_c, log_out)
-                    nac = np.array(nac[kst])
-                    nac = nac.astype(float)
+                    nac = np.array(nac[kst], dtype=np.float64)
                     nac = nac.reshape(molecule.nat_qm, 3, order='C')
                     molecule.nac[ist, jst] = nac
                     molecule.nac[jst, ist] = - nac

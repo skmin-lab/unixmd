@@ -515,7 +515,7 @@ class SHXF(MQC):
             :param integer one_st: State index that its population is one
         """
         self.phase = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
-        self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex_)
+        self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex128)
         self.mol.rho[one_st, one_st] = 1. + 0.j
 
         self.l_coh = [False] * self.mol.nst
