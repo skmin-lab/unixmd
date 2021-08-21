@@ -29,7 +29,7 @@ class DFT(Gaussian09):
         # Set initial guess for DFT calculation
         self.guess = guess.lower()
         self.guess_file = os.path.abspath(guess_file)
-        if not (self.guess in ["Harris", "read"]):
+        if not (self.guess in ["harris", "read"]):
             error_message = "Invalid initial guess for DFT!"
             error_vars = f"guess = {self.guess}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
@@ -120,7 +120,7 @@ class DFT(Gaussian09):
                 # Move previous file to currect directory
                 os.rename("../g09.chk.pre", "./g09.chk")
                 restart = True
-        elif (self.guess == "Harris"):
+        elif (self.guess == "harris"):
             restart = False
 
         if (calc_force_only):
@@ -299,6 +299,9 @@ class DFT(Gaussian09):
         if (self.calc_coupling and molecule.nst > 1 and not calc_force_only):
             if (istep == -1):
                 self.init_buffer(molecule)
+                self.orb_ini = np.zeros(1, dtype=np.int32)
+                self.orb_final = np.zeros(1, dtype=np.int32)
+                self.orb_final[0] = self.norb
             else:
                 self.CI_overlap(molecule, istep, dt)
  
