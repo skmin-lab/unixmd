@@ -126,12 +126,13 @@ class CT(MQC):
                 self.mol.reset_bo(qm.calc_coupling)
                 qm.get_data(self.mol, base_dirs[itraj], bo_list, self.dt, self.istep, calc_force_only=False)
 
+                self.get_phase(itraj)
+
                 # TODO: QM/MM
                 self.mol.get_nacme()
 
                 self.update_energy()
 
-                self.get_phase(itraj)
 
             self.calculate_qmom(self.istep)
 
@@ -161,7 +162,10 @@ class CT(MQC):
 
                 self.mol.backup_bo()
                 self.mol.reset_bo(qm.calc_coupling)
+
                 qm.get_data(self.mol, base_dirs[itraj], bo_list, self.dt, istep, calc_force_only=False)
+
+                self.get_phase(itraj)
                 #TODO: QM/MM
 
                 if (not self.mol.l_nacme and self.l_adj_nac):
