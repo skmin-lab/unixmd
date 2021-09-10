@@ -25,14 +25,14 @@ class CT(MQC):
         :param double dist_parameter: Distance parameter to determine quantum momentum center
         :param double sigma: Sigma to determine quantum momentum center
         :param init_coefs: Initial BO coefficient
-        :type init_coefs: double, 2D list or complex, 2D list
+        :type init_coefs: double, list, list or complex, list, list
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecules, thermostat=None, istates=None, dt=0.5, nsteps=1000, nesteps=20, \
-        elec_object="coefficient", propagator="rk4", l_print_dm=True, l_adj_nac=True, \
-        rho_threshold=0.01, sigma_threshold=0.25, dist_cutoff=0.5, dist_parameter=10., sigma=0.3, \
-        init_coefs=None, unit_dt="fs", out_freq=1, verbosity=0):
+        elec_object="coefficient", propagator="rk4", l_print_dm=True, l_adj_nac=True, const_dist_cutoff=None, \
+        const_center_cutoff=None, rho_threshold=0.01, dist_parameter=10., sigma=0.3, center_cutoff=1., init_coefs=None, \
+        l_en_cons=False, l_cons=False, unit_dt="fs", out_freq=1, verbosity=0):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -84,14 +84,18 @@ class CT(MQC):
         self.upper_th = 1. - self.rho_threshold
         self.lower_th = self.rho_threshold
 
-        self.sigma_threshold = sigma_threshold
-        self.dist_cutoff = dist_cutoff
-
-        self.dist_parameter = dist_parameter
         self.sigma = sigma
+        #self.const_dist_cutoff = const_dist_cutoff
+        self.dist_parameter = dist_parameter
+        #self.const_center_cutoff = const_center_cutoff
 
+        #self.l_en_cons = l_en_cons
+        #self.l_coh = [[False] * self.nst] * self.ntrajs
         self.dotpopnac = np.zeros((self.ntrajs, self.nst))
         self.dotpopdec = np.zeros((self.ntrajs, self.nst))
+
+        # Initialize event to print
+        self.event = {"DECO": []}
 
     def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to CTMQC dynamics
@@ -264,7 +268,7 @@ class CT(MQC):
         # -------------------------------------------------------------------
         # 1. Calculate variances for each trajectory
         # TODO: method to calculate sigma
-        self.calculate_sigma()
+        self.calculate_sigma(istep)
 
         # 2. Calculate slope
         self.calculate_slope()
@@ -292,11 +296,17 @@ class CT(MQC):
                     self.K_lk[itraj, jst, ist] += 2. * np.sum(1. / self.mol.mass[0:self.nat_qm] * \
                         np.sum(self.qmom[itraj, index_lk] * self.phase[itraj, jst], axis = 1))
 
-    def calculate_sigma(self):
+    def calculate_sigma(self, istep):
         """ Routine to calculate variance
         """
-        self.sigma_lk = np.ones((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim)) # TODO: state-pair
+        threshold = self.dist_parameter * self.sigma #/ self.ntrajs
+        cutoff = np.ones((self.ntrajs, self.nat_qm, self.ndim))
         for itraj in range(self.ntrajs):
+            if (istep == -1):
+                cutoff *= threshold
+            else:
+                cutoff[itraj] = self.dist_parameter * self.sigma_lk[itraj, 0] 
+
             # Variable to determine how many trajecories are in cutoff.
             self.count_ntrajs[itraj] = np.zeros((self.nat_qm)) 
 
@@ -305,14 +315,14 @@ class CT(MQC):
 
             for jtraj in range(self.ntrajs):
                 pos_diff = self.mols[jtraj].pos - self.mols[itraj].pos # Dimension = (self.nat_qm, self.ndim)
-                pos_diff2 = np.sum(pos_diff * pos_diff, axis=1) # Dimension = (self.nat_qm)
 
                 for iat in range(self.nat_qm):
-                    distance = np.sqrt(pos_diff2[iat]) # Distance between i-th atom in itraj and jtraj
-                    if (distance <= self.dist_cutoff):
-                        R_tmp[iat] += self.mols[jtraj].pos[iat] # Dimension = (self.nat_qm, self.ndim)
-                        R2_tmp[iat] += self.mols[jtraj].pos[iat] * self.mols[jtraj].pos[iat] # Dimension = (self.nat_qm, self.ndim)
-                        self.count_ntrajs[itraj, iat] += 1
+                    for idim in range(self.ndim):
+                        distance = abs(pos_diff[iat, idim]) # Distance between i-th dimenstion of i-th atom in itraj and jtraj
+                        if (distance <= cutoff[itraj, iat, idim]):
+                            R_tmp[iat] += self.mols[jtraj].pos[iat] # Dimension = (self.nat_qm, self.ndim)
+                            R2_tmp[iat] += self.mols[jtraj].pos[iat] * self.mols[jtraj].pos[iat] # Dimension = (self.nat_qm, self.ndim)
+                            self.count_ntrajs[itraj, iat] += 1
 
             for iat in range(self.nat_qm):
                 avg_R = R_tmp[iat] / self.count_ntrajs[itraj, iat]
@@ -320,8 +330,8 @@ class CT(MQC):
                 for idim in range(self.ndim):
                     self.sigma_lk[itraj, 0, iat, idim] = np.sqrt((avg_R2[idim] - avg_R[idim] ** 2)) \
                         / np.sqrt(np.sqrt(self.count_ntrajs[itraj, iat])) # / np.sqrt(np.sqrt(count_ntrajs)) is artifact to modulate sigma.
-                    if (self.sigma_lk[itraj, 0, iat, idim] <= self.sigma_threshold):
-                        self.sigma_lk[itraj, 0, iat, idim] = self.dist_cutoff
+                    if (self.sigma_lk[itraj, 0, iat, idim] <= self.sigma or self.count_ntrajs[itraj, iat, idim] == 1):
+                        self.sigma_lk[itraj, 0, iat, idim] = self.sigma
 
     def calculate_slope(self):
         """ Routine to calculate slope
@@ -577,8 +587,6 @@ class CT(MQC):
         {"CTMQC Information":>43s}
         {"-" * 68}
           rho_threshold            = {self.rho_threshold:>16f}
-          sigma_threshold          = {self.sigma_threshold:>16f}
-          dist_cutoff              = {self.dist_cutoff:>16f} 
           dist_parameter           = {self.dist_parameter:>16f}
           sigma                    = {self.sigma:>16f}
         """)
@@ -590,7 +598,7 @@ class CT(MQC):
         {"Initial state Information":>43s}
         {"-" * 68}
         """)
-        istate_info += f"\n  istates (1:{self.ntrajs})             =\n"
+        istate_info += f"  istates (1:{self.ntrajs})             =\n"
         nlines = self.ntrajs // 6
         if (self.ntrajs % 6 == 0):
             nlines -= 1
