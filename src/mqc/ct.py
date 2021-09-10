@@ -30,8 +30,8 @@ class CT(MQC):
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecules, thermostat=None, istates=None, dt=0.5, nsteps=1000, nesteps=20, \
-        elec_object="coefficient", propagator="rk4", l_print_dm=True, l_adj_nac=True, const_dist_cutoff=None, \
-        const_center_cutoff=None, rho_threshold=0.01, dist_parameter=10., sigma=0.3, center_cutoff=1., init_coefs=None, \
+        elec_object="coefficient", propagator="rk4", l_print_dm=True, l_adj_nac=True, rho_threshold=0.01, \
+        dist_parameter=10., sigma=0.3, center_cutoff=1., init_coefs=None, const_center_cutoff=None, const_dist_cutoff=None, \
         l_en_cons=False, l_cons=False, unit_dt="fs", out_freq=1, verbosity=0):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
@@ -70,7 +70,7 @@ class CT(MQC):
         self.K_lk = np.zeros((self.ntrajs, self.nst, self.nst))
 
         # Initialize variables to calculate quantum momentum 
-        self.count_ntrajs = np.zeros((self.ntrajs, self.nat_qm))
+        self.count_ntrajs = np.zeros((self.ntrajs, self.nat_qm, self.ndim))
         self.sigma_lk = np.ones((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim))
         self.slope_i = np.zeros((self.ntrajs, self.nat_qm, self.ndim))
         self.g_i = np.zeros((self.ntrajs)) 
@@ -87,7 +87,7 @@ class CT(MQC):
         self.sigma = sigma
         self.const_dist_cutoff = const_dist_cutoff
         self.dist_parameter = dist_parameter
-        #self.const_center_cutoff = const_center_cutoff
+        self.const_center_cutoff = const_center_cutoff
 
         #self.l_en_cons = l_en_cons
         #self.l_coh = [[False] * self.nst] * self.ntrajs
@@ -364,6 +364,26 @@ class CT(MQC):
                     for idim in range(self.ndim):
                         w_ij[itraj, jtraj, iat, idim] = self.prod_g_i[itraj, jtraj] /\
                         (2. * self.sigma_lk[jtraj, 0, iat, idim] ** 2 * self.g_i[itraj])
+
+        ## Smoothing 
+        #self.w_k = np.zeros((self.ntrajs, self.nst))
+        #rho = np.zeros((self.ntrajs, self.nst))
+        #for itraj in range(self.ntrajs):
+        #    for jtraj in range(self.ntrajs):
+        #        for ist in range(self.nst):
+        #            self.w_k[itraj, ist] += self.prod_g_i[itraj, jtraj] * self.mols[jtraj].rho.real[ist, ist] / self.g_i[itraj]
+
+        #    index_lk = -1
+        #    for ist in range(self.nst):
+        #        for jst in range(ist + 1, self.nst):
+        #            index_lk += 1
+
+        #            l_smooth = ((self.w_k[itraj, ist] < self.lower_th) or (self.w_k[itraj, ist] > self.upper_th) 
+        #                or (self.w_k[itraj, jst] < self.lower_th) or (self.w_k[itraj, jst] > self.upper_th))
+
+        #            if (l_smooth):
+        #                self.phase[itraj, ist] = np.zeros((self.nat_qm, self.ndim))
+        #                self.phase[itraj, jst] = np.zeros((self.nat_qm, self.ndim))
 
         # (2-2) Calculate slope_i
         # the slope is calculated as a sum over j of w_ij
