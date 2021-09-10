@@ -85,7 +85,7 @@ class CT(MQC):
         self.lower_th = self.rho_threshold
 
         self.sigma = sigma
-        #self.const_dist_cutoff = const_dist_cutoff
+        self.const_dist_cutoff = const_dist_cutoff
         self.dist_parameter = dist_parameter
         #self.const_center_cutoff = const_center_cutoff
 
@@ -297,39 +297,44 @@ class CT(MQC):
                         np.sum(self.qmom[itraj, index_lk] * self.phase[itraj, jst], axis = 1))
 
     def calculate_sigma(self, istep):
-        """ Routine to calculate variance
+        """ Routine to calculate variances for each trajectories
+
+            :param integer istep: Current MD step
         """
         threshold = self.dist_parameter * self.sigma #/ self.ntrajs
         cutoff = np.ones((self.ntrajs, self.nat_qm, self.ndim))
         for itraj in range(self.ntrajs):
-            if (istep == -1):
-                cutoff *= threshold
+            if (self.const_dist_cutoff == None):
+                if (istep == -1):
+                    cutoff *= threshold
+                else:
+                    cutoff[itraj] = self.dist_parameter * self.sigma_lk[itraj, 0] 
             else:
-                cutoff[itraj] = self.dist_parameter * self.sigma_lk[itraj, 0] 
+                cutoff = self.const_dist_cutoff * np.ones((self.ntrajs, self.nat_qm, self.ndim))
 
             # Variable to determine how many trajecories are in cutoff.
-            self.count_ntrajs[itraj] = np.zeros((self.nat_qm)) 
+            self.count_ntrajs[itraj] = np.zeros((self.nat_qm, self.ndim)) 
 
             R2_tmp = np.zeros((self.nat_qm, self.ndim)) # Temporary variable for R**2
             R_tmp = np.zeros((self.nat_qm, self.ndim))  # Temporary variable for R
 
             for jtraj in range(self.ntrajs):
                 pos_diff = self.mols[jtraj].pos - self.mols[itraj].pos # Dimension = (self.nat_qm, self.ndim)
-
                 for iat in range(self.nat_qm):
                     for idim in range(self.ndim):
                         distance = abs(pos_diff[iat, idim]) # Distance between i-th dimenstion of i-th atom in itraj and jtraj
                         if (distance <= cutoff[itraj, iat, idim]):
-                            R_tmp[iat] += self.mols[jtraj].pos[iat] # Dimension = (self.nat_qm, self.ndim)
-                            R2_tmp[iat] += self.mols[jtraj].pos[iat] * self.mols[jtraj].pos[iat] # Dimension = (self.nat_qm, self.ndim)
-                            self.count_ntrajs[itraj, iat] += 1
+                            R_tmp[iat, idim] += self.mols[jtraj].pos[iat, idim] # Dimension = (self.nat_qm, self.ndim)
+                            R2_tmp[iat, idim] += self.mols[jtraj].pos[iat, idim] * self.mols[jtraj].pos[iat, idim] # Dimension = (self.nat_qm, self.ndim)
+                            self.count_ntrajs[itraj, iat, idim] += 1
 
             for iat in range(self.nat_qm):
-                avg_R = R_tmp[iat] / self.count_ntrajs[itraj, iat]
-                avg_R2 = R2_tmp[iat] / self.count_ntrajs[itraj, iat]
                 for idim in range(self.ndim):
-                    self.sigma_lk[itraj, 0, iat, idim] = np.sqrt((avg_R2[idim] - avg_R[idim] ** 2)) \
-                        / np.sqrt(np.sqrt(self.count_ntrajs[itraj, iat])) # / np.sqrt(np.sqrt(count_ntrajs)) is artifact to modulate sigma.
+                    avg_R = R_tmp[iat, idim] / self.count_ntrajs[itraj, iat, idim]
+                    avg_R2 = R2_tmp[iat, idim] / self.count_ntrajs[itraj, iat, idim]
+
+                    self.sigma_lk[itraj, 0, iat, idim] = np.sqrt((avg_R2 - avg_R ** 2)) \
+                        / np.sqrt(np.sqrt(self.count_ntrajs[itraj, iat, idim])) # / np.sqrt(np.sqrt(count_ntrajs)) is artifact to modulate sigma.
                     if (self.sigma_lk[itraj, 0, iat, idim] <= self.sigma or self.count_ntrajs[itraj, iat, idim] == 1):
                         self.sigma_lk[itraj, 0, iat, idim] = self.sigma
 
