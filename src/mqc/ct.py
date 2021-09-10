@@ -472,9 +472,14 @@ class CT(MQC):
                             # test how far calculated center of quantum momentum is from current atomic position.
                             # tmp_var is deviation between position of classical trajectory and quantum momentum center.
                             tmp_var = center_old_lk[itraj, index_lk, iat, idim] - self.mols[itraj].pos[iat, idim]
-                            if (abs(tmp_var) > self.dist_parameter * self.sigma): 
+                            if (self.const_center_cutoff == None):
+                                cutoff = self.dist_parameter * self.sigma
+                            else:
+                                cutoff = self.const_center_cutoff
+
+                            if (abs(tmp_var) > cutoff): 
                                 tmp_var = center_new_lk[itraj, index_lk, iat, idim] - self.mols[itraj].pos[iat, idim]
-                                if (abs(tmp_var) > self.dist_parameter * self.sigma): 
+                                if (abs(tmp_var) > cutoff): 
                                     self.center_lk[itraj, index_lk, iat, idim] = self.mols[itraj].pos[iat, idim]
                                 else:
                                     self.center_lk[itraj, index_lk, iat, idim] = center_new_lk[itraj, index_lk, iat, idim]
