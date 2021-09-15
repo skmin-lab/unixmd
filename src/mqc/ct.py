@@ -32,7 +32,7 @@ class CT(MQC):
     def __init__(self, molecules, thermostat=None, istates=None, dt=0.5, nsteps=1000, nesteps=20, \
         elec_object="coefficient", propagator="rk4", l_print_dm=True, l_adj_nac=True, rho_threshold=0.01, \
         dist_parameter=10., sigma=0.3, center_cutoff=1., init_coefs=None, const_center_cutoff=None, const_dist_cutoff=None, \
-        l_en_cons=False, l_cons=False, unit_dt="fs", out_freq=1, verbosity=0):
+        l_en_cons=False, unit_dt="fs", out_freq=1, verbosity=0):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -89,8 +89,7 @@ class CT(MQC):
         self.dist_parameter = dist_parameter
         self.const_center_cutoff = const_center_cutoff
 
-        #self.l_en_cons = l_en_cons
-        #self.l_coh = [[False] * self.nst] * self.ntrajs
+        self.l_en_cons = l_en_cons
         self.dotpopnac = np.zeros((self.ntrajs, self.nst))
         self.dotpopdec = np.zeros((self.ntrajs, self.nst))
 
@@ -248,6 +247,14 @@ class CT(MQC):
         self.mol.epot = 0.
         for ist, istate in enumerate(self.mol.states):
             self.mol.epot += self.mol.rho.real[ist, ist] * istate.energy
+        
+        if (self.l_en_cons and not (self.istep == -1)):
+            alpha = (self.mol.etot - self.mol.epot)
+            factor = alpha / self.mol.ekin
+
+            self.mol.vel *= np.sqrt(factor)
+            self.mol.update_kinetic()
+
         self.mol.etot = self.mol.epot + self.mol.ekin
 
     def get_phase(self, itrajectory):
