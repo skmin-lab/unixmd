@@ -184,7 +184,7 @@ class CT(MQC):
 
                 self.update_energy()
 
-                self.get_phase(itraj)
+                self.check_decoherence(itraj)
 
                 #TODO: restart
                 #self.fstep = istep
@@ -262,6 +262,32 @@ class CT(MQC):
             else:
                 self.phase[itrajectory, ist] += self.mol.states[ist].force * self.dt
 
+    def check_decoherence(self, itrajectory):
+        """ Routine to check decoherence among BO states
+        """
+        for ist in range(self.mol.nst):
+            if (np.sum(abs(self.phase[itrajectory, ist])) > eps):
+                rho = self.mol.rho.real[ist, ist]
+                if (rho > self.upper_th):
+                    self.set_decoherence(itrajectory, ist)
+                    self.event["DECO"].append(f"{itrajectory + 1:8d}: decohered to {ist} state")
+                    return
+
+    def set_decoherence(self, itrajectory, one_st):
+        """ Routine to reset coefficient/density if the state is decohered
+
+            :param integer one_st: State index that its population is one
+        """
+        self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex64)
+        self.mol.rho[one_st, one_st] = 1. + 0.j
+        
+        if (self.elec_object == "coefficient"):
+            for ist in range(self.mol.nst):
+                if (ist == one_st):
+                    self.mol.states[ist].coef /= np.absolute(self.mol.states[ist].coef).real
+                else:
+                    self.mol.states[ist].coef = 0. + 0.j
+
     def calculate_qmom(self, istep):
         """ Routine to calculate quantum momentum
 
@@ -271,7 +297,6 @@ class CT(MQC):
         # i and j are trajectory index.
         # -------------------------------------------------------------------
         # 1. Calculate variances for each trajectory
-        # TODO: method to calculate sigma
         self.calculate_sigma(istep)
 
         # 2. Calculate slope
@@ -678,3 +703,10 @@ class CT(MQC):
         INFO += f"{ctemp:13.6f}"
         INFO += f"{norm:11.5f}"
         print (INFO, flush=True)
+        
+        # Print event in CTMQC
+        for category, events in self.event.items():
+            if (len(events) != 0):
+                for ievent in events:
+                    print (f" {category}{istep + 1:>9d}  {ievent}", flush=True)
+        self.event["DECO"] = []
