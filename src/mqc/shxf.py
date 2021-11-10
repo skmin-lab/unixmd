@@ -404,9 +404,8 @@ class SHXF(MQC):
                                 self.mol.states[ist].coef = 1. + 0.j
                             else:
                                 self.mol.states[ist].coef = 0. + 0.j
-                    else:
-                        self.mol.rho[:,:] = 0. + 0.j
-                        self.mol.rho[self.rstate_old, self.rstate_old] = 1. + 0.j
+                    self.mol.rho[:,:] = 0. + 0.j
+                    self.mol.rho[self.rstate_old, self.rstate_old] = 1. + 0.j
                     self.event["HOP"].append(f"Collapse density: reset the density according to the current state {self.rstate_old}")
 
                 self.force_hop = False
