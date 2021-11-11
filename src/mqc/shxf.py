@@ -63,7 +63,7 @@ class SHXF(MQC):
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
         hop_reject="reverse", rho_threshold=0.01, sigma=None, l_xf1d=False, init_coef=None, \
-        l_econs_state=True, unit_dt="fs", out_freq=1, verbosity=0):
+        l_econs_state=True, aux_econs_violation="fix", unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
             elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
@@ -106,12 +106,19 @@ class SHXF(MQC):
 
         # Initialize XF related variables
         self.force_hop = False
-        self.l_collapse = False
         self.l_econs_state = l_econs_state
         self.l_xf1d = l_xf1d
         self.l_coh = [False] * self.mol.nst
         self.l_first = [False] * self.mol.nst
+        self.l_fix = [False] * self.mol.nst
+        self.l_collapse = False
         self.rho_threshold = rho_threshold
+        self.aux_econs_viol = aux_econs_violation
+
+        if not (self.aux_econs_viol in ["fix", "collapse"]):
+            error_message = "Invalid method to treat auxiliary trajectories that violate the total energy conservation!"
+            error_vars = f"aux_econs_violation = {self.aux_econs_viol}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.sigma = sigma
         if (self.sigma == None):
@@ -144,6 +151,7 @@ class SHXF(MQC):
         self.aux = Auxiliary_Molecule(self.mol, self.l_xf1d)
         self.pos_0 = np.zeros((self.aux.nat, self.aux.ndim))
         self.phase = np.array(np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim)))
+
 
         # Debug variables
         self.dotpopdec = np.zeros(self.mol.nst)
@@ -398,15 +406,17 @@ class SHXF(MQC):
                 self.l_hop = False
 
                 if (self.force_hop):
-                    if (self.elec_object == "coefficient"):
-                        for ist in range(self.mol.nst):
-                            if (ist == self.rstate_old):
-                                self.mol.states[ist].coef = 1. + 0.j
-                            else:
-                                self.mol.states[ist].coef = 0. + 0.j
-                    self.mol.rho[:,:] = 0. + 0.j
-                    self.mol.rho[self.rstate_old, self.rstate_old] = 1. + 0.j
                     self.event["HOP"].append(f"Collapse density: reset the density according to the current state {self.rstate_old}")
+                    self.set_decoherence(self.rstate_old)
+#                    if (self.elec_object == "coefficient"):
+#                        for ist in range(self.mol.nst):
+#                            if (ist == self.rstate_old):
+#                                self.mol.states[ist].coef = 1. + 0.j
+#                            else:
+#                                self.mol.states[ist].coef = 0. + 0.j
+#                    self.mol.rho[:,:] = 0. + 0.j
+#                    self.mol.rho[self.rstate_old, self.rstate_old] = 1. + 0.j
+#                    self.event["HOP"].append(f"Collapse density: reset the density according to the current state {self.rstate_old}")
 
                 self.force_hop = False
 
@@ -479,7 +489,7 @@ class SHXF(MQC):
                     rho = self.mol.rho.real[ist, ist]
                     if (rho > self.upper_th):
                         self.set_decoherence(ist)
-                        self.event["DECO"].append(f"Destroy auxiliary trajectories: decohered to {ist} state")
+#                        self.event["DECO"].append(f"Destroy auxiliary trajectories: decohered to {ist} state")
                         return
 
     def check_coherence(self):
@@ -520,6 +530,9 @@ class SHXF(MQC):
 
         self.l_coh = [False] * self.mol.nst
         self.l_first = [False] * self.mol.nst
+        self.l_fix = [False] * self.mol.nst
+
+        self.event["DECO"].append(f"Destroy auxiliary trajectories: decohered to {one_st} state")
 
         if (self.elec_object == "coefficient"):
             for ist in range(self.mol.nst):
@@ -556,21 +569,28 @@ class SHXF(MQC):
         for ist in range(self.mol.nst):
             # Calculate propagation factor alpha
             if (self.l_coh[ist]):
-                if (ist == self.rstate):
-                    alpha = self.mol.ekin_qm
-                else:
-                    if (self.l_first[ist]):
-                        alpha = self.mol.ekin_qm
-                        if (self.l_econs_state):
-                            alpha += self.mol.states[self.rstate].energy - self.mol.states[ist].energy
-                    else:
-                        ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
-                        alpha = ekin_old + self.mol.states[ist].energy_old - self.mol.states[ist].energy
-                if (alpha < 0.):
+                if (self.l_fix[ist]):
                     alpha = 0.
-                    self.l_collapse = True
-                    self.collapse(ist)
-                    self.event["DECO"].append(f"Energy conservation violated, collapse the {ist} state coefficient/density to zero")
+                else:
+                    if (ist == self.rstate):
+                        alpha = self.mol.ekin_qm
+                    else:
+                        if (self.l_first[ist]):
+                            alpha = self.mol.ekin_qm
+                            if (self.l_econs_state):
+                                alpha += self.mol.states[self.rstate].energy - self.mol.states[ist].energy
+                        else:
+                            ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
+                            alpha = ekin_old + self.mol.states[ist].energy_old - self.mol.states[ist].energy
+                    if (alpha < 0.):
+                        alpha = 0.
+                        if (self.aux_econs_viol == "fix"):
+                            self.l_fix[ist] = True
+                            self.event["DECO"].append(f"Energy conservation violated, the auxiliary trajectory on state {ist} is fixed.")
+                        elif (self.aux_econs_viol == "collapse"):
+                            self.l_collapse = True
+                            self.collapse(ist)
+                            self.event["DECO"].append(f"Energy conservation violated, collapse the {ist} state coefficient/density to zero.")
 
                 # Calculate auxiliary velocity from alpha
                 if (self.l_xf1d):
