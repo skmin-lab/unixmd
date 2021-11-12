@@ -2,8 +2,8 @@
 Installation
 ==========================
 
-PyUNIxMD is a Python based program with a little C code for time-consuming
-electronic propagation parts interfaced via Cython, therefore compilation is needed.
+As PyUNIxMD is a Python based program with a little bit of C code interfaced via Cython to aid time-consuming
+electronic propagation calculations, compilation is needed.
 
 Requirements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -14,7 +14,7 @@ Requirements
 
 -  Cython https://cython.org
 
-If you don't have Numpy or Cython, you can install them using :code:`pip` command.
+If you don't have Numpy or Cython, you can install either of them using :code:`pip` command.
 
 .. code-block:: bash
 
@@ -23,7 +23,7 @@ If you don't have Numpy or Cython, you can install them using :code:`pip` comman
 Compilation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can obtain PyUNIxMD code by putting following command.
+You can obtain PyUNIxMD code by executing the following command.
 
 .. code-block:: bash
 
