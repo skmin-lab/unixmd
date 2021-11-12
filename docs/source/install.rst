@@ -14,7 +14,7 @@ Requirements
 
 -  Cython https://cython.org
 
-If you don't have Numpy or Cython, you can install either of them using :code:`pip` command.
+If you don't have Numpy or Cython, you can install those using :code:`pip` command.
 
 .. code-block:: bash
 
