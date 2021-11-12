@@ -63,7 +63,7 @@ class SHXF(MQC):
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
         hop_reject="reverse", rho_threshold=0.01, sigma=None, l_xf1d=False, init_coef=None, \
-        l_econs_state=True, aux_econs_violation="fix", unit_dt="fs", out_freq=1, verbosity=0):
+        l_econs_state=True, aux_econs_viol="fix", unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
             elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
@@ -113,11 +113,11 @@ class SHXF(MQC):
         self.l_fix = [False] * self.mol.nst
         self.l_collapse = False
         self.rho_threshold = rho_threshold
-        self.aux_econs_viol = aux_econs_violation
+        self.aux_econs_viol = aux_econs_viol
 
         if not (self.aux_econs_viol in ["fix", "collapse"]):
             error_message = "Invalid method to treat auxiliary trajectories that violate the total energy conservation!"
-            error_vars = f"aux_econs_violation = {self.aux_econs_viol}"
+            error_vars = f"aux_econs_viol = {self.aux_econs_viol}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.sigma = sigma
@@ -151,7 +151,6 @@ class SHXF(MQC):
         self.aux = Auxiliary_Molecule(self.mol, self.l_xf1d)
         self.pos_0 = np.zeros((self.aux.nat, self.aux.ndim))
         self.phase = np.array(np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim)))
-
 
         # Debug variables
         self.dotpopdec = np.zeros(self.mol.nst)
@@ -408,15 +407,6 @@ class SHXF(MQC):
                 if (self.force_hop):
                     self.event["HOP"].append(f"Collapse density: reset the density according to the current state {self.rstate_old}")
                     self.set_decoherence(self.rstate_old)
-#                    if (self.elec_object == "coefficient"):
-#                        for ist in range(self.mol.nst):
-#                            if (ist == self.rstate_old):
-#                                self.mol.states[ist].coef = 1. + 0.j
-#                            else:
-#                                self.mol.states[ist].coef = 0. + 0.j
-#                    self.mol.rho[:,:] = 0. + 0.j
-#                    self.mol.rho[self.rstate_old, self.rstate_old] = 1. + 0.j
-#                    self.event["HOP"].append(f"Collapse density: reset the density according to the current state {self.rstate_old}")
 
                 self.force_hop = False
 
@@ -489,7 +479,6 @@ class SHXF(MQC):
                     rho = self.mol.rho.real[ist, ist]
                     if (rho > self.upper_th):
                         self.set_decoherence(ist)
-#                        self.event["DECO"].append(f"Destroy auxiliary trajectories: decohered to {ist} state")
                         return
 
     def check_coherence(self):
