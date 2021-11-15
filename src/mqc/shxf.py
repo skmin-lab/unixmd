@@ -56,6 +56,7 @@ class SHXF(MQC):
         :param init_coef: Initial BO coefficient
         :type init_coef: double, list or complex, list
         :param boolean l_econs_state: Logical to use identical total energies for all auxiliary trajectories
+        :param string aux_econs_viol: How to treat trajectories violating the total energy conservation
         :param string unit_dt: Unit of time interval
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
