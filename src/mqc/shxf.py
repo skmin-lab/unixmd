@@ -474,6 +474,7 @@ class SHXF(MQC):
                 self.event["DECO"].append(f"Destroy auxiliary trajectories: hopping occurs")
             self.l_coh = [False] * self.mol.nst
             self.l_first = [False] * self.mol.nst
+            self.l_fix = [False] * self.mol.nst
         else:
             for ist in range(self.mol.nst):
                 if (self.l_coh[ist]):
