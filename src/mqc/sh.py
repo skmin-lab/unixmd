@@ -24,7 +24,7 @@ class SH(MQC):
         :param init_coef: Initial BO coefficient
         :type init_coef: double, list or complex, list
         :param string dec_correction: Simple decoherence correction schemes
-        :param double edc_parameter: Energy constant for rescaling coefficients in edc
+        :param double edc_parameter: Energy constant (H) for rescaling coefficients in edc
         :param string unit_dt: Unit of time step 
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
@@ -188,8 +188,9 @@ class SH(MQC):
                 if (self.mol.ekin_qm > eps):
                     self.correct_dec_edc()
 
-            if (qm.re_calc and self.l_hop):
-                qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
+            if (self.l_hop):
+                if (qm.re_calc):
+                    qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
                 if (self.mol.l_qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
 
@@ -372,7 +373,7 @@ class SH(MQC):
                 states.coef = 0. + 0.j
             self.mol.states[self.rstate].coef = 1. + 0.j
 
-        self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex_)
+        self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex128)
         self.mol.rho[self.rstate, self.rstate] = 1. + 0.j
 
     def correct_dec_edc(self):

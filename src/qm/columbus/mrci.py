@@ -423,8 +423,7 @@ class MRCI(Columbus):
                     tmp_e += ' mr-sdci [#]\s*\S+\s+\S+\s+[-]\S+\s+[-]*\S+\s+[-]*\S+\s+[-]*\S+\s+[-]*\S+\s+\n'
             tmp_e += '\n number of'
             energy = re.findall(tmp_e, log_out)
-            energy = np.array(energy)
-            energy = energy[0].astype(float)
+            energy = np.array(energy[0], dtype=np.float64)
             for ist in range(molecule.nst):
                 molecule.states[ist].energy = energy[ist]
 
@@ -438,8 +437,7 @@ class MRCI(Columbus):
 
             tmp_f ='\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat_qm
             force = re.findall(tmp_f, log_out)
-            force = np.array(force[0])
-            force = force.astype(float)
+            force = np.array(force[0], dtype=np.float64)
             force = force.reshape(molecule.nat_qm, 3, order='C')
             molecule.states[ist].force = - np.copy(force)
 
@@ -454,8 +452,7 @@ class MRCI(Columbus):
 
                     tmp_c =  '\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n' * molecule.nat_qm
                     nac = re.findall(tmp_c, log_out)
-                    nac = np.array(nac[0])
-                    nac = nac.astype(float)
+                    nac = np.array(nac[0], dtype=np.float64)
                     nac = nac.reshape(molecule.nat_qm, 3, order='C')
                     molecule.nac[ist, jst] = nac
                     molecule.nac[jst, ist] = - nac

@@ -295,12 +295,9 @@ class MQC(object):
 
           MQC Method               = {self.md_type:>16s}
           Time Interval (fs)       = {self.dt / fs_to_au:16.6f}
+          Initial State (0:GS)     = {self.istate:>16d}
           Nuclear Step             = {self.nsteps:>16d}
         """), "  ")
-        if (self.istate != None):
-            dynamics_info += f"  Initial State (0:GS)     = {self.istate:>16d}\n"
-        else:
-            dynamics_info += f"  Initial State (0:GS)     = {str(self.istate):>16s}\n"
 
         if (self.md_type != "BOMD"):
             dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
@@ -311,12 +308,19 @@ class MQC(object):
             dynamics_info += f"\n  Rescaling after Hop      = {self.hop_rescale:>16s}\n"
             dynamics_info += f"  Rescaling after Reject   = {self.hop_reject:>16s}\n"
 
+        # Print ad-hoc decoherence variables
+        if (self.md_type == "SH"):
+            if (self.dec_correction != None):
+                dynamics_info += f"\n  Decoherence Scheme       = {self.dec_correction:>16s}\n"
+                if (self.dec_correction == "edc"):
+                    dynamics_info += f"  Energy Constant          = {self.edc_parameter:>16.6f}\n"
+
         # Print XF variables
         if (self.md_type == "SHXF"):
             # Print density threshold used in decoherence term
             dynamics_info += f"\n  Density Threshold        = {self.rho_threshold:>16.6f}"
-            if (self.md_type == "SHXF" and self.l_xf1d):
-                # Print reduced mass
+            # Print reduced mass
+            if (self.l_xf1d):
                 dynamics_info += f"\n  Reduced Mass             = {self.aux.mass[0]:16.6f}"
             # Print sigma values
             if (isinstance(self.sigma, float)):
@@ -336,6 +340,16 @@ class MQC(object):
                     sigma_info += "".join([f'{sigma:7.3f}' for sigma in self.sigma[iline1:iline2]])
                     sigma_info += "\n"
                 dynamics_info += sigma_info
+            # Print auxiliary trajectory setting
+            if (self.l_econs_state):
+                dynamics_info += f"\n  Aux. Total E             = {'Real Total E':>16s}\n"
+            else:
+                dynamics_info += f"\n  Aux. Total E             = {'Real Total E':>16s}" \
+                    + f"\n                             {'+ Pot. E Diff.':>16s}\n"
+
+        # Print system information
+        dynamics_info += f"\n  Output Frequency         = {self.out_freq:>16d}\n"
+        dynamics_info += f"  Verbosity Level          = {self.verbosity:>16d}\n"
 
         print (dynamics_info, flush=True)
 

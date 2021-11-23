@@ -231,15 +231,13 @@ class DFT(Turbomole):
         # Energy of running state
         find_e = "energy =\s+([-]\d+[.]\d+)"
         energy = re.findall(find_e, bo_out)
-        energy = np.array(energy)
-        energy = energy.astype(float)
+        energy = np.array(energy, dtype=np.float64)
         molecule.states[bo_list[0]].energy = energy[0]
 
         # Force of running state
         find_grad = "\s+([-]*\d*[.]\d+[E][-|+]\d+)"
         grad = re.findall(find_grad, bo_out)
-        grad = np.array(grad)
-        grad = grad.astype(float)
+        grad = np.array(grad, dtype=np.float64)
         grad = grad.reshape(molecule.nat_qm, 3, order='C')
         molecule.states[bo_list[0]].force = - np.copy(grad)
 
@@ -255,8 +253,7 @@ class DFT(Turbomole):
 
             find_e = 'Total energy:\s+([-]\d+[.]\d+)'
             energy = re.findall(find_e, bo_out)
-            energy = np.array(energy)
-            energy = energy.astype(float)
+            energy = np.array(energy, dtype=np.float64)
             for ist in range(molecule.nst):
                 if (ist != bo_list[0]):
                     molecule.states[ist].energy = energy[ist]

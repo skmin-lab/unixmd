@@ -66,6 +66,9 @@ Detailed description of DISH-XF method is in :cite:`Ha2018`
 | **l_econs_state**          | Logical to use identical total energies              | *True*       |
 | *(boolean)*                | for all auxiliary trajectories                       |              |
 +----------------------------+------------------------------------------------------+--------------+
+| **aux_econs_viol**         | How to treat trajectories violating the total energy | *'fix'*      |
+| *(string)*                 | conservation                                         |              |
++----------------------------+------------------------------------------------------+--------------+
 | **unit_dt**                | Unit of time interval                                | *'fs'*       |
 | *(string)*                 |                                                      |              |
 +----------------------------+------------------------------------------------------+--------------+
@@ -193,7 +196,24 @@ Detailed description of the parameters
 
   This parameter determines whether the total energies of all auxiliary trajectories are identical or not.
   If this is set to *True*, auxiliary trajectories have same total energy, or they all have different total energy.
+  In various system, *True* is recommended for **l_econs_state**.
 
+\
+
+- **aux_econs_viol** *(string)* - Default: *'fix'*
+
+  This parameter determines how to deal with auxiliary trajectories violating the total energy conservation law.
+  The velocity of an auxiliary trajectory is given as the velocity of the true nuclear trajectory multiplied by a factor determined from the total energy conservation condition, i.e.
+  
+  .. math::
+     \underline{\underline{\dot{\textbf{R}}}}_{k} = \underline{\underline{\dot{\textbf{R}}}}^{(I)}
+       \sqrt{\dfrac{E^k_{tot}-E_k^{(I)}}{\sum_{\nu}\frac{1}{2}M_{\nu}|\dot{\textbf{R}}^{(I)}_{\nu}|^2}}
+
+  When :math:`E_{tot}^k-E^{(I)}_k < 0`, the auxiliary trajectory is either fixed or destroyed, depending on the given value of this parameter.
+
+  + *'fix'*: Fix the auxiliary trajectory until decoherence.
+  + *'collapse'*: Destroy the auxiliary trajectory, collapse the corresponding coefficient/density to zero, and renormalize. 
+  
 \
 
 - **unit_dt** *(string)* - Default: *'fs'*

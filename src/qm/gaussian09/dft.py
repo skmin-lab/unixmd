@@ -29,7 +29,7 @@ class DFT(Gaussian09):
         # Set initial guess for DFT calculation
         self.guess = guess.lower()
         self.guess_file = os.path.abspath(guess_file)
-        if not (self.guess in ["Harris", "read"]):
+        if not (self.guess in ["harris", "read"]):
             error_message = "Invalid initial guess for DFT!"
             error_vars = f"guess = {self.guess}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
@@ -120,7 +120,7 @@ class DFT(Gaussian09):
                 # Move previous file to currect directory
                 os.rename("../g09.chk.pre", "./g09.chk")
                 restart = True
-        elif (self.guess == "Harris"):
+        elif (self.guess == "harris"):
             restart = False
 
         if (calc_force_only):
@@ -277,12 +277,12 @@ class DFT(Gaussian09):
         if (not calc_force_only):
             # Read ground energy
             energy = re.findall('SCF Done:\s+E\(\S+\)\s+=\s+([-]\S+)\s+A.U.', log)
-            energy = np.array(energy[0], dtype=np.float)
+            energy = np.array(energy[0], dtype=np.float64)
             molecule.states[0].energy = energy
 
             if (molecule.nst > 1):
                 energy = re.findall('Excited\sState\s+\w+:\s+\w+-\S+\s+(\S+)\s+eV', log)
-                energy = np.array(energy, dtype=np.float)
+                energy = np.array(energy, dtype=np.float64)
                 energy *= eV_to_au
                 for ist in range(1, molecule.nst):
                     molecule.states[ist].energy = molecule.states[0].energy + energy[ist - 1]
@@ -291,7 +291,7 @@ class DFT(Gaussian09):
         tmp_f = "Forces\s+\(Hartrees\/Bohr\)\n.+\n.+" \
             + "\n\s+\d*\s+\d*\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)" * molecule.nat_qm
         force = re.findall(tmp_f, log)
-        force = np.array(force[0], dtype=np.float)
+        force = np.array(force[0], dtype=np.float64)
         force = force.reshape(molecule.nat_qm, 3, order='C')
         molecule.states[bo_list[0]].force = np.copy(force)
 
@@ -299,6 +299,9 @@ class DFT(Gaussian09):
         if (self.calc_coupling and molecule.nst > 1 and not calc_force_only):
             if (istep == -1):
                 self.init_buffer(molecule)
+                self.orb_ini = np.zeros(1, dtype=np.int32)
+                self.orb_final = np.zeros(1, dtype=np.int32)
+                self.orb_final[0] = self.norb
             else:
                 self.CI_overlap(molecule, istep, dt)
  
@@ -398,7 +401,7 @@ class DFT(Gaussian09):
             log = f.read()
 
         tmp = re.findall('[-]?\d+\.\d+D[+-]\d\d', log)
-        tmp = np.array([x.replace('D','e') for x in tmp], dtype=np.float)
+        tmp = np.array([x.replace('D','e') for x in tmp], dtype=np.float64)
 
         tmp_mo = tmp.reshape(self.nbasis, self.nbasis)
 
@@ -429,7 +432,7 @@ class DFT(Gaussian09):
         num_coef = 4 * (self.nocc * self.nvirt) * roots
  
         tmp = tmp[:num_coef]
-        tmp = np.array([x.replace('D','e') for x in tmp], dtype=np.float)
+        tmp = np.array([x.replace('D','e') for x in tmp], dtype=np.float64)
         xpy, xmy = tmp.reshape(2, roots, 2, -1)
         x = 0.5 * (xpy + xmy)
  

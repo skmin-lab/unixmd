@@ -1,5 +1,6 @@
 from __future__ import division
 from qm.qm_calculator import QM_calculator
+import os
 
 class Gaussian09(QM_calculator):
     """ Class for common parts of Gaussian 09

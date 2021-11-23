@@ -468,19 +468,18 @@ class SSR(DFTBplus):
             # Single-state REKS
             tmp_e = 'Spin' + '\n\s+\w+\s+([-]\S+)(?:\s+\S+){3}' * molecule.nst
             energy = re.findall(tmp_e, log_out)
-            energy = np.array(energy)
+            energy = np.array(energy, dtype=np.float64)
         else:
             if (self.l_state_interactions):
                 # SSR state
                 energy = re.findall('SSR state\s+\S+\s+([-]\S+)', log_out)
-                energy = np.array(energy)
+                energy = np.array(energy, dtype=np.float64)
             else:
                 # SA-REKS state
                 tmp_e = 'Spin' + '\n\s+\w+\s+([-]\S+)(?:\s+\S+){3}' * molecule.nst
                 energy = re.findall(tmp_e, log_out)
-                energy = np.array(energy[0])
+                energy = np.array(energy[0], dtype=np.float64)
 
-        energy = energy.astype(float)
         for ist in range(molecule.nst):
             molecule.states[ist].energy = energy[ist]
 
@@ -491,23 +490,20 @@ class SSR(DFTBplus):
                 for ist in range(molecule.nst):
                     tmp_g = f' {ist + 1} st state \(SSR\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
                     grad = re.findall(tmp_g, log_out)
-                    grad = np.array(grad[0])
-                    grad = grad.astype(float)
+                    grad = np.array(grad[0], dtype=np.float64)
                     grad = grad.reshape(molecule.nat_qm, 3, order='C')
                     molecule.states[ist].force[0:molecule.nat_qm] = - grad
                     if (self.embedding == "electrostatic"):
                         tmp_f = 'Forces on external charges' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_mm
                         force = re.findall(tmp_f, detailed_out)
-                        force = np.array(force[0])
-                        force = force.astype(float)
+                        force = np.array(force[0], dtype=np.float64)
                         force = force.reshape(molecule.nat_mm, 3, order='C')
                         molecule.states[ist].force[molecule.nat_qm:molecule.nat] = force
             else:
                 for ist in range(molecule.nst):
                     tmp_g = f' {ist + 1} st state \(SSR\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
                     grad = re.findall(tmp_g, log_out)
-                    grad = np.array(grad[0])
-                    grad = grad.astype(float)
+                    grad = np.array(grad[0], dtype=np.float64)
                     grad = grad.reshape(molecule.nat_qm, 3, order='C')
                     molecule.states[ist].force = - np.copy(grad)
         else:
@@ -515,22 +511,19 @@ class SSR(DFTBplus):
             if (molecule.l_qmmm):
                 tmp_g = f' {bo_list[0] + 1} state \(\w+[-]*\w+\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
                 grad = re.findall(tmp_g, log_out)
-                grad = np.array(grad[0])
-                grad = grad.astype(float)
+                grad = np.array(grad[0], dtype=np.float64)
                 grad = grad.reshape(molecule.nat_qm, 3, order='C')
                 molecule.states[bo_list[0]].force[0:molecule.nat_qm] = - grad
                 if (self.embedding == "electrostatic"):
                     tmp_f = 'Forces on external charges' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_mm
                     force = re.findall(tmp_f, detailed_out)
-                    force = np.array(force[0])
-                    force = force.astype(float)
+                    force = np.array(force[0], dtype=np.float64)
                     force = force.reshape(molecule.nat_mm, 3, order='C')
                     molecule.states[bo_list[0]].force[molecule.nat_qm:molecule.nat] = force
             else:
                 tmp_g = f' {bo_list[0] + 1} state \(\w+[-]*\w+\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
                 grad = re.findall(tmp_g, log_out)
-                grad = np.array(grad[0])
-                grad = grad.astype(float)
+                grad = np.array(grad[0], dtype=np.float64)
                 grad = grad.reshape(molecule.nat_qm, 3, order='C')
                 molecule.states[bo_list[0]].force = - np.copy(grad)
 
@@ -541,8 +534,7 @@ class SSR(DFTBplus):
                 for jst in range(ist + 1, molecule.nst):
                     tmp_c = 'non-adiabatic coupling' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
                     nac = re.findall(tmp_c, log_out)
-                    nac = np.array(nac[kst])
-                    nac = nac.astype(float)
+                    nac = np.array(nac[kst], dtype=np.float64)
                     nac = nac.reshape(molecule.nat_qm, 3, order='C')
                     molecule.nac[ist, jst] = nac
                     molecule.nac[jst, ist] = - nac

@@ -115,13 +115,13 @@ class Molecule(object):
         # Initialize couplings
         self.nacme = np.zeros((self.nst, self.nst))
         self.nacme_old = np.zeros((self.nst, self.nst))
-        self.socme = np.zeros((self.nst, self.nst), dtype=np.complex_)
-        self.socme_old = np.zeros((self.nst, self.nst), dtype=np.complex_)
+        self.socme = np.zeros((self.nst, self.nst), dtype=np.complex128)
+        self.socme_old = np.zeros((self.nst, self.nst), dtype=np.complex128)
 
         # Initialize other properties
         self.nac = np.zeros((self.nst, self.nst, self.nat_qm, self.ndim))
         self.nac_old = np.zeros((self.nst, self.nst, self.nat_qm, self.ndim))
-        self.rho = np.zeros((self.nst, self.nst), dtype=np.complex_)
+        self.rho = np.zeros((self.nst, self.nst), dtype=np.complex128)
 
         self.ekin = 0.
         self.ekin_qm = 0.

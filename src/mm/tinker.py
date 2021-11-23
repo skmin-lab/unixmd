@@ -79,7 +79,7 @@ class Tinker(MM_calculator):
 
         if (self.embedding == "electrostatic"):
             # Save current atom type for electrostatic embedding
-            self.atom_type = np.zeros(molecule.nat, dtype=np.integer)
+            self.atom_type = np.zeros(molecule.nat, dtype=np.int32)
 
             # Read 'tinker.xyz' file to obtain atom type for QM part
             file_name = self.xyz_file
@@ -473,45 +473,42 @@ class Tinker(MM_calculator):
             :param integer,list bo_list: List of BO states for BO calculation
             :param boolean calc_force_only: Logical to decide whether calculate force only
         """
+        if (self.scheme == "additive"):
+            # Read 'tinker.out.2' file
+            file_name = "tinker.out.2"
+            with open(file_name, "r") as f:
+                tinker_out2 = f.read()
+        elif (self.scheme == "subtractive"):
+            # Read 'tinker.out.12' file
+            file_name = "tinker.out.12"
+            with open(file_name, "r") as f:
+                tinker_out12 = f.read()
+            # Read 'tinker.out.1' file
+            file_name = "tinker.out.1"
+            with open(file_name, "r") as f:
+                tinker_out1 = f.read()
+
         if (not calc_force_only):
             # Energy; initialize the energy at MM level
             mm_energy = 0.
 
             if (self.scheme == "additive"):
 
-                # Read 'tinker.out.2' file
-                file_name = "tinker.out.2"
-                with open(file_name, "r") as f:
-                    tinker_out2 = f.read()
-
                 tmp_e = 'Total Potential Energy :' + '\s+([-]*\S+)\s+' + 'Kcal/mole'
                 energy = re.findall(tmp_e, tinker_out2)
-                energy = np.array(energy)
-                energy = energy.astype(float)
+                energy = np.array(energy, dtype=np.float64)
                 mm_energy += energy[0]
 
             elif (self.scheme == "subtractive"):
 
-                # Read 'tinker.out.12' file
-                file_name = "tinker.out.12"
-                with open(file_name, "r") as f:
-                    tinker_out12 = f.read()
-
                 tmp_e = 'Total Potential Energy :' + '\s+([-]*\S+)\s+' + 'Kcal/mole'
                 energy = re.findall(tmp_e, tinker_out12)
-                energy = np.array(energy)
-                energy = energy.astype(float)
+                energy = np.array(energy, dtype=np.float64)
                 mm_energy += energy[0]
-
-                # Read 'tinker.out.1' file
-                file_name = "tinker.out.1"
-                with open(file_name, "r") as f:
-                    tinker_out1 = f.read()
 
                 tmp_e = 'Total Potential Energy :' + '\s+([-]*\S+)\s+' + 'Kcal/mole'
                 energy = re.findall(tmp_e, tinker_out1)
-                energy = np.array(energy)
-                energy = energy.astype(float)
+                energy = np.array(energy, dtype=np.float64)
                 mm_energy -= energy[0]
 
             # Add energy of MM part to total energy; kcal/mol to hartree
@@ -527,8 +524,7 @@ class Tinker(MM_calculator):
                 '\n\n\s+Type\s+Atom\s+dE/dX\s+dE/dY\s+dE/dZ\s+Norm\n\n' + \
                 '\s+Anlyt\s+\S+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\s+\S+\n' * molecule.nat_mm
             grad = re.findall(tmp_g, tinker_out2)
-            grad = np.array(grad[0])
-            grad = grad.astype(float)
+            grad = np.array(grad[0], dtype=np.float64)
             grad = grad.reshape(molecule.nat_mm, 3, order='C')
             # Tinker calculates gradient, not force
             for iat in range(molecule.nat_mm):
@@ -540,8 +536,7 @@ class Tinker(MM_calculator):
                 '\n\n\s+Type\s+Atom\s+dE/dX\s+dE/dY\s+dE/dZ\s+Norm\n\n' + \
                 '\s+Anlyt\s+\S+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\s+\S+\n' * molecule.nat
             grad = re.findall(tmp_g, tinker_out12)
-            grad = np.array(grad[0])
-            grad = grad.astype(float)
+            grad = np.array(grad[0], dtype=np.float64)
             grad = grad.reshape(molecule.nat, 3, order='C')
             # Tinker calculates gradient, not force
             mm_force -= np.copy(grad)
@@ -550,8 +545,7 @@ class Tinker(MM_calculator):
                 '\n\n\s+Type\s+Atom\s+dE/dX\s+dE/dY\s+dE/dZ\s+Norm\n\n' + \
                 '\s+Anlyt\s+\S+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\s+\S+\n' * molecule.nat_qm
             grad = re.findall(tmp_g, tinker_out1)
-            grad = np.array(grad[0])
-            grad = grad.astype(float)
+            grad = np.array(grad[0], dtype=np.float64)
             grad = grad.reshape(molecule.nat_qm, 3, order='C')
             # Tinker calculates gradient, not force
             for iat in range(molecule.nat_qm):

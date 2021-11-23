@@ -148,8 +148,8 @@ class DFTB(DFTBplus):
         # Replace norb by arrays containing the limits of the for loops.
         # For energy window calculations loops will not go from (0 to nocc/nvirt) or (0 to norb)
         # but from (nocc_min to nocc/0 to nvirt_max) or (nocc_min to norb).
-        self.orb_ini = np.zeros(1, dtype=int)
-        self.orb_final = np.zeros(1, dtype=int)
+        self.orb_ini = np.zeros(1, dtype=np.int32)
+        self.orb_final = np.zeros(1, dtype=np.int32)
         self.orb_final[0] = self.norb
 
         if (self.e_window > eps):
@@ -605,15 +605,13 @@ class DFTB(DFTBplus):
         # Energy
         if (not calc_force_only):
             energy = re.findall('Total energy:\s+([-]\S+) H', detailed_out)
-            energy = np.array(energy[0])
-            energy = energy.astype(float)
+            energy = np.array(energy[0], dtype=np.float64)
             molecule.states[0].energy = energy
 
             if (molecule.nst > 1):
                 tmp_e = f'[=]+\n' + ('\s+([-]*\S+)\s+\S+\s+\d+\s+->\s+\d+\s+\S+\s+\S+\s+[ST]') * molecule.nst
                 energy = re.findall(tmp_e, exc_out)
-                energy = np.array(energy[0])
-                energy = energy.astype(float)
+                energy = np.array(energy[0], dtype=np.float64)
                 energy *= eV_to_au
                 for ist in range(1, molecule.nst):
                     molecule.states[ist].energy = molecule.states[0].energy + energy[ist - 1]
@@ -621,8 +619,7 @@ class DFTB(DFTBplus):
         # Force
         tmp_f = 'Total Forces' + '\n\s+\d*\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
         force = re.findall(tmp_f, detailed_out)
-        force = np.array(force[0])
-        force = force.astype(float)
+        force = np.array(force[0], dtype=np.float64)
         force = force.reshape(molecule.nat_qm, 3, order='C')
         molecule.states[bo_list[0]].force = np.copy(force)
 
@@ -688,9 +685,9 @@ class DFTB(DFTBplus):
 
             self.mo_coef_old = np.zeros((self.norb, self.nbasis))
             with open(file_name_in, "rb") as f_in:
-                dummy = np.fromfile(f_in, dtype=np.integer, count=1)
+                dummy = np.fromfile(f_in, dtype=np.int32, count=1)
                 for iorb in range(self.norb):
-                    dummy = np.fromfile(f_in, dtype=np.integer, count=1)
+                    dummy = np.fromfile(f_in, dtype=np.int32, count=1)
                     data = np.fromfile(f_in, dtype=np.float64, count=self.nbasis)
                     self.mo_coef_old[iorb] = data
 #            np.savetxt("test-mo1", self.mo_coef_old, fmt=f"%12.6f")
@@ -700,9 +697,9 @@ class DFTB(DFTBplus):
 
         self.mo_coef_new = np.zeros((self.norb, self.nbasis))
         with open(file_name_in, "rb") as f_in:
-            dummy = np.fromfile(f_in, dtype=np.integer, count=1)
+            dummy = np.fromfile(f_in, dtype=np.int32, count=1)
             for iorb in range(self.norb):
-                dummy = np.fromfile(f_in, dtype=np.integer, count=1)
+                dummy = np.fromfile(f_in, dtype=np.int32, count=1)
                 data = np.fromfile(f_in, dtype=np.float64, count=self.nbasis)
                 self.mo_coef_new[iorb] = data
 #        np.savetxt("test-mo2", self.mo_coef_new, fmt=f"%12.6f")
@@ -716,7 +713,7 @@ class DFTB(DFTBplus):
                 lines = f_in.readlines()
                 # Dimension for CI coefficients (number of excitations)
                 ndim_old = int(lines[-2].strip().split()[0])
-                get_wij_ind_old = np.zeros((ndim_old, 2), dtype=np.int_)
+                get_wij_ind_old = np.zeros((ndim_old, 2), dtype=np.int32)
                 iline = 0
                 for line in lines:
                     # Skip first five lines
@@ -738,7 +735,7 @@ class DFTB(DFTBplus):
             lines = f_in.readlines()
             # Dimension for CI coefficients (number of excitations)
             ndim = int(lines[-2].strip().split()[0])
-            get_wij_ind_new = np.zeros((ndim, 2), dtype=np.int_)
+            get_wij_ind_new = np.zeros((ndim, 2), dtype=np.int32)
             iline = 0
             for line in lines:
                 # Skip first five lines
