@@ -20,10 +20,10 @@ class CT(MQC):
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
         :param double rho_threshold: Electronic density threshold for decoherence term calculation
-        :param double sigma_threshold: Sigma threshold for quantum momentum calculation
-        :param double dist_cutoff: Distance cutoff for quantum momentum calculation
         :param double dist_parameter: Distance parameter to determine quantum momentum center
-        :param double sigma: Sigma to determine quantum momentum center
+        :param double min_sigma: Sigma to determine quantum momentum center
+        :param double const_center_cutoff: Distance parameter to determine quantum momentum center
+        :param double const_dist_cutoff: Distance parameter to determine quantum momentum center
         :param init_coefs: Initial BO coefficient
         :type init_coefs: double, list, list or complex, list, list
         :param integer out_freq: Frequency of printing output
@@ -31,7 +31,7 @@ class CT(MQC):
     """
     def __init__(self, molecules, thermostat=None, istates=None, dt=0.5, nsteps=1000, nesteps=20, \
         elec_object="coefficient", propagator="rk4", l_print_dm=True, l_adj_nac=True, rho_threshold=0.01, \
-        init_coefs=None, dist_parameter=10., sigma=0.3, const_center_cutoff=None, const_dist_cutoff=None, \
+        init_coefs=None, dist_parameter=10., min_sigma=0.3, const_center_cutoff=None, const_dist_cutoff=None, \
         l_en_cons=False, unit_dt="fs", out_freq=1, verbosity=0):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
@@ -84,7 +84,7 @@ class CT(MQC):
         self.upper_th = 1. - self.rho_threshold
         self.lower_th = self.rho_threshold
 
-        self.sigma = sigma
+        self.min_sigma = min_sigma
         self.const_dist_cutoff = const_dist_cutoff
         self.dist_parameter = dist_parameter
         self.const_center_cutoff = const_center_cutoff
@@ -337,7 +337,7 @@ class CT(MQC):
 
             :param integer istep: Current MD step
         """
-        threshold = self.dist_parameter * self.sigma #/ self.ntrajs
+        threshold = self.dist_parameter * self.min_sigma #/ self.ntrajs
         cutoff = np.ones((self.ntrajs, self.nat_qm, self.ndim))
         for itraj in range(self.ntrajs):
             if (self.const_dist_cutoff == None):
