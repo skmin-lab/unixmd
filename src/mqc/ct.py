@@ -20,18 +20,18 @@ class CT(MQC):
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
         :param double rho_threshold: Electronic density threshold for decoherence term calculation
-        :param double dist_parameter: Distance parameter to determine quantum momentum center
-        :param double min_sigma: Sigma to determine quantum momentum center
-        :param double const_center_cutoff: Distance parameter to determine quantum momentum center
-        :param double const_dist_cutoff: Distance parameter to determine quantum momentum center
         :param init_coefs: Initial BO coefficient
         :type init_coefs: double, list, list or complex, list, list
+        :param double dist_parameter: Distance parameter to contruct Gaussian and determine quantum momentum center
+        :param double min_sigma: Minimum sigma value
+        :param double const_dist_cutoff: Distance cutoff to construct Gaussian
+        :param double const_center_cutoff: Distance cutoff to determine quantum momentum center
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecules, thermostat=None, istates=None, dt=0.5, nsteps=1000, nesteps=20, \
         elec_object="coefficient", propagator="rk4", l_print_dm=True, l_adj_nac=True, rho_threshold=0.01, \
-        init_coefs=None, dist_parameter=10., min_sigma=0.3, const_center_cutoff=None, const_dist_cutoff=None, \
+        init_coefs=None, dist_parameter=10., min_sigma=0.3, const_dist_cutoff=None, const_center_cutoff=None, \
         l_en_cons=False, unit_dt="fs", out_freq=1, verbosity=0):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
@@ -271,6 +271,8 @@ class CT(MQC):
 
     def check_decoherence(self, itrajectory):
         """ Routine to check decoherence among BO states
+
+            :param integer itrajectory: Index for trajectories
         """
         for ist in range(self.mol.nst):
             if (np.sum(abs(self.phase[itrajectory, ist])) > eps):
