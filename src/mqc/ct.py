@@ -31,7 +31,7 @@ class CT(MQC):
     """
     def __init__(self, molecules, thermostat=None, istates=None, dt=0.5, nsteps=1000, nesteps=20, \
         elec_object="coefficient", propagator="rk4", l_print_dm=True, l_adj_nac=True, rho_threshold=0.01, \
-        dist_parameter=10., sigma=0.3, center_cutoff=1., init_coefs=None, const_center_cutoff=None, const_dist_cutoff=None, \
+        init_coefs=None, dist_parameter=10., sigma=0.3, const_center_cutoff=None, const_dist_cutoff=None, \
         l_en_cons=False, unit_dt="fs", out_freq=1, verbosity=0):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
@@ -607,7 +607,7 @@ class CT(MQC):
             tmp = f'{self.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}sigma_x{"":5s}sigma_y{"":5s}sigma_z{"":5s}count_ntrajs' + \
                 "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
                 "".join([f'{self.sigma_lk[itrajectory, 0, iat, idim]:15.8f}' for idim in range(self.ndim)]) + \
-                f'{self.count_ntrajs[itrajectory, iat]:15.8f}' for iat in range(self.nat_qm)])
+                "".join([f'{self.count_ntrajs[itrajectory, iat, idim]:15.8f}' for idim in range(self.ndim)]) for iat in range(self.nat_qm)])
             typewriter(tmp, unixmd_dir, f"SIGMA", "a")
 
             tmp = f'{self.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}slope' + \
