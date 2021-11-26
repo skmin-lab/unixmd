@@ -680,15 +680,19 @@ class DFTB(DFTBplus):
 #        np.savetxt("test-over", self.ao_overlap, fmt=f"%6.3f")
 
         # Read 'eigenvec.bin.pre' file at time t
+        dum_byte = 4
         if (istep == 0):
             file_name_in = "eigenvec.bin.pre"
 
             self.mo_coef_old = np.zeros((self.norb, self.nbasis))
             with open(file_name_in, "rb") as f_in:
+                f_in.seek(dum_byte, 1)
                 dummy = np.fromfile(f_in, dtype=np.int32, count=1)
+                f_in.seek(dum_byte, 1)
                 for iorb in range(self.norb):
-                    dummy = np.fromfile(f_in, dtype=np.int32, count=1)
+                    f_in.seek(dum_byte, 1)
                     data = np.fromfile(f_in, dtype=np.float64, count=self.nbasis)
+                    f_in.seek(dum_byte, 1)
                     self.mo_coef_old[iorb] = data
 #            np.savetxt("test-mo1", self.mo_coef_old, fmt=f"%12.6f")
 
@@ -697,10 +701,13 @@ class DFTB(DFTBplus):
 
         self.mo_coef_new = np.zeros((self.norb, self.nbasis))
         with open(file_name_in, "rb") as f_in:
+            f_in.seek(dum_byte, 1)
             dummy = np.fromfile(f_in, dtype=np.int32, count=1)
+            f_in.seek(dum_byte, 1)
             for iorb in range(self.norb):
-                dummy = np.fromfile(f_in, dtype=np.int32, count=1)
+                f_in.seek(dum_byte, 1)
                 data = np.fromfile(f_in, dtype=np.float64, count=self.nbasis)
+                f_in.seek(dum_byte, 1)
                 self.mo_coef_new[iorb] = data
 #        np.savetxt("test-mo2", self.mo_coef_new, fmt=f"%12.6f")
 
