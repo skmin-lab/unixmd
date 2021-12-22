@@ -125,13 +125,12 @@ class CT(MQC):
                 self.mol.reset_bo(qm.calc_coupling)
                 qm.get_data(self.mol, base_dirs[itraj], bo_list, self.dt, self.istep, calc_force_only=False)
 
-                self.get_phase(itraj)
-
                 # TODO: QM/MM
                 self.mol.get_nacme()
 
                 self.update_energy()
 
+                self.get_phase(itraj)
 
             self.calculate_qmom(self.istep)
 
@@ -164,11 +163,10 @@ class CT(MQC):
 
                 qm.get_data(self.mol, base_dirs[itraj], bo_list, self.dt, istep, calc_force_only=False)
 
-                self.get_phase(itraj)
-                #TODO: QM/MM
-
                 if (not self.mol.l_nacme and self.l_adj_nac):
                     self.mol.adjust_nac()
+
+                #TODO: QM/MM
 
                 self.calculate_force(itraj)
                 self.cl_update_velocity()
@@ -182,6 +180,8 @@ class CT(MQC):
                 #    self.thermo.run(self)
 
                 self.update_energy()
+
+                self.get_phase(itraj)
 
                 self.check_decoherence(itraj)
 
@@ -229,12 +229,12 @@ class CT(MQC):
         # CT forces
         ctforce = np.zeros((self.nat_qm, self.ndim))
         for ist in range(self.nst):
-            for jst in range(ist + 1, self.nst):
-                ctforce += self.K_lk[itrajectory, ist, jst] * \
+            for jst in range(self.nst):
+                ctforce += 0.5 * self.K_lk[itrajectory, ist, jst] * \
                     (self.phase[itrajectory, jst] - self.phase[itrajectory, ist]) * \
-                    self.mol.rho.real[ist, ist]  * self.mol.rho.real[jst, jst] * \
+                    self.mol.rho.real[ist, ist] * self.mol.rho.real[jst, jst] * \
                     (self.mol.rho.real[ist, ist] + self.mol.rho.real[jst, jst])
-        ctforce /= 2. * (self.nst - 1)
+        ctforce /= self.nst - 1
 
         # Finally, force is Ehrenfest force + CT force
         self.rforce += ctforce
@@ -373,8 +373,8 @@ class CT(MQC):
 
                     self.sigma_lk[itraj, 0, iat, idim] = np.sqrt((avg_R2 - avg_R ** 2)) \
                         / np.sqrt(np.sqrt(self.count_ntrajs[itraj, iat, idim])) # / np.sqrt(np.sqrt(count_ntrajs)) is artifact to modulate sigma.
-                    if (self.sigma_lk[itraj, 0, iat, idim] <= self.sigma or self.count_ntrajs[itraj, iat, idim] == 1):
-                        self.sigma_lk[itraj, 0, iat, idim] = self.sigma
+                    if (self.sigma_lk[itraj, 0, iat, idim] <= self.min_sigma or self.count_ntrajs[itraj, iat, idim] == 1):
+                        self.sigma_lk[itraj, 0, iat, idim] = self.min_sigma
 
     def calculate_slope(self):
         """ Routine to calculate slope
@@ -403,25 +403,25 @@ class CT(MQC):
                         w_ij[itraj, jtraj, iat, idim] = self.prod_g_i[itraj, jtraj] /\
                         (2. * self.sigma_lk[jtraj, 0, iat, idim] ** 2 * self.g_i[itraj])
 
-        ## Smoothing 
-        #self.w_k = np.zeros((self.ntrajs, self.nst))
-        #rho = np.zeros((self.ntrajs, self.nst))
-        #for itraj in range(self.ntrajs):
-        #    for jtraj in range(self.ntrajs):
-        #        for ist in range(self.nst):
-        #            self.w_k[itraj, ist] += self.prod_g_i[itraj, jtraj] * self.mols[jtraj].rho.real[ist, ist] / self.g_i[itraj]
+        # Smoothing 
+        self.w_k = np.zeros((self.ntrajs, self.nst))
+        rho = np.zeros((self.ntrajs, self.nst))
+        for itraj in range(self.ntrajs):
+            for jtraj in range(self.ntrajs):
+                for ist in range(self.nst):
+                    self.w_k[itraj, ist] += self.prod_g_i[itraj, jtraj] * self.mols[jtraj].rho.real[ist, ist] / self.g_i[itraj]
 
-        #    index_lk = -1
-        #    for ist in range(self.nst):
-        #        for jst in range(ist + 1, self.nst):
-        #            index_lk += 1
+            index_lk = -1
+            for ist in range(self.nst):
+                for jst in range(ist + 1, self.nst):
+                    index_lk += 1
 
-        #            l_smooth = ((self.w_k[itraj, ist] < self.lower_th) or (self.w_k[itraj, ist] > self.upper_th) 
-        #                or (self.w_k[itraj, jst] < self.lower_th) or (self.w_k[itraj, jst] > self.upper_th))
+                    l_smooth = ((self.w_k[itraj, ist] < self.lower_th) or (self.w_k[itraj, ist] > self.upper_th) 
+                        or (self.w_k[itraj, jst] < self.lower_th) or (self.w_k[itraj, jst] > self.upper_th))
 
-        #            if (l_smooth):
-        #                self.phase[itraj, ist] = np.zeros((self.nat_qm, self.ndim))
-        #                self.phase[itraj, jst] = np.zeros((self.nat_qm, self.ndim))
+                    if (l_smooth):
+                        self.phase[itraj, ist] = np.zeros((self.nat_qm, self.ndim))
+                        self.phase[itraj, jst] = np.zeros((self.nat_qm, self.ndim))
 
         # (2-2) Calculate slope_i
         # the slope is calculated as a sum over j of w_ij
@@ -431,7 +431,7 @@ class CT(MQC):
                 self.slope_i[itraj] -= w_ij[itraj, jtraj]
 
     def calculate_center(self):
-        """ Routin to calculate center of quantum momentum
+        """ Routine to calculate center of quantum momentum
         """
         rho = np.zeros((self.ntrajs, self.nst))
         for itraj in range(self.ntrajs):
@@ -511,7 +511,7 @@ class CT(MQC):
                             # tmp_var is deviation between position of classical trajectory and quantum momentum center.
                             tmp_var = center_old_lk[itraj, index_lk, iat, idim] - self.mols[itraj].pos[iat, idim]
                             if (self.const_center_cutoff == None):
-                                cutoff = self.dist_parameter * self.sigma
+                                cutoff = self.dist_parameter * self.sigma_lk[itraj, 0, iat, idim]
                             else:
                                 cutoff = self.const_center_cutoff
 
@@ -656,7 +656,7 @@ class CT(MQC):
         {"-" * 68}
           rho_threshold            = {self.rho_threshold:>16f}
           dist_parameter           = {self.dist_parameter:>16f}
-          sigma                    = {self.sigma:>16f}
+          min_sigma                    = {self.min_sigma:>16f}
         """)
         print (ct_info, flush=True)
 
