@@ -119,9 +119,9 @@ class SH(MQC):
             if (not self.mol.l_nacme):
                 self.mol.get_nacme()
 
-            self.hop_prob(self.istep)
+            self.hop_prob()
             self.hop_check(bo_list)
-            self.evaluate_hop(bo_list, self.istep)
+            self.evaluate_hop(bo_list)
 
             if (self.dec_correction == "idc"):
                 if (self.l_hop or self.l_reject):
@@ -176,9 +176,9 @@ class SH(MQC):
 
             el_run(self)
 
-            self.hop_prob(istep)
+            self.hop_prob()
             self.hop_check(bo_list)
-            self.evaluate_hop(bo_list, istep)
+            self.evaluate_hop(bo_list)
 
             if (self.dec_correction == "idc"):
                 if (self.l_hop or self.l_reject):
@@ -222,7 +222,7 @@ class SH(MQC):
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
 
-    def hop_prob(self, istep):
+    def hop_prob(self):
         """ Routine to calculate hopping probabilities
 
             :param integer istep: Current MD step
@@ -266,7 +266,7 @@ class SH(MQC):
                 self.rstate = ist
                 bo_list[0] = self.rstate
 
-    def evaluate_hop(self, bo_list, istep):
+    def evaluate_hop(self, bo_list):
         """ Routine to evaluate hopping and velocity rescaling
 
             :param integer,list bo_list: List of BO states for BO calculation
