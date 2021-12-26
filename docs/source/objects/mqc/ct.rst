@@ -71,7 +71,7 @@ Detailed description of CTMQC method is in the :cite:`Agostini2016`.
 | *(double)*                     | variance                                       |                 |
 +--------------------------------+------------------------------------------------+-----------------+
 | **const_center_cutoff**        | Constant distance cutoff to determine          | *None*          |
-| *(double)*                     | quantum moment center                          |                 |
+| *(double)*                     | center of quantum momentum                     |                 |
 +--------------------------------+------------------------------------------------+-----------------+
 | **unit_dt**                    | Unit of time step                              | *'fs'*          |
 | *(string)*                     |                                                |                 |
