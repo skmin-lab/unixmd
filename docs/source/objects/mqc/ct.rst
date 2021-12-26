@@ -58,20 +58,20 @@ Detailed description of CTMQC method is in the :cite:`Agostini2016`.
 | **rho_threshold**              | Electronic density threshold for decoherence   | *0.01*          |
 | *(double)*                     | term calculation                               |                 |
 +--------------------------------+------------------------------------------------+-----------------+
-| **dist_cutoff**                | Distance cutoff for quantum momentum           | *0.5*           |
-| *(double)*                     | calculation                                    |                 |
-+--------------------------------+------------------------------------------------+-----------------+
-| **sigma_threshold**            | Sigma thershold for quantum momentum           | *0.25*          |
-| *(double)*                     | calculation                                    |                 |
+| **init_coefs**                 | Initial BO coefficients                        | *None*          |
+| *(double/complex, 2D list)*    |                                                |                 |
 +--------------------------------+------------------------------------------------+-----------------+
 | **dist_parameter**             | Distance parameter to determine quantum        | *10.0*          |
 | *(double)*                     | momentum center                                |                 |
 +--------------------------------+------------------------------------------------+-----------------+
-| **sigma**                      | Sigma to determine qunatum momentum            | *0.3*           |
-| *(double)*                     | center                                         |                 |
+| **min_sigma**                  | Minumum sigma value                            | *0.3*           |
+| *(double)*                     |                                                |                 |
 +--------------------------------+------------------------------------------------+-----------------+
-| **init_coefs**                 | Initial BO coefficients                        | *None*          |
-| *(double/complex, 2D list)*    |                                                |                 |
+| **const_dist_cutoff**          | Constant distance cutoff to determine          | *None*          |
+| *(double)*                     | variance                                       |                 |
++--------------------------------+------------------------------------------------+-----------------+
+| **const_center_cutoff**        | Constant distance cutoff to determine          | *None*          |
+| *(double)*                     | quantum moment center                          |                 |
 +--------------------------------+------------------------------------------------+-----------------+
 | **unit_dt**                    | Unit of time step                              | *'fs'*          |
 | *(string)*                     |                                                |                 |
@@ -167,34 +167,6 @@ Detailed description of parameters
 
 \
 
-- **dist_cutoff** *(double)* - Default: *0.5*
-
-  This parameter defines the distance cutoff to construct Gaussian wavepacket from coupled trajectories.
-  The wavepacket for an atom :math:`\nu` in a given trajectory is constructed by using trajectories in which an atom :math:`\nu'` is in **dist_cutoff** 
-  from the atom :math:`\nu`.
-
-\
-
-- **sigma_threshold** *(double)* - Default: *0.25*
-
-  This parameter defines the sigma threshold for quantum momentum calculation.
-
-\
-
-- **dist_parameter** *(double)* - Default: *10.0*
-
-  This parameter defines distance parameter to determine position of quantum momentum center.
-  If a position difference between an atom :math:`\nu` in quantum momentum center and a given trajectory is larger than **dist_parameter** :math:`\times` **sigma**, quantum momentum is set to *0.0*.
-
-\
-
-- **sigma** *(double)* - Default: *0.3*
-
-  This parameter defines sigma to determine position of quantum momentum center. 
-  If a difference between position of an atom :math:`\nu` in quantum momentum center and a given trajectory is larger than **dist_parameter** :math:`\times` **sigma**, quantum momentum is set to *0.0*.
-
-\
-
 - **init_coefs** *(double/complex, 2D list)* - Default: *None*
 
   This parameter defines the initial BO coefficients. 
@@ -202,6 +174,31 @@ Detailed description of parameters
   The length of list, which is element of **init_coefs**, should be same to ``molecule.nst``.
   For example, if ``molecule.nst`` = *2* and the number of coupled trajectories is 3, **init_coefs** can be given *[[1.0, 0.0], [1.0, 0.0], [1.0, 0.0]]*.
   If the parameter is not given, the BO coefficients and the density matrix are initialized according to **istates**.
+
+\
+
+- **dist_parameter** *(double)* - Default: *10.0*
+
+  This parameter defines distance parameter to determine variance and position of quantum momentum center.
+  The distance cutoff is determined by **dist_parameter** :math:`\times` :math:`\sigma(t)`, where :math:`\sigma(t)` is time-dependent variance.
+
+\
+
+- **sigma** *(double)* - Default: *0.3*
+
+  This parameter defines minimum value for time-dependent variance. 
+
+\
+
+- **const_dist_cutoff** *(double)* - Default: *None*
+
+  This parameter defines constant distance cutoff to determine variance.
+
+\
+
+- **const_center_cutoff** *(double)* - Default: *None*
+
+  This parameter defines constant distance cutoff to determine center of quantum momentum.
 
 \
 
