@@ -26,6 +26,7 @@ class CT(MQC):
         :param double min_sigma: Minimum sigma value
         :param double const_dist_cutoff: Distance cutoff to construct Gaussian
         :param double const_center_cutoff: Distance cutoff to determine quantum momentum center
+        :param string unit_dt: Unit of time interval
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
@@ -303,6 +304,7 @@ class CT(MQC):
     def set_decoherence(self, itrajectory, one_st):
         """ Routine to reset coefficient/density if the state is decohered
 
+            :param integer itrajectory: Index for trajectories
             :param integer one_st: State index that its population is one
         """
         self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex64)
