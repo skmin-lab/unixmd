@@ -54,9 +54,16 @@ class CT(MQC):
         super().__init__(self.mols[0], thermostat, self.istates[0], dt, nsteps, nesteps, \
             elec_object, propagator, l_print_dm, l_adj_nac, self.init_coefs[0], unit_dt, out_freq, verbosity)
 
+        # Exception for electronic propagation
         if (self.elec_object != "coefficient"):
             error_message = "Electronic equation motion in CTMQC is only solved with respect to coefficient!"
             error_vars = f"elec_object = {self.elec_object}"
+            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        # Exception for thermostat
+        if (self.thermo != None):
+            error_message = "Thermostat is not implemented yet!"
+            error_vars = f"thermostat = {self.elec_object}"
             raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Initialize coefficient for other trajectories
