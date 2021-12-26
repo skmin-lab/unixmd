@@ -115,6 +115,7 @@ class CT(MQC):
             :param string restart: Option for controlling dynamics restarting
         """
         # Initialize PyUNIxMD
+        dir_tmp = os.path.join(os.getcwd(), output_dir)
         base_dirs, unixmd_dirs, qm_log_dirs, mm_log_dirs =\
              self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
 
@@ -150,6 +151,17 @@ class CT(MQC):
                 self.print_step(self.istep, itraj)
 
         #TODO: restart
+        elif (restart == "write"):
+            # Reset initial time step to t = 0.0 s
+            self.istep = -1
+            for itraj in range(self.ntrajs):
+                self.write_md_output(unixmd_dirs[itraj], self.istep)
+                self.print_step(self.istep, itraj)
+
+        elif (restart == "append"):
+            # Set initial time step to last successful step of previous dynamics
+            self.istep = self.fstep
+
         else: 
             error_message = "Restart option with CTMQC not implemented!"
             error_vars = f"restart = {restart}"
@@ -192,12 +204,6 @@ class CT(MQC):
 
                 self.check_decoherence(itraj)
 
-                #TODO: restart
-                #self.fstep = istep
-                #restart_file = os.path.join(base_dir, "RESTART.bin")
-                #with open(restart_file, 'wb') as f:
-                #    pickle.dump({'qm':qm, 'md':self}, f)
-
             self.calculate_qmom(istep)
 
             for itraj in range(self.ntrajs):
@@ -208,6 +214,11 @@ class CT(MQC):
                     self.print_step(istep, itraj)
                 if (istep == self.nsteps - 1):
                     self.write_final_xyz(unixmd_dirs[itraj], istep)
+
+            self.fstep = istep
+            restart_file = os.path.join(dir_tmp, "RESTART.bin")
+            with open(restart_file, 'wb') as f:
+                pickle.dump({'qm':qm, 'md':self}, f)
 
         # Delete scratch directory
         if (not l_save_scr):
