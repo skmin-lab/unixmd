@@ -184,7 +184,7 @@ Detailed description of parameters
 
 \
 
-- **sigma** *(double)* - Default: *0.3*
+- **min_sigma** *(double)* - Default: *0.3*
 
   This parameter defines minimum value for time-dependent variance. 
 
