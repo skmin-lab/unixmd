@@ -671,18 +671,18 @@ class CT(MQC):
         {"-" * 68}
           rho_threshold            = {self.rho_threshold:>16f}
           dist_parameter           = {self.dist_parameter:>16f}
-          min_sigma                    = {self.min_sigma:>16f}
+          min_sigma                = {self.min_sigma:>16f}
         """)
 
         if (self.const_dist_cutoff != None):
-            ct_info += textwrap.dedent(f"""\
-              const_dist_cutoff        = {self.const_dist_cutoff:>16f}
-            """)
+            ct_info += f"  const_dist_cutoff        = {self.const_dist_cutoff:>16f}\n"
+        else:
+            ct_info += f"  const_dist_cutoff        = {str(None):>16s}\n"
 
         if (self.const_center_cutoff != None):
-            ct_info += textwrap.dedent(f"""\
-              const_center_cutoff      = {self.const_center_cutoff:>16f}
-            """)
+            ct_info += f"  const_center_cutoff      = {self.const_center_cutoff:>16f}\n"
+        else:
+            ct_info += f"  const_center_cutoff      = {str(None):>16s}\n"
         print (ct_info, flush=True)
 
         # Print istate
