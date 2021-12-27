@@ -151,7 +151,7 @@ class SHXF(MQC):
         # Initialize auxiliary molecule object
         self.aux = Auxiliary_Molecule(self.mol, self.l_xf1d)
         self.pos_0 = np.zeros((self.aux.nat, self.aux.ndim))
-        self.phase = np.array(np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim)))
+        self.phase = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
 
         # Debug variables
         self.dotpopdec = np.zeros(self.mol.nst)
