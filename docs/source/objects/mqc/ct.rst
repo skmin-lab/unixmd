@@ -64,7 +64,7 @@ Detailed description of CTMQC method is in the :cite:`Agostini2016`.
 | **dist_parameter**             | Distance parameter to determine quantum        | *10.0*          |
 | *(double)*                     | momentum center                                |                 |
 +--------------------------------+------------------------------------------------+-----------------+
-| **min_sigma**                  | Minumum sigma value                            | *0.3*           |
+| **min_sigma**                  | Minimum sigma value                            | *0.3*           |
 | *(double)*                     |                                                |                 |
 +--------------------------------+------------------------------------------------+-----------------+
 | **const_dist_cutoff**          | Constant distance cutoff to determine          | *None*          |
@@ -181,6 +181,8 @@ Detailed description of parameters
 
   This parameter defines distance parameter to determine variance and position of quantum momentum center.
   The distance cutoff is determined by **dist_parameter** :math:`\times` :math:`\sigma(t)`, where :math:`\sigma(t)` is time-dependent variance.
+  The :math:`\sigma(t)` is constructed by trajectories in the distance cutoff.
+  If a center of quantum momentum is located out of the distance cutoff, the quanum momentum is set to zero.
 
 \
 
@@ -193,12 +195,14 @@ Detailed description of parameters
 - **const_dist_cutoff** *(double)* - Default: *None*
 
   This parameter defines constant distance cutoff to determine variance.
+  The :math:`\sigma(t)` is constructed by trajectories in the distance cutoff.
 
 \
 
 - **const_center_cutoff** *(double)* - Default: *None*
 
   This parameter defines constant distance cutoff to determine center of quantum momentum.
+  If a center of quantum momentum is located out of the distance cutoff, the quanum momentum is set to zero.
 
 \
 
