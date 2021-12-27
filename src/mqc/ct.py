@@ -64,7 +64,7 @@ class CT(MQC):
         # Exception for thermostat
         if (self.thermo != None):
             error_message = "Thermostat is not implemented yet!"
-            error_vars = f"thermostat = {self.elec_object}"
+            error_vars = f"thermostat = {self.thermo}"
             raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Initialize coefficient for other trajectories
@@ -116,7 +116,7 @@ class CT(MQC):
             :param string restart: Option for controlling dynamics restarting
         """
         # Initialize PyUNIxMD
-        dir_tmp = os.path.join(os.getcwd(), output_dir)
+        abs_path_output_dir = os.path.join(os.getcwd(), output_dir)
         base_dirs, unixmd_dirs, qm_log_dirs, mm_log_dirs =\
              self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
 
@@ -156,17 +156,12 @@ class CT(MQC):
             # Reset initial time step to t = 0.0 s
             self.istep = -1
             for itraj in range(self.ntrajs):
-                self.write_md_output(unixmd_dirs[itraj], self.istep)
+                self.write_md_output(itraj, unixmd_dirs[itraj], self.istep)
                 self.print_step(self.istep, itraj)
 
         elif (restart == "append"):
             # Set initial time step to last successful step of previous dynamics
             self.istep = self.fstep
-
-        else: 
-            error_message = "Restart option with CTMQC not implemented!"
-            error_vars = f"restart = {restart}"
-            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.istep += 1
 
@@ -217,7 +212,7 @@ class CT(MQC):
                     self.write_final_xyz(unixmd_dirs[itraj], istep)
 
             self.fstep = istep
-            restart_file = os.path.join(dir_tmp, "RESTART.bin")
+            restart_file = os.path.join(abs_path_output_dir, "RESTART.bin")
             with open(restart_file, 'wb') as f:
                 pickle.dump({'qm':qm, 'md':self}, f)
 
@@ -678,6 +673,16 @@ class CT(MQC):
           dist_parameter           = {self.dist_parameter:>16f}
           min_sigma                    = {self.min_sigma:>16f}
         """)
+
+        if (self.const_dist_cutoff != None):
+            ct_info += textwrap.dedent(f"""\
+              const_dist_cutoff        = {self.const_dist_cutoff:>16f}
+            """)
+
+        if (self.const_center_cutoff != None):
+            ct_info += textwrap.dedent(f"""\
+              const_center_cutoff      = {self.const_center_cutoff:>16f}
+            """)
         print (ct_info, flush=True)
 
         # Print istate
