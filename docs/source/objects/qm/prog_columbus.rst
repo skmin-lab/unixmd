@@ -178,6 +178,34 @@ Detailed description of parameters
 
   This parameter determines the version of Columbus. PyUNIxMD is currently based on version 7.0.
 
+Example input for CASSCF
+''''''''''''''''''''''''''''''''''''
+
+.. code-block:: python
+   :linenos:
+
+   from molecule import Molecule
+   import qm, mqc
+   from misc import data
+
+   geom = '''
+   3
+   example
+   O  1.0 1.0 0.0 0.0 0.0 0.0
+   H  1.0 0.0 0.0 0.0 0.0 0.0
+   H  1.0 1.0 1.0 0.0 0.0 0.0
+   '''
+   
+   mol = Molecule(geometry=geom, ndim=3, nstates=2, unit_pos='au')
+   
+   qm = qm.columbus.CASSCF(molecule=mol, basis_set='6-31g*', guess='hf', \
+        state_avg=None, active_elec=2, active_orb=2, qm_path='/opt/columbus7.0/columbus')
+   
+   md = mqc.SHXF(molecule=mol, nsteps=100, nesteps=20, dt=0.5, unit_dt='au', \
+        sigma=0.1, istate=1, elec_object="density")
+   
+   md.run(qm=qm)
+
 MRCI
 """""""""""""""""""""""""""""""""""""
 
