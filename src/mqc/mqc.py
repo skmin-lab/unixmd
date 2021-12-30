@@ -141,7 +141,7 @@ class MQC(object):
             base_dir.append(dir_tmp)
         else:
             for itraj in range(self.ntrajs):
-                itraj_dir = os.path.join(dir_tmp, f"traj{itraj + 1:0{self.digit}d}")
+                itraj_dir = os.path.join(dir_tmp, f"TRAJ_{itraj + 1:0{self.digit}d}")
                 base_dir.append(itraj_dir)
 
         for idir in base_dir:
