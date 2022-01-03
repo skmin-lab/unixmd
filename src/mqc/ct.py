@@ -292,14 +292,13 @@ class CT(MQC):
             if (np.sum(abs(self.phase[itrajectory, ist])) > eps):
                 rho = self.mol.rho.real[ist, ist]
                 if (rho > self.upper_th):
-                    self.set_decoherence(itrajectory, ist)
+                    self.set_decoherence(ist)
                     self.event["DECO"].append(f"{itrajectory + 1:8d}: decohered to {ist} state")
                     return
 
-    def set_decoherence(self, itrajectory, one_st):
+    def set_decoherence(self, one_st):
         """ Routine to reset coefficient/density if the state is decohered
 
-            :param integer itrajectory: Index for trajectories
             :param integer one_st: State index that its population is one
         """
         self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex64)
