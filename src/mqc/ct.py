@@ -687,7 +687,7 @@ class CT(MQC):
         # Print istate
         istate_info = textwrap.dedent(f"""\
         {"-" * 68}
-        {"Initial state Information":>43s}
+        {"Initial State Information":>43s}
         {"-" * 68}
         """)
         istate_info += f"  istates (1:{self.ntrajs})             =\n"
