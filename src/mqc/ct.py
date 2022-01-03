@@ -21,7 +21,7 @@ class CT(MQC):
         :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
         :param double rho_threshold: Electronic density threshold for decoherence term calculation
         :param init_coefs: Initial BO coefficient
-        :type init_coefs: double, list, list or complex, list, list
+        :type init_coefs: double, 2D list or complex, 2D list
         :param double dist_parameter: Distance parameter to contruct Gaussian and determine quantum momentum center
         :param double min_sigma: Minimum sigma value
         :param double const_dist_cutoff: Distance cutoff to construct Gaussian
