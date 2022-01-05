@@ -42,6 +42,13 @@ Authors
 ---------------------------
 The current version of PyUNIxMD has been developed by Seung Kyu Min, In Seong Lee, Jong-Kwon Ha, Daeho Han, Kicheol Kim, Tae In Kim, Sung Wook Moon in the Theoretical/Computational Chemistry Group for Excited State Phenomena of Ulsan National Institute of Science and Technology (UNIST). 
 
+
+Citation
+---------------------------
+Please cite the following work when publishing results from PyUNIxMD program:
+
+Lee, I. S., Ha, J. K., Han, D., Kim, T. I., Moon, S. W., & Min, S. K. (2021). PyUNIxMD: A Python‐based excited state molecular dynamics package. Journal of computational chemistry, 42(24), 1755-1766.
+
 ..
   Acknowledgement
   ---------------------------
