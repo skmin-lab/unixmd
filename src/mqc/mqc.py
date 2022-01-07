@@ -120,6 +120,12 @@ class MQC(object):
         if (self.mol.l_qmmm and mm != None):
             self.check_qmmm(qm, mm)
 
+        # Exception for CTMQC with QM/MM
+        if ((self.md_type == "CT") and (mm != None)):
+            error_message = "QM/MM calculation is not compatible with CTMQC now!"
+            error_vars = f"mm = {mm}"
+            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
         # Set directory information
         output_dir = os.path.expanduser(output_dir)
         base_dir = []
@@ -135,7 +141,7 @@ class MQC(object):
             base_dir.append(dir_tmp)
         else:
             for itraj in range(self.ntrajs):
-                itraj_dir = os.path.join(dir_tmp, f"traj{itraj + 1:0{self.digit}d}")
+                itraj_dir = os.path.join(dir_tmp, f"TRAJ_{itraj + 1:0{self.digit}d}")
                 base_dir.append(itraj_dir)
 
         for idir in base_dir:
