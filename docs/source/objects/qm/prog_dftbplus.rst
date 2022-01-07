@@ -125,6 +125,34 @@ speed. (TD)DFTB and SSR methods are interfaced with the current version of PyUNI
 | *(string)*             |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
 
+Example input for DFTB+
+''''''''''''''''''''''''''''''''''''
+
+.. code-block:: python
+   :linenos:
+
+   from molecule import Molecule
+   import qm, mqc
+   
+   geom = '''
+   3
+   example
+   O  1.0 1.0 0.0 0.0 0.0 0.0
+   H  1.0 0.0 0.0 0.0 0.0 0.0
+   H  1.0 1.0 1.0 0.0 0.0 0.0
+   '''
+   
+   mol = Molecule(geometry=geom, ndim=3, nstates=2, unit_pos='au')
+   
+   qm = qm.dftbplus.DFTB(molecule=mol, l_scc=True, unpaired_elec=0, guess='h0', \
+       ex_symmetry='singlet', sk_path='./', \
+       install_path='/opt/dftbplus-20.1/install-mpi/')
+   
+   md = mqc.SHXF(molecule=mol, nsteps=100, nesteps=20, dt=0.5, unit_dt='au', \
+       sigma=0.1, istate=1, hop_rescale='energy', elec_object='density')
+   
+   md.run(qm=qm)
+
 Detailed description of parameters
 ''''''''''''''''''''''''''''''''''''
 
@@ -385,6 +413,34 @@ determined from the **l_state_interactions** parameter.
 | **version**              | Version of DFTB+                               | *'20.1'*            |
 | *(string)*               |                                                |                     |
 +--------------------------+------------------------------------------------+---------------------+
+
+Example input for SSR
+''''''''''''''''''''''''''''''''''''
+
+.. code-block:: python
+   :linenos:
+
+   from molecule import Molecule
+   import qm, mqc
+   
+   geom = '''
+   3
+   example
+   O  1.0 1.0 0.0 0.0 0.0 0.0
+   H  1.0 0.0 0.0 0.0 0.0 0.0
+   H  1.0 1.0 1.0 0.0 0.0 0.0
+   '''
+   
+   mol = Molecule(geometry=geom, ndim=3, nstates=2, unit_pos='au')
+   
+   qm = qm.dftbplus.SSR(molecule=mol, l_scc=True, l_ssr22=True, guess='h0', \
+       shift=0.3, embedding=None, sk_path='./', \
+       install_path='/opt/dftbplus-20.1/install-mpi/')
+   
+   md = mqc.SHXF(molecule=mol, nsteps=100, nesteps=20, dt=0.5, unit_dt='au', \
+       sigma=0.1, istate=1, hop_rescale='energy', elec_object='density')
+   
+   md.run(qm=qm)
 
 Detailed description of parameters
 ''''''''''''''''''''''''''''''''''''

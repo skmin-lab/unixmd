@@ -50,6 +50,33 @@ Gaussian 09 :cite:`Frisch2009` has been a standard program for electronic struct
 | *(string)*            |                                             |                   |
 +-----------------------+---------------------------------------------+-------------------+
 
+Example input for (TD)DFT
+''''''''''''''''''''''''''''''''''''
+
+.. code-block:: python
+   :linenos:
+
+   from molecule import Molecule
+   import qm, mqc
+
+   geom = '''
+   3
+   example
+   O  1.0 1.0 0.0 0.0 0.0 0.0
+   H  1.0 0.0 0.0 0.0 0.0 0.0
+   H  1.0 1.0 1.0 0.0 0.0 0.0
+   '''
+   
+   mol = Molecule(geometry=geom, ndim=3, nstates=2, unit_pos='au')
+   
+   qm = qm.gaussian09.DFT(molecule=mol, functional='BLYP', basis_set='STO-3g', \
+       guess='Harris', root_path='/opt/gaussian/g09/')
+   
+   md = mqc.SHXF(molecule=mol, nsteps=100, nesteps=20, dt=0.5, unit_dt='au', \
+       sigma=0.1, istate=1, hop_rescale='energy', elec_object='density')
+   
+   md.run(qm=qm)
+
 Detailed description of parameters
 '''''''''''''''''''''''''''''''''''''
 

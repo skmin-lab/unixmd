@@ -98,6 +98,33 @@ determined from the **l_state_interactions** parameter.
 | *(string)*               |                                             |             |
 +--------------------------+---------------------------------------------+-------------+
 
+Example input for SSR
+''''''''''''''''''''''''''''''''''''
+
+.. code-block:: python
+   :linenos:
+
+   from molecule import Molecule
+   import qm, mqc
+   
+   geom = '''
+   3
+   example
+   O  1.0 1.0 0.0 0.0 0.0 0.0
+   H  1.0 0.0 0.0 0.0 0.0 0.0
+   H  1.0 1.0 1.0 0.0 0.0 0.0
+   '''
+   
+   mol = Molecule(geometry=geom, ndim=3, nstates=2, unit_pos='au')
+   
+   qm = qm.terachem.SSR(molecule=mol, l_ssr22=True, guess='dft', basis_set='sto-3g'\
+       shift=0.3, install_path='/opt/terachem1.93/TeraChem/bin/')
+   
+   md = mqc.SHXF(molecule=mol, nsteps=100, nesteps=20, dt=0.5, unit_dt='au', \
+       sigma=0.1, istate=1, hop_rescale='energy', elec_object='density')
+   
+   md.run(qm=qm)
+
 Detailed description of parameters
 ''''''''''''''''''''''''''''''''''''
 

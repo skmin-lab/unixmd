@@ -54,6 +54,34 @@ in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and a
 | *(string)*          |                                             |                |
 +---------------------+---------------------------------------------+----------------+
 
+Example input for (TD)DFT
+''''''''''''''''''''''''''''''''''''
+
+.. code-block:: python
+   :linenos:
+
+   from molecule import Molecule
+   import qm, mqc
+
+   geom = '''
+   3
+   example
+   O  1.0 1.0 0.0 0.0 0.0 0.0
+   H  1.0 0.0 0.0 0.0 0.0 0.0
+   H  1.0 1.0 1.0 0.0 0.0 0.0
+   '''
+   
+   mol = Molecule(geometry=geom, ndim=3, nstates=2, unit_pos='au')
+   
+   qm = qm.turbomole.DFT(molecule=mol, functional='b-lyp', basis_set='SV(P)', \
+       root_path='/opt/turbomole/bin/')
+   
+   md = mqc.SHXF(molecule=mol, nsteps=100, nesteps=20, dt=0.5, unit_dt='au', \
+       sigma=0.1, istate=1, hop_rescale='energy', elec_object='density')
+   
+   md.run(qm=qm)
+
+
 Detailed description of parameters
 ''''''''''''''''''''''''''''''''''''
 

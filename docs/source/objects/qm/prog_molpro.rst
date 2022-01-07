@@ -77,6 +77,32 @@ methods. Among them, the state-averaged complete active space self consistent fi
 | *(string)*           |                                                                |                |
 +----------------------+----------------------------------------------------------------+----------------+
 
+Example input for CASSCF
+''''''''''''''''''''''''''''''''''''
+
+.. code-block:: python
+   :linenos:
+
+   from molecule import Molecule
+   import qm, mqc
+
+   geom = '''
+   3
+   example
+   O  1.0 1.0 0.0 0.0 0.0 0.0
+   H  1.0 0.0 0.0 0.0 0.0 0.0
+   H  1.0 1.0 1.0 0.0 0.0 0.0
+   '''
+   
+   mol = Molecule(geometry=geom, ndim=3, nstates=2, unit_pos='au')
+   
+   qm = qm.molpro.CASSCF(molecule=mol, basis_set='6-31g*', guess='hf', \
+       active_elec=2, active_orb=2, qm_path='/opt/molpro2015.1/bin/')
+   
+   md = mqc.SHXF(molecule=mol, nsteps=100, nesteps=20, dt=0.5, unit_dt='au', \
+       sigma=0.1, istate=1, hop_rescale='energy', elec_object='density')
+   
+   md.run(qm=qm)
 
 Detailed description of the parameters
 ''''''''''''''''''''''''''''''''''''''''''
