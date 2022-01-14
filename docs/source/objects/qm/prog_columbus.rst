@@ -96,7 +96,7 @@ Example input for CASSCF
    mol = Molecule(geometry=geom, ndim=3, nstates=2, unit_pos='angs')
 
    qm = qm.columbus.CASSCF(molecule=mol, basis_set='6-31g*', guess='hf', \
-       state_avg=None, active_elec=2, active_orb=2, qm_path='/opt/columbus7.0/columbus/')
+       state_avg=None, active_elec=2, active_orb=2, qm_path='/opt/Columbus7.0/Columbus/')
 
    md = mqc.SHXF(molecule=mol, nsteps=100, nesteps=20, dt=0.5, unit_dt='au', \
        sigma=0.1, istate=1, hop_rescale='energy', elec_object='density')
@@ -293,7 +293,7 @@ Example input for MRCI
    
    qm = qm.columbus.MRCI(molecule=mol, basis_set='6-31g*', guess='hf', \
        state_avg=None, active_elec=2, active_orb=2, frozen_core_orb=1, \
-       frozen_virt_orb=0, qm_path='/opt/columbus7.0/columbus/')
+       frozen_virt_orb=0, qm_path='/opt/Columbus7.0/Columbus/')
    
    md = mqc.SHXF(molecule=mol, nsteps=100, nesteps=20, dt=0.5, unit_dt='au', \
        sigma=0.1, istate=1, hop_rescale='energy', elec_object='density')
