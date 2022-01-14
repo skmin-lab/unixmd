@@ -66,21 +66,19 @@ Example input for (TD)DFT
    geom = '''
    3
    example
-   O  1.0 1.0 0.0 0.0 0.0 0.0
-   H  1.0 0.0 0.0 0.0 0.0 0.0
-   H  1.0 1.0 1.0 0.0 0.0 0.0
+   O  1.14  3.77  0.00  0.00  0.00  0.00
+   H  2.11  3.77  0.00  0.00  0.00  0.00
+   H  0.81  4.45  0.60  0.00  0.00  0.00
    '''
-   
-   mol = Molecule(geometry=geom, ndim=3, nstates=2, unit_pos='au')
+ 
+   mol = Molecule(geometry=geom, ndim=3, nstates=2, unit_pos='angs')
    
    qm = qm.turbomole.DFT(molecule=mol, functional='b-lyp', basis_set='SV(P)', \
-       root_path='/opt/turbomole/bin/')
+       root_path='/opt/turbomole/')
    
-   md = mqc.SHXF(molecule=mol, nsteps=100, nesteps=20, dt=0.5, unit_dt='au', \
-       sigma=0.1, istate=1, hop_rescale='energy', elec_object='density')
+   md = mqc.BOMD(molecule=mol, nsteps=100, nesteps=20, dt=0.5, hop_reject='keep', unit_dt='au', istate=1)
    
    md.run(qm=qm)
-
 
 Detailed description of parameters
 ''''''''''''''''''''''''''''''''''''

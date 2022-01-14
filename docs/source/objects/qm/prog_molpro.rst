@@ -89,12 +89,12 @@ Example input for CASSCF
    geom = '''
    3
    example
-   O  1.0 1.0 0.0 0.0 0.0 0.0
-   H  1.0 0.0 0.0 0.0 0.0 0.0
-   H  1.0 1.0 1.0 0.0 0.0 0.0
+   O  1.14  3.77  0.00  0.00  0.00  0.00
+   H  2.11  3.77  0.00  0.00  0.00  0.00
+   H  0.81  4.45  0.60  0.00  0.00  0.00
    '''
-   
-   mol = Molecule(geometry=geom, ndim=3, nstates=2, unit_pos='au')
+ 
+   mol = Molecule(geometry=geom, ndim=3, nstates=2, unit_pos='angs')
    
    qm = qm.molpro.CASSCF(molecule=mol, basis_set='6-31g*', guess='hf', \
        active_elec=2, active_orb=2, qm_path='/opt/molpro2015.1/bin/')
