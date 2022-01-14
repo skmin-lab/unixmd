@@ -73,7 +73,7 @@ Example input for (TD)DFT
        guess='Harris', root_path='/opt/gaussian/')
    
    md = mqc.SHXF(molecule=mol, nsteps=100, nesteps=20, dt=0.5, unit_dt='au', \
-       sigma=0.1, istate=1, hop_rescale='energy', elec_object='density')
+       sigma=0.1, istate=1, hop_rescale='energy', hop_reject='keep', elec_object='density')
    
    md.run(qm=qm)
 
