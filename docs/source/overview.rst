@@ -47,7 +47,7 @@ Citation
 ---------------------------
 Please cite the following work when publishing results from PyUNIxMD program:
 
-Lee, I. S., Ha, J. K., Han, D., Kim, T. I., Moon, S. W., & Min, S. K. (2021). PyUNIxMD: A Python‐based excited state molecular dynamics package. Journal of computational chemistry, 42(24), 1755-1766.
+Lee, I. S., Ha, J.-K., Han, D., Kim, T. I., Moon, S. W., & Min, S. K. (2021). PyUNIxMD: A Python‐based excited state molecular dynamics package. Journal of Computational Chemistry, 42(24), 1755-1766.
 
 ..
   Acknowledgement
