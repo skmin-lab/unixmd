@@ -54,6 +54,32 @@ in the group of Prof. Dr. Reinhart Ahlrichs at the University of Karlsruhe and a
 | *(string)*          |                                             |                |
 +---------------------+---------------------------------------------+----------------+
 
+Example input for (TD)DFT
+''''''''''''''''''''''''''''''''''''
+
+.. code-block:: python
+   :linenos:
+
+   from molecule import Molecule
+   import qm, mqc
+
+   geom = '''
+   3
+   example
+   O  1.14  3.77  0.00  0.00  0.00  0.00
+   H  2.11  3.77  0.00  0.00  0.00  0.00
+   H  0.81  4.45  0.60  0.00  0.00  0.00
+   '''
+
+   mol = Molecule(geometry=geom, ndim=3, nstates=2, unit_pos='angs')
+
+   qm = qm.turbomole.DFT(molecule=mol, functional='b-lyp', basis_set='SV(P)', \
+       root_path='/opt/turbomole/')
+
+   md = mqc.BOMD(molecule=mol, nsteps=100, nesteps=20, dt=0.5, unit_dt='au', istate=1)
+
+   md.run(qm=qm)
+
 Detailed description of parameters
 ''''''''''''''''''''''''''''''''''''
 
