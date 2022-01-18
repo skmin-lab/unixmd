@@ -252,7 +252,9 @@ class MQC(object):
         {"-" * 68}
 
         {" " * 4}Please cite PyUNIxMD as follows:
-        {" " * 4}This is article
+        {" " * 4}I. S. Lee, J.-K. Ha, D. Han, T. I. Kim, S. W. Moon, & S. K. Min.
+	{" " * 4}PyUNIxMD: A Python-based excited state molecular dynamics package.
+        {" " * 4}Journal of Computational Chemistry, 42:1755-1766. 2021
 
         {" " * 4}PyUNIxMD begins on {cur_time}
         """)
