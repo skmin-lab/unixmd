@@ -28,9 +28,27 @@ qm_calculator.py
 columbus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+columbus.py
+"""""""""""""""""""""""""""""""""""""""""""
+.. automodule:: qm.columbus.columbus
+   :members:
+   :show-inheritance:
+
+colbasis.py
+"""""""""""""""""""""""""""""""""""""""""""
+.. automodule:: qm.columbus.colbasis
+   :members:
+   :show-inheritance:
+
 casscf.py
 """""""""""""""""""""""""""""""""""""""""""
 .. automodule:: qm.columbus.casscf
+   :members:
+   :show-inheritance:
+
+mrci.py
+"""""""""""""""""""""""""""""""""""""""""""
+.. automodule:: qm.columbus.mrci
    :members:
    :show-inheritance:
 
@@ -40,6 +58,12 @@ dftbplus
 dftbplus.py
 """""""""""""""""""""""""""""""""""""""""""
 .. automodule:: qm.dftbplus.dftbplus
+   :members:
+   :show-inheritance:
+
+dftbpar.py
+"""""""""""""""""""""""""""""""""""""""""""
+.. automodule:: qm.dftbplus.dftbpar
    :members:
    :show-inheritance:
 
@@ -142,6 +166,24 @@ model.py
 sac.py
 """""""""""""""""""""""""""""""""""""""""""
 .. automodule:: qm.model.sac
+   :members:
+   :show-inheritance:
+
+dac.py
+"""""""""""""""""""""""""""""""""""""""""""
+.. automodule:: qm.model.dac
+   :members:
+   :show-inheritance:
+
+ecr.py
+"""""""""""""""""""""""""""""""""""""""""""
+.. automodule:: qm.model.ecr
+   :members:
+   :show-inheritance:
+
+dag.py
+"""""""""""""""""""""""""""""""""""""""""""
+.. automodule:: qm.model.dag
    :members:
    :show-inheritance:
 
