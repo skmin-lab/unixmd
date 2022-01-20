@@ -13,7 +13,6 @@ class Auxiliary_Molecule(object):
     """
     def __init__(self, molecule):
         # Initialize auxiliary molecule
-
         self.nat = molecule.nat_qm
         self.ndim = molecule.ndim
         self.symbols = np.copy(molecule.symbols[0:molecule.nat_qm])
