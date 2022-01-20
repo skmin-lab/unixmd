@@ -8,12 +8,12 @@ class TeraChem(QM_calculator):
         :param string basis_set: Basis set information
         :param string functional: Exchange-correlation functional information
         :param string precision: Precision in the calculations
-        :param string qm_path: Path for QM binary
+        :param string root_path: Path for TeraChem root directory
         :param integer ngpus: Number of GPUs
         :param integer,list gpu_id: ID of used GPUs
         :param string version: Version of TeraChem
     """
-    def __init__(self, functional, basis_set, qm_path, ngpus, \
+    def __init__(self, functional, basis_set, root_path, ngpus, \
         gpu_id, precision, version):
         # Save name of QM calculator and its method
         super().__init__()
@@ -22,11 +22,14 @@ class TeraChem(QM_calculator):
         self.functional = functional
         self.basis_set = basis_set
 
-        self.qm_path = qm_path
-        if (not os.path.isdir(self.qm_path)):
-            error_message = "Directory for TeraChem binary not found!"
-            error_vars = f"qm_path = {self.qm_path}"
+        self.root_path = root_path
+        if (not os.path.isdir(self.root_path)):
+            error_message = "Root directory for TeraChem binary not found!"
+            error_vars = f"root_path = {self.root_path}"
             raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        # TODO : environmental variables should be set
+        self.qm_path = os.path.join(self.root_path, "bin")
 
         self.ngpus = ngpus
         self.gpu_id = gpu_id

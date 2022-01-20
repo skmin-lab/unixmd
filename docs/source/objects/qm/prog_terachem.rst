@@ -85,7 +85,7 @@ determined from the **l_state_interactions** parameter.
 | **cpreks_max_iter**      | Maximum number of CP-REKS iterations        | *1000*      |
 | *(integer)*              |                                             |             |
 +--------------------------+---------------------------------------------+-------------+
-| **qm_path**              | Path for QM binary                          | *'./'*      |
+| **root_path**            | Path for TeraChem root directory            | *'./'*      |
 | *(string)*               |                                             |             |
 +--------------------------+---------------------------------------------+-------------+
 | **ngpus**                | Number of GPUs                              | *1*         |
@@ -118,7 +118,7 @@ Example input for SSR
    mol = Molecule(geometry=geom, ndim=3, nstates=2, unit_pos='angs')
 
    qm = qm.terachem.SSR(molecule=mol, l_ssr22=True, guess='dft', basis_set='sto-3g'\
-       shift=0.3, qm_path='/opt/terachem1.93/TeraChem/bin/')
+       shift=0.3, root_path='/opt/terachem1.93/TeraChem/')
 
    md = mqc.SHXF(molecule=mol, nsteps=100, nesteps=20, dt=0.5, unit_dt='au', \
        sigma=0.1, istate=1, hop_rescale='energy', elec_object='density')
@@ -231,12 +231,12 @@ Detailed description of parameters
 
 \
 
-- **qm_path** *(string)* - Default: *'./'*
+- **root_path** *(string)* - Default: *'./'*
 
-  This parameter determines the path for QM binary file for TeraChem. The `$TeraChem` environment
-  variable determines the directory where the licensing file can be found, i.e. '`$TeraChem`/license.dat'
+  This parameter determines the path for the TeraChem root directory. The `$TeraChem` environment
+  variable determines the directory where the licensing file can be found, i.e., '`$TeraChem`/license.dat'
   (For example, `$TeraChem` is '/my_disk/my_name/TeraChem/').
-  Thus, **qm_path** must be *'`$TeraChem`/bin/'*, not *'`$TeraChem`/'*.
+  Thus, **root_path** must be *'`$TeraChem`/'*, not *'`$TeraChem`/bin/'*.
 
 \
 

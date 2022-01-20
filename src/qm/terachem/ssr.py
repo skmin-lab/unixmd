@@ -22,7 +22,7 @@ class SSR(TeraChem):
         :param boolean l_state_interactions: Include state-interaction terms to SA-REKS
         :param double cpreks_grad_tol: Gradient tolerance for CP-REKS equations
         :param integer cpreks_max_iter: Maximum number of CP-REKS iterations
-        :param string qm_path: Path for QM binary
+        :param string root_path: Path for TeraChem root directory
         :param integer ngpus: Number of GPUs
         :param integer,list gpu_id: ID of used GPUs
         :param string version: Version of TeraChem
@@ -31,9 +31,9 @@ class SSR(TeraChem):
         version="1.93", functional="hf", basis_set="sto-3g", scf_wf_tol=1E-2, \
         scf_max_iter=300, l_ssr22=True, guess="dft", guess_file="./c0", \
         reks_diis_tol=1E-6, reks_max_iter=1000, shift=0.3, l_state_interactions=False, \
-        cpreks_grad_tol=1E-6, cpreks_max_iter=1000, qm_path="./"):
+        cpreks_grad_tol=1E-6, cpreks_max_iter=1000, root_path="./"):
         # Initialize TeraChem common variables
-        super(SSR, self).__init__(functional, basis_set, qm_path, ngpus, \
+        super(SSR, self).__init__(functional, basis_set, root_path, ngpus, \
             gpu_id, precision, version)
 
         # Initialize TeraChem SSR variables
