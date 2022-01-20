@@ -28,8 +28,12 @@ class TeraChem(QM_calculator):
             error_vars = f"root_path = {self.root_path}"
             raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        # TODO : environmental variables should be set
         self.qm_path = os.path.join(self.root_path, "bin")
+
+        # Set the environmental variables for TeraChem
+        lib_dir = os.path.join(self.root_path, "lib")
+        os.environ["TeraChem"] = self.root_path
+        os.environ["LD_LIBRARY_PATH"] += os.pathsep + os.path.join(lib_dir)
 
         self.ngpus = ngpus
         self.gpu_id = gpu_id
