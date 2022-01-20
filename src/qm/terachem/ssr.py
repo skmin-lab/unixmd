@@ -146,9 +146,13 @@ class SSR(TeraChem):
         input_terachem += input_control
 
         # System Block
+        gpu_ids = ""
+        for gpu_cur_id in self.gpu_id:
+            gpu_ids += f" {gpu_cur_id} "
+
         input_system = textwrap.dedent(f"""\
         precision {self.precision}
-        gpus {self.ngpus}   {self.gpu_id}
+        gpus {self.ngpus}   {gpu_ids}
 
         """)
         input_terachem += input_system

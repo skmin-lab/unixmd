@@ -1,8 +1,5 @@
 from molecule import Molecule
 import qm
-import mqc
-from thermostat import *
-from misc import data
 
 geom = """
 NUMBER_OF_ATOMS
