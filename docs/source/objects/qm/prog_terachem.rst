@@ -118,7 +118,7 @@ Example input for SSR
    mol = Molecule(geometry=geom, ndim=3, nstates=2, unit_pos='angs')
 
    qm = qm.terachem.SSR(molecule=mol, l_ssr22=True, guess='dft', basis_set='sto-3g'\
-       shift=0.3, root_path='/opt/terachem1.93/TeraChem/')
+       l_state_interactions=True, shift=0.3, root_path='/opt/terachem1.93/TeraChem/')
 
    md = mqc.SHXF(molecule=mol, nsteps=100, nesteps=20, dt=0.5, unit_dt='au', \
        sigma=0.1, istate=1, hop_rescale='energy', elec_object='density')
