@@ -486,46 +486,33 @@ class SSR(DFTBplus):
         # Force
         if (self.nac == "Yes"):
             # SHXF, SH, Eh : SSR state
-            if (molecule.l_qmmm):
-                for ist in range(molecule.nst):
-                    tmp_g = f' {ist + 1} st state \(SSR\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-                    grad = re.findall(tmp_g, log_out)
-                    grad = np.array(grad[0], dtype=np.float64)
-                    grad = grad.reshape(molecule.nat_qm, 3, order='C')
-                    molecule.states[ist].force[0:molecule.nat_qm] = - grad
-                    if (self.embedding == "electrostatic"):
-                        tmp_f = 'Forces on external charges' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_mm
-                        force = re.findall(tmp_f, detailed_out)
-                        force = np.array(force[0], dtype=np.float64)
-                        force = force.reshape(molecule.nat_mm, 3, order='C')
-                        molecule.states[ist].force[molecule.nat_qm:molecule.nat] = force
-            else:
-                for ist in range(molecule.nst):
-                    tmp_g = f' {ist + 1} st state \(SSR\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-                    grad = re.findall(tmp_g, log_out)
-                    grad = np.array(grad[0], dtype=np.float64)
-                    grad = grad.reshape(molecule.nat_qm, 3, order='C')
-                    molecule.states[ist].force = - np.copy(grad)
-        else:
-            # BOMD : SSR state, SA-REKS state or single-state REKS
-            if (molecule.l_qmmm):
-                tmp_g = f' {bo_list[0] + 1} state \(\w+[-]*\w+\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-                grad = re.findall(tmp_g, log_out)
-                grad = np.array(grad[0], dtype=np.float64)
+            tmp_g = f' state \(SSR\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+            tmp_g = re.findall(tmp_g, log_out)
+            for ist in range(molecule.nst):
+                grad = np.array(tmp_g[ist], dtype=np.float64)
                 grad = grad.reshape(molecule.nat_qm, 3, order='C')
-                molecule.states[bo_list[0]].force[0:molecule.nat_qm] = - grad
-                if (self.embedding == "electrostatic"):
+                molecule.states[ist].force[0:molecule.nat_qm] = - np.copy(grad)
+                # TODO : point charge gradient may be modified
+                if (molecule.l_qmmm and self.embedding == "electrostatic"):
                     tmp_f = 'Forces on external charges' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_mm
                     force = re.findall(tmp_f, detailed_out)
                     force = np.array(force[0], dtype=np.float64)
                     force = force.reshape(molecule.nat_mm, 3, order='C')
-                    molecule.states[bo_list[0]].force[molecule.nat_qm:molecule.nat] = force
-            else:
-                tmp_g = f' {bo_list[0] + 1} state \(\w+[-]*\w+\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-                grad = re.findall(tmp_g, log_out)
-                grad = np.array(grad[0], dtype=np.float64)
-                grad = grad.reshape(molecule.nat_qm, 3, order='C')
-                molecule.states[bo_list[0]].force = - np.copy(grad)
+                    molecule.states[ist].force[molecule.nat_qm:molecule.nat] = force
+        else:
+            # BOMD : SSR state, SA-REKS state or single-state REKS
+            tmp_g = f' {bo_list[0] + 1} state \(\w+[-]*\w+\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+            tmp_g = re.findall(tmp_g, log_out)
+            grad = np.array(tmp_g[0], dtype=np.float64)
+            grad = grad.reshape(molecule.nat_qm, 3, order='C')
+            molecule.states[bo_list[0]].force[0:molecule.nat_qm] = - np.copy(grad)
+            # TODO : point charge gradient may be modified
+            if (molecule.l_qmmm and self.embedding == "electrostatic"):
+                tmp_f = 'Forces on external charges' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_mm
+                force = re.findall(tmp_f, detailed_out)
+                force = np.array(force[0], dtype=np.float64)
+                force = force.reshape(molecule.nat_mm, 3, order='C')
+                molecule.states[bo_list[0]].force[molecule.nat_qm:molecule.nat] = force
 
         # NAC
         if (self.nac == "Yes"):
