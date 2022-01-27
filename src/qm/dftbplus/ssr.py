@@ -100,6 +100,11 @@ class SSR(DFTBplus):
             error_vars = f"embedding = {self.embedding}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
+        if (not molecule.l_qmmm and self.embedding in ["mechanical", "electrostatic"]):
+            error_message = "Set logical for QM/MM to True for QM/MM calculation!"
+            error_vars = f"Molecule.l_qmmm = {molecule.l_qmmm}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
         self.l_periodic = l_periodic
         self.a_axis = np.copy(cell_length[0:3])
         self.b_axis = np.copy(cell_length[3:6])
