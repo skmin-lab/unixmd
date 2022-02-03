@@ -311,7 +311,11 @@ class Tinker(MM_calculator):
 
         # To avoid double counting, consider only charge-charge interactions between MM atoms
         if (self.embedding == "electrostatic"):
+            # Save atom types for QM atoms
+            qm_atom_type = set(self.atom_type[0:molecule.nat_qm])
+            # Save QM atom types existing in 'tinker.key' file
             tmp_atom_type = []
+
             file_be = open('tinker.key', 'r')
             file_af = open('tmp.key', 'w')
             for line in file_be:
@@ -324,7 +328,7 @@ class Tinker(MM_calculator):
                                 ind_charge = col
                             col += 1
                         # Set charge to zero for QM atoms in electrostatic embedding
-                        if (int(field[ind_charge + 1]) in set(self.atom_type)):
+                        if (int(field[ind_charge + 1]) in qm_atom_type):
                             tmp_atom_type.append(int(field[ind_charge + 1]))
                             line = f"charge {int(field[ind_charge + 1])} 0.0\n"
                             file_af.write(line)
@@ -335,7 +339,7 @@ class Tinker(MM_calculator):
                     # Write lines without 'charge' word
                     file_af.write(line)
             # Set charge to zero for remaining QM atoms
-            for itype in set(self.atom_type):
+            for itype in qm_atom_type:
                 if (not itype in tmp_atom_type):
                     line = f"charge {itype} 0.0\n"
                     file_af.write(line)
