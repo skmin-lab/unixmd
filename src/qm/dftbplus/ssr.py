@@ -424,6 +424,8 @@ class SSR(DFTBplus):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
         elif (self.version == "20.1"):
             parser_version = 8
+        elif (self.version == "21.1"):
+            parser_version = 9
 
         input_parseroptions = textwrap.dedent(f"""\
         ParserOptions = {{

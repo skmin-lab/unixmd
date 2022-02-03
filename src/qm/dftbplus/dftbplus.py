@@ -29,7 +29,7 @@ class DFTBplus(QM_calculator):
 
         # Environmental variable setting for Python scripts such as xyz2gen used in DFTB+
         if (isinstance(self.version, str)):
-            if (self.version in ["19.1", "20.1"]):
+            if (self.version in ["19.1", "20.1", "21.1"]):
                 self.qm_path = os.path.join(self.install_path, "bin")
                 # Note that the Python version can be changed according to the users setting
                 lib_dir = os.path.join(self.install_path, "lib/python3.6/site-packages")
