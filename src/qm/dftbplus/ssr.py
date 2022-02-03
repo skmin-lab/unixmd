@@ -455,6 +455,8 @@ class SSR(DFTBplus):
         # Copy the output file to 'qm_log' directory
         tmp_dir = os.path.join(base_dir, "qm_log")
         if (os.path.exists(tmp_dir)):
+            detailed_out_step = f"detailed.out.{istep + 1}.{bo_list[0]}"
+            shutil.copy("detailed.out", os.path.join(tmp_dir, detailed_out_step))
             log_step = f"log.{istep + 1}.{bo_list[0]}"
             shutil.copy("log", os.path.join(tmp_dir, log_step))
 
