@@ -477,6 +477,8 @@ class DFTB(DFTBplus):
             parser_version = 7
         elif (self.version == "20.1"):
             parser_version = 8
+        elif (self.version == "21.1"):
+            parser_version = 9
 
         input_parseroptions = textwrap.dedent(f"""\
         ParserOptions = {{

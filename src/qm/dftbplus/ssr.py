@@ -100,6 +100,11 @@ class SSR(DFTBplus):
             error_vars = f"embedding = {self.embedding}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
+        if (not molecule.l_qmmm and self.embedding in ["mechanical", "electrostatic"]):
+            error_message = "Set logical for QM/MM to True for QM/MM calculation!"
+            error_vars = f"Molecule.l_qmmm = {molecule.l_qmmm}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
         self.l_periodic = l_periodic
         self.a_axis = np.copy(cell_length[0:3])
         self.b_axis = np.copy(cell_length[3:6])
@@ -107,9 +112,10 @@ class SSR(DFTBplus):
 
         # Set 'l_nacme' and 're_calc' with respect to the computational method
         # DFTB/SSR can produce NACs, so we do not need to get NACME from CIoverlap
-        # DFTB/SSR can compute the gradient of several states simultaneously.
+        # DFTB/SSR can compute the gradient of several states simultaneously,
+        #          but self.re_calc is set to be true to reduce cost.
         molecule.l_nacme = False
-        self.re_calc = False
+        self.re_calc = True
 
     def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from SSR method
@@ -124,9 +130,9 @@ class SSR(DFTBplus):
         self.copy_files(istep)
         super().get_data(base_dir, calc_force_only)
         self.write_xyz(molecule)
-        self.get_input(molecule, istep, bo_list)
+        self.get_input(molecule, istep, bo_list, calc_force_only)
         self.run_QM(base_dir, istep, bo_list)
-        self.extract_QM(molecule, bo_list)
+        self.extract_QM(molecule, bo_list, calc_force_only)
         self.move_dir(base_dir)
 
     def copy_files(self, istep):
@@ -140,12 +146,13 @@ class SSR(DFTBplus):
             shutil.copy(os.path.join(self.scr_qm_dir, "eigenvec.bin"), \
                 os.path.join(self.scr_qm_dir, "../eigenvec.bin.pre"))
 
-    def get_input(self, molecule, istep, bo_list):
+    def get_input(self, molecule, istep, bo_list, calc_force_only):
         """ Generate DFTB+ input files: geometry.gen, dftb_in.hsd
 
             :param object molecule: Molecule object
             :param integer istep: Current MD step
             :param integer,list bo_list: List of BO states for BO calculation
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         # Make 'geometry.gen' file
         os.system("xyz2gen geometry.xyz")
@@ -331,6 +338,10 @@ class SSR(DFTBplus):
             elif (self.guess == "h0"):
                 restart = "No"
 
+            # Read 'eigenvec.bin' for surface hopping dynamics when hop occurs
+            if (calc_force_only):
+                restart = "Yes"
+
             # Scale the atomic spin constants
             if (self.tuning != None):
                 spin_tuning = ""
@@ -368,7 +379,7 @@ class SSR(DFTBplus):
             self.nac = "No"
         else:
             # SSR state
-            if (self.calc_coupling):
+            if (not calc_force_only and self.calc_coupling):
                 # SHXF, SH, Eh need NAC calculations
                 self.nac = "Yes"
             else:
@@ -413,6 +424,8 @@ class SSR(DFTBplus):
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
         elif (self.version == "20.1"):
             parser_version = 8
+        elif (self.version == "21.1"):
+            parser_version = 9
 
         input_parseroptions = textwrap.dedent(f"""\
         ParserOptions = {{
@@ -444,14 +457,17 @@ class SSR(DFTBplus):
         # Copy the output file to 'qm_log' directory
         tmp_dir = os.path.join(base_dir, "qm_log")
         if (os.path.exists(tmp_dir)):
+            detailed_out_step = f"detailed.out.{istep + 1}.{bo_list[0]}"
+            shutil.copy("detailed.out", os.path.join(tmp_dir, detailed_out_step))
             log_step = f"log.{istep + 1}.{bo_list[0]}"
             shutil.copy("log", os.path.join(tmp_dir, log_step))
 
-    def extract_QM(self, molecule, bo_list):
+    def extract_QM(self, molecule, bo_list, calc_force_only):
         """ Read the output files to get BO information
 
             :param object molecule: Molecule object
             :param integer,list bo_list: List of BO states for BO calculation
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         # Read 'log' file
         file_name = "log"
@@ -464,77 +480,50 @@ class SSR(DFTBplus):
             detailed_out = f.read()
 
         # Energy
-        if (molecule.nst == 1):
-            # Single-state REKS
-            tmp_e = 'Spin' + '\n\s+\w+\s+([-]\S+)(?:\s+\S+){3}' * molecule.nst
-            energy = re.findall(tmp_e, log_out)
-            energy = np.array(energy, dtype=np.float64)
-        else:
-            if (self.l_state_interactions):
-                # SSR state
-                energy = re.findall('SSR state\s+\S+\s+([-]\S+)', log_out)
-                energy = np.array(energy, dtype=np.float64)
-            else:
-                # SA-REKS state
+        if (not calc_force_only):
+
+            if (molecule.nst == 1):
+                # Single-state REKS
                 tmp_e = 'Spin' + '\n\s+\w+\s+([-]\S+)(?:\s+\S+){3}' * molecule.nst
                 energy = re.findall(tmp_e, log_out)
-                energy = np.array(energy[0], dtype=np.float64)
+                energy = np.array(energy, dtype=np.float64)
+            else:
+                if (self.l_state_interactions):
+                    # SSR state
+                    energy = re.findall('SSR state\s+\S+\s+([-]\S+)', log_out)
+                    energy = np.array(energy, dtype=np.float64)
+                else:
+                    # SA-REKS state
+                    tmp_e = 'Spin' + '\n\s+\w+\s+([-]\S+)(?:\s+\S+){3}' * molecule.nst
+                    energy = re.findall(tmp_e, log_out)
+                    energy = np.array(energy[0], dtype=np.float64)
 
-        for ist in range(molecule.nst):
-            molecule.states[ist].energy = energy[ist]
+            for ist in range(molecule.nst):
+                molecule.states[ist].energy = energy[ist]
 
         # Force
-        if (self.nac == "Yes"):
-            # SHXF, SH, Eh : SSR state
-            if (molecule.l_qmmm):
-                for ist in range(molecule.nst):
-                    tmp_g = f' {ist + 1} st state \(SSR\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-                    grad = re.findall(tmp_g, log_out)
-                    grad = np.array(grad[0], dtype=np.float64)
-                    grad = grad.reshape(molecule.nat_qm, 3, order='C')
-                    molecule.states[ist].force[0:molecule.nat_qm] = - grad
-                    if (self.embedding == "electrostatic"):
-                        tmp_f = 'Forces on external charges' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_mm
-                        force = re.findall(tmp_f, detailed_out)
-                        force = np.array(force[0], dtype=np.float64)
-                        force = force.reshape(molecule.nat_mm, 3, order='C')
-                        molecule.states[ist].force[molecule.nat_qm:molecule.nat] = force
-            else:
-                for ist in range(molecule.nst):
-                    tmp_g = f' {ist + 1} st state \(SSR\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-                    grad = re.findall(tmp_g, log_out)
-                    grad = np.array(grad[0], dtype=np.float64)
-                    grad = grad.reshape(molecule.nat_qm, 3, order='C')
-                    molecule.states[ist].force = - np.copy(grad)
-        else:
-            # BOMD : SSR state, SA-REKS state or single-state REKS
-            if (molecule.l_qmmm):
-                tmp_g = f' {bo_list[0] + 1} state \(\w+[-]*\w+\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-                grad = re.findall(tmp_g, log_out)
-                grad = np.array(grad[0], dtype=np.float64)
-                grad = grad.reshape(molecule.nat_qm, 3, order='C')
-                molecule.states[bo_list[0]].force[0:molecule.nat_qm] = - grad
-                if (self.embedding == "electrostatic"):
-                    tmp_f = 'Forces on external charges' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_mm
-                    force = re.findall(tmp_f, detailed_out)
-                    force = np.array(force[0], dtype=np.float64)
-                    force = force.reshape(molecule.nat_mm, 3, order='C')
-                    molecule.states[bo_list[0]].force[molecule.nat_qm:molecule.nat] = force
-            else:
-                tmp_g = f' {bo_list[0] + 1} state \(\w+[-]*\w+\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-                grad = re.findall(tmp_g, log_out)
-                grad = np.array(grad[0], dtype=np.float64)
-                grad = grad.reshape(molecule.nat_qm, 3, order='C')
-                molecule.states[bo_list[0]].force = - np.copy(grad)
+        for ist in bo_list:
+            tmp_g = f' {ist + 1}\s*\w* state \(\w+[-]*\w+\)' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+            grad = re.findall(tmp_g, log_out)
+            grad = np.array(grad[0], dtype=np.float64)
+            grad = grad.reshape(molecule.nat_qm, 3, order='C')
+            molecule.states[ist].force[0:molecule.nat_qm] = - np.copy(grad)
+            if (molecule.l_qmmm and self.embedding == "electrostatic"):
+                tmp_f = 'Forces on external charges' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_mm
+                force = re.findall(tmp_f, detailed_out)
+                force = np.array(force[0], dtype=np.float64)
+                force = force.reshape(molecule.nat_mm, 3, order='C')
+                molecule.states[ist].force[molecule.nat_qm:molecule.nat] = force
 
         # NAC
-        if (self.nac == "Yes"):
+        if (not calc_force_only and self.nac == "Yes"):
+            tmp_c = 'non-adiabatic coupling' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+            tmp_c = re.findall(tmp_c, log_out)
+
             kst = 0
             for ist in range(molecule.nst):
                 for jst in range(ist + 1, molecule.nst):
-                    tmp_c = 'non-adiabatic coupling' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-                    nac = re.findall(tmp_c, log_out)
-                    nac = np.array(nac[kst], dtype=np.float64)
+                    nac = np.array(tmp_c[kst], dtype=np.float64)
                     nac = nac.reshape(molecule.nat_qm, 3, order='C')
                     molecule.nac[ist, jst] = nac
                     molecule.nac[jst, ist] = - nac
