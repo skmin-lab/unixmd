@@ -95,7 +95,8 @@ class CASSCF(Molpro):
             :param integer istep: Current MD step
             :param boolean calc_force_only: Logical to decide whether calculate force only
         """
-        self.copy_files(istep)
+        if (not calc_force_only):
+            self.copy_files(istep)
         super().get_data(base_dir, calc_force_only)
         self.write_xyz(molecule)
         self.get_input(molecule, istep, bo_list, calc_force_only)
@@ -126,26 +127,34 @@ class CASSCF(Molpro):
         input_molpro = ""
 
         # Scratch Block
-        if (self.guess == "read"):
-            wfu_dir = os.path.join(self.scr_qm_dir, "wfu")
-            os.makedirs(wfu_dir)
-            if (istep == -1):
-                if (os.path.isfile(self.guess_file)):
-                    # Copy guess file to currect directory
-                    shutil.copy(self.guess_file, os.path.join(wfu_dir, "wf.wfu"))
+        if (not calc_force_only):
+
+            if (self.guess == "read"):
+                wfu_dir = os.path.join(self.scr_qm_dir, "wfu")
+                os.makedirs(wfu_dir)
+                if (istep == -1):
+                    if (os.path.isfile(self.guess_file)):
+                        # Copy guess file to currect directory
+                        shutil.copy(self.guess_file, os.path.join(wfu_dir, "wf.wfu"))
+                        restart = "restart,2\n"
+                        hf = False
+                    else:
+                        restart = ""
+                        hf = True
+                elif (istep >= 0):
+                    # Move previous file to currect directory
+                    os.rename("../wf.wfu", os.path.join(wfu_dir, "wf.wfu"))
                     restart = "restart,2\n"
                     hf = False
-                else:
-                    restart = ""
-                    hf = True
-            elif (istep >= 0):
-                # Move previous file to currect directory
-                os.rename("../wf.wfu", os.path.join(wfu_dir, "wf.wfu"))
-                restart = "restart,2\n"
-                hf = False
-        elif (self.guess == "hf"):
-            restart = ""
-            hf = True
+            elif (self.guess == "hf"):
+                restart = ""
+                hf = True
+
+        else:
+
+            # Read 'wf.wfu' for surface hopping dynamics when hop occurs
+            restart = "restart,2\n"
+            hf = False
 
         input_scr = textwrap.dedent(f"""\
         file,1,int.int,delete

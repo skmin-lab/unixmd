@@ -1,6 +1,7 @@
 from __future__ import division
 from qm.qm_calculator import QM_calculator
 from misc import call_name
+import os
 
 class Molpro(QM_calculator):
     """ Class for common parts of Molpro
