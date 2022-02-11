@@ -1,6 +1,7 @@
 from __future__ import division
 from qm.qm_calculator import QM_calculator
 from misc import call_name
+import os
 
 class QChem(QM_calculator):
     """ Class for common parts of Q-Chem
@@ -37,5 +38,4 @@ class QChem(QM_calculator):
             error_message = "Type of version must be string!"
             error_vars = f"version = {self.version}"
             raise TypeError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
-
 
