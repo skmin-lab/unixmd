@@ -216,7 +216,7 @@ Detailed description of parameters
 
   When **l_state_interactions** is set to *True*, state-interaction terms are included so that the SI-SA-REKS states are generated.
   Otherwise, the SA-REKS states are obtained. It is valid when ``molecule.nst`` is larger
-  than one. In general, it generates more reliable adiabatic states.
+  than *1*. In general, it generates more reliable adiabatic states.
 
 \
 
