@@ -13,7 +13,7 @@ class SSR(TeraChem):
         :param string precision: Precision in the calculations
         :param double scf_wf_tol: Wavefunction convergence for SCF iterations
         :param integer scf_max_iter: Maximum number of SCF iterations
-        :param boolean l_ssr22: Use SSR(2,2) calculation?
+        :param string active_space: Active space for SSR calculation
         :param string guess: Initial guess for REKS SCF iterations
         :param string guess_file: Initial guess file
         :param double reks_diis_tol: DIIS error for REKS SCF iterations
@@ -29,7 +29,7 @@ class SSR(TeraChem):
     """
     def __init__(self, molecule, ngpus=1, gpu_id=None, precision="dynamic", \
         version="1.93", functional="hf", basis_set="sto-3g", scf_wf_tol=1E-2, \
-        scf_max_iter=300, l_ssr22=True, guess="dft", guess_file="./c0", \
+        scf_max_iter=300, active_space="(2,2)", guess="dft", guess_file="./c0", \
         reks_diis_tol=1E-6, reks_max_iter=1000, shift=0.3, l_state_interactions=False, \
         cpreks_grad_tol=1E-6, cpreks_max_iter=1000, root_path="./"):
         # Initialize TeraChem common variables
@@ -40,32 +40,33 @@ class SSR(TeraChem):
         self.scf_wf_tol = scf_wf_tol
         self.scf_max_iter = scf_max_iter
 
-        self.l_ssr22 = l_ssr22
-        if (self.l_ssr22):
+        self.active_space = active_space
+        if not (self.active_space in ["(2,2)"]):
+            error_message = "Invalid active space for SSR!"
+            error_vars = f"active_space = {self.active_space}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        if (self.active_space == "(2,2)"):
             if (molecule.nst > 2):
                 error_message = "SSR(2,2) can calculate up to 2 electronic states!"
                 error_vars = f"Molecule.nstates = {molecule.nst}"
                 raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
-            self.reks_diis_tol = reks_diis_tol
-            self.reks_max_iter = reks_max_iter
-            self.shift = shift
-            self.l_state_interactions = l_state_interactions
 
-            # Set initial guess for REKS SCF iterations
-            self.guess = guess.lower()
-            self.guess_file = guess_file
-            if not (self.guess in ["dft", "read"]):
-                error_message = "Invalid initial guess for SSR!"
-                error_vars = f"guess = {self.guess}"
-                raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
-
-            if (molecule.nst > 1):
-                self.cpreks_grad_tol = cpreks_grad_tol
-                self.cpreks_max_iter = cpreks_max_iter
-        else:
-            error_message = "Use (2,2) active space for SSR!"
-            error_vars = f"l_ssr22 = {self.l_ssr22}"
+        # Set initial guess for REKS SCF iterations
+        self.guess = guess.lower()
+        self.guess_file = guess_file
+        if not (self.guess in ["dft", "read"]):
+            error_message = "Invalid initial guess for SSR!"
+            error_vars = f"guess = {self.guess}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        self.reks_diis_tol = reks_diis_tol
+        self.reks_max_iter = reks_max_iter
+        self.shift = shift
+        self.l_state_interactions = l_state_interactions
+
+        self.cpreks_grad_tol = cpreks_grad_tol
+        self.cpreks_max_iter = cpreks_max_iter
 
         # Set 'l_nacme' with respect to the computational method
         # SSR can produce NACs, so we do not need to get NACME from CIoverlap
@@ -176,9 +177,10 @@ class SSR(TeraChem):
             input_terachem += input_dft
 
         # REKS Block
-        if (self.l_ssr22):
+        if (self.active_space == "(2,2)"):
 
             # Energy functional options
+            space = "reks22 yes"
             if (molecule.nst == 1):
                 sa_reks = 0
             elif (molecule.nst == 2):
@@ -197,32 +199,31 @@ class SSR(TeraChem):
                 reks_target = bo_list[0] + 1
                 self.nac = "No"
 
-            # TODO: pointcharges? in qmmm?
+        # TODO: pointcharges? in qmmm?
 
-            input_reks_basic = textwrap.dedent(f"""\
-            reks22 yes
-            reks_convthre {self.reks_diis_tol}
-            reks_maxit {self.reks_max_iter}
-            reks_diis yes
-            reks_shift {self.shift}
-            sa_reks {sa_reks}
-            reks_target {reks_target}
+        input_reks_basic = textwrap.dedent(f"""\
+        {space}
+        reks_convthre {self.reks_diis_tol}
+        reks_maxit {self.reks_max_iter}
+        reks_diis yes
+        reks_shift {self.shift}
+        sa_reks {sa_reks}
+        reks_target {reks_target}
+        """)
+        input_terachem += input_reks_basic
+
+        if (restart == 1):
+            input_reks_guess = textwrap.dedent(f"""\
+            reks_guess {restart}
+            guess ./scr/c0
             """)
-            input_terachem += input_reks_basic
+            input_terachem += input_reks_guess
 
-            if (restart == 1):
-                input_reks_guess = textwrap.dedent(f"""\
-                reks_guess {restart}
-                guess ./scr/c0
-                """)
-                input_terachem += input_reks_guess
-
-            if (molecule.nst > 1):
-                input_cpreks = textwrap.dedent(f"""\
-                cpreks_thresh {self.cpreks_grad_tol}
-                cpreks_maxit {self.cpreks_max_iter}
-                """)
-                input_terachem += input_cpreks
+        input_cpreks = textwrap.dedent(f"""\
+        cpreks_thresh {self.cpreks_grad_tol}
+        cpreks_maxit {self.cpreks_max_iter}
+        """)
+        input_terachem += input_cpreks
 
         # Write 'input.tcin' file
         file_name = "input.tcin"
