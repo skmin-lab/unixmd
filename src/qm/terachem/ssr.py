@@ -13,7 +13,7 @@ class SSR(TeraChem):
         :param string precision: Precision in the calculations
         :param double scf_wf_tol: Wavefunction convergence for SCF iterations
         :param integer scf_max_iter: Maximum number of SCF iterations
-        :param string active_space: Active space for SSR calculation
+        :param integer active_space: Active space for SSR calculation
         :param string guess: Initial guess for REKS SCF iterations
         :param string guess_file: Initial guess file
         :param double reks_diis_tol: DIIS error for REKS SCF iterations
@@ -29,7 +29,7 @@ class SSR(TeraChem):
     """
     def __init__(self, molecule, ngpus=1, gpu_id=None, precision="dynamic", \
         version="1.93", functional="hf", basis_set="sto-3g", scf_wf_tol=1E-2, \
-        scf_max_iter=300, active_space="(2,2)", guess="dft", guess_file="./c0", \
+        scf_max_iter=300, active_space=2, guess="dft", guess_file="./c0", \
         reks_diis_tol=1E-6, reks_max_iter=1000, shift=0.3, l_state_interactions=False, \
         cpreks_grad_tol=1E-6, cpreks_max_iter=1000, root_path="./"):
         # Initialize TeraChem common variables
@@ -41,12 +41,12 @@ class SSR(TeraChem):
         self.scf_max_iter = scf_max_iter
 
         self.active_space = active_space
-        if not (self.active_space in ["(2,2)"]):
+        if not (self.active_space in [2]):
             error_message = "Invalid active space for SSR!"
             error_vars = f"active_space = {self.active_space}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        if (self.active_space == "(2,2)"):
+        if (self.active_space == 2):
             if (molecule.nst > 2):
                 error_message = "SSR(2,2) can calculate up to 2 electronic states!"
                 error_vars = f"Molecule.nstates = {molecule.nst}"
@@ -177,7 +177,7 @@ class SSR(TeraChem):
             input_terachem += input_dft
 
         # REKS Block
-        if (self.active_space == "(2,2)"):
+        if (self.active_space == 2):
 
             # Energy functional options
             space = "reks22 yes"

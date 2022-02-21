@@ -15,7 +15,7 @@ class SSR(DFTBplus):
         :param boolean l_onsite: Include onsite correction to SCC term
         :param boolean l_range_sep: Include long-range corrected functional
         :param string lc_method: Algorithms for LC-DFTB
-        :param string active_space: Active space for DFTB/SSR calculation
+        :param integer active_space: Active space for DFTB/SSR calculation
         :param string guess: Initial guess method for SCC scheme
         :param string guess_file: Initial guess file for eigenvetors
         :param boolean l_state_interactions: Include state-interaction terms to SA-REKS
@@ -33,7 +33,7 @@ class SSR(DFTBplus):
         :param string version: Version of DFTB+
     """
     def __init__(self, molecule, l_scc=True, scc_tol=1E-6, scc_max_iter=1000, l_onsite=False, \
-        l_range_sep=False, lc_method="MatrixBased", active_space="(2,2)", guess="h0", \
+        l_range_sep=False, lc_method="MatrixBased", active_space=2, guess="h0", \
         guess_file="./eigenvec.bin", l_state_interactions=False, shift=0.3, tuning=None, \
         cpreks_grad_alg="pcg", cpreks_grad_tol=1E-8, l_save_memory=False, embedding=None, \
         l_periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.], sk_path="./", \
@@ -56,7 +56,7 @@ class SSR(DFTBplus):
         self.lc_method = lc_method.lower()
 
         self.active_space = active_space
-        if not (self.active_space in ["(2,2)"]):
+        if not (self.active_space in [2]):
             error_message = "Invalid active space for DFTB/SSR!"
             error_vars = f"active_space = {self.active_space}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
@@ -292,7 +292,7 @@ class SSR(DFTBplus):
         # REKS Block
 
         # Energy functional options
-        if (self.active_space == "(2,2)"):
+        if (self.active_space == 2):
             # Set active space and energy functional used in SA-REKS
             space = "SSR22"
             if (molecule.nst == 1):

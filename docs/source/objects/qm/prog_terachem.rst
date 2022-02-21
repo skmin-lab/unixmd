@@ -58,8 +58,8 @@ determined from the **l_state_interactions** parameter.
 | **scf_max_iter**         | Maximum number of SCF iterations            | *300*       |
 | *(integer)*              |                                             |             |
 +--------------------------+---------------------------------------------+-------------+
-| **active_space**         | Active space for SSR calculation            | *'(2,2)'*   |
-| *(string)*               |                                             |             |
+| **active_space**         | Active space for SSR calculation            | *2*         |
+| *(integer)*              |                                             |             |
 +--------------------------+---------------------------------------------+-------------+
 | **guess**                | Initial guess for REKS SCF iterations       | *'dft'*     |
 | *(string)*               |                                             |             |
@@ -117,7 +117,7 @@ Example input for SSR
 
    mol = Molecule(geometry=geom, ndim=3, nstates=2, unit_pos='angs')
 
-   qm = qm.terachem.SSR(molecule=mol, active_space='(2,2)', guess='dft', basis_set='sto-3g'\
+   qm = qm.terachem.SSR(molecule=mol, active_space=2, guess='dft', basis_set='sto-3g'\
        l_state_interactions=True, shift=0.3, root_path='/opt/terachem1.93/TeraChem/')
 
    md = mqc.SHXF(molecule=mol, nsteps=100, nesteps=20, dt=0.5, unit_dt='au', \
@@ -164,7 +164,7 @@ Detailed description of parameters
 
 \
 
-- **active_space** *(string)* - Default: *'(2,2)'*
+- **active_space** *(integer)* - Default: *2*
 
   This parameter specifies the active space for SSR calculation. Detailed types of the REKS calculation are
   automatically determined by ``molecule.nst`` and **l_state_interactions** parameters. If ``molecule.nst`` is *1*,
@@ -172,7 +172,7 @@ Detailed description of parameters
   the SA-REKS or the SI-SA-REKS calculation is executed according to the **l_state_interactions** parameter.
   Currently, only (2,2) space is available for SSR calculation.
 
-  + *'(2,2)'*: The numbers of electrons and orbitals are 2 and 2, respectively.
+  + *2*: The numbers of electrons and orbitals are 2 and 2, respectively.
 
 \
 
