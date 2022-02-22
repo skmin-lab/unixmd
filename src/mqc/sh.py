@@ -131,8 +131,9 @@ class SH(MQC):
                 if (self.mol.ekin_qm > eps):
                     self.correct_dec_edc()
 
-            if (qm.re_calc and self.l_hop):
-                qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
+            if (self.l_hop):
+                if (qm.re_calc):
+                    qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
                 if (self.mol.l_qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=True)
 
