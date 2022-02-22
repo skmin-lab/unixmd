@@ -362,11 +362,8 @@ determined from the **l_state_interactions** parameter.
 | **lc_method**            | Algorithms for LC-DFTB                         | *'MatrixBased'*     |
 | *(string)*               |                                                |                     |
 +--------------------------+------------------------------------------------+---------------------+
-| **l_ssr22**              | Use SSR(2,2) calculation?                      | *False*             |
-| *(boolean)*              |                                                |                     |
-+--------------------------+------------------------------------------------+---------------------+
-| **l_ssr44**              | Use SSR(4,4) calculation?                      | *False*             |
-| *(boolean)*              |                                                |                     |
+| **active_space**         | Active space for DFTB/SSR calculation          | *2*                 |
+| *(integer)*              |                                                |                     |
 +--------------------------+------------------------------------------------+---------------------+
 | **guess**                | Initial guess method for SCC scheme            | *'h0'*              |
 | *(string)*               |                                                |                     |
@@ -433,7 +430,7 @@ Example input for SSR
 
    mol = Molecule(geometry=geom, ndim=3, nstates=2, unit_pos='angs')
 
-   qm = qm.dftbplus.SSR(molecule=mol, l_scc=True, l_ssr22=True, guess='h0', \
+   qm = qm.dftbplus.SSR(molecule=mol, l_scc=True, active_space=2, guess='h0', \
        l_state_interactions=True, shift=0.3, embedding=None, sk_path='./', \
        install_path='/opt/dftbplus-20.1/install-openmp/')
 
@@ -491,22 +488,15 @@ Detailed description of parameters
 
 \
 
-- **l_ssr22** *(boolean)* - Default: *False*
+- **active_space** *(integer)* - Default: *2*
 
-  When **l_ssr22** is set to *True*, the DFTB/SSR(2,2) calculation is carried out, and detailed types of the REKS calculation are
+  This parameter specifies the active space for DFTB/SSR calculation. Detailed types of the REKS calculation are
   automatically determined by ``molecule.nst`` and **l_state_interactions** parameters. If ``molecule.nst`` is *1*,
   the single-state REKS calculation is carried out. When ``molecule.nst`` is larger than *1*,
   the SA-REKS or the SI-SA-REKS calculation is executed according to the **l_state_interactions** parameter.
+  Currently, only (2,2) space is available for DFTB/SSR calculation.
 
-\
-
-- **l_ssr44** *(boolean)* - Default: *False*
-
-  When **l_ssr44** is set to *True*, the DFTB/SSR(4,4) calculation is carried out, and detailed types of the REKS calculation are
-  automatically determined from ``molecule.nst`` and **l_state_interactions** parameters. If ``molecule.nst`` is *1*,
-  the single-state REKS calculation is carried out. When ``molecule.nst`` is larger than *1*,
-  the SA-REKS or the SI-SA-REKS calculation is executed according to the **l_state_interactions** parameter.
-  It is currently experimental feature and not implemented.
+  + *2*: The numbers of electrons and orbitals are 2 and 2, respectively.
 
 \
 
@@ -532,7 +522,7 @@ Detailed description of parameters
 
   When **l_state_interactions** is set to *True*, state-interaction terms are included so that the SI-SA-REKS states are generated.
   Otherwise, the SA-REKS states are obtained. It is valid when ``molecule.nst`` is larger
-  than one. In general, it generates more reliable adiabatic states.
+  than *1*. In general, it generates more reliable adiabatic states.
 
 \
 
