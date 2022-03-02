@@ -69,7 +69,8 @@ class MQC(object):
         if (self.propagator != None):
             self.propagator = self.propagator.lower()
 
-        if not (self.propagator in [None, "rk4"]):
+        # TODO sjkim
+        if not (self.propagator in [None, "rk4","expon"]):
             error_message = "Invalid electronic propagator!"
             error_vars = f"propagator = {self.propagator}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
