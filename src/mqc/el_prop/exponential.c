@@ -13,8 +13,6 @@ typedef struct _dcomplex dcomplex;
 extern void zheev_( char* jobz, char* uplo, int* n, dcomplex* a, int* lda, double* w, dcomplex* work, int* lwork, double* rwork, int* info );
 extern void zgemm_(char* , char*, int*, int*, int*, dcomplex*, dcomplex*, int*, dcomplex*, int*, dcomplex*, dcomplex*, int*);
 
-
-
 // Routine for coefficient propagation scheme in exponential propagator
 static void expon_coef(int nst, int nesteps, double dt, double *energy, double *energy_old,
     double **nacme, double **nacme_old, double complex *coef);
@@ -39,7 +37,6 @@ static void expon(int nst, int nesteps, double dt, char *elec_object, double *en
 static void expon_coef(int nst, int nesteps, double dt, double *energy, double *energy_old, 
     double **nacme, double **nacme_old, double complex *coef){
 
-   
     double *eenergy = malloc(nst * sizeof(double));
     double *w = malloc(nst * sizeof(double));
     double *rwork = malloc((3*nst-2) * sizeof(double));
@@ -56,8 +53,6 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
 
     dcomplex Alpha = {1.0,0.0};
     dcomplex Beta = {0.0,0.0};
-
-
     dcomplex wkopt;
     dcomplex* work;
 
@@ -77,8 +72,6 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
 
     frac = 1.0 / (double)nesteps;
     edt = dt * frac;
-
-
 
     for(iestep = 0; iestep < nesteps; iestep++){
 
@@ -139,7 +132,6 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
 
     //zgemv_("N", &nst, &nst, &Alpha, total_coef, &nst, coef, 1, &Beta, tem_coef, 1)
 
-
     //change complex type
     for(ist=0; ist<nst*nst; ist++){
         total_coef_com[ist] = total_coef[ist].real + total_coef[ist].imag * I;
@@ -176,4 +168,3 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     free(dv);
 
 }
-
