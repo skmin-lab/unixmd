@@ -10,7 +10,7 @@ cdef extern from "rk4.c":
         double complex **rho)
 
 # TODO sjkim
-cdef extern from "temp_expon.c":
+cdef extern from "exponential.c":
     void expon(int nst, int nesteps, double dt, char *elec_object, double *energy, \
         double *energy_old, double **nacme, double **nacme_old, double complex *coef, \
         double complex **rho)
