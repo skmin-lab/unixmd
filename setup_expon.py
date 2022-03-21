@@ -13,8 +13,8 @@ lib_type = "lapack"
 
 if lib_type == "lapack":
     extensions = [
-        Extension("el_propagator", sources=sourcefile1, include_dirs=[np.get_include()],libraries=["lapack","refblas","gfortran","m"],
-            library_dirs=["/home/sjkim/program/lapack-3.10.0"]),
+        Extension("el_propagator", sources=sourcefile1, include_dirs=[np.get_include()],libraries=["lapack","gfortran","m"],
+            library_dirs=[".src/lib/"]),
         Extension("el_propagator_xf", sources=sourcefile2, include_dirs=[np.get_include()]),
         Extension("el_propagator_ct", sources=sourcefile3, include_dirs=[np.get_include()]),
         Extension("cioverlap", sources=sourcefile4, include_dirs=[np.get_include()])

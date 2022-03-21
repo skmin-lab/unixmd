@@ -75,6 +75,11 @@ class MQC(object):
             error_vars = f"propagator = {self.propagator}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
+        if self.propagator == "expon":
+            error_message = "Invalid electronic object!"
+            error_vars = f"elec_object = {self.elec_object}, propagator = {self.propagator}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
         self.l_print_dm = l_print_dm
 
         self.l_adj_nac = l_adj_nac
