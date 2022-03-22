@@ -60,7 +60,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     memset(total_coef_dcom, 0, (nst*nst)*sizeof(total_coef_dcom[0])); 
     
     // Set identity matrix
-    for(ist =0; ist<nst; ist++){
+    for(ist = 0; ist < nst; ist++){
         total_coef_dcom[nst*ist+ist].real = 1;
     }
 
@@ -114,9 +114,9 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         }
 
         // Matrix multiplication PDP^-1 and 
-        zgemm_("N","N",&nst,&nst,&nst,&Alpha,matrix, &nst,dia, &nst, &Beta, emt_dcom, &nst);
-        zgemm_("N","C",&nst,&nst,&nst,&Alpha,emt_dcom, &nst,matrix, &nst, &Beta, dia, &nst);
-        zgemm_("N","N",&nst,&nst,&nst,&Alpha,dia, &nst,total_coef_dcom, &nst, &Beta, matrix, &nst);
+        zgemm_("N","N",&nst, &nst, &nst, &Alpha, matrix, &nst, dia, &nst, &Beta, emt_dcom, &nst);
+        zgemm_("N","C",&nst, &nst, &nst, &Alpha, emt_dcom, &nst, matrix, &nst, &Beta, dia, &nst);
+        zgemm_("N","N",&nst, &nst, &nst, &Alpha, dia, &nst, total_coef_dcom, &nst, &Beta, matrix, &nst);
 
         // reused matrix by removing date 
         memset(dia, 0, (nst*nst)*sizeof(dia[0]));
@@ -126,7 +126,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         }
 
         // update coefficent 
-        zgemm_("N","N", &nst, &nst, &nst, &Alpha, dia,&nst, matrix, &nst,&Beta,total_coef_dcom,&nst);
+        zgemm_("N","N", &nst, &nst, &nst, &Alpha, dia, &nst, matrix, &nst, &Beta, total_coef_dcom, &nst);
     }
 
     //change complex type
@@ -138,7 +138,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     double complex tem_coef = 0;
     for(ist = 0; ist < nst; ist++){
         for (jst = 0; jst < nst; jst++){
-            tem_coef += total_coef[nst*jst+ist]*coef[jst];
+            tem_coef += total_coef[nst*jst+ist] * coef[jst];
         }
         coef_new[ist] = tem_coef;
         tem_coef = 0;
