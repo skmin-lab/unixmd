@@ -74,8 +74,8 @@ class MQC(object):
             error_vars = f"propagator = {self.propagator}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        if self.propagator == "expon" and self.elec_object == "density":
-            error_message = "Invalid electronic object!"
+        if self.propagator == "expon" and self.elec_object != "coefficient":
+            error_message = "exponential propagator is not compatible with other object except coefficient"
             error_vars = f"elec_object = {self.elec_object}, propagator = {self.propagator}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
