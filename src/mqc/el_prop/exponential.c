@@ -115,7 +115,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         zheev_( "Vectors", "Lower", &nst, emt_dcom, &nst, w, &wkopt, &lwork, rwork, &info );
         lwork = (int)wkopt.real;
         work = (dcomplex*)malloc(lwork*sizeof(dcomplex));
-        zheev_( "Vectors", "Lower", &nst, emt_dcom, &nst, w, work, &lwork, rwork, &info );
+        zheev_( "Vectors", "Lower", &nst, emt_dcom, &nst, w, work, &lwork, rwork, &info ); // emt_dcom -> P(unitary matrix which is consisting of eigen vector)
 
         // Make diagonal matrix D
         for(ist = 0; ist < nst; ist++){ 
@@ -124,9 +124,9 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         }
 
         // Matrix multiplication PDP^-1 and 
-        zgemm_("N","N",&nst, &nst, &nst, &C1, emt_dcom, &nst, dia, &nst, &C0, pd, &nst);
-        zgemm_("N","C",&nst, &nst, &nst, &C1, pd, &nst, emt_dcom, &nst, &C0, dia, &nst);
-        zgemm_("N","N",&nst, &nst, &nst, &C1, dia, &nst, total_coef_dcom, &nst, &C0, emt_dcom, &nst);
+        zgemm_("N","N",&nst, &nst, &nst, &C1, emt_dcom, &nst, dia, &nst, &C0, pd, &nst); // P*D
+        zgemm_("N","C",&nst, &nst, &nst, &C1, pd, &nst, emt_dcom, &nst, &C0, dia, &nst); // PD * P^-1
+        zgemm_("N","N",&nst, &nst, &nst, &C1, dia, &nst, total_coef_dcom, &nst, &C0, emt_dcom, &nst); // PDP^-1 * (old PDP^-1)
 
         //reset the temporary value
         for(ist = 0; ist < nst; ist++){
@@ -141,7 +141,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         }
 
         // update coefficent 
-        zgemm_("N","N", &nst, &nst, &nst, &C1, temporary_value, &nst, emt_dcom, &nst, &C0, total_coef_dcom, &nst);
+        zgemm_("N","N", &nst, &nst, &nst, &C1, temporary_value, &nst, emt_dcom, &nst, &C0, total_coef_dcom, &nst); // to keep PDP^-1 value in total_coef_dcom 
     }
 
     //change complex type
