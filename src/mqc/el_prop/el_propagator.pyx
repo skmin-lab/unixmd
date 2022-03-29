@@ -82,7 +82,7 @@ def el_run(md):
         rk4(nst, nesteps, dt, elec_object_c, energy, energy_old, nacme, nacme_old, coef, rho)
 
     elif (md.propagator == "expon"):
-        expon(nst, nesteps, dt, elec_object_c, energy, energy_old, nacme, nacme_old, coef, rho)
+        expon(nst, nesteps, dt, elec_object_c, energy, energy_old, nacme, nacme_old, coef)
 
     # Assign variables from C to python
     if (md.elec_object == "coefficient"):
