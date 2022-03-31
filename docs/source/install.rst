@@ -39,7 +39,7 @@ command in the top-level directory of the program which contains setup.py file.
 
 You will need to add the source directory(:code:`$PYUNIXMDHOME/src`) to your Python path, where :code:`$PYUNIXMDHOME` is an enviroment variable for the top-level directory.
 
-If you want to use library for exponetial propagator, you need to add :code:'lib_type' option.
+If you want to use library for exponetial propagator, you need to add :code:`lib_type` option.
 
 .. code-block:: bash
 
