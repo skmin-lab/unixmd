@@ -8,7 +8,7 @@ lib_type = "lapack"
 
 if lib_type == "lapack":
     sourcefile1 = ["./src/mqc/el_prop/el_propagator.pyx", "./src/mqc/el_prop/rk4.c", "./src/mqc/el_prop/exponential.c"]
-    lib_name = ["lapack","gfortran","m"]
+    lib_name = ["liblapack_ifort_zheev","ifcore","m"]
     lib_dir = ["./lib/"]
 elif lib_type == "mkl":
     sourcefile1 = ["./src/mqc/el_prop/el_propagator.pyx", "./src/mqc/el_prop/rk4.c", "./src/mqc/el_prop/exponential.c"]

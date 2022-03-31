@@ -38,11 +38,11 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     double *rwork = malloc((3 * nst - 2) * sizeof(double));  // DOUBLE PRECISION array
     double complex *emt = malloc((nst * nst) * sizeof(double complex)); // energy - tou(nacme)
     double complex *coef_new = malloc(nst * sizeof(double complex));  // need to calculate coef
-    double complex *total_coef = malloc((nst *nst) * sizeof(double complex)); // double complex type of total coefficient
+    double complex *pdp_coef = malloc((nst *nst) * sizeof(double complex)); // double complex type of total coefficient
     dcomplex *emt_dcom = malloc((nst * nst) * sizeof(dcomplex));  // dcomplex type of emt
     dcomplex *pd = malloc((nst * nst) * sizeof(dcomplex));      // pd is PDP^-1 > (PD) part
-    dcomplex *dia = malloc((nst * nst) * sizeof(dcomplex));     // diagonal matrix using eigenvalue 
-    dcomplex *total_coef_dcom = malloc((nst * nst) * sizeof(dcomplex)); // total coefficient (PDP^-1)
+    dcomplex *diag = malloc((nst * nst) * sizeof(dcomplex));     // diagonal matrix using eigenvalue 
+    dcomplex *pdp_coef_dcom = malloc((nst * nst) * sizeof(dcomplex)); // total coefficient (PDP^-1)
     dcomplex *temporary_value = malloc((nst * nst) * sizeof(dcomplex)); // need to move coefficient
      
     int ist, jst, iestep, lwork, info;  // lwork : The length of the array WORK, info : confirmation that heev is working
@@ -56,21 +56,21 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     // Set zero matrix
     for(ist = 0; ist < nst; ist++){
         for(jst = 0; jst < nst; jst++){
-            dia[ist * nst + jst].real = 0;
-            dia[ist * nst + jst].imag = 0;
-            total_coef_dcom[ist * nst + jst].real = 0;
-            total_coef_dcom[ist * nst + jst].imag = 0;
+            diag[ist * nst + jst].real = 0;
+            diag[ist * nst + jst].imag = 0;
+            pdp_coef_dcom[ist * nst + jst].real = 0;
+            pdp_coef_dcom[ist * nst + jst].imag = 0;
         }
     }
 
     // TODO : use memset
-    // memset(dia, 0, (nst*nst)*sizeof(dia[0]));
-    // memset(total_coef_dcom, 0, (nst*nst)*sizeof(total_coef_dcom[0]));
+    // memset(diag, 0, (nst*nst)*sizeof(diag[0]));
+    // memset(pdp_coef_dcom, 0, (nst*nst)*sizeof(pdp_coef_dcom[0]));
     // memset(temporary_value, 0, (nst*nst)*sizeof(temporay_value[0])); 
     
     // Set identity matrix
     for(ist = 0; ist < nst; ist++){
-        total_coef_dcom[nst * ist + ist].real = 1;
+        pdp_coef_dcom[nst * ist + ist].real = 1;
     }
 
     double **dv = malloc(nst * sizeof(double*));
@@ -119,14 +119,14 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
 
         // Make diagonal matrix D
         for(ist = 0; ist < nst; ist++){ 
-                dia[nst*ist+ist].real = creal(cexp(-w[ist]*I));
-                dia[nst*ist+ist].imag = cimag(cexp(-w[ist]*I));
+                diag[nst*ist+ist].real = creal(cexp(-w[ist]*I));
+                diag[nst*ist+ist].imag = cimag(cexp(-w[ist]*I));
         }
 
         // Matrix multiplication PDP^-1 and 
-        zgemm_("N","N",&nst, &nst, &nst, &C1, emt_dcom, &nst, dia, &nst, &C0, pd, &nst); // P*D
-        zgemm_("N","C",&nst, &nst, &nst, &C1, pd, &nst, emt_dcom, &nst, &C0, dia, &nst); // PD * P^-1
-        zgemm_("N","N",&nst, &nst, &nst, &C1, dia, &nst, total_coef_dcom, &nst, &C0, emt_dcom, &nst); // PDP^-1 * (old PDP^-1)
+        zgemm_("N","N",&nst, &nst, &nst, &C1, emt_dcom, &nst, diag, &nst, &C0, pd, &nst); // P*D
+        zgemm_("N","C",&nst, &nst, &nst, &C1, pd, &nst, emt_dcom, &nst, &C0, diag, &nst); // PD * P^-1
+        zgemm_("N","N",&nst, &nst, &nst, &C1, diag, &nst, pdp_coef_dcom, &nst, &C0, emt_dcom, &nst); // PDP^-1 * (old PDP^-1)
 
         //reset the temporary value
         for(ist = 0; ist < nst; ist++){
@@ -141,20 +141,20 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         }
 
         // update coefficent 
-        zgemm_("N","N", &nst, &nst, &nst, &C1, temporary_value, &nst, emt_dcom, &nst, &C0, total_coef_dcom, &nst); // to keep PDP^-1 value in total_coef_dcom 
+        zgemm_("N","N", &nst, &nst, &nst, &C1, temporary_value, &nst, emt_dcom, &nst, &C0, pdp_coef_dcom, &nst); // to keep PDP^-1 value in total_coef_dcom 
     }
 
     //change complex type
     for(ist = 0; ist < nst * nst; ist++){
-        total_coef[ist] = total_coef_dcom[ist].real + total_coef_dcom[ist].imag * I;
+        pdp_coef[ist] = pdp_coef_dcom[ist].real + pdp_coef_dcom[ist].imag * I;
     }
 
     // matrix - vector multiplication //TODO Is it necessary to change this to zgemv?
-    //zgemv_("N", &nst, &nst, &C1, total_coef_dcom, &nst, coef, 1, &C0, tem_coef, 1)
+    //zgemv_("N", &nst, &nst, &C1, pdp_coef_dcom, &nst, coef, 1, &C0, tem_coef, 1)
     double complex tem_coef = 0;
     for(ist = 0; ist < nst; ist++){
         for (jst = 0; jst < nst; jst++){
-            tem_coef += total_coef[nst*jst+ist] * coef[jst];
+            tem_coef += pdp_coef[nst*jst+ist] * coef[jst];
         }
         coef_new[ist] = tem_coef;
         tem_coef = 0;
@@ -169,10 +169,10 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     }
   
     free(coef_new);
-    free(total_coef);
-    free(total_coef_dcom);
+    free(pdp_coef);
+    free(pdp_coef_dcom);
     free(emt_dcom);
-    free(dia);
+    free(diag);
     free(pd);
     free(w);
     free(rwork);
