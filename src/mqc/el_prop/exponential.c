@@ -43,7 +43,6 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     dcomplex *pd = malloc((nst * nst) * sizeof(dcomplex));      // pd is PDP^-1 > (PD) part
     dcomplex *diag = malloc((nst * nst) * sizeof(dcomplex));     // diagonal matrix using eigenvalue 
     dcomplex *pdp_coef_dcom = malloc((nst * nst) * sizeof(dcomplex)); // total coefficient (PDP^-1)
-    dcomplex *temporary_value = malloc((nst * nst) * sizeof(dcomplex)); // need to move coefficient
      
     int ist, jst, iestep, lwork, info;  // lwork : The length of the array WORK, info : confirmation that heev is working
     double frac, edt; 
@@ -128,20 +127,20 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         zgemm_("N","C",&nst, &nst, &nst, &C1, pd, &nst, emt_dcom, &nst, &C0, diag, &nst); // PD * P^-1
         zgemm_("N","N",&nst, &nst, &nst, &C1, diag, &nst, pdp_coef_dcom, &nst, &C0, emt_dcom, &nst); // PDP^-1 * (old PDP^-1)
 
-        //reset the temporary value
+        //reset the diag
         for(ist = 0; ist < nst; ist++){
             for(jst = 0; jst < nst; jst++){
-                temporary_value[ist * nst + jst].real = 0;
-                temporary_value[ist * nst + jst].imag = 0;
+                diag[ist * nst + jst].real = 0;
+                diag[ist * nst + jst].imag = 0;
             }
         }
 
         for(ist = 0; ist < nst; ist++){
-            temporary_value[nst * ist + ist].real = 1;
+            diag[nst * ist + ist].real = 1;
         }
 
         // update coefficent 
-        zgemm_("N","N", &nst, &nst, &nst, &C1, temporary_value, &nst, emt_dcom, &nst, &C0, pdp_coef_dcom, &nst); // to keep PDP^-1 value in total_coef_dcom 
+        zgemm_("N","N", &nst, &nst, &nst, &C1, diag, &nst, emt_dcom, &nst, &C0, pdp_coef_dcom, &nst); // to keep PDP^-1 value in total_coef_dcom 
     }
 
     //change complex type
