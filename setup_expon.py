@@ -9,7 +9,7 @@ lib_type = os.environ.get('lib_type')
 complier = os.environ.get('CC')
 
 if lib_type == None:
-    print("Library is not chosen. If you want to use exponetial propagator, chose library.")
+    print("Library is not chosen. If you want to use exponetial propagator, you have to select library.")
 
 if lib_type == "lapack":
     sourcefile1 = ["./src/mqc/el_prop/el_propagator.pyx", "./src/mqc/el_prop/rk4.c", "./src/mqc/el_prop/exponential.c"]
