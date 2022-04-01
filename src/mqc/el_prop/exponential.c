@@ -95,10 +95,10 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         for(ist = 0; ist < nst; ist++){
             for (jst = 0; jst < nst; jst++){
                 if (ist == jst){
-                    emt[nst*ist+jst] = (eenergy[ist] - eenergy[0]) * edt;
+                    emt[nst * ist + jst] = (eenergy[ist] - eenergy[0]) * edt;
                 }
                 else{
-                    emt[nst*ist+jst] = -I * dv[jst][ist] * edt;
+                    emt[nst * ist + jst] = - 1.0 * I * dv[jst][ist] * edt;
                 }         
             }
         }
@@ -111,15 +111,15 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         
         // diagonaliztion 
         lwork = -1;
-        zheev_( "Vectors", "Lower", &nst, emt_dcom, &nst, w, &wkopt, &lwork, rwork, &info );
+        zheev_("Vectors", "Lower", &nst, emt_dcom, &nst, w, &wkopt, &lwork, rwork, &info);
         lwork = (int)wkopt.real;
-        work = (dcomplex*)malloc(lwork*sizeof(dcomplex));
-        zheev_( "Vectors", "Lower", &nst, emt_dcom, &nst, w, work, &lwork, rwork, &info ); // emt_dcom -> P(unitary matrix which is consisting of eigen vector)
+        work = (dcomplex*)malloc(lwork * sizeof(dcomplex));
+        zheev_("Vectors", "Lower", &nst, emt_dcom, &nst, w, work, &lwork, rwork, &info); // emt_dcom -> P(unitary matrix which is consisting of eigen vector)
 
         // Make diagonal matrix D
         for(ist = 0; ist < nst; ist++){ 
-                diag[nst*ist+ist].real = creal(cexp(-w[ist]*I));
-                diag[nst*ist+ist].imag = cimag(cexp(-w[ist]*I));
+                diag[nst * ist + ist].real = creal(cexp(- 1.0 * w[ist] * I));
+                diag[nst * ist + ist].imag = cimag(cexp(- 1.0 * w[ist] * I));
         }
 
         // Matrix multiplication PDP^-1 and 
