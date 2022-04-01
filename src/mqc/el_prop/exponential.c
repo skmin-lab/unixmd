@@ -49,8 +49,8 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
 
     dcomplex C1 = {1.0, 0.0}; 
     dcomplex C0 = {0.0, 0.0};
-    dcomplex wkopt;
-    dcomplex* work;
+    dcomplex wkopt;  // need to get optimized lwork
+    dcomplex* work;  // length of lwork
 
     // Set zero matrix
     for(ist = 0; ist < nst; ist++){
@@ -134,6 +134,9 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
                 diag[ist * nst + jst].imag = 0;
             }
         }
+
+        // TODO : use memset
+        // memset(diag, 0, (nst*nst)*sizeof(diag[0]));
 
         for(ist = 0; ist < nst; ist++){
             diag[nst * ist + ist].real = 1;
