@@ -39,16 +39,16 @@ command in the top-level directory of the program which contains setup.py file.
 
 You will need to add the source directory(:code:`$PYUNIXMDHOME/src`) to your Python path, where :code:`$PYUNIXMDHOME` is an enviroment variable for the top-level directory.
 
-If you want to use library for exponetial propagator, you need to add :code:`lib_type` option.
+If you want to use library for exponential propagator, you need to add :code:`lib_type` option.
 
 .. code-block:: bash
 
-   $ lib_type=lapack python3 setup.py build_ext -b ./src/build
+   $ python3 setup.py build_ext -b ./src/build --lib_type=lapack
 
 You can select lapack or mkl library.
 
-If you want to change compiler such as Intel C++ Compiler, you need to add compile option.
+If you want to change compiler such as Intel C Compiler, you need to add :code:`complier_name` option and :code:`LDSHARED="icc -shared" CC=icc` option before python3.
 
 .. code-block:: bash
 
-   $ LDSHARED="icc -shared" CC=icc python3 setup.py build_ext -b ./src/build
+   $ LDSHARED="icc -shared" CC=icc python3 setup.py build_ext -b ./src/build --complier_name=icc

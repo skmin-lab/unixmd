@@ -3,17 +3,27 @@ from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
 import numpy as np
-import os
+import argparse
+import sys
 
-lib_type = os.environ.get('lib_type')
-complier = os.environ.get('CC')
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--lib_type', '--lib', required=False, default='None', choices=["lapack", "mkl"],  dest="lib_type", help='library_name')
+parser.add_argument('--complier_name', '--comp' , required=False, default='gcc', choices=["gcc", "icc"], dest="complier_name", help='complier_name')
+
+args,unknown = parser.parse_known_args()
+lib_type = args.lib_type
+compiler = args.complier_name
+
+for i in sys.argv[4:]:
+    sys.argv.remove(i)
 
 if lib_type == None:
     print("Library is not chosen. If you want to use exponetial propagator, you have to select library.")
 
 if lib_type == "lapack":
     sourcefile1 = ["./src/mqc/el_prop/el_propagator.pyx", "./src/mqc/el_prop/rk4.c", "./src/mqc/el_prop/exponential.c"]
-    if complier == "icc":
+    if compiler == "icc":
         lib_name = ["lapack_ifort_zheev","ifcore","m"]
     else:
         lib_name = ["lapack_gcc_zheev","gfortran","m"]
