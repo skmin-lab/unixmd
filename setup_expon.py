@@ -25,7 +25,7 @@ if lib_type == "lapack":
     sourcefile1 = ["./src/mqc/el_prop/el_propagator.pyx", "./src/mqc/el_prop/rk4.c", "./src/mqc/el_prop/exponential.c"]
     if compiler == "icc":
         lib_name = ["lapack_ifort_zheev","ifcore","m"]
-    else:
+    elif compiler == "gcc":
         lib_name = ["lapack_gcc_zheev","gfortran","m"]
     lib_dir = ["./lib/"]
 elif lib_type == "mkl":
