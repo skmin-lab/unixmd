@@ -235,7 +235,7 @@ class DFT(Gaussian09):
         if (istep == -1):
             os.environ["GAUSS_SCDIR"] = self.scr_qm_dir
             path_profile = os.path.join(self.root_path, "g09/bsd/g09.profile")
-            command = f'env -i sh -c "export g09root={self.root_path} && source {path_profile} && env"'
+            command = f'env -i bash -c "export g09root={self.root_path} && source {path_profile} && env"'
             for line in subprocess.getoutput(command).split("\n"):
                 key, value = line.split("=")
                 os.environ[key] = value
