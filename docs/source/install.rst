@@ -39,6 +39,16 @@ command in the top-level directory of the program which contains setup.py file.
 
 You will need to add the source directory(:code:`$PYUNIXMDHOME/src`) to your Python path, where :code:`$PYUNIXMDHOME` is an enviroment variable for the top-level directory.
 
++----------------------------+--------------------------------------------------+----------------+
+| Option                     | Work                                             | Default        |
++============================+==================================================+================+
+| **lib_type**               | library type                                     | *None*         |
+| *(string)*                 |                                                  |                |
++----------------------------+--------------------------------------------------+----------------+
+| **complier_name**          | complier name                                    | *GCC*          |
+| *(string)*                 |                                                  |                |
++----------------------------+--------------------------------------------------+----------------+
+
 If you want to use library for exponential propagator, you need to add :code:`lib_type` option.
 
 .. code-block:: bash
@@ -46,6 +56,8 @@ If you want to use library for exponential propagator, you need to add :code:`li
    $ python3 setup.py build_ext -b ./src/build --lib_type=lapack
 
 You can select lapack or mkl library.
+
+In our program, lapack 3.10 version is provided.
 
 If you want to change compiler such as Intel C Compiler, you need to add :code:`complier_name` option and :code:`LDSHARED="icc -shared" CC=icc` option before python3.
 

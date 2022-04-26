@@ -8,14 +8,19 @@ import sys
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--lib_type', '--lib', required=False, default='None', choices=["lapack", "mkl"],  dest="lib_type", help='library_name')
-parser.add_argument('--complier_name', '--comp' , required=False, default='gcc', choices=["gcc", "icc"], dest="complier_name", help='complier_name')
+parser.add_argument('--lib_type', '--lib', required=False, default='None', choices=["lapack", "mkl"],  dest="lib_type", help='library name')
+parser.add_argument('--complier_name', '--comp' , required=False, default='gcc', choices=["gcc", "icc"], dest="complier_name", help='complier name')
 
 args,unknown = parser.parse_known_args()
 lib_type = args.lib_type
 compiler = args.complier_name
 
-for i in sys.argv[4:]:
+tmp = []
+for i in sys.argv:
+    if i.find("--") != -1:
+        tmp.append(i)     
+
+for i in tmp:
     sys.argv.remove(i)
 
 if lib_type == None:
