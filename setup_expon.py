@@ -29,13 +29,13 @@ if lib_type == None:
 if lib_type == "lapack":
     sourcefile1 = ["./src/mqc/el_prop/el_propagator.pyx", "./src/mqc/el_prop/rk4.c", "./src/mqc/el_prop/exponential.c"]
     if compiler == "icc":
-        lib_name = ["lapack_ifort_zheev","ifcore","m"]
+        lib_name = ["lapack_ifort_zheev", "ifcore", "m"]
     elif compiler == "gcc":
-        lib_name = ["lapack_gcc_zheev","gfortran","m"]
+        lib_name = ["lapack_gcc_zheev", "gfortran", "m"]
     lib_dir = ["./lib/"]
 elif lib_type == "mkl":
     sourcefile1 = ["./src/mqc/el_prop/el_propagator.pyx", "./src/mqc/el_prop/rk4.c", "./src/mqc/el_prop/exponential.c"]
-    lib_name = ["mkl_intel_lp64","mkl_sequential", "mkl_core",":libmkl_avx512.so.1"]
+    lib_name = ["mkl_intel_lp64", "mkl_sequential", "mkl_core", ":libmkl_avx512.so.1"]
     lib_dir = ["${MKLROOT}/lib/intel64/"]
 else:
     sourcefile1 = ["./src/mqc/el_prop/el_propagator.pyx", "./src/mqc/el_prop/rk4.c"]
