@@ -46,9 +46,9 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     dcomplex *pd_dcom= malloc((nst * nst) * sizeof(dcomplex));      // pd_dcom is PDP^-1 > (PD) part
     dcomplex *pdp_dcom = malloc((nst *nst) * sizeof(dcomplex)); // pdp_dcom is pdp 
     dcomplex *diag_dcom = malloc((nst * nst) * sizeof(dcomplex));     // diagonal matrix using eigenvalue 
-    dcomplex *product_pdp_dcom = malloc((nst * nst) * sizeof(dcomplex)); // product_pdp_dcom is product of PDP (PDP^-1)
+    dcomplex *product_pdps_dcom = malloc((nst * nst) * sizeof(dcomplex)); // product_pdps_dcom is product of PDPs (PDP^-1)
     dcomplex *identity_temp_dcom = malloc((nst *nst) * sizeof(dcomplex)); // temperary value for zgemm (identity matrix)
-    dcomplex *product_pdp_temp_dcom = malloc((nst *nst) * sizeof(dcomplex)); // temperary value for zgemm (product of pdp)
+    dcomplex *product_pdps_temp_dcom = malloc((nst *nst) * sizeof(dcomplex)); // temperary value for zgemm (product of pdp)
     double **dv = malloc(nst * sizeof(double*));
 
     int ist, jst, iestep, lwork, info;  // lwork : The length of the array WORK, info : confirmation that heev is working
@@ -69,18 +69,18 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         for(jst = 0; jst < nst; jst++){
             diag_dcom[ist * nst + jst].real = 0.0;
             diag_dcom[ist * nst + jst].imag = 0.0;
-            product_pdp_dcom[ist * nst + jst].real = 0.0;
-            product_pdp_dcom[ist * nst + jst].imag = 0.0;
+            product_pdps_dcom[ist * nst + jst].real = 0.0;
+            product_pdps_dcom[ist * nst + jst].imag = 0.0;
         }
     }
 
     // TODO : use memset
     // memset(diag_dcom, 0, (nst*nst)*sizeof(diag_dcom[0]));
-    // memset(product_pdp_dcom, 0, (nst*nst)*sizeof(product_pdp_dcom[0]));
+    // memset(product_pdps_dcom, 0, (nst*nst)*sizeof(product_pdps_dcom[0]));
     
     // Set identity matrix
     for(ist = 0; ist < nst; ist++){
-        product_pdp_dcom[nst * ist + ist].real = 1.0;
+        product_pdps_dcom[nst * ist + ist].real = 1.0;
     }
    
     frac = 1.0 / (double)nesteps;
@@ -133,7 +133,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         // Matrix multiplication PDP^-1 and 
         zgemm_("N","N",&nst, &nst, &nst, &dcone, p_dcom, &nst, diag_dcom, &nst, &dczero, pd_dcom, &nst); // P*D
         zgemm_("N","C",&nst, &nst, &nst, &dcone, pd_dcom, &nst, p_dcom, &nst, &dczero, pdp_dcom, &nst); // PD * P^-1
-        zgemm_("N","N",&nst, &nst, &nst, &dcone, pdp_dcom, &nst, product_pdp_dcom, &nst, &dczero, product_pdp_temp_dcom, &nst); // PDP^-1 * (old PDP^-1)
+        zgemm_("N","N",&nst, &nst, &nst, &dcone, pdp_dcom, &nst, product_pdps_dcom, &nst, &dczero, product_pdps_temp_dcom, &nst); // PDP^-1 * (old PDP^-1)
 
         //reset the diag_dcom
         for(ist = 0; ist < nst; ist++){
@@ -160,16 +160,16 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         }
 
         // update coefficent 
-        zgemm_("N","N", &nst, &nst, &nst, &dcone, identity_temp_dcom, &nst, product_pdp_temp_dcom, &nst, &dczero, product_pdp_dcom, &nst); // to keep PDP^-1 value in total_coef_dcom 
+        zgemm_("N","N", &nst, &nst, &nst, &dcone, identity_temp_dcom, &nst, product_pdps_temp_dcom, &nst, &dczero, product_pdps_dcom, &nst); // to keep PDP^-1 value in total_coef_dcom 
     }
 
     //change complex type
     for(ist = 0; ist < nst * nst; ist++){
-        pdp[ist] = product_pdp_dcom[ist].real + product_pdp_dcom[ist].imag * I;
+        pdp[ist] = product_pdps_dcom[ist].real + product_pdps_dcom[ist].imag * I;
     }
 
     // matrix - vector multiplication //TODO Is it necessary to change this to zgemv?
-    //zgemv_("N", &nst, &nst, &dcone, product_pdp_dcom, &nst, coef, 1, &dczero, tem_coef, 1)
+    //zgemv_("N", &nst, &nst, &dcone, product_pdps_dcom, &nst, coef, 1, &dczero, tem_coef, 1)
     for(ist = 0; ist < nst; ist++){
         for (jst = 0; jst < nst; jst++){
             tem_coef += pdp[nst * jst + ist] * coef[jst];
@@ -190,8 +190,8 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     free(pdp);
     free(pdp_dcom);
     free(identity_temp_dcom);
-    free(product_pdp_temp_dcom);
-    free(product_pdp_dcom);
+    free(product_pdps_temp_dcom);
+    free(product_pdps_dcom);
     free(p_dcom);
     free(emt_dcom);
     free(diag_dcom);
