@@ -21,7 +21,10 @@ if lib_type == "lapack":
 elif lib_type == "mkl":
     sourcefile1 = ["./src/mqc/el_prop/el_propagator.pyx", "./src/mqc/el_prop/rk4.c", "./src/mqc/el_prop/exponential.c"]
     lib_name = ["mkl_intel_lp64", "mkl_sequential", "mkl_core", ":libmkl_avx512.so.1"]
-    lib_dir = ["${MKLROOT}/lib/intel64/"]
+    if lib_path == "":
+        lib_dir = ["${MKLROOT}/lib/intel64/"]
+    else:
+        lib_dir = [lib_path]
 else:
     sourcefile1 = ["./src/mqc/el_prop/el_propagator.pyx", "./src/mqc/el_prop/rk4.c"]
     lib_name = []
