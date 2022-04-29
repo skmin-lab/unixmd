@@ -180,7 +180,7 @@ class DFT(QChem):
         # Set environment variable 
         os.environ["QC"] = self.root_path
         path_qcenv = os.path.join(self.root_path, "qcenv.sh")
-        command = f'env -i sh -c "source {path_qcenv} && env"'
+        command = f'env -i bash -c "source {path_qcenv} && env"'
         for line in subprocess.getoutput(command).split("\n"):
             key, value = line.split("=")
             os.environ[key] = value
