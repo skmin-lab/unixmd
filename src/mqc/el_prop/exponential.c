@@ -40,7 +40,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     double *rwork = malloc((3 * nst - 2) * sizeof(double));  // temperary value for zheev
     double complex *emt = malloc((nst * nst) * sizeof(double complex)); // energy - tou(nacme)
     double complex *coef_new = malloc(nst * sizeof(double complex));  // need to calculate coef
-    double complex *exp_iemt = malloc((nst *nst) * sizeof(double complex)); // double complex type of exp(i*emt)
+    double complex *exp_iemt = malloc((nst *nst) * sizeof(double complex)); // double complex type of exp(-i*emt*dt)
     dcomplex *emt_dcom = malloc((nst * nst) * sizeof(dcomplex));  // dcomplex type of emt
     dcomplex *p_dcom = malloc((nst * nst) * sizeof(dcomplex));  // p_dcom is eigenvector
     dcomplex *pd_dcom= malloc((nst * nst) * sizeof(dcomplex));      // pd_dcom is PDP^-1 > (PD) part
