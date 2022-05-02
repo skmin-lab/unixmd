@@ -40,7 +40,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     double *rwork = malloc((3 * nst - 2) * sizeof(double));  // temperary value for zheev
     double complex *emt = malloc((nst * nst) * sizeof(double complex)); // energy - tou(nacme)
     double complex *coef_new = malloc(nst * sizeof(double complex));  // need to calculate coef
-    double complex *pdp = malloc((nst *nst) * sizeof(double complex)); // double complex type of pdp
+    double complex *exp_iemt = malloc((nst *nst) * sizeof(double complex)); // double complex type of exp(i*emt)
     dcomplex *emt_dcom = malloc((nst * nst) * sizeof(dcomplex));  // dcomplex type of emt
     dcomplex *p_dcom = malloc((nst * nst) * sizeof(dcomplex));  // p_dcom is eigenvector
     dcomplex *pd_dcom= malloc((nst * nst) * sizeof(dcomplex));      // pd_dcom is PDP^-1 > (PD) part
@@ -165,14 +165,14 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
 
     //change complex type
     for(ist = 0; ist < nst * nst; ist++){
-        pdp[ist] = product_pdps_dcom[ist].real + product_pdps_dcom[ist].imag * I;
+        exp_iemt[ist] = product_pdps_dcom[ist].real + product_pdps_dcom[ist].imag * I;
     }
 
     // matrix - vector multiplication //TODO Is it necessary to change this to zgemv?
     //zgemv_("N", &nst, &nst, &dcone, product_pdps_dcom, &nst, coef, 1, &dczero, tem_coef, 1)
     for(ist = 0; ist < nst; ist++){
         for (jst = 0; jst < nst; jst++){
-            tem_coef += pdp[nst * jst + ist] * coef[jst];
+            tem_coef += exp_iemt[nst * jst + ist] * coef[jst];
         }
         coef_new[ist] = tem_coef;
         tem_coef = 0.0;
@@ -187,7 +187,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     }
   
     free(coef_new);
-    free(pdp);
+    free(exp_iemt);
     free(pdp_dcom);
     free(identity_temp_dcom);
     free(product_pdps_temp_dcom);
