@@ -45,7 +45,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     dcomplex *p_dcom = malloc((nst * nst) * sizeof(dcomplex));  // p_dcom is eigenvector
     dcomplex *pd_dcom= malloc((nst * nst) * sizeof(dcomplex));      // pd_dcom is PDP^-1 > (PD) part
     dcomplex *pdp_dcom = malloc((nst *nst) * sizeof(dcomplex)); // pdp_dcom is pdp 
-    dcomplex *diag_dcom = malloc((nst * nst) * sizeof(dcomplex));     // diagonal matrix using eigenvalue 
+    dcomplex *diag_dcom = malloc((nst * nst) * sizeof(dcomplex));     // diagonal matrix using eigenvalue, exp(-iD)
     dcomplex *product_pdps_dcom = malloc((nst * nst) * sizeof(dcomplex)); // product_pdps_dcom is product of PDPs (PDP^-1)
     dcomplex *identity_temp_dcom = malloc((nst *nst) * sizeof(dcomplex)); // temperary value for zgemm (identity matrix)
     dcomplex *product_pdps_temp_dcom = malloc((nst *nst) * sizeof(dcomplex)); // temperary value for zgemm (product of pdp)
