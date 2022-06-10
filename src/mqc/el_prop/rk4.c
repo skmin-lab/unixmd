@@ -99,7 +99,7 @@ static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *en
                 * k3[ist] + k4[ist]) / 6.0;
             coef_new[ist] = coef[ist] + variation[ist];
         }
-
+        /*
         // TODO : Is this part necessary?
         // Renormalize the coefficients
         norm = dot(nst, coef_new, coef_new);
@@ -107,7 +107,7 @@ static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *en
             coef_new[ist] /= sqrt(norm);
             coef[ist] = coef_new[ist];
         }
-
+        */
     }
 
     /* 
