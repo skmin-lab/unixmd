@@ -2,6 +2,12 @@
 #include <stdlib.h>
 #include <math.h>
 
+#ifdef HAVE_LAPACK
+// DGEMM prototype
+extern void dgemm_(char* transa, char* transb, int* m, int* n, int* k, double* alpha,
+    double* a, int* lda, double* b, int* ldb, double* beta, double* c, int* ldc);
+#endif
+
 // Routine to calculate overlap and permutation matrix in MO basis between two time steps
 static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **permut_mat,
     double **ao_overlap, double **mo_coef_old, double **mo_coef_new);
@@ -287,6 +293,16 @@ static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **per
     double **tmp_sign = malloc(norb * sizeof(double*));
     int ibasis, jbasis, iorb, jorb;
 
+#ifdef HAVE_LAPACK
+    double *mo_overlap_1d = malloc((norb * norb) * sizeof(double));
+    double *ao_overlap_1d = malloc((nbasis * nbasis) * sizeof(double));
+    double *mo_coef_1d = malloc((norb * nbasis) * sizeof(double));
+    double *tmp_mat_1d = malloc((norb * nbasis) * sizeof(double));
+
+    double cone = 1.0;
+    double czero = 0.0;
+#endif
+
     // Initialize temporary array to save sign of overlap in MO basis
     for(iorb = 0; iorb < norb; iorb++){
         tmp_sign[iorb] = malloc(norb * sizeof(double));
@@ -295,6 +311,64 @@ static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **per
         }
     }
 
+    // Calculate overlap in MO basis using external libraries or direct loop calculation; S' = C * S * C^T
+#ifdef HAVE_LAPACK
+    // Convert mo_coef_old to column-major 1D array
+    for(iorb = 0; iorb < norb; iorb++){
+        for(ibasis = 0; ibasis < nbasis; ibasis++){
+//            mo_coef_1d[iorb * nbasis + ibasis] = mo_coef_old[iorb][ibasis];
+            mo_coef_1d[ibasis * norb + iorb] = mo_coef_old[iorb][ibasis];
+        }
+    }
+    // Convert ao_overlap to column-major 1D array
+    for(ibasis = 0; ibasis < nbasis; ibasis++){
+        for(jbasis = 0; jbasis < nbasis; jbasis++){
+//            ao_overlap_1d[ibasis * nbasis + jbasis] = ao_overlap[ibasis][jbasis];
+            ao_overlap_1d[jbasis * nbasis + ibasis] = ao_overlap[ibasis][jbasis];
+        }
+    }
+
+    // Execute following operation; C * S
+    dgemm_("N", "N", &norb, &nbasis, &nbasis, &cone, mo_coef_1d, &norb, ao_overlap_1d, &nbasis, &czero, tmp_mat_1d, &norb);
+
+    // Convert mo_coef_new to column-major 1D array
+    for(iorb = 0; iorb < norb; iorb++){
+        for(ibasis = 0; ibasis < nbasis; ibasis++){
+//            mo_coef_1d[iorb * nbasis + ibasis] = mo_coef_new[iorb][ibasis];
+            mo_coef_1d[ibasis * norb + iorb] = mo_coef_new[iorb][ibasis];
+        }
+    }
+
+    // Execute following operation; (C * S) * C^T
+    dgemm_("N", "T", &norb, &norb, &nbasis, &cone, tmp_mat_1d, &norb, mo_coef_1d, &norb, &czero, mo_overlap_1d, &norb);
+
+    for(iorb = 0; iorb < norb; iorb++){
+        for(jorb = 0; jorb < norb; jorb++){
+
+            // Convert column-major mo_overlap_1d to 2D array
+//            mo_overlap[iorb][jorb] = mo_overlap_1d[iorb * norb + jorb];
+            mo_overlap[iorb][jorb] = mo_overlap_1d[jorb * norb + iorb];
+
+            // Save the sign of overlap elements for calculating permutation matrix
+            if(mo_overlap[iorb][jorb] < 0.0){
+                tmp_sign[iorb][jorb] = -1.0;
+            }
+            else{
+                tmp_sign[iorb][jorb] = 1.0;
+            }
+
+        }
+    }
+
+    printf("mo_overlap dgemm \n");
+    for(iorb = 0; iorb < norb; iorb++){
+        for(jorb = 0; jorb < norb; jorb++){
+            printf("%15.8f ", mo_overlap[iorb][jorb]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+#else
     for(iorb = 0; iorb < norb; iorb++){
         for(jorb = 0; jorb < norb; jorb++){
 
@@ -315,6 +389,16 @@ static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **per
         }
     }
 
+    printf("mo_overlap direct loop \n");
+    for(iorb = 0; iorb < norb; iorb++){
+        for(jorb = 0; jorb < norb; jorb++){
+            printf("%15.8f ", mo_overlap[iorb][jorb]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+#endif
+
     for(iorb = 0; iorb < norb; iorb++){
         for(jorb = 0; jorb < norb; jorb++){
             // Permutation matrix is obtained by rounding off the square of overlap matrix in MO basis
@@ -328,6 +412,13 @@ static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **per
     }
 
     free(tmp_sign);
+
+#ifdef HAVE_LAPACK
+    free(mo_overlap_1d);
+    free(ao_overlap_1d);
+    free(mo_coef_1d);
+    free(tmp_mat_1d);
+#endif
 
 }
 
