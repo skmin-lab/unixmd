@@ -359,20 +359,10 @@ static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **per
 
         }
     }
-
-    printf("mo_overlap dgemm \n");
-    for(iorb = 0; iorb < norb; iorb++){
-        for(jorb = 0; jorb < norb; jorb++){
-            printf("%15.8f ", mo_overlap[iorb][jorb]);
-        }
-        printf("\n");
-    }
-    printf("\n");
 #else
     for(iorb = 0; iorb < norb; iorb++){
         for(jorb = 0; jorb < norb; jorb++){
 
-            // Calculate overlap in MO basis; S' = C * S * C^T
             for(ibasis = 0; ibasis < nbasis; ibasis++){
                 for(jbasis = 0; jbasis < nbasis; jbasis++){
                     mo_overlap[iorb][jorb] += mo_coef_old[iorb][ibasis] * ao_overlap[ibasis][jbasis] * mo_coef_new[jorb][jbasis];
@@ -388,15 +378,6 @@ static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **per
 
         }
     }
-
-    printf("mo_overlap direct loop \n");
-    for(iorb = 0; iorb < norb; iorb++){
-        for(jorb = 0; jorb < norb; jorb++){
-            printf("%15.8f ", mo_overlap[iorb][jorb]);
-        }
-        printf("\n");
-    }
-    printf("\n");
 #endif
 
     for(iorb = 0; iorb < norb; iorb++){
