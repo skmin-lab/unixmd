@@ -25,7 +25,7 @@ extra_flags = []
 if (math_lib == None):
     print ("No math libraries are used!", flush=True)
 elif (math_lib == "lapack"):
-    libs += ["lapack", "refblas"]
+    libs += ["lapack", "refblas", "gfortran"]
     lib_dirs += [math_lib_dir]
     extra_flags += ["-D HAVE_LAPACK"]
 else:
