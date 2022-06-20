@@ -6,6 +6,7 @@ import numpy as np
 
 # Selects which type of math libraries to be used; Available options: None, lapack
 math_lib_type = None
+#math_lib_type = "lapack"
 # Directories including the math libraries
 math_lib_dir = None
 
