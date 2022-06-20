@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#ifdef HAVE_LAPACK
+#if defined(HAVE_LAPACK) || defined(HAVE_MKL)
 // DGEMM prototype
 extern void dgemm_(char* transa, char* transb, int* m, int* n, int* k, double* alpha,
     double* a, int* lda, double* b, int* ldb, double* beta, double* c, int* ldc);
@@ -293,7 +293,7 @@ static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **per
     double **tmp_sign = malloc(norb * sizeof(double*));
     int ibasis, jbasis, iorb, jorb;
 
-#ifdef HAVE_LAPACK
+#if defined(HAVE_LAPACK) || defined(HAVE_MKL)
     double *mo_overlap_1d = malloc((norb * norb) * sizeof(double));
     double *ao_overlap_1d = malloc((nbasis * nbasis) * sizeof(double));
     double *mo_coef_1d = malloc((norb * nbasis) * sizeof(double));
@@ -312,7 +312,7 @@ static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **per
     }
 
     // Calculate overlap in MO basis using external libraries or direct loop calculation; S' = C * S * C^T
-#ifdef HAVE_LAPACK
+#if defined(HAVE_LAPACK) || defined(HAVE_MKL)
     // Convert mo_coef_old to column-major 1D array
     for(iorb = 0; iorb < norb; iorb++){
         for(ibasis = 0; ibasis < nbasis; ibasis++){
@@ -394,7 +394,7 @@ static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **per
 
     free(tmp_sign);
 
-#ifdef HAVE_LAPACK
+#if defined(HAVE_LAPACK) || defined(HAVE_MKL)
     free(mo_overlap_1d);
     free(ao_overlap_1d);
     free(mo_coef_1d);

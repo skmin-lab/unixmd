@@ -23,7 +23,7 @@ If you don't have Numpy or Cython, you can install them using :code:`pip` comman
 Optional external libraries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  LAPACK/BLAS libraries
+-  LAPACK/BLAS libraries (or compatible equivalents)
 
 Compilation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -54,7 +54,7 @@ defined in setup.py file as follows:
 
    import numpy as np
 
-   # Selects which type of math libraries to be used; Available options: None, lapack
+   # Selects which type of math libraries to be used; Available options: None, lapack, mkl
    math_lib_type = "lapack"
 
    # Directories including the math libraries

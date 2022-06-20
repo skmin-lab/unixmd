@@ -4,11 +4,14 @@ from Cython.Distutils import build_ext
 
 import numpy as np
 
-# Selects which type of math libraries to be used; Available options: None, lapack
+# Selects which type of math libraries to be used; Available options: None, lapack, mkl
 math_lib_type = None
 #math_lib_type = "lapack"
+#math_lib_type = "mkl"
 # Directories including the math libraries
 math_lib_dir = None
+#math_lib_dir = "/my_disk/my_name/lapack/"
+#math_lib_dir = "${MKLROOT}/lib/intel64/"
 
 sourcefile1 = ["./src/mqc/el_prop/el_propagator.pyx", "./src/mqc/el_prop/rk4.c"]
 sourcefile2 = ["./src/mqc/el_prop/el_propagator_xf.pyx", "./src/mqc/el_prop/rk4_xf.c"]
@@ -28,6 +31,10 @@ elif (math_lib_type == "lapack"):
     libs += ["lapack", "refblas", "gfortran"]
     lib_dirs += [math_lib_dir]
     extra_flags += ["-D HAVE_LAPACK"]
+elif (math_lib_type == "mkl"):
+    libs += ["mkl_intel_lp64", "mkl_sequential", "mkl_core", ":libmkl_avx512.so.1"]
+    lib_dirs += [math_lib_dir]
+    extra_flags += ["-D HAVE_MKL"]
 else:
     error_message = "Invalid type of math libraries is given!"
     error_vars = f"math_lib_type = {math_lib_type}"
