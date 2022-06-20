@@ -2,7 +2,6 @@ from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
-import sys
 import numpy as np
 
 # Selects which math libraries to be used; Available options: None, lapack
@@ -29,8 +28,9 @@ elif (math_lib == "lapack"):
     lib_dirs += [math_lib_dir]
     extra_flags += ["-D HAVE_LAPACK"]
 else:
-    print (f"Wrong math_lib:{math_lib} is given!", flush=True)
-    sys.exit(1)
+    error_message = "Invalid math libraries are given!"
+    error_vars = f"math_lib = {math_lib}"
+    raise ValueError (f"( setup.py ) {error_message} ( {error_vars} )")
 
 extensions = [
     Extension("el_propagator", sources=sourcefile1, include_dirs=[np.get_include()]),

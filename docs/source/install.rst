@@ -52,7 +52,6 @@ defined in setup.py file as follows:
    from distutils.extension import Extension
    from Cython.Distutils import build_ext
 
-   import sys
    import numpy as np
 
    # Selects which math libraries to be used; Available options: None, lapack
