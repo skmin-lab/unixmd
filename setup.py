@@ -26,7 +26,7 @@ lib_dirs = []
 extra_flags = []
 
 if (math_lib_type == None):
-    print ("No math libraries are used!", flush=True)
+    pass
 elif (math_lib_type == "lapack"):
     libs += ["lapack", "refblas", "gfortran"]
     lib_dirs += [math_lib_dir]
