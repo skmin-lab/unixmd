@@ -299,8 +299,8 @@ static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **per
     double *mo_coef_1d = malloc((norb * nbasis) * sizeof(double));
     double *tmp_mat_1d = malloc((norb * nbasis) * sizeof(double));
 
-    double cone = 1.0;
-    double czero = 0.0;
+    double one = 1.0;
+    double zero = 0.0;
 #endif
 
     // Initialize temporary array to save sign of overlap in MO basis
@@ -329,7 +329,7 @@ static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **per
     }
 
     // Execute following operation; C * S
-    dgemm_("N", "N", &norb, &nbasis, &nbasis, &cone, mo_coef_1d, &norb, ao_overlap_1d, &nbasis, &czero, tmp_mat_1d, &norb);
+    dgemm_("N", "N", &norb, &nbasis, &nbasis, &one, mo_coef_1d, &norb, ao_overlap_1d, &nbasis, &zero, tmp_mat_1d, &norb);
 
     // Convert mo_coef_new to column-major 1D array
     for(iorb = 0; iorb < norb; iorb++){
@@ -340,7 +340,7 @@ static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **per
     }
 
     // Execute following operation; (C * S) * C^T
-    dgemm_("N", "T", &norb, &norb, &nbasis, &cone, tmp_mat_1d, &norb, mo_coef_1d, &norb, &czero, mo_overlap_1d, &norb);
+    dgemm_("N", "T", &norb, &norb, &nbasis, &one, tmp_mat_1d, &norb, mo_coef_1d, &norb, &zero, mo_overlap_1d, &norb);
 
     for(iorb = 0; iorb < norb; iorb++){
         for(jorb = 0; jorb < norb; jorb++){
