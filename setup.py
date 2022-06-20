@@ -4,8 +4,8 @@ from Cython.Distutils import build_ext
 
 import numpy as np
 
-# Selects which math libraries to be used; Available options: None, lapack
-math_lib = None
+# Selects which type of math libraries to be used; Available options: None, lapack
+math_lib_type = None
 # Directories including the math libraries
 math_lib_dir = None
 
@@ -21,15 +21,15 @@ lib_dirs = []
 # Extra flags for compilation
 extra_flags = []
 
-if (math_lib == None):
+if (math_lib_type == None):
     print ("No math libraries are used!", flush=True)
-elif (math_lib == "lapack"):
+elif (math_lib_type == "lapack"):
     libs += ["lapack", "refblas", "gfortran"]
     lib_dirs += [math_lib_dir]
     extra_flags += ["-D HAVE_LAPACK"]
 else:
-    error_message = "Invalid math libraries are given!"
-    error_vars = f"math_lib = {math_lib}"
+    error_message = "Invalid type of math libraries is given!"
+    error_vars = f"math_lib_type = {math_lib_type}"
     raise ValueError (f"( setup.py ) {error_message} ( {error_vars} )")
 
 extensions = [

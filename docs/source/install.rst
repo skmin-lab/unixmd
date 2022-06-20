@@ -42,7 +42,7 @@ command in the top-level directory of the program which contains setup.py file.
    $ cd unixmd/
    $ python3 setup.py build_ext -b ./src/build
 
-If you want to link the external math libraries for TDNACs, you may modify **math_lib** and **math_lib_dir**
+If you want to link the external math libraries for TDNACs, you may modify **math_lib_type** and **math_lib_dir**
 defined in setup.py file as follows:
 
 .. code-block:: python
@@ -54,8 +54,8 @@ defined in setup.py file as follows:
 
    import numpy as np
 
-   # Selects which math libraries to be used; Available options: None, lapack
-   math_lib = "lapack"
+   # Selects which type of math libraries to be used; Available options: None, lapack
+   math_lib_type = "lapack"
 
    # Directories including the math libraries
    math_lib_dir = "/my_disk/my_name/lapack/"
