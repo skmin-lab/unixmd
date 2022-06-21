@@ -34,7 +34,7 @@ The features of PyUNIxMD are as follows.
 
 .. Padding
 
-- Numerical calculation of time-derivative nonadiabatic couplings :cite:`Ryabinkin2015`
+- Numerical calculation of time-derivative nonadiabatic couplings (TDNACs) :cite:`Ryabinkin2015`
 - QM/MM functionalities
 - Utility scripts in Python
 
