@@ -9,6 +9,11 @@ cdef extern from "rk4.c":
         double *energy_old, double **nacme, double **nacme_old, double complex *coef, \
         double complex **rho)
 
+cdef extern from "exponential.c":
+    void expon(int nst, int nesteps, double dt, char *elec_object, double *energy, \
+        double *energy_old, double **nacme, double **nacme_old, double complex *coef)
+
+
 def el_run(md):
     cdef:
         char *elec_object_c
@@ -75,6 +80,9 @@ def el_run(md):
     # Propagate electrons depending on the propagator
     if (md.propagator == "rk4"):
         rk4(nst, nesteps, dt, elec_object_c, energy, energy_old, nacme, nacme_old, coef, rho)
+
+    elif (md.propagator == "expon"):
+        expon(nst, nesteps, dt, elec_object_c, energy, energy_old, nacme, nacme_old, coef)
 
     # Assign variables from C to python
     if (md.elec_object == "coefficient"):
