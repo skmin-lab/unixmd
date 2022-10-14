@@ -5,11 +5,11 @@ from Cython.Distutils import build_ext
 import numpy as np
 
 # Selects which type of math libraries to be used; Available options: lapack, mkl
-math_lib_type = "lapack"
+math_lib_type = "mkl"
 #math_lib_type = "lapack"
 #math_lib_type = "mkl"
 # Directories including the math libraries
-math_lib_dir = None
+math_lib_dir = "${MKLROOT}/lib/intel64/"
 #math_lib_dir = "/my_disk/my_name/lapack/"
 #math_lib_dir = "${MKLROOT}/lib/intel64/"
 
