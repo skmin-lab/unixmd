@@ -41,7 +41,6 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     double complex *emt = malloc((nst * nst) * sizeof(double complex)); // energy - tou(nacme)
     double complex *coef_new = malloc(nst * sizeof(double complex));  // need to calculate coef
     double complex *exp_iemt = malloc((nst *nst) * sizeof(double complex)); // double complex type of exp(-i*emt*dt)
-    dcomplex *emt_dcom = malloc((nst * nst) * sizeof(dcomplex));  // dcomplex type of emt
     dcomplex *p_dcom = malloc((nst * nst) * sizeof(dcomplex));  // p_dcom is eigenvector
     dcomplex *pd_dcom= malloc((nst * nst) * sizeof(dcomplex));      // pd_dcom is PDP^-1 > (PD) part
     dcomplex *pdp_dcom = malloc((nst *nst) * sizeof(dcomplex)); // pdp_dcom is pdp 
@@ -111,8 +110,6 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
 
         // Change complex type
         for(ist = 0; ist < nst * nst; ist++){
-            emt_dcom[ist].real = creal(emt[ist]);
-            emt_dcom[ist].imag = cimag(emt[ist]);
             p_dcom[ist].real = creal(emt[ist]);
             p_dcom[ist].imag = cimag(emt[ist]);
         }    
@@ -193,7 +190,6 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     free(product_pdps_temp_dcom);
     free(product_pdps_dcom);
     free(p_dcom);
-    free(emt_dcom);
     free(diag_dcom);
     free(pd_dcom);
     free(eigenvalue);
@@ -202,4 +198,4 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     free(eenergy);
     free(dv);
 
-}
+}        
