@@ -124,5 +124,3 @@ def el_run(md):
 
     PyMem_Free(nacme)
     PyMem_Free(nacme_old)
-
-

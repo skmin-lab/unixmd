@@ -513,5 +513,3 @@ class MQC(object):
             error_message = "Incompatible QM and MM objects for QM/MM calculation!"
             error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}, (MM) mm_prog = {mm.mm_prog}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-
-
