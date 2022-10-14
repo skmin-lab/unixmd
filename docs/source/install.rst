@@ -1,12 +1,12 @@
-==========================
+==============================
 Installation
-==========================
+==============================
 
-PyUNIxMD is a Python based program with a little C code for time-consuming
-electronic propagation parts interfaced via Cython, therefore compilation is needed.
+PyUNIxMD is a Python based program with a little C code for time-consuming parts
+(e.g., electronic propagation or TDNACs) interfaced via Cython, therefore compilation is needed.
 
 Requirements
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  Python 3.6 (or later)
 
@@ -14,14 +14,17 @@ Requirements
 
 -  Cython https://cython.org
 
+-  BLAS/LAPACK libraries (or compatible equivalents)
+
 If you don't have Numpy or Cython, you can install them using :code:`pip` command.
 
 .. code-block:: bash
 
    $ pip install --upgrade numpy Cython
 
+
 Compilation
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can obtain PyUNIxMD code by putting following command.
 
@@ -37,30 +40,25 @@ command in the top-level directory of the program which contains setup.py file.
    $ cd unixmd/
    $ python3 setup.py build_ext -b ./src/build
 
-You will need to add the source directory(:code:`$PYUNIXMDHOME/src`) to your Python path, where :code:`$PYUNIXMDHOME` is an enviroment variable for the top-level directory.
+You can select type of math libraries and path of math libraries by modifying **math_lib_type** and **math_lib_dir**
+defined in setup.py file as follows:
 
-+----------------------------+--------------------------------------------------+----------------+
-| Option                     | Work                                             | Default        |
-+============================+==================================================+================+
-| **lib_type**               | library type                                     | *None*         |
-| *(string)*                 |                                                  |                |
-+----------------------------+--------------------------------------------------+----------------+
-| **complier_name**          | complier name                                    | *GCC*          |
-| *(string)*                 |                                                  |                |
-+----------------------------+--------------------------------------------------+----------------+
+.. code-block:: python
+   :linenos:
 
-If you want to use library for exponential propagator, you need to add :code:`lib_type` option.
+   from distutils.core import setup
+   from distutils.extension import Extension
+   from Cython.Distutils import build_ext
 
-.. code-block:: bash
+   import numpy as np
 
-   $ python3 setup.py build_ext -b ./src/build --lib_type=lapack
+   # Selects which type of math libraries to be used; Available options: lapack, mkl
+   math_lib_type = "lapack"
 
-You can select lapack or mkl library.
+   # Directories including the math libraries
+   math_lib_dir = "/my_disk/my_name/lapack/"
 
-In our program, lapack 3.10 version is provided.
+   ...
 
-If you want to change compiler such as Intel C Compiler, you need to add :code:`complier_name` option and :code:`LDSHARED="icc -shared" CC=icc` option before python3.
-
-.. code-block:: bash
-
-   $ LDSHARED="icc -shared" CC=icc python3 setup.py build_ext -b ./src/build --complier_name=icc
+After successful compilation, you will need to add the source directory (:code:`$PYUNIXMDHOME/src`) to your Python path,
+where :code:`$PYUNIXMDHOME` is an enviroment variable for the top-level directory.
