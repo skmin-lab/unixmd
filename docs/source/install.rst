@@ -14,16 +14,14 @@ Requirements
 
 -  Cython https://cython.org
 
+-  BLAS/LAPACK libraries (or compatible equivalents)
+
 If you don't have Numpy or Cython, you can install them using :code:`pip` command.
 
 .. code-block:: bash
 
    $ pip install --upgrade numpy Cython
 
-Optional external libraries
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
--  LAPACK/BLAS libraries (or compatible equivalents)
 
 Compilation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -42,7 +40,7 @@ command in the top-level directory of the program which contains setup.py file.
    $ cd unixmd/
    $ python3 setup.py build_ext -b ./src/build
 
-If you want to link the external math libraries for TDNACs, you may modify **math_lib_type** and **math_lib_dir**
+You can select type of math libraries and path of math libraries by modifying **math_lib_type** and **math_lib_dir**
 defined in setup.py file as follows:
 
 .. code-block:: python
@@ -54,7 +52,7 @@ defined in setup.py file as follows:
 
    import numpy as np
 
-   # Selects which type of math libraries to be used; Available options: None, lapack, mkl
+   # Selects which type of math libraries to be used; Available options: lapack, mkl
    math_lib_type = "lapack"
 
    # Directories including the math libraries

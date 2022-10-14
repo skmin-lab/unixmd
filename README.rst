@@ -22,7 +22,8 @@ Requirements
 * Python 3.6 or later
 * Numpy
 * Cython https://cython.org
-        
+* BLAS/LAPACK libraries (or compatible equivalents)
+
 You can easily install the latest Numpy and Cython via Python's pip command.
 
 ::
