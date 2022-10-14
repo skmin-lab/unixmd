@@ -7,11 +7,9 @@ import numpy as np
 # Selects which type of math libraries to be used; Available options: lapack, mkl
 math_lib_type = "mkl"
 #math_lib_type = "lapack"
-#math_lib_type = "mkl"
 # Directories including the math libraries
 math_lib_dir = "${MKLROOT}/lib/intel64/"
 #math_lib_dir = "/my_disk/my_name/lapack/"
-#math_lib_dir = "${MKLROOT}/lib/intel64/"
 
 sourcefile1 = ["./src/mqc/el_prop/el_propagator.pyx", "./src/mqc/el_prop/rk4.c","./src/mqc/el_prop/exponential.c"]
 sourcefile2 = ["./src/mqc/el_prop/el_propagator_xf.pyx", "./src/mqc/el_prop/rk4_xf.c"]
