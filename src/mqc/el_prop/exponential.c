@@ -34,11 +34,11 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     double **nacme, double **nacme_old, double complex *coef){
 
     // ((energy-i*nacme)*dt) = PDP^-1 (diagonalization), e^((-i*energy-nacme)*dt) = P(exp(-iD))P^-1,  
-    // e^((-i*energy-nacme)*dt_1)*e^((-i*energy-nacme)*dt_2)~~~ = P_1(exp(-iD_1))P_1^-1*P_2(exp(-iD_2))P_2^-1~~~
+    // e^((-i*energy-nacme)*dt)*e^((-i*energy-nacme)*dt)~~~ = P_1(exp(-iD_1))P_1^-1*P_2(exp(-iD_2))P_2^-1~~~
     double *eenergy = malloc(nst * sizeof(double));
     double *eigenvalue = malloc(nst * sizeof(double)); // eigenvalue
     double *rwork = malloc((3 * nst - 2) * sizeof(double));  // temperary value for zheev
-    double complex *emt = malloc((nst * nst) * sizeof(double complex)); // energy - tou(nacme)
+    double complex *emt = malloc((nst * nst) * sizeof(double complex)); // (energy - tou(nacme))*dt
     double complex *coef_new = malloc(nst * sizeof(double complex));  // need to calculate coef
     double complex *exp_iemt = malloc((nst *nst) * sizeof(double complex)); // double complex type of exp(-i*emt*dt)
     dcomplex *p_dcom = malloc((nst * nst) * sizeof(dcomplex));  // p_dcom is eigenvector
