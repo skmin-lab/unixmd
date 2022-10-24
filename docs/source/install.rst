@@ -14,7 +14,7 @@ Requirements
 
 -  Cython https://cython.org
 
--  BLAS/LAPACK libraries (or compatible equivalents)
+-  BLAS/LAPACK libraries or Math Kernel Library
 
 If you don't have Numpy or Cython, you can install them using :code:`pip` command.
 
