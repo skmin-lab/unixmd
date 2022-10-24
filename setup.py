@@ -4,7 +4,7 @@ from Cython.Distutils import build_ext
 
 import numpy as np
 
-# Selects which type of math libraries to be used; Available options: lapack, mkl
+# Selects the type of math libraries to be used; Available options: lapack, mkl
 math_lib_type = "mkl"
 #math_lib_type = "lapack"
 # Directories including the math libraries
