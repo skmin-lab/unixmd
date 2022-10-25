@@ -9,9 +9,9 @@ struct _dcomplex { double real, imag; };
 typedef struct _dcomplex dcomplex;
 
 // importing heev and gemm
-extern void zheev_(char* jobz, char* uplo, int* n, dcomplex* a, int* lda, double* eigenvalue, dcomplex* work, int* lwork, double* rwork, int* info);
-extern void zgemm_(char* transpa, char* transpb, int* m, int* n, int* k, dcomplex* alpha, dcomplex* a, int* lda, 
-    dcomplex* b, int* ldb, dcomplex* beta, dcomplex* c, int* ldc);
+extern void zheev_(char *jobz, char *uplo, int *n, dcomplex *a, int *lda, double *w, dcomplex *work, int *lwork, double *rwork, int *info);
+extern void zgemm_(char *transa, char *transb, int *m, int *n, int *k, dcomplex *alpha, dcomplex *a, int *lda, 
+    dcomplex *b, int *ldb, dcomplex *beta, dcomplex *c, int *ldc);
 
 // Routine for coefficient propagation scheme in exponential propagator
 static void expon_coef(int nst, int nesteps, double dt, double *energy, double *energy_old,
@@ -61,7 +61,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     dcomplex dcone = {1.0, 0.0}; 
     dcomplex dczero = {0.0, 0.0};
     dcomplex wkopt;  // need to get optimized lwork
-    dcomplex* work;  // length of lwork
+    dcomplex *work;  // length of lwork
 
     // Set zero matrix
     for(ist = 0; ist < nst; ist++){
