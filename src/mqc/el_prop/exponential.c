@@ -37,7 +37,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     // e^((-i*energy-nacme)*dt)*e^((-i*energy-nacme)*dt)~~~ = P_1(exp(-iD_1))P_1^-1*P_2(exp(-iD_2))P_2^-1~~~
     double *eenergy = malloc(nst * sizeof(double));
     double *eigenvalue = malloc(nst * sizeof(double)); // eigenvalue
-    double *rwork = malloc((3 * nst - 2) * sizeof(double));  // temperary value for zheev
+    double *rwork = malloc((3 * nst - 2) * sizeof(double));  // temporary value for zheev
     double complex *emt = malloc((nst * nst) * sizeof(double complex)); // (energy - tou(nacme))*dt
     double complex *coef_new = malloc(nst * sizeof(double complex));  // need to calculate coef
     double complex *exp_iemt = malloc((nst *nst) * sizeof(double complex)); // double complex type of exp(-i*emt*dt)
@@ -46,8 +46,8 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     dcomplex *pdp_dcom = malloc((nst *nst) * sizeof(dcomplex)); // pdp_dcom is pdp 
     dcomplex *diag_dcom = malloc((nst * nst) * sizeof(dcomplex));     // diagonal matrix using eigenvalue, exp(-iD)
     dcomplex *product_pdps_dcom = malloc((nst * nst) * sizeof(dcomplex)); // product_pdps_dcom is product of PDPs (PDP^-1)
-    dcomplex *identity_temp_dcom = malloc((nst *nst) * sizeof(dcomplex)); // temperary value for zgemm (identity matrix)
-    dcomplex *product_pdps_temp_dcom = malloc((nst *nst) * sizeof(dcomplex)); // temperary value for zgemm (product of pdp)
+    dcomplex *identity_temp_dcom = malloc((nst *nst) * sizeof(dcomplex)); // temporary value for zgemm (identity matrix)
+    dcomplex *product_pdps_temp_dcom = malloc((nst *nst) * sizeof(dcomplex)); // temporary value for zgemm (product of pdp)
     double **dv = malloc(nst * sizeof(double*));
 
     int ist, jst, iestep, lwork, info;  // lwork : The length of the array WORK, info : confirmation that heev is working
@@ -86,8 +86,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     edt = dt * frac;
 
     for(iestep = 0; iestep < nesteps; iestep++){
-
-        // Interpolate energy and NACME terms between time t and t + dt
+        // Interpolate energy and nacme terms between time t and t + dt
         for(ist = 0; ist < nst; ist++){
             eenergy[ist] = energy_old[ist] + (energy[ist] - energy_old[ist]) * (double)iestep * frac;
             for(jst = 0; jst < nst; jst++){
@@ -96,7 +95,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
             }
         }
 
-        // Make emt, emt means Energy - Tou(nacme)
+        // Make emt, emt means (Energy - Tou(nacme)) *dt
         for(ist = 0; ist < nst; ist++){
             for (jst = 0; jst < nst; jst++){
                 if (ist == jst){
@@ -119,7 +118,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         zheev_("Vectors", "Lower", &nst, p_dcom, &nst, eigenvalue, &wkopt, &lwork, rwork, &info);
         lwork = (int)wkopt.real;
         work = (dcomplex*)malloc(lwork * sizeof(dcomplex));
-        zheev_("Vectors", "Lower", &nst, p_dcom, &nst, eigenvalue, work, &lwork, rwork, &info); // p_dcom -> P(unitary matrix which is consisting of eigen vector)
+        zheev_("Vectors", "Lower", &nst, p_dcom, &nst, eigenvalue, work, &lwork, rwork, &info); // p_dcom -> P(unitary matrix is consisting of eigenvector)
 
         // Make diagonal matrix D
         for(ist = 0; ist < nst; ist++){ 
