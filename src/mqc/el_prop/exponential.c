@@ -8,7 +8,7 @@
 struct _dcomplex { double real, imag; };
 typedef struct _dcomplex dcomplex;
 
-// importing heev and gemm
+// Importing heev and gemm
 extern void zheev_(char *jobz, char *uplo, int *n, dcomplex *a, int *lda, double *w, dcomplex *work, int *lwork, double *rwork, int *info);
 extern void zgemm_(char *transa, char *transb, int *m, int *n, int *k, dcomplex *alpha, dcomplex *a, int *lda, 
     dcomplex *b, int *ldb, dcomplex *beta, dcomplex *c, int *ldc);
@@ -33,17 +33,18 @@ static void expon(int nst, int nesteps, double dt, char *elec_object, double *en
 static void expon_coef(int nst, int nesteps, double dt, double *energy, double *energy_old, 
     double **nacme, double **nacme_old, double complex *coef){
 
-    // ((energy-i*nacme)*dt) = PDP^-1 (diagonalization), exp((-i*energy-nacme)*dt) = P(exp(-iD))P^-1,  
-    // exp((-i*energy-nacme)*dt)*exp((-i*energy-nacme)*dt)~~~ = P_1(exp(-iD_1))P_1^-1*P_2(exp(-iD_2))P_2^-1~~~
+    // (( energy - i * nacme ) * dt) = PDP^-1 (diagonalization), exp(( - i * energy - nacme ) * dt ) = P( exp( -iD ) )P^-1,  
+    // exp( ( - i * energy_1 - nacme_1 ) * dt ) * exp(( - i * energy_2 - nacme_2 ) * dt )~~~ = P_1( exp( - i * D_1 ) )P_1^-1 * P_2( exp( - i * D_2 ) )P_2^-1~~~
+    // energy and nacme are interpolated. Because of that, diagonal matrix and eigenvector is also changed. They are different value at different time step.
     double *eenergy = malloc(nst * sizeof(double));
-    double *eigenvalue = malloc(nst * sizeof(double)); // eigenvalue of diagonalized (energy-i*nacme)*dt
+    double *eigenvalue = malloc(nst * sizeof(double)); // eigenvalue of (energy-i*nacme)*dt
     double *rwork = malloc((3 * nst - 2) * sizeof(double));  // temporary value for zheev
-    double complex *emt = malloc((nst * nst) * sizeof(double complex)); // (energy - tou(nacme))*dt
+    double complex *emt = malloc((nst * nst) * sizeof(double complex)); // (energy - tou(i * nacme)) * dt
     double complex *coef_new = malloc(nst * sizeof(double complex));  // need to calculate coef
     double complex *exp_iemt = malloc((nst *nst) * sizeof(double complex)); // double complex type of exp(-i*emt*dt)
     dcomplex *p_dcom = malloc((nst * nst) * sizeof(dcomplex));  // p_dcom is eigenvector
-    dcomplex *pd_dcom= malloc((nst * nst) * sizeof(dcomplex));      // pd_dcom is Pexp(-iD)P^-1 > (Pexp(-iD)) part
-    dcomplex *pdp_dcom = malloc((nst *nst) * sizeof(dcomplex)); // pdp_dcom is Pexp(-iD)P^-1 , lower case d means exp(-iD) in valuable name
+    dcomplex *pd_dcom= malloc((nst * nst) * sizeof(dcomplex));      // pd_dcom is Pexp(-iD)P^-1 > (Pexp(-iD)) part. (p_dcom * diag_dcom)
+    dcomplex *pdp_dcom = malloc((nst *nst) * sizeof(dcomplex)); // pdp_dcom is Pexp(-iD)P^-1 (p_dcom * diag_dcom) * (p_dcom)^-1 
     dcomplex *diag_dcom = malloc((nst * nst) * sizeof(dcomplex));     // diagonal matrix using eigenvalue, exp(-iD), D is diagonal matrix and diagonal elements are eigenvalue of (energy-i*nacme)*dt
     dcomplex *product_pdps_dcom = malloc((nst * nst) * sizeof(dcomplex)); // product_pdps_dcom is product of Pexp(-iD)P^-1
     dcomplex *identity_temp_dcom = malloc((nst * nst) * sizeof(dcomplex)); // temporary value for zgemm (identity matrix)
@@ -95,7 +96,8 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
             }
         }
 
-        // Make emt, emt means (Energy - Tou(nacme)) *dt
+        // Construct (i * propagation matrix) to make hermitian matrix
+        // emt = energy - i * nacme
         for(ist = 0; ist < nst; ist++){
             for (jst = 0; jst < nst; jst++){
                 if (ist == jst){
@@ -107,31 +109,32 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
             }
         }
 
-        // Change complex type
+        // Convert the data type for emt to dcomplex to exploit external math libraries
         for(ist = 0; ist < nst * nst; ist++){
             p_dcom[ist].real = creal(emt[ist]);
             p_dcom[ist].imag = cimag(emt[ist]);
         }    
         
-        // diagonaliztion 
+        // Diagonalize the matrix (emt) to obtain eigenvectors and eigenvalues.
+        // After this operation, p_dcom becomes the eigenvectors defined as P.
         lwork = -1;
         zheev_("Vectors", "Lower", &nst, p_dcom, &nst, eigenvalue, &wkopt, &lwork, rwork, &info);
         lwork = (int)wkopt.real;
         work = (dcomplex*)malloc(lwork * sizeof(dcomplex));
         zheev_("Vectors", "Lower", &nst, p_dcom, &nst, eigenvalue, work, &lwork, rwork, &info); // p_dcom -> P(unitary matrix is consisting of eigenvector)
 
-        // Make diagonal matrix D
+        // Create the diagonal matrix (diag_dcom = exp( -i*D )) where D is a matrix consisting of eigenvalues obtained from upper operation.
         for(ist = 0; ist < nst; ist++){ 
                 diag_dcom[nst * ist + ist].real = creal(cexp(- 1.0 * eigenvalue[ist] * I));
                 diag_dcom[nst * ist + ist].imag = cimag(cexp(- 1.0 * eigenvalue[ist] * I));
         }
 
-        // Matrix multiplication Pexp(-iD)P^-1 and 
+        // Compute the product ( P*exp( -i*D )*P^-1 ) and update the product for every electronic step
         zgemm_("N","N",&nst, &nst, &nst, &dcone, p_dcom, &nst, diag_dcom, &nst, &dczero, pd_dcom, &nst); // P*exp(-iD)
         zgemm_("N","C",&nst, &nst, &nst, &dcone, pd_dcom, &nst, p_dcom, &nst, &dczero, pdp_dcom, &nst); // Pexp(-iD) * P^-1
         zgemm_("N","N",&nst, &nst, &nst, &dcone, pdp_dcom, &nst, product_pdps_dcom, &nst, &dczero, product_pdps_temp_dcom, &nst); // Pexp(-iD)P^-1 * (old Pexp(-iD)P^-1)
 
-        //reset the diag_dcom
+        // Reset the diagonal matrix exp( -i*D )
         for(ist = 0; ist < nst; ist++){
             for(jst = 0; jst < nst; jst++){
                 diag_dcom[ist * nst + jst].real = 0.0;
@@ -139,7 +142,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
             }
         }
 
-        //reset the identity_temp_dcom
+        //  Reset the identity matrix
         for(ist = 0; ist < nst; ist++){
             for(jst = 0; jst < nst; jst++){
                 identity_temp_dcom[ist * nst + jst].real = 0.0;
@@ -147,7 +150,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
             }
         }
 
-        // TODO : use memset
+        // TODO : Use memset
         // memset(diag_dcom, 0, (nst*nst)*sizeof(diag_dcom[0]));
         // memset(identity_temp_dcom, 0, (nst*nst)*sizeof(identity_temp_dcom[0]));
 
@@ -155,11 +158,11 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
             identity_temp_dcom[nst * ist + ist].real = 1.0;
         }
 
-        // update coefficent 
+        // Update coefficent 
         zgemm_("N","N", &nst, &nst, &nst, &dcone, identity_temp_dcom, &nst, product_pdps_temp_dcom, &nst, &dczero, product_pdps_dcom, &nst); // to keep Pexp(-iD)P^-1 value in total_coef_dcom 
     }
 
-    //change complex type
+    // Convert the data type for the term ( exp( - i * emt ) ) to original double complex to make propagation matrix
     for(ist = 0; ist < nst * nst; ist++){
         exp_iemt[ist] = product_pdps_dcom[ist].real + product_pdps_dcom[ist].imag * I;
     }
