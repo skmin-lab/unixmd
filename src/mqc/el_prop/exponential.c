@@ -33,19 +33,19 @@ static void expon(int nst, int nesteps, double dt, char *elec_object, double *en
 static void expon_coef(int nst, int nesteps, double dt, double *energy, double *energy_old, 
     double **nacme, double **nacme_old, double complex *coef){
 
-    // (( energy - i * nacme ) * dt) = PDP^-1 (diagonalization), exp(( - i * energy - nacme ) * dt ) = P( exp( -iD ) )P^-1,  
-    // exp( ( - i * energy_1 - nacme_1 ) * dt ) * exp(( - i * energy_2 - nacme_2 ) * dt )~~~ = P_1( exp( - i * D_1 ) )P_1^-1 * P_2( exp( - i * D_2 ) )P_2^-1~~~
-    // energy and nacme are interpolated. Because of that, diagonal matrix and eigenvector is also changed. They are different value at different time step.
+    // (( energy - i * NACME ) * dt) = PDP^-1 (diagonalization), exp(( - i * energy - NACME ) * dt ) = P( exp( -iD ) )P^-1,  
+    // exp( ( - i * energy_1 - NACME_1 ) * dt ) * exp(( - i * energy_2 - NACME_2 ) * dt )~~~ = P_1( exp( - i * D_1 ) )P_1^-1 * P_2( exp( - i * D_2 ) )P_2^-1~~~
+    // energy and NACME are interpolated. Because of that, diagonal matrix and eigenvector is also changed. They are different value at different time step.
     double *eenergy = malloc(nst * sizeof(double));
-    double *eigenvalue = malloc(nst * sizeof(double)); // eigenvalue of (energy-i*nacme)*dt
+    double *eigenvalue = malloc(nst * sizeof(double)); // eigenvalue of (energy-i*NACME)*dt
     double *rwork = malloc((3 * nst - 2) * sizeof(double));  // temporary value for zheev
-    double complex *emt = malloc((nst * nst) * sizeof(double complex)); // (energy - tou(i * nacme)) * dt
+    double complex *emt = malloc((nst * nst) * sizeof(double complex)); // (energy - tau(i * NACME)) * dt
     double complex *coef_new = malloc(nst * sizeof(double complex));  // need to calculate coef
     double complex *exp_iemt = malloc((nst *nst) * sizeof(double complex)); // double complex type of exp(-i*emt*dt)
-    dcomplex *diag_dcom = malloc((nst * nst) * sizeof(dcomplex));     // diagonal matrix using eigenvalue, exp(-iD), D is diagonal matrix and diagonal elements are eigenvalue of (energy-i*nacme)*dt
+    dcomplex *diag_dcom = malloc((nst * nst) * sizeof(dcomplex));     // diagonal matrix using eigenvalue, exp(-iD), D is diagonal matrix and diagonal elements are eigenvalue of (energy-i*NACME)*dt
     dcomplex *p_dcom = malloc((nst * nst) * sizeof(dcomplex));  // p_dcom is eigenvector
     dcomplex *tmp_mat_dcom= malloc((nst * nst) * sizeof(dcomplex));      // tmp_mat_dcom is Pexp(-iD)P^-1 > (Pexp(-iD)) part. (p_dcom * diag_dcom)
-    dcomplex *pdp_dcom = malloc((nst *nst) * sizeof(dcomplex)); // pdp_dcom is Pexp(-iD)P^-1 (p_dcom * diag_dcom) * (p_dcom)^-1 
+    dcomplex *pdp_dcom = malloc((nst * nst) * sizeof(dcomplex)); // pdp_dcom is Pexp(-iD)P^-1 (p_dcom * diag_dcom) * (p_dcom)^-1 
     dcomplex *product_pdps_dcom = malloc((nst * nst) * sizeof(dcomplex)); // product_pdps_dcom is product of Pexp(-iD)P^-1
     dcomplex *identity_dcom = malloc((nst * nst) * sizeof(dcomplex)); // temporary value for zgemm (identity matrix)
     dcomplex *product_pdps_tmp_dcom = malloc((nst * nst) * sizeof(dcomplex)); // temporary value for zgemm (product of Pexp(-iD)P^-1)
@@ -53,7 +53,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
 
     int ist, jst, iestep, lwork, info;  // lwork : The length of the array WORK, info : confirmation that heev is working
     double frac, edt; 
-    double complex tem_coef = 0.0;
+    double complex tmp_coef = 0.0 + 0.0 * I;
 
     for(ist = 0; ist < nst; ist++){
         dv[ist] = malloc(nst * sizeof(double));
@@ -87,7 +87,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     edt = dt * frac;
 
     for(iestep = 0; iestep < nesteps; iestep++){
-        // Interpolate energy and nacme terms between time t and t + dt
+        // Interpolate energy and NACME terms between time t and t + dt
         for(ist = 0; ist < nst; ist++){
             eenergy[ist] = energy_old[ist] + (energy[ist] - energy_old[ist]) * (double)iestep * frac;
             for(jst = 0; jst < nst; jst++){
@@ -97,7 +97,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         }
 
         // Construct (i * propagation matrix) to make hermitian matrix
-        // emt = energy - i * nacme
+        // emt = energy - i * NACME
         for(ist = 0; ist < nst; ist++){
             for (jst = 0; jst < nst; jst++){
                 if (ist == jst){
@@ -168,13 +168,13 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     }
 
     // matrix - vector multiplication //TODO Is it necessary to change this to zgemv?
-    //zgemv_("N", &nst, &nst, &dcone, product_pdps_dcom, &nst, coef, 1, &dczero, tem_coef, 1)
+    //zgemv_("N", &nst, &nst, &dcone, product_pdps_dcom, &nst, coef, 1, &dczero, tmp_coef, 1)
     for(ist = 0; ist < nst; ist++){
         for (jst = 0; jst < nst; jst++){
-            tem_coef += exp_iemt[nst * jst + ist] * coef[jst];
+            tmp_coef += exp_iemt[nst * jst + ist] * coef[jst];
         }
-        coef_new[ist] = tem_coef;
-        tem_coef = 0.0;
+        coef_new[ist] = tmp_coef;
+        tmp_coef = 0.0;
     }
 
     for(ist = 0; ist < nst; ist++){
