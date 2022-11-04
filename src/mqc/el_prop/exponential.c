@@ -34,21 +34,27 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     double **nacme, double **nacme_old, double complex *coef){
 
     // (( energy - i * NACME ) * dt) = PDP^-1 (diagonalization), exp(( - i * energy - NACME ) * dt ) = P( exp( -iD ) )P^-1,  
-    // exp( ( - i * energy_1 - NACME_1 ) * dt ) * exp(( - i * energy_2 - NACME_2 ) * dt )~~~ = P_1( exp( - i * D_1 ) )P_1^-1 * P_2( exp( - i * D_2 ) )P_2^-1~~~
+    // exp( ( - i * energy_1 - NACME_1 ) * dt ) * exp(( - i * energy_2 - NACME_2 ) * dt )···exp(( - i * energy_n - NACME_n ) * dt ) 
+    // = P_1( exp( - i * D_1 ) )P_1^-1 * P_2( exp( - i * D_2 ) )P_2^-1 ··· P_n( exp( - i * D_n ) )P_n^-1
+    // n is interpolation step number
+    
+    // \[(energy - i\cdot NACME)\cdot dt = PDP^{-1} ,\](diagonalization)  \[exp(-i\cdot (energy-i\cdot NACME)\cdot dt)= P exp(-i\cdot D) P^{-1}\]
+    // \[exp( -i\cdot (energy_1 -i\cdot NACME_1 ) \cdot dt ) \cdot exp( - i \cdot (energy_2 -i\cdot NACME_2)  \cdot dt) \cdots exp( -i\cdot (energy_n -i\cdot NACME_n ) \cdot dt )\] 
+    // \[= P_1( exp( - i \cdot D_1 ) )P_1^{-1} \cdot P_2( exp( - i \cdot D_2 ) )P_2^{-1} \cdots P_n( exp( - i \cdot D_n ) )P_n^{-1} \]
     // energy and NACME are interpolated. Because of that, diagonal matrix and eigenvector is also changed. They are different value at different time step.
     double *eenergy = malloc(nst * sizeof(double));
-    double *eigenvalue = malloc(nst * sizeof(double)); // eigenvalue of (energy-i*NACME)*dt
+    double *eigenvalue = malloc(nst * sizeof(double)); // eigenvalue of (energy - i * NACME) * dt
     double *rwork = malloc((3 * nst - 2) * sizeof(double));  // temporary value for zheev
-    double complex *emt = malloc((nst * nst) * sizeof(double complex)); // (energy - tau(i * NACME)) * dt
+    double complex *emt = malloc((nst * nst) * sizeof(double complex)); // (energy - tau(i * NACME)) * dt  
     double complex *coef_new = malloc(nst * sizeof(double complex));  // need to calculate coef
-    double complex *exp_iemt = malloc((nst * nst) * sizeof(double complex)); // double complex type of exp(-i*emt*dt)
-    dcomplex *diag_dcom = malloc((nst * nst) * sizeof(dcomplex));     // diagonal matrix using eigenvalue, exp(-iD), D is diagonal matrix and diagonal elements are eigenvalue of (energy-i*NACME)*dt
+    double complex *exp_iemt = malloc((nst * nst) * sizeof(double complex)); // double complex type of exp(-i * emt * dt)
+    dcomplex *diag_dcom = malloc((nst * nst) * sizeof(dcomplex));     // diagonal matrix using eigenvalue, exp(-iD), D is diagonal matrix and diagonal elements are eigenvalue of (energy - i * NACME) * dt
     dcomplex *p_dcom = malloc((nst * nst) * sizeof(dcomplex));  // p_dcom is eigenvector
-    dcomplex *tmp_mat_dcom= malloc((nst * nst) * sizeof(dcomplex));      // tmp_mat_dcom is Pexp(-iD)P^-1 > (Pexp(-iD)) part. (p_dcom * diag_dcom)
-    dcomplex *pdp_dcom = malloc((nst * nst) * sizeof(dcomplex)); // pdp_dcom is Pexp(-iD)P^-1 (p_dcom * diag_dcom) * (p_dcom)^-1 
-    dcomplex *product_pdps_dcom = malloc((nst * nst) * sizeof(dcomplex)); // product_pdps_dcom is product of Pexp(-iD)P^-1
-    dcomplex *identity_dcom = malloc((nst * nst) * sizeof(dcomplex)); // temporary value for zgemm (identity matrix)
-    dcomplex *product_pdps_tmp_dcom = malloc((nst * nst) * sizeof(dcomplex)); // temporary value for zgemm (product of Pexp(-iD)P^-1)
+    dcomplex *tmp_mat_dcom= malloc((nst * nst) * sizeof(dcomplex));
+    dcomplex *pdp_dcom = malloc((nst * nst) * sizeof(dcomplex)); // pdp_dcom is Pexp(-iD)P^-1 
+    dcomplex *product_pdps_dcom = malloc((nst * nst) * sizeof(dcomplex)); // product_pdps_dcom is product of Pexp(-iD)P^-1 until previous step (old)
+    dcomplex *identity_dcom = malloc((nst * nst) * sizeof(dcomplex)); // identity matrix
+    dcomplex *product_pdps_tmp_dcom = malloc((nst * nst) * sizeof(dcomplex)); // product_pdps_tmp_dcom is product of Pexp(-iD)P^-1 until current step (new)
     double **dv = malloc(nst * sizeof(double*));
 
     int ist, jst, iestep, lwork, info;  // lwork : The length of the array WORK, info : confirmation that heev is working
@@ -110,7 +116,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         }
 
         // Construct (i * propagation matrix) to make hermitian matrix
-        // emt = energy - i * NACME
+        // emt = energy - i * NACME 
         for(ist = 0; ist < nst; ist++){
             for (jst = 0; jst < nst; jst++){
                 if (ist == jst){
