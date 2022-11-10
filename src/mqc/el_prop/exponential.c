@@ -48,9 +48,9 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     double complex *exponent = malloc((nst * nst) * sizeof(double complex)); // (energy - i * NACME) * dt  
     double complex *coef_new = malloc(nst * sizeof(double complex));  // need to calculate coef
     double complex *exp_iexponent = malloc((nst * nst) * sizeof(double complex)); // double complex type of exp(-i * exponent * dt)
-    dcomplex *diag_dcom = malloc((nst * nst) * sizeof(dcomplex));     // diagonal matrix using eigenvalue, exp(-iD), D is diagonal matrix and diagonal elements are eigenvalue of (energy - i * NACME) * dt
+    dcomplex *exp_idiag = malloc((nst * nst) * sizeof(dcomplex));     // diagonal matrix using eigenvalue, exp(-iD), D is diagonal matrix and diagonal elements are eigenvalue of (energy - i * NACME) * dt
     dcomplex *eigenvectors = malloc((nst * nst) * sizeof(dcomplex));  // it is eigenvectors
-    dcomplex *tmp_mat_dcom= malloc((nst * nst) * sizeof(dcomplex));
+    dcomplex *tmp_mat= malloc((nst * nst) * sizeof(dcomplex));
     dcomplex *dg_exp_iexponent = malloc((nst * nst) * sizeof(dcomplex)); // dg_exp_iexponent is diagonalized exp(-i*exponent), Pexp(-iD)P^-1 
     dcomplex *product_old = malloc((nst * nst) * sizeof(dcomplex)); // product_old is product of Pexp(-iD)P^-1 until previous step (old)
     dcomplex *identity_dcom = malloc((nst * nst) * sizeof(dcomplex)); // identity matrix
@@ -96,13 +96,13 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     for(iestep = 0; iestep < nesteps; iestep++){
 
         // TODO : Use memset
-        // memset(diag_dcom, 0, (nst*nst)*sizeof(diag_dcom[0]));
+        // memset(exp_idiag, 0, (nst*nst)*sizeof(exp_idiag[0]));
 
         // Reset the diagonal matrix
         for(ist = 0; ist < nst; ist++){
             for(jst = 0; jst < nst; jst++){
-                diag_dcom[ist * nst + jst].real = 0.0;
-                diag_dcom[ist * nst + jst].imag = 0.0;
+                exp_idiag[ist * nst + jst].real = 0.0;
+                exp_idiag[ist * nst + jst].imag = 0.0;
             }
         }
 
@@ -143,15 +143,15 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         zheev_("Vectors", "Lower", &nst, eigenvectors, &nst, eigenvalue, work, &lwork, rwork, &info); // eigenvectors -> P(unitary matrix is consisting of eigenvector)
         free(work);
 
-        // Create the diagonal matrix (diag_dcom = exp( -i*D )) where D is a matrix consisting of eigenvalues obtained from upper operation.
+        // Create the diagonal matrix (exp_idiag = exp( -i*D )) where D is a matrix consisting of eigenvalues obtained from upper operation.
         for(ist = 0; ist < nst; ist++){ 
-                diag_dcom[nst * ist + ist].real = creal(cexp(- 1.0 * eigenvalue[ist] * I));
-                diag_dcom[nst * ist + ist].imag = cimag(cexp(- 1.0 * eigenvalue[ist] * I));
+                exp_idiag[nst * ist + ist].real = creal(cexp(- 1.0 * eigenvalue[ist] * I));
+                exp_idiag[nst * ist + ist].imag = cimag(cexp(- 1.0 * eigenvalue[ist] * I));
         }
 
         // Compute the product ( P*exp( -i*D )*P^-1  ) and update the product for every electronic step
-        zgemm_("N", "N", &nst, &nst, &nst, &dcone, eigenvectors, &nst, diag_dcom, &nst, &dczero, tmp_mat_dcom, &nst); // P*exp(-iD)
-        zgemm_("N", "C", &nst, &nst, &nst, &dcone, tmp_mat_dcom, &nst, eigenvectors, &nst, &dczero, dg_exp_iexponent, &nst); // Pexp(-iD) * P^-1 
+        zgemm_("N", "N", &nst, &nst, &nst, &dcone, eigenvectors, &nst, exp_idiag, &nst, &dczero, tmp_mat, &nst); // P*exp(-iD)
+        zgemm_("N", "C", &nst, &nst, &nst, &dcone, tmp_mat, &nst, eigenvectors, &nst, &dczero, dg_exp_iexponent, &nst); // Pexp(-iD) * P^-1 
         zgemm_("N", "N", &nst, &nst, &nst, &dcone, dg_exp_iexponent, &nst, product_old, &nst, &dczero, product_new, &nst); // Pexp(-iD)P^-1  * (old Pexp(-iD)P^-1 )
 
         // Update coefficent 
@@ -188,8 +188,8 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     free(product_new);
     free(product_old);
     free(eigenvectors);
-    free(diag_dcom);
-    free(tmp_mat_dcom);
+    free(exp_idiag);
+    free(tmp_mat);
     free(eigenvalue);
     free(rwork);
     free(exponent);
