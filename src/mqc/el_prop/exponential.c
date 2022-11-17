@@ -70,41 +70,41 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     dcomplex wkopt;  // need to get optimized lwork
     dcomplex *work;  // length of lwork
 
-    // Set zero matrix
+    // Set identity matrix
     for(ist = 0; ist < nst; ist++){
-        for(jst = 0; jst < nst; jst++){
-            identity_dcom[ist * nst + jst].real = 0.0;
-            identity_dcom[ist * nst + jst].imag = 0.0;
-            product_old[ist * nst + jst].real = 0.0;
-            product_old[ist * nst + jst].imag = 0.0;
+        for(jst = 0; jst < nst; jst++){       
+            if(ist == jst){
+                identity_dcom[nst * ist + ist].real = 1.0;
+                identity_dcom[nst * ist + ist].imag = 0.0;
+                product_old[nst * ist + ist].real = 1.0;
+                product_old[nst * ist + ist].imag = 0.0;
+            }else{
+                identity_dcom[ist * nst + jst].real = 0.0;
+                identity_dcom[ist * nst + jst].imag = 0.0;
+                product_old[ist * nst + jst].real = 0.0;
+                product_old[ist * nst + jst].imag = 0.0; 
+                exp_idiag[ist * nst + jst].real = 0.0;
+                exp_idiag[ist * nst + jst].imag = 0.0;
+            }
         }
     }
 
     // TODO : Use memset
     // memset(identity_dcom, 0, (nst*nst)*sizeof(identity_dcom[0]));
     // memset(product_old, 0, (nst*nst)*sizeof(product_old[0]));
-    
-    // Set identity matrix
-    for(ist = 0; ist < nst; ist++){
-        identity_dcom[nst * ist + ist].real = 1.0;
-        product_old[nst * ist + ist].real = 1.0;
-    }
+    // memset(exp_idiag, 0, (nst*nst)*sizeof(exp_idiag[0]));
+
+    // TODO : Use memset
+    // Set identity matrix  
+    // for(ist = 0; ist < nst; ist++){
+    //     identity_dcom[nst * ist + ist].real = 1.0;
+    //     product_old[nst * ist + ist].real = 1.0;
+    // }
    
     frac = 1.0 / (double)nesteps;
     edt = dt * frac;
 
     for(iestep = 0; iestep < nesteps; iestep++){
-
-        // TODO : Use memset
-        // memset(exp_idiag, 0, (nst*nst)*sizeof(exp_idiag[0]));
-
-        // Reset the diagonal matrix
-        for(ist = 0; ist < nst; ist++){
-            for(jst = 0; jst < nst; jst++){
-                exp_idiag[ist * nst + jst].real = 0.0;
-                exp_idiag[ist * nst + jst].imag = 0.0;
-            }
-        }
 
         // Interpolate energy and NACME terms between time t and t + dt
         for(ist = 0; ist < nst; ist++){
