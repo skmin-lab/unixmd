@@ -32,26 +32,23 @@ static void expon(int nst, int nesteps, double dt, char *elec_object, double *en
   
 static void expon_coef(int nst, int nesteps, double dt, double *energy, double *energy_old, 
     double **nacme, double **nacme_old, double complex *coef){
-
-    // (( energy - i * NACME ) * dt) = PDP^-1 (diagonalization), exp(( - i * energy - NACME ) * dt ) = P( exp( -iD ) )P^-1,  
-    // exp( ( - i * energy_1 - NACME_1 ) * dt ) * exp(( - i * energy_2 - NACME_2 ) * dt )···exp(( - i * energy_n - NACME_n ) * dt ) 
-    // = P_1( exp( - i * D_1 ) )P_1^-1 * P_2( exp( - i * D_2 ) )P_2^-1 ··· P_n( exp( - i * D_n ) )P_n^-1
-    // n is interpolation step number
-    
-    // \[(energy - i\cdot NACME)\cdot dt = PDP^{-1} ,\](diagonalization)  \[exp(-i\cdot (energy-i\cdot NACME)\cdot dt)= P exp(-i\cdot D) P^{-1}\]
-    // \[exp( -i\cdot (energy_1 -i\cdot NACME_1 ) \cdot dt ) \cdot exp( - i \cdot (energy_2 -i\cdot NACME_2)  \cdot dt) \cdots exp( -i\cdot (energy_n -i\cdot NACME_n ) \cdot dt )\] 
-    // \[= P_1( exp( - i \cdot D_1 ) )P_1^{-1} \cdot P_2( exp( - i \cdot D_2 ) )P_2^{-1} \cdots P_n( exp( - i \cdot D_n ) )P_n^{-1} \]
-    // energy and NACME are interpolated. Because of that, diagonal matrix and eigenvector is also changed. They are different value at different time step.
+   
+    // (E - i \sigma) dt = PDP^{-1} (diagonalization) 
+    // \exp(- i (E - i \sigma) dt)= P \exp(- i D) P^{-1} 
+    // \exp(- i (E_1 - i \sigma_1) dt ) \times \exp(- i (E_2 - i \sigma_2) dt) \times \cdots \times exp(- i (E_n - i \sigma_n) dt) = P_1(\exp(- i D_1))P_1^{-1} \times P_2(exp(- i D_2))P_2^{-1} \times \cdots \times P_n(exp(- i D_n))P_n^{-1}
+    // where E is energy, σ(sigma) is nadiabatic  coupling  matrix  elements(NACME), n is interpolation step number, 
+    // P is eigenvectors of matrix form of (E - i * σ) * dt, D is diagonal matrix which diagonal elements are eigenvalue of matrix form of (E - i * σ) * dt
+    // energy and NACME terms are interpolated. Because of that, diagonal matrix and eigenvector is also changed. They are different value at different time step.
     double *eenergy = malloc(nst * sizeof(double));
-    double *eigenvalue = malloc(nst * sizeof(double)); // eigenvalue of (energy - i * NACME) * dt
+    double *eigenvalue = malloc(nst * sizeof(double)); // eigenvalue of matrix form of (energy - i * NACME) * dt
     double *rwork = malloc((3 * nst - 2) * sizeof(double));  // temporary value for zheev
     double complex *exponent = malloc((nst * nst) * sizeof(double complex)); // (energy - i * NACME) * dt  
     double complex *coef_new = malloc(nst * sizeof(double complex));  // need to calculate coef
-    double complex *exp_iexponent = malloc((nst * nst) * sizeof(double complex)); // double complex type of exp(-i * exponent * dt)
-    dcomplex *exp_idiag = malloc((nst * nst) * sizeof(dcomplex));     // diagonal matrix using eigenvalue, exp(-iD), D is diagonal matrix and diagonal elements are eigenvalue of (energy - i * NACME) * dt
+    double complex *exp_iexponent = malloc((nst * nst) * sizeof(double complex)); // double complex type of exp(- i * exponent)
+    dcomplex *exp_idiag = malloc((nst * nst) * sizeof(dcomplex));     // diagonal matrix using eigenvalue, exp(-iD)
     dcomplex *eigenvectors = malloc((nst * nst) * sizeof(dcomplex));  // it is eigenvectors
     dcomplex *tmp_mat= malloc((nst * nst) * sizeof(dcomplex));
-    dcomplex *dg_exp_iexponent = malloc((nst * nst) * sizeof(dcomplex)); // dg_exp_iexponent is diagonalized exp(-i*exponent), Pexp(-iD)P^-1 
+    dcomplex *dg_exp_iexponent = malloc((nst * nst) * sizeof(dcomplex)); // dg_exp_iexponent is diagonalized exp(- i * exponent), Pexp(-iD)P^-1 
     dcomplex *product_old = malloc((nst * nst) * sizeof(dcomplex)); // product_old is product of Pexp(-iD)P^-1 until previous step (old)
     dcomplex *identity_dcom = malloc((nst * nst) * sizeof(dcomplex)); // identity matrix
     dcomplex *product_new = malloc((nst * nst) * sizeof(dcomplex)); // product_new is product of Pexp(-iD)P^-1 until current step (new)
@@ -70,7 +67,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     dcomplex wkopt;  // need to get optimized lwork
     dcomplex *work;  // length of lwork
 
-    // Set identity matrix
+    // Set identity matrix and diagonal matrix
     for(ist = 0; ist < nst; ist++){
         for(jst = 0; jst < nst; jst++){       
             if(ist == jst){
@@ -116,7 +113,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         }
 
         // Construct (i * propagation matrix) to make hermitian matrix
-        // exponent = energy - i * NACME 
+        // exponent = (energy - i * NACME) * dt 
         for(ist = 0; ist < nst; ist++){
             for (jst = 0; jst < nst; jst++){
                 if (ist == jst){
@@ -143,14 +140,14 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         zheev_("Vectors", "Lower", &nst, eigenvectors, &nst, eigenvalue, work, &lwork, rwork, &info); // eigenvectors -> P(unitary matrix is consisting of eigenvector)
         free(work);
 
-        // Create the diagonal matrix (exp_idiag = exp( -i*D )) where D is a matrix consisting of eigenvalues obtained from upper operation.
+        // Create the diagonal matrix (exp_idiag = exp(- i * D)) where D is a matrix consisting of eigenvalues obtained from upper operation.
         for(ist = 0; ist < nst; ist++){ 
                 exp_idiag[nst * ist + ist].real = creal(cexp(- 1.0 * eigenvalue[ist] * I));
                 exp_idiag[nst * ist + ist].imag = cimag(cexp(- 1.0 * eigenvalue[ist] * I));
         }
 
         // Compute the product ( P*exp( -i*D )*P^-1  ) and update the product for every electronic step
-        zgemm_("N", "N", &nst, &nst, &nst, &dcone, eigenvectors, &nst, exp_idiag, &nst, &dczero, tmp_mat, &nst); // P*exp(-iD)
+        zgemm_("N", "N", &nst, &nst, &nst, &dcone, eigenvectors, &nst, exp_idiag, &nst, &dczero, tmp_mat, &nst); // P * exp(-iD)
         zgemm_("N", "C", &nst, &nst, &nst, &dcone, tmp_mat, &nst, eigenvectors, &nst, &dczero, dg_exp_iexponent, &nst); // Pexp(-iD) * P^-1 
         zgemm_("N", "N", &nst, &nst, &nst, &dcone, dg_exp_iexponent, &nst, product_old, &nst, &dczero, product_new, &nst); // Pexp(-iD)P^-1  * (old Pexp(-iD)P^-1 )
 
