@@ -26,12 +26,13 @@ class Eh(MQC):
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
-        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, \
+        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, l_asymp=True,\
         init_coef=None, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
             elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
 
+        self.l_asymp = l_asymp        
         # Debug variables
         self.dotpopnac = np.zeros(self.mol.nst)
 
@@ -116,6 +117,11 @@ class Eh(MQC):
             restart_file = os.path.join(base_dir, "RESTART.bin")
             with open(restart_file, 'wb') as f:
                 pickle.dump({'qm':qm, 'md':self}, f)
+
+            det = self.mol.pos[0, 0] * self.mol.vel[0, 0]
+            if (self.l_asymp and det > 0. and np.abs(self.mol.pos[0, 0]) > np.abs(20.)):
+                print(f"Trajectory reached asymptotic region")
+                break
 
         # Delete scratch directory
         if (not l_save_scr):

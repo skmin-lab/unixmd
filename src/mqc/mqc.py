@@ -107,7 +107,7 @@ class MQC(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check if NACVs are calculated for Ehrenfest dynamics
-        if (self.md_type == "Eh" and self.mol.l_nacme):
+        if (self.md_type in ["Eh", "EhXF"] and self.mol.l_nacme):
             error_message = "Ehrenfest dynamics needs evaluation of NACVs, check your QM object!"
             error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
@@ -119,12 +119,6 @@ class MQC(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         if (self.mol.l_qmmm and mm != None):
             self.check_qmmm(qm, mm)
-
-        # Exception for CTMQC with QM/MM
-        if ((self.md_type == "CT") and (mm != None)):
-            error_message = "QM/MM calculation is not compatible with CTMQC now!"
-            error_vars = f"mm = {mm}"
-            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Set directory information
         output_dir = os.path.expanduser(output_dir)
@@ -141,7 +135,7 @@ class MQC(object):
             base_dir.append(dir_tmp)
         else:
             for itraj in range(self.ntrajs):
-                itraj_dir = os.path.join(dir_tmp, f"TRAJ_{itraj + 1:0{self.digit}d}")
+                itraj_dir = os.path.join(dir_tmp, f"traj{itraj + 1:0{self.digit}d}")
                 base_dir.append(itraj_dir)
 
         for idir in base_dir:
@@ -252,9 +246,7 @@ class MQC(object):
         {"-" * 68}
 
         {" " * 4}Please cite PyUNIxMD as follows:
-        {" " * 4}I. S. Lee, J.-K. Ha, D. Han, T. I. Kim, S. W. Moon, & S. K. Min.
-	{" " * 4}PyUNIxMD: A Python-based excited state molecular dynamics package.
-        {" " * 4}Journal of Computational Chemistry, 42:1755-1766. 2021
+        {" " * 4}This is article
 
         {" " * 4}PyUNIxMD begins on {cur_time}
         """)
@@ -324,7 +316,7 @@ class MQC(object):
                     dynamics_info += f"  Energy Constant          = {self.edc_parameter:>16.6f}\n"
 
         # Print XF variables
-        if (self.md_type == "SHXF"):
+        if (self.md_type in ["SHXF", "EhXF"]):
             # Print density threshold used in decoherence term
             dynamics_info += f"\n  Density Threshold        = {self.rho_threshold:>16.6f}"
             # Print reduced mass
@@ -404,7 +396,7 @@ class MQC(object):
                 typewriter(tmp, unixmd_dir, "DOTPOPNAC", "w")
 
         # file header for SH-based methods
-        if (self.md_type in ["SH", "SHXF"]):
+        if (self.md_type in ["SH", "SHXF", "EhXF"]):
             tmp = f'{"#":5s}{"Step":8s}{"Running State":10s}'
             typewriter(tmp, unixmd_dir, "SHSTATE", "w")
 
@@ -412,7 +404,7 @@ class MQC(object):
             typewriter(tmp, unixmd_dir, "SHPROB", "w")
 
         # file header for XF-based methods
-        if (self.md_type in ["SHXF", "CT"]):
+        if (self.md_type in ["SHXF", "EhXF", "CT"]):
             if (self.verbosity >= 1):
                 tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "DOTPOPDEC", "w")

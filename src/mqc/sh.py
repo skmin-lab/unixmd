@@ -30,7 +30,7 @@ class SH(MQC):
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
-        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
+        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, l_asymp=True, hop_rescale="augment", \
         hop_reject="reverse", init_coef=None, dec_correction=None, edc_parameter=0.1, \
         unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
@@ -63,6 +63,7 @@ class SH(MQC):
         # Initialize decoherence variables
         self.dec_correction = dec_correction
         self.edc_parameter = edc_parameter
+        self.l_asymp = l_asymp        
 
         if (self.dec_correction != None):
             self.dec_correction = self.dec_correction.lower()
@@ -119,9 +120,9 @@ class SH(MQC):
             if (not self.mol.l_nacme):
                 self.mol.get_nacme()
 
-            self.hop_prob()
+            self.hop_prob(self.istep)
             self.hop_check(bo_list)
-            self.evaluate_hop(bo_list)
+            self.evaluate_hop(bo_list, self.istep)
 
             if (self.dec_correction == "idc"):
                 if (self.l_hop or self.l_reject):
@@ -176,9 +177,9 @@ class SH(MQC):
 
             el_run(self)
 
-            self.hop_prob()
+            self.hop_prob(istep)
             self.hop_check(bo_list)
-            self.evaluate_hop(bo_list)
+            self.evaluate_hop(bo_list, istep)
 
             if (self.dec_correction == "idc"):
                 if (self.l_hop or self.l_reject):
@@ -188,9 +189,8 @@ class SH(MQC):
                 if (self.mol.ekin_qm > eps):
                     self.correct_dec_edc()
 
-            if (self.l_hop):
-                if (qm.re_calc):
-                    qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
+            if (qm.re_calc and self.l_hop):
+                qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
                 if (self.mol.l_qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
 
@@ -211,6 +211,11 @@ class SH(MQC):
             with open(restart_file, 'wb') as f:
                 pickle.dump({'qm':qm, 'md':self}, f)
 
+            det = self.mol.pos[0, 0] * self.mol.vel[0, 0]
+            if (self.l_asymp and det > 0. and np.abs(self.mol.pos[0, 0]) > np.abs(20.)):
+                print(f"Trajectory reached asymptotic region")
+                break
+
         # Delete scratch directory
         if (not l_save_scr):
             tmp_dir = os.path.join(unixmd_dir, "scr_qm")
@@ -222,7 +227,7 @@ class SH(MQC):
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
 
-    def hop_prob(self):
+    def hop_prob(self, istep):
         """ Routine to calculate hopping probabilities
 
             :param integer istep: Current MD step
@@ -266,7 +271,7 @@ class SH(MQC):
                 self.rstate = ist
                 bo_list[0] = self.rstate
 
-    def evaluate_hop(self, bo_list):
+    def evaluate_hop(self, bo_list, istep):
         """ Routine to evaluate hopping and velocity rescaling
 
             :param integer,list bo_list: List of BO states for BO calculation

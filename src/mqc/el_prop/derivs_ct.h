@@ -24,25 +24,17 @@ static double dot(int nst, double complex *u, double complex *v){
 static void ct_cdot(int nst, double *e, double **dv, double **k_lk, double complex *c, double complex *c_dot){
 
     double complex *na_term = malloc(nst * sizeof(double complex));
-    double *ct_term = malloc(nst * sizeof(double));
-    double *rho = malloc(nst * sizeof (double));
+    double complex *ct_term = malloc(nst * sizeof(double complex));
 
     int ist, jst;
     double egs;
 
-    // Calculate densities from current coefficients
-    for(ist = 0; ist < nst; ist++){
-        rho[ist] = creal(conj(c[ist]) * c[ist]);
-    }
-
     for(ist = 0; ist < nst; ist++){
         na_term[ist] = 0.0 + 0.0 * I;
-        ct_term[ist] = 0.0;
         for(jst = 0; jst < nst; jst++){
             if(ist != jst){
                 na_term[ist] -= dv[ist][jst] * c[jst];
-                ct_term[ist] += 0.25 * (k_lk[jst][ist] - k_lk[ist][jst]) * rho[jst]
-                    * (rho[ist] + rho[jst]) / (nst - 1);
+                ct_term[ist] += 0.25 * (k_lk[ist][jst] - k_lk[jst][ist]) * creal(conj(c[jst]) * c[jst]);
             }
         }
     }
