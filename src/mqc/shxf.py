@@ -11,24 +11,13 @@ class Auxiliary_Molecule(object):
 
         :param object molecule: Molecule object
     """
-    def __init__(self, molecule, l_xf1d):
+    def __init__(self, molecule):
         # Initialize auxiliary molecule
-        if (l_xf1d):
+        self.nat = molecule.nat_qm
+        self.ndim = molecule.ndim
+        self.symbols = np.copy(molecule.symbols[0:molecule.nat_qm])
 
-            self.nat = 1
-            self.ndim = 1
-            self.symbols = ['XX']
-
-            self.mass = np.zeros((self.nat))
-            self.mass[0] = 1. / np.sum(1. / molecule.mass[0:molecule.nat_qm])
-
-        else:
-
-            self.nat = molecule.nat_qm
-            self.ndim = molecule.ndim
-            self.symbols = np.copy(molecule.symbols[0:molecule.nat_qm])
-
-            self.mass = np.copy(molecule.mass[0:molecule.nat_qm])
+        self.mass = np.copy(molecule.mass[0:molecule.nat_qm])
 
         self.pos = np.zeros((molecule.nst, self.nat, self.ndim))
         self.vel = np.zeros((molecule.nst, self.nat, self.ndim))
@@ -63,7 +52,7 @@ class SHXF(MQC):
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, l_asymp=True, hop_rescale="augment", \
-        hop_reject="reverse", rho_threshold=0.01, l_afssh=False, l_td_sigma=False, sigma=None, l_xf1d=False, init_coef=None, \
+        hop_reject="reverse", rho_threshold=0.01, l_afssh=False, l_td_sigma=False, sigma=None, init_coef=None, \
         l_econs_state=True, l_econs_phase=False, l_bc=True, refl_vel="collapse", refl_dim="total", unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
@@ -111,12 +100,11 @@ class SHXF(MQC):
         self.l_collapse = False
         self.l_econs_state = l_econs_state
         self.l_econs_phase = l_econs_phase
-        self.l_xf1d = l_xf1d
         self.l_coh = [False] * self.mol.nst
         self.l_first = [False] * self.mol.nst
         self.rho_threshold = rho_threshold
         self.sigma = sigma
-        self.aux = Auxiliary_Molecule(self.mol, self.l_xf1d)
+        self.aux = Auxiliary_Molecule(self.mol)
         self.pos_0 = np.zeros((self.aux.nat, self.aux.ndim))
         self.phase = np.array(np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim)))
         self.qmom = np.zeros((self.mol.nst, self.mol.nst, self.aux.nat, self.aux.ndim))
@@ -132,11 +120,6 @@ class SHXF(MQC):
         self.dF = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
         self.dF_old = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
 
-        if (self.l_afssh and self.l_xf1d):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) SHXF1D is not implemented for AFSSH auxiliary trajectory propation method! {self.l_xf1d}")
-        if (self.l_td_sigma and self.l_xf1d):
-            raise ValueError (f"( {self.md_type}.{call_name()} ) SHXF1D is not implemented for TD sigma! {self.l_xf1d}")
-        
         if (self.sigma == None):
             if (not self.l_td_sigma):
                 error_message = "Sigma for auxiliary trajectories must be set in running script!"
@@ -152,10 +135,6 @@ class SHXF(MQC):
                 error_message = "Number of elements for sigma must be equal to number of atoms!"
                 error_vars = f"len(sigma) = {len(self.sigma)}"
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-            if (self.l_xf1d):
-                error_message = "Sigma must be float, not list in XF-1D scheme!"
-                error_vars = f"sigma = {self.sigma}"
-                raise TypeError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
             if (not self.l_td_sigma):
                 error_message = "Type of sigma must be float or list consisting of float!"
@@ -633,18 +612,12 @@ class SHXF(MQC):
             for ist in range(self.mol.nst):
                 if (self.l_coh[ist]):
                     if (self.l_first[ist]):
-                        if (self.l_xf1d):
-                            self.aux.pos[ist] = np.zeros((self.aux.nat, self.aux.ndim))
-                        else:
-                            self.aux.pos[ist] = self.mol.pos[0:self.aux.nat]
+                        self.aux.pos[ist] = self.mol.pos[0:self.aux.nat]
                     else:
-                        if (self.l_xf1d):
-                            self.aux.pos[ist] += self.aux.vel[ist] * self.dt
+                        if (ist == self.rstate):
+                            self.aux.pos[ist] = self.mol.pos[0:self.aux.nat]
                         else:
-                            if (ist == self.rstate):
-                                self.aux.pos[ist] = self.mol.pos[0:self.aux.nat]
-                            else:
-                                self.aux.pos[ist] += self.aux.vel[ist] * self.dt
+                            self.aux.pos[ist] += self.aux.vel[ist] * self.dt
 
             self.pos_0 = np.copy(self.aux.pos[self.rstate])
 
@@ -670,15 +643,11 @@ class SHXF(MQC):
                         self.event["DECO"].append(f"Energy conservation violated, collaps the {ist} state coefficient/density to zero")
 
                     # Calculate auxiliary velocity from alpha
-                    if (self.l_xf1d):
-                        alpha /= 0.5 * self.aux.mass[0]
-                        self.aux.vel[ist] = np.sqrt(alpha)
-                    else:
-                        alpha /= self.mol.ekin_qm
-                        self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] * np.sqrt(alpha)
-                        if (self.l_refl):
-                            if (ist != self.rstate):
-                                self.aux.vel[ist] = self.aux.vel_refl[ist]
+                    alpha /= self.mol.ekin_qm
+                    self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] * np.sqrt(alpha)
+                    if (self.l_refl):
+                        if (ist != self.rstate):
+                            self.aux.vel[ist] = self.aux.vel_refl[ist]
         
         if (self.l_td_sigma):
             # Only two-state case is implemented..
