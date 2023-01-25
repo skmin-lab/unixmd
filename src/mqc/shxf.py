@@ -573,10 +573,8 @@ class SHXF(MQC):
         """
         self.l_collapse = False
         if (not self.l_afssh):
-
-            # Original scheme (Ha, J. Phys. Chem. Lett. 2018, 9, 1094)
-
-            # Get auxiliary position
+        # Original scheme (Ha, J. Phys. Chem. Lett. 2018, 9, 1094)
+        # Get auxiliary position
             for ist in range(self.mol.nst):
                 if (self.l_coh[ist]):
                     if (self.l_first[ist]):
@@ -589,10 +587,10 @@ class SHXF(MQC):
 
             self.pos_0 = np.copy(self.aux.pos[self.rstate])
 
-            # Get auxiliary velocity
+        # Get auxiliary velocity
             self.aux.vel_old = np.copy(self.aux.vel)
             for ist in range(self.mol.nst):
-                # Calculate propagation factor alpha
+            # Calculate propagation factor alpha
                 if (self.l_coh[ist]):
                     if (ist == self.rstate):
                         alpha = self.mol.ekin_qm
@@ -610,7 +608,7 @@ class SHXF(MQC):
                         self.collapse(ist)
                         self.event["DECO"].append(f"Energy conservation violated, collaps the {ist} state coefficient/density to zero")
 
-                    # Calculate auxiliary velocity from alpha
+               # Calculate auxiliary velocity from alpha
                     alpha /= self.mol.ekin_qm
                     self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] * np.sqrt(alpha)
                     if (self.l_refl):
@@ -722,7 +720,7 @@ class SHXF(MQC):
 
         self.mol.rho[cstate,:] = 0. + 0.j
         self.mol.rho[:,cstate] = 0. + 0.j
-        self.mol.rho /= fac                
+        self.mol.rho /= fac
 
     def get_phase(self):
         """ Routine to calculate phase term
