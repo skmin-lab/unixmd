@@ -105,12 +105,12 @@ class SHXF(MQC):
         self.l_collapse = False
         self.rho_threshold = rho_threshold
         self.aux_econs_viol = aux_econs_viol
-        
+
         if not (self.aux_econs_viol in ["fix", "collapse"]):
             error_message = "Invalid method to treat auxiliary trajectories that violate the total energy conservation!"
             error_vars = f"aux_econs_viol = {self.aux_econs_viol}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-        
+
         self.sigma = sigma
         
         if (self.sigma == None):
@@ -136,12 +136,12 @@ class SHXF(MQC):
         
         self.upper_th = 1. - self.rho_threshold
         self.lower_th = self.rho_threshold
-        
+
         # Initialize auxiliary molecule object
         self.aux = Auxiliary_Molecule(self.mol)
         self.pos_0 = np.zeros((self.aux.nat, self.aux.ndim))
         self.phase = np.array(np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim)))
-        
+
         # Debug variables
         self.dotpopdec = np.zeros(self.mol.nst)
         self.dotpopnac = np.zeros(self.mol.nst)
@@ -572,9 +572,54 @@ class SHXF(MQC):
         """ Routine to propagate auxiliary molecule
         """
         self.l_collapse = False
-        if (self.l_afssh):
+        if (not self.l_afssh):
+
+            # Original scheme (Ha, J. Phys. Chem. Lett. 2018, 9, 1094)
+
+            # Get auxiliary position
+            for ist in range(self.mol.nst):
+                if (self.l_coh[ist]):
+                    if (self.l_first[ist]):
+                        self.aux.pos[ist] = self.mol.pos[0:self.aux.nat]
+                    else:
+                        if (ist == self.rstate):
+                            self.aux.pos[ist] = self.mol.pos[0:self.aux.nat]
+                        else:
+                            self.aux.pos[ist] += self.aux.vel[ist] * self.dt
+
+            self.pos_0 = np.copy(self.aux.pos[self.rstate])
+
+            # Get auxiliary velocity
+            self.aux.vel_old = np.copy(self.aux.vel)
+            for ist in range(self.mol.nst):
+                # Calculate propagation factor alpha
+                if (self.l_coh[ist]):
+                    if (ist == self.rstate):
+                        alpha = self.mol.ekin_qm
+                    else:
+                        if (self.l_first[ist]):
+                            alpha = self.mol.ekin_qm
+                            if (self.l_econs_state):
+                                alpha += self.mol.states[self.rstate].energy - self.mol.states[ist].energy
+                        else:
+                            ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
+                            alpha = ekin_old + self.mol.states[ist].energy_old - self.mol.states[ist].energy
+                    if (alpha < 0.):
+                        alpha = 0.
+                        self.l_collapse = True
+                        self.collapse(ist)
+                        self.event["DECO"].append(f"Energy conservation violated, collaps the {ist} state coefficient/density to zero")
+
+                    # Calculate auxiliary velocity from alpha
+                    alpha /= self.mol.ekin_qm
+                    self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] * np.sqrt(alpha)
+                    if (self.l_refl):
+                        if (ist != self.rstate):
+                            self.aux.vel[ist] = self.aux.vel_refl[ist]
          
-            # Use AFSSH EOMs
+        else:
+
+            # AFSSH EOMs
            
             self.aux.vel_old = np.copy(self.aux.vel)
             rst = self.rstate
@@ -621,50 +666,6 @@ class SHXF(MQC):
 
             
             self.pos_0 = np.copy(self.aux.pos[self.rstate])
-            
-        
-        else:
-            # Original scheme (Ha, J. Phys. Chem. Lett. 2018, 9, 1094)
-            # Get auxiliary position
-            for ist in range(self.mol.nst):
-                if (self.l_coh[ist]):
-                    if (self.l_first[ist]):
-                        self.aux.pos[ist] = self.mol.pos[0:self.aux.nat]
-                    else:
-                        if (ist == self.rstate):
-                            self.aux.pos[ist] = self.mol.pos[0:self.aux.nat]
-                        else:
-                            self.aux.pos[ist] += self.aux.vel[ist] * self.dt
-
-            self.pos_0 = np.copy(self.aux.pos[self.rstate])
-
-            # Get auxiliary velocity
-            self.aux.vel_old = np.copy(self.aux.vel)
-            for ist in range(self.mol.nst):
-                # Calculate propagation factor alpha
-                if (self.l_coh[ist]):
-                    if (ist == self.rstate):
-                        alpha = self.mol.ekin_qm
-                    else:
-                        if (self.l_first[ist]):
-                            alpha = self.mol.ekin_qm
-                            if (self.l_econs_state):
-                                alpha += self.mol.states[self.rstate].energy - self.mol.states[ist].energy
-                        else:
-                            ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
-                            alpha = ekin_old + self.mol.states[ist].energy_old - self.mol.states[ist].energy
-                    if (alpha < 0.):
-                        alpha = 0.
-                        self.l_collapse = True
-                        self.collapse(ist)
-                        self.event["DECO"].append(f"Energy conservation violated, collaps the {ist} state coefficient/density to zero")
-
-                    # Calculate auxiliary velocity from alpha
-                    alpha /= self.mol.ekin_qm
-                    self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] * np.sqrt(alpha)
-                    if (self.l_refl):
-                        if (ist != self.rstate):
-                            self.aux.vel[ist] = self.aux.vel_refl[ist]
         
         if (self.l_td_sigma):
             # Only two-state case is implemented..
