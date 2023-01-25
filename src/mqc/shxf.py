@@ -573,8 +573,8 @@ class SHXF(MQC):
         """
         self.l_collapse = False
         if (not self.l_afssh):
-        # Original scheme (Ha, J. Phys. Chem. Lett. 2018, 9, 1094)
-        # Get auxiliary position
+            # Original scheme (Ha, J. Phys. Chem. Lett. 2018, 9, 1094)
+            # Get auxiliary position
             for ist in range(self.mol.nst):
                 if (self.l_coh[ist]):
                     if (self.l_first[ist]):
@@ -587,28 +587,35 @@ class SHXF(MQC):
 
             self.pos_0 = np.copy(self.aux.pos[self.rstate])
 
-        # Get auxiliary velocity
+            # Get auxiliary velocity
             self.aux.vel_old = np.copy(self.aux.vel)
             for ist in range(self.mol.nst):
-            # Calculate propagation factor alpha
+                # Calculate propagation factor alpha
                 if (self.l_coh[ist]):
-                    if (ist == self.rstate):
-                        alpha = self.mol.ekin_qm
-                    else:
-                        if (self.l_first[ist]):
-                            alpha = self.mol.ekin_qm
-                            if (self.l_econs_state):
-                                alpha += self.mol.states[self.rstate].energy - self.mol.states[ist].energy
-                        else:
-                            ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
-                            alpha = ekin_old + self.mol.states[ist].energy_old - self.mol.states[ist].energy
-                    if (alpha < 0.):
+                    if (self.l_fix[ist]):
                         alpha = 0.
-                        self.l_collapse = True
-                        self.collapse(ist)
-                        self.event["DECO"].append(f"Energy conservation violated, collaps the {ist} state coefficient/density to zero")
+                    else:
+                        if (ist == self.rstate):
+                            alpha = self.mol.ekin_qm
+                        else:
+                            if (self.l_first[ist]):
+                                alpha = self.mol.ekin_qm
+                                if (self.l_econs_state):
+                                    alpha += self.mol.states[self.rstate].energy - self.mol.states[ist].energy
+                            else:
+                                ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
+                                alpha = ekin_old + self.mol.states[ist].energy_old - self.mol.states[ist].energy
+                        if (alpha < 0.):
+                            alpha = 0.
+                            if (self.aux_econs_viol == "fix"):
+                                self.l_fix[ist] = True
+                                self.event["DECO"].append(f"Energy conservation violated, the auxiliary trajectory on state {ist} is fixed.")
+                            elif (self.aux_econs_viol == "collapse"):
+                                self.l_collapse = True
+                                self.collapse(ist)
+                                self.event["DECO"].append(f"Energy conservation violated, collapse the {ist} state coefficient/density to zero.")
 
-               # Calculate auxiliary velocity from alpha
+                    # Calculate auxiliary velocity from alpha
                     alpha /= self.mol.ekin_qm
                     self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] * np.sqrt(alpha)
                     if (self.l_refl):
