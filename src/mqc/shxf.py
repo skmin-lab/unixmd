@@ -51,9 +51,10 @@ class SHXF(MQC):
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
-        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, l_asymp=True, hop_rescale="augment", \
-        hop_reject="reverse", rho_threshold=0.01, l_afssh=False, l_td_sigma=False, sigma=None, init_coef=None, \
-        l_econs_state=True, l_econs_phase=False, l_bc=True, refl_vel="collapse", refl_dim="total", unit_dt="fs", out_freq=1, verbosity=0):
+        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
+        hop_reject="reverse", rho_threshold=0.01, sigma=None, init_coef=None, \
+        l_econs_state=True, aux_econs_viol="fix", unit_dt="fs", out_freq=1, verbosity=0, \
+        l_asymp=True, l_afssh=True, l_td_sigma=False, l_econs_phase=False, l_bc=True, refl_vel="collapse", refl_dim="total"):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
             elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
@@ -97,35 +98,27 @@ class SHXF(MQC):
         
         # Initialize XF related variables
         self.force_hop = False
-        self.l_collapse = False
         self.l_econs_state = l_econs_state
-        self.l_econs_phase = l_econs_phase
         self.l_coh = [False] * self.mol.nst
         self.l_first = [False] * self.mol.nst
+        self.l_fix = [False] * self.mol.nst
+        self.l_collapse = False
         self.rho_threshold = rho_threshold
-        self.sigma = sigma
-        self.aux = Auxiliary_Molecule(self.mol)
-        self.pos_0 = np.zeros((self.aux.nat, self.aux.ndim))
-        self.phase = np.array(np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim)))
-        self.qmom = np.zeros((self.mol.nst, self.mol.nst, self.aux.nat, self.aux.ndim))
-        self.df = np.zeros((self.mol.nst, self.mol.nst, self.aux.nat, self.aux.ndim))
-        self.k_lk = np.zeros((self.mol.nst, self.mol.nst))
-        self.l_asymp = l_asymp        
+        self.aux_econs_viol = aux_econs_viol
         
-        # Initialize AFSSH related variables
-        self.l_afssh = l_afssh
-        self.l_td_sigma = l_td_sigma
-        self.dR = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
-        self.dP = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
-        self.dF = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
-        self.dF_old = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
-
+        if not (self.aux_econs_viol in ["fix", "collapse"]):
+            error_message = "Invalid method to treat auxiliary trajectories that violate the total energy conservation!"
+            error_vars = f"aux_econs_viol = {self.aux_econs_viol}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+        
+        self.sigma = sigma
+        
         if (self.sigma == None):
             if (not self.l_td_sigma):
                 error_message = "Sigma for auxiliary trajectories must be set in running script!"
                 error_vars = f"sigma = {self.sigma}"
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-
+        
         if (isinstance(self.sigma, float)):
             # uniform value for sigma
             pass
@@ -140,9 +133,32 @@ class SHXF(MQC):
                 error_message = "Type of sigma must be float or list consisting of float!"
                 error_vars = f"sigma = {self.sigma}"
                 raise TypeError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-
+        
         self.upper_th = 1. - self.rho_threshold
         self.lower_th = self.rho_threshold
+        
+        # Initialize auxiliary molecule object
+        self.aux = Auxiliary_Molecule(self.mol)
+        self.pos_0 = np.zeros((self.aux.nat, self.aux.ndim))
+        self.phase = np.array(np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim)))
+        
+        # Debug variables
+        self.dotpopdec = np.zeros(self.mol.nst)
+        self.dotpopnac = np.zeros(self.mol.nst)
+        self.qmom = np.zeros((self.mol.nst, self.mol.nst, self.aux.nat, self.aux.ndim))
+        
+        self.df = np.zeros((self.mol.nst, self.mol.nst, self.aux.nat, self.aux.ndim))
+        self.k_lk = np.zeros((self.mol.nst, self.mol.nst))
+        self.l_asymp = l_asymp        
+        self.l_econs_phase = l_econs_phase
+        
+        # Initialize AFSSH related variables
+        self.l_afssh = l_afssh
+        self.l_td_sigma = l_td_sigma
+        self.dR = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
+        self.dP = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
+        self.dF = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
+        self.dF_old = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
 
         # Initialize branching-correction variables
         self.mom = np.zeros((self.mol.nst, self.mol.nat_qm, self.aux.ndim))
@@ -157,9 +173,6 @@ class SHXF(MQC):
         if (not (refl_vel == "keep" or "stop" or "collapse")):
             raise ValueError (f"vel_refl must be 'keep' or 'stop'")
         
-        # Debug variables
-        self.dotpopdec = np.zeros(self.mol.nst)
-        self.dotpopnac = np.zeros(self.mol.nst)
 
         # Initialize event to print
         self.event = {"HOP": [], "DECO": [], "REFL": []}
