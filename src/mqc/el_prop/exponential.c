@@ -55,7 +55,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     dcomplex *dg_exp_iexponent = malloc((nst * nst) * sizeof(dcomplex)); // dg_exp_iexponent is diagonalized exp( - i * exponent). it is Pexp( - i * D)P^-1 
     dcomplex *product_old = malloc((nst * nst) * sizeof(dcomplex)); // product_old is product of Pexp( - i * D)P^-1 until previous step (old)
     dcomplex *product_new = malloc((nst * nst) * sizeof(dcomplex)); // product_new is product of Pexp( - i * D)P^-1 until current step (new)
-    dcomplex *identity_dcom = malloc((nst * nst) * sizeof(dcomplex)); // identity matrix
+    dcomplex *identity = malloc((nst * nst) * sizeof(dcomplex)); // identity matrix
     double **dv = malloc(nst * sizeof(double*));
 
     int ist, jst, iestep, lwork, info; // lwork : The length of the array WORK, info : confirmation that heev is working
@@ -71,41 +71,43 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     dcomplex wkopt; // need to get optimized lwork
     dcomplex *work; // length of lwork
 
-    // Set identity matrix and diagonal matrix
+    // Set identity matrix
     for(ist = 0; ist < nst; ist++){
         // diagonal element to one 
-        identity_dcom[nst * ist + ist].real = 1.0;
-        identity_dcom[nst * ist + ist].imag = 0.0;
+        identity[nst * ist + ist].real = 1.0;
+        identity[nst * ist + ist].imag = 0.0;
         product_old[nst * ist + ist].real = 1.0;
         product_old[nst * ist + ist].imag = 0.0;
         for(jst = ist; jst < nst; jst++){       
             // off-diagonal elements to zero 
             // upper triangle
-            identity_dcom[nst * ist + jst].real = 0.0;
-            identity_dcom[nst * ist + jst].imag = 0.0;
+            identity[nst * ist + jst].real = 0.0;
+            identity[nst * ist + jst].imag = 0.0;
             product_old[nst * ist + jst].real = 0.0;
             product_old[nst * ist + jst].imag = 0.0; 
-            exp_idiag[nst * ist + jst].real = 0.0;
-            exp_idiag[nst * ist + jst].imag = 0.0;
             // lower triangle
-            identity_dcom[nst * jst + ist].real = 0.0;
-            identity_dcom[nst * jst + ist].imag = 0.0;
+            identity[nst * jst + ist].real = 0.0;
+            identity[nst * jst + ist].imag = 0.0;
             product_old[nst * jst + ist].real = 0.0;
             product_old[nst * jst + ist].imag = 0.0; 
-            exp_idiag[nst * jst + ist].real = 0.0;
-            exp_idiag[nst * jst + ist].imag = 0.0;
         }
     }
 
+    // Set Zero matrix
+    for(ist = 0; ist < nst * nst; ist++){
+        exp_idiag[ist].real = 0.0;
+        exp_idiag[ist].imag = 0.0;
+    }
+
     // TODO : Use memset
-    // memset(identity_dcom, 0, (nst * nst)*sizeof(identity_dcom[0]));
+    // memset(identity, 0, (nst * nst)*sizeof(identity[0]));
     // memset(product_old, 0, (nst * nst)*sizeof(product_old[0]));
     // memset(exp_idiag, 0, (nst * nst)*sizeof(exp_idiag[0]));
 
     // TODO : Use memset
     // Set identity matrix
     // for(ist = 0; ist < nst; ist++){
-    //     identity_dcom[nst * ist + ist].real = 1.0;
+    //     identity[nst * ist + ist].real = 1.0;
     //     product_old[nst * ist + ist].real = 1.0;
     // }
    
@@ -163,12 +165,12 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         zgemm_("N", "N", &nst, &nst, &nst, &dcone, dg_exp_iexponent, &nst, product_old, &nst, &dczero, product_new, &nst); // Pexp( - i * D)P^-1 * (old Pexp( - i * D)P^-1 )
 
         // Update coefficent 
-        zgemm_("N", "N", &nst, &nst, &nst, &dcone, identity_dcom, &nst, product_new, &nst, &dczero, product_old, &nst); // to keep Pexp( - i * D)P^-1 value in total_coef_dcom 
+        zgemm_("N", "N", &nst, &nst, &nst, &dcone, identity, &nst, product_new, &nst, &dczero, product_old, &nst); // to keep Pexp( - i * D)P^-1 value in total_coef_dcom 
     }
 
     // Convert the data type for the term ( exp( - i * exponent )) to original double complex to make propagation matrix
     for(ist = 0; ist < nst * nst; ist++){
-        exp_iexponent[ist] = product_old[ist].real + product_old[ist].imag * I;
+        exp_iexponent[ist] = product_new[ist].real + product_new[ist].imag * I;
     }
 
     // matrix - vector multiplication //TODO Is it necessary to change this to zgemv?
@@ -192,7 +194,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     free(coef_new);
     free(exp_iexponent);
     free(dg_exp_iexponent);
-    free(identity_dcom);
+    free(identity);
     free(product_new);
     free(product_old);
     free(eigenvectors);
