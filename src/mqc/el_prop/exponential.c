@@ -73,20 +73,27 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
 
     // Set identity matrix and diagonal matrix
     for(ist = 0; ist < nst; ist++){
-        for(jst = 0; jst < nst; jst++){
-            if(ist == jst){
-                identity_dcom[nst * ist + ist].real = 1.0;
-                identity_dcom[nst * ist + ist].imag = 0.0;
-                product_old[nst * ist + ist].real = 1.0;
-                product_old[nst * ist + ist].imag = 0.0;
-            }else{
-                identity_dcom[ist * nst + jst].real = 0.0;
-                identity_dcom[ist * nst + jst].imag = 0.0;
-                product_old[ist * nst + jst].real = 0.0;
-                product_old[ist * nst + jst].imag = 0.0; 
-                exp_idiag[ist * nst + jst].real = 0.0;
-                exp_idiag[ist * nst + jst].imag = 0.0;
-            }
+        // diagonal element to one 
+        identity_dcom[nst * ist + ist].real = 1.0;
+        identity_dcom[nst * ist + ist].imag = 0.0;
+        product_old[nst * ist + ist].real = 1.0;
+        product_old[nst * ist + ist].imag = 0.0;
+        for(jst = ist; jst < nst; jst++){       
+            // off-diagonal elements to zero 
+            // upper triangle
+            identity_dcom[nst * ist + jst].real = 0.0;
+            identity_dcom[nst * ist + jst].imag = 0.0;
+            product_old[nst * ist + jst].real = 0.0;
+            product_old[nst * ist + jst].imag = 0.0; 
+            exp_idiag[nst * ist + jst].real = 0.0;
+            exp_idiag[nst * ist + jst].imag = 0.0;
+            // lower triangle
+            identity_dcom[nst * jst + ist].real = 0.0;
+            identity_dcom[nst * jst + ist].imag = 0.0;
+            product_old[nst * jst + ist].real = 0.0;
+            product_old[nst * jst + ist].imag = 0.0; 
+            exp_idiag[nst * jst + ist].real = 0.0;
+            exp_idiag[nst * jst + ist].imag = 0.0;
         }
     }
 
