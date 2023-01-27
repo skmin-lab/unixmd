@@ -7,39 +7,30 @@
 #include "derivs_xf.h"
 
 // Routine for coefficient propagation scheme in rk4 propagator
-static void rk4_coef(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
-    double *mass, double *energy, double *energy_old, double *sigma, double **nacme,
-    double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *coef,
-    int verbosity, double *dotpopdec);
+static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *energy_old,
+    double **nacme, double **nacme_old, double **k_lk, double complex *coef, int verbosity, double *dotpopdec);
 
 // Routine for density propagation scheme in rk4 propagator
-static void rk4_rho(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
-    double *mass, double *energy, double *energy_old, double *sigma, double **nacme,
-    double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex **rho,
-    int verbosity, double *dotpopdec);
+static void rk4_rho(int nst, int nesteps, double dt, double *energy, double *energy_old,
+    double **nacme, double **nacme_old, double **k_lk, double complex **rho, int verbosity, double *dotpopdec);
 
 // Interface routine for propagation scheme in rk4 propagator
-static void rk4(int nat, int ndim, int nst, int nesteps, double dt, char *elec_object, int *l_coh,
-    double *mass, double *energy, double *energy_old, double *sigma, double **nacme, double **nacme_old,
-    double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *coef, double complex **rho,
+static void rk4(int nst, int nesteps, double dt, char *elec_object, double *energy, double *energy_old,
+    double **nacme, double **nacme_old, double **k_lk, double complex *coef, double complex **rho,
     int verbosity, double *dotpopdec){
 
     if(strcmp(elec_object, "coefficient") == 0){
-        rk4_coef(nat, ndim, nst, nesteps, dt, l_coh, mass, energy, energy_old, sigma,
-            nacme, nacme_old, pos, qmom, aux_pos, phase, coef, verbosity, dotpopdec);
+        rk4_coef(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, k_lk, coef, verbosity, dotpopdec);
     }
     else if(strcmp(elec_object, "density") == 0){
-        rk4_rho(nat, ndim, nst, nesteps, dt, l_coh, mass, energy, energy_old, sigma,
-            nacme, nacme_old, pos, qmom, aux_pos, phase, rho, verbosity, dotpopdec);
+        rk4_rho(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, k_lk, rho, verbosity, dotpopdec);
     }
 
 }
 
 // Routine for coefficient propagation scheme in rk4 propagator
-static void rk4_coef(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
-    double *mass, double *energy, double *energy_old, double *sigma, double **nacme,
-    double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *coef,
-    int verbosity, double *dotpopdec){
+static void rk4_coef(int nst, int nesteps, double dt, double *energy, double *energy_old, 
+    double **nacme, double **nacme_old, double **k_lk, double complex *coef, int verbosity, double *dotpopdec){
 
     double complex *k1 = malloc(nst * sizeof(double complex));
     double complex *k2 = malloc(nst * sizeof(double complex));
@@ -63,10 +54,11 @@ static void rk4_coef(int nat, int ndim, int nst, int nesteps, double dt, int *l_
     frac = 1.0 / (double)nesteps;
     edt = dt * frac;
 
+    xf_cdot(nst, k_lk, coef, xf_c_dot);
     for(iestep = 0; iestep < nesteps; iestep++){
 
         // Calculate cdot contribution originated from XF term
-        xf_cdot(nat, ndim, nst, l_coh, mass, sigma, pos, qmom, aux_pos, phase, coef, xf_c_dot);
+//        xf_cdot(nst, k_lk, coef, xf_c_dot);
 
         // Interpolate energy and NACME terms between time t and t + dt
         for(ist = 0; ist < nst; ist++){
@@ -147,10 +139,8 @@ static void rk4_coef(int nat, int ndim, int nst, int nesteps, double dt, int *l_
 }
 
 // Routine for density propagation scheme in rk4 propagator
-static void rk4_rho(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
-    double *mass, double *energy, double *energy_old, double *sigma, double **nacme,
-    double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex **rho,
-    int verbosity, double *dotpopdec){
+static void rk4_rho(int nst, int nesteps, double dt, double *energy, double *energy_old,
+    double **nacme, double **nacme_old, double **k_lk, double complex **rho, int verbosity, double *dotpopdec){
 
     double complex **k1 = malloc(nst * sizeof(double complex*));
     double complex **k2 = malloc(nst * sizeof(double complex*));
@@ -183,10 +173,11 @@ static void rk4_rho(int nat, int ndim, int nst, int nesteps, double dt, int *l_c
     frac = 1.0 / (double)nesteps;
     edt = dt * frac;
 
+    xf_rhodot(nst, k_lk, rho, xf_rho_dot);
     for(iestep = 0; iestep < nesteps; iestep++){
 
         // Calculate rhodot contribution originated from XF term
-        xf_rhodot(nat, ndim, nst, l_coh, mass, sigma, pos, qmom, aux_pos, phase, rho, xf_rho_dot);
+//        xf_rhodot(nst, k_lk, rho, xf_rho_dot);
 
         // Interpolate energy and NACME terms between time t and t + dt
         for(ist = 0; ist < nst; ist++){
@@ -247,6 +238,7 @@ static void rk4_rho(int nat, int ndim, int nst, int nesteps, double dt, int *l_c
     }
 
     if(verbosity >= 1){
+        xf_rhodot(nst, k_lk, rho, xf_rho_dot);
         xf_print_rho(nst, xf_rho_dot, dotpopdec); 
     }
 
