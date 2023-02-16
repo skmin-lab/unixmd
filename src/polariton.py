@@ -1,5 +1,5 @@
 from __future__ import division
-from misc import data, eps, A_to_au, fs_to_au, call_name
+from misc import data, eps, A_to_au, fs_to_au, eV_to_au, call_name
 import textwrap
 import numpy as np
 
@@ -14,8 +14,22 @@ class State(object):
         self.energy = 0.
         self.energy_old = 0.
         self.force = np.zeros((nat, ndim))
-        self.coef = 0. + 0.j
         self.multiplicity = 1
+
+
+class Polaritonic_State(object):
+    """ Class for polaritonic states
+
+        :param integer ndim: Dimension of space
+        :param integer nat: Number of atoms
+    """
+    def __init__(self, ndim, nat):
+        # Initialize variables
+        self.energy = 0.
+        self.force = np.zeros((nat, ndim))
+        # Initialize the electronic coefficients (adiabatic and diabatic)
+        self.coef_a = 0. + 0.j
+        self.coef_d = 0. + 0.j
 
 
 class Polariton(object):
@@ -27,15 +41,20 @@ class Polariton(object):
         :param boolean l_qmmm: Use the QM/MM scheme
         :param integer natoms_mm: Number of atoms in the MM region
         :param integer ndof: Degrees of freedom (if model is False, the molecular DoF is given.)
+        :param integer nphotons: Number of quantized photons inside the cavity
+        :param double photon_freq: Resonant frequency of the photon inside the cavity
+        :param double,list field_pol_vec: Field polarization vector
         :param string unit_pos: Unit of atomic positions
         :param string unit_vel: Unit of atomic velocities
+        :param string unit_freq: Unit of resonant photon frequency
         :param double charge: Total charge of the system
         :param boolean l_model: Is the system a model system?
     """
     def __init__(self, geometry, ndim=3, nstates=1, l_qmmm=False, natoms_mm=None, ndof=None, \
-        unit_pos='angs', unit_vel='au', charge=0., l_model=False):
-        # Save name of Molecule class
-        self.mol_type = self.__class__.__name__
+        nphotons=1, photon_freq=0.1, field_pol_vec=None, unit_pos='angs', unit_vel='au', \
+        unit_freq='ev', charge=0., l_model=False):
+        # Save name of Polariton class
+        self.pol_type = self.__class__.__name__
 
         # Initialize input values
         self.ndim = ndim
@@ -47,13 +66,13 @@ class Polariton(object):
         if not (self.unit_pos in ["angs", "au"]):
             error_message = "Invalid unit for position!"
             error_vars = f"unit_pos = {self.unit_pos}"
-            raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+            raise ValueError (f"( {self.pol_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.unit_vel = unit_vel.lower()
         if not (self.unit_vel in ["angs/ps", "angs/fs", "au"]):
             error_message = "Invalid unit for velocity!"
             error_vars = f"unit_vel = {self.unit_vel}"
-            raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+            raise ValueError (f"( {self.pol_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Initialize geometry
         self.pos = []
@@ -69,13 +88,13 @@ class Polariton(object):
             if (self.nat_mm == None):
                 error_message = "Number of atoms in MM region is essential for QMMM!"
                 error_vars = f"natoms_mm = {self.nat_mm}"
-                raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                raise ValueError (f"( {self.pol_type}.{call_name()} ) {error_message} ( {error_vars} )")
             self.nat_qm = self.nat - self.nat_mm
         else:
             if (self.nat_mm != None):
                 error_message = "Number of atoms in MM region is not necessary!"
                 error_vars = f"natoms_mm = {self.nat_mm}"
-                raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                raise ValueError (f"( {self.pol_type}.{call_name()} ) {error_message} ( {error_vars} )")
             self.nat_qm = self.nat
 
         # Initialize system charge and number of electrons
@@ -97,7 +116,7 @@ class Polariton(object):
                 if (self.nat == 1):
                     error_message = "Too small number of atoms, check geometry! Or Check l_model and ndof!"
                     error_vars = f"nat = {self.nat}"
-                    raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                    raise ValueError (f"( {self.pol_type}.{call_name()} ) {error_message} ( {error_vars} )")
                 elif (self.nat == 2):
                     # Diatomic molecules
                     self.ndof = 1
@@ -107,10 +126,48 @@ class Polariton(object):
             else:
                 self.ndof = ndof
 
+        # Initialize polariton input values
+        self.nphotons = nphotons
+
+        # Initialize field polarization vector in the cavity
+        self.field_pol_vec = field_pol_vec
+        if (self.field_pol_vec == None):
+            error_message = "The field polarization vector in the cavity must be set in running script!"
+            error_vars = f"field_pol_vec = {self.field_pol_vec}"
+            raise ValueError (f"( {self.pol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        if (isinstance(self.field_pol_vec, list)):
+            if (len(self.field_pol_vec) != self.ndim):
+                error_message = "Number of elements for field polarization vector must be equal to dimension of the space!"
+                error_vars = f"len(field_pol_vec) = {len(self.field_pol_vec)}"
+                raise ValueError (f"( {self.pol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+        else:
+            error_message = "Type of field polarization vector must be list consisting of float!"
+            error_vars = f"field_pol_vec = {self.field_pol_vec}"
+            raise TypeError (f"( {self.pol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        # Unit of photon frequency
+        self.unit_freq = unit_freq.lower()
+        if (self.unit_freq == "au"):
+            self.photon_freq = photon_freq
+        elif (self.unit_freq == "ev"):
+            self.photon_freq = photon_freq * eV_to_au
+        else:
+            error_message = "Invalid unit for photon frequency!"
+            error_vars = f"unit_freq = {unit_freq}"
+            raise ValueError (f"( {self.pol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
         # Initialize BO states
         self.states = []
         for ist in range(self.nst):
             self.states.append(State(self.ndim, self.nat))
+
+        # Initialize polaritonic states
+        self.pst = self.nst * (self.nphotons + 1)
+
+        self.pol_states = []
+        for ist in range(self.pst):
+            self.pol_states.append(Polaritonic_State(self.ndim, self.nat))
 
         # Initialize couplings
         self.nacme = np.zeros((self.nst, self.nst))
@@ -118,10 +175,15 @@ class Polariton(object):
         self.socme = np.zeros((self.nst, self.nst), dtype=np.complex128)
         self.socme_old = np.zeros((self.nst, self.nst), dtype=np.complex128)
 
+        self.pnacme = np.zeros((self.pst, self.pst))
+
         # Initialize other properties
         self.nac = np.zeros((self.nst, self.nst, self.nat_qm, self.ndim))
         self.nac_old = np.zeros((self.nst, self.nst, self.nat_qm, self.ndim))
-        self.rho = np.zeros((self.nst, self.nst), dtype=np.complex128)
+
+        self.pnac = np.zeros((self.pst, self.pst, self.nat_qm, self.ndim))
+        self.rho_a = np.zeros((self.pst, self.pst), dtype=np.complex128)
+        self.rho_d = np.zeros((self.pst, self.pst), dtype=np.complex128)
 
         self.ekin = 0.
         self.ekin_qm = 0.
