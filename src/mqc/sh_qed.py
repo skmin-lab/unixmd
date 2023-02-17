@@ -9,7 +9,7 @@ import pickle
 class SH_QED(MQC):
     """ Class for surface hopping dynamics coupled to confined cavity mode
 
-        :param object molecule: Molecule object
+        :param object polariton: Polariton object
         :param object thermostat: Thermostat object
         :param integer istate: Initial state
         :param double dt: Time interval
@@ -19,6 +19,7 @@ class SH_QED(MQC):
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
+        :param boolean l_adj_tdp: Adjust transition dipole moments to align the phases
         :param string hop_rescale: Velocity rescaling method after successful hop
         :param string hop_reject: Velocity rescaling method after frustrated hop
         :param init_coef: Initial BO coefficient
@@ -29,21 +30,27 @@ class SH_QED(MQC):
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
-    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
-        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
-        hop_reject="reverse", init_coef=None, dec_correction=None, edc_parameter=0.1, \
-        unit_dt="fs", out_freq=1, verbosity=0):
+    def __init__(self, polariton, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
+        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, l_adj_tdp=True, \
+        hop_rescale="augment", hop_reject="reverse", init_coef=None, dec_correction=None, \
+        edc_parameter=0.1, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
-        super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
+        super().__init__(polariton, thermostat, istate, dt, nsteps, nesteps, \
             elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
+
+        # Initialize Polariton object
+        self.pol = self.mol
+        del self.mol
+
+        self.l_adj_tdp = l_adj_tdp
 
         # Initialize SH variables
         self.rstate = istate
         self.rstate_old = self.rstate
 
         self.rand = 0.
-        self.prob = np.zeros(self.mol.nst)
-        self.acc_prob = np.zeros(self.mol.nst + 1)
+        self.prob = np.zeros(self.pol.pst)
+        self.acc_prob = np.zeros(self.pol.pst + 1)
 
         self.l_hop = False
         self.l_reject = False
@@ -86,7 +93,7 @@ class SH_QED(MQC):
 #                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Debug variables
-        self.dotpopnac = np.zeros(self.mol.nst)
+        self.dotpopnac = np.zeros(self.pol.pst)
 
         # Initialize event to print
         self.event = {"HOP": []}

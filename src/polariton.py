@@ -340,54 +340,54 @@ class Polariton(object):
     def get_coefficient(self, coef, istate):
         """ Get initial coefficient
             
-            :param coef: Initial BO coefficient
+            :param coef: Initial coefficient for polaritonic states
             :type coef: double, list or complex, list
-            :param integer istate: Initial adiabatic state
+            :param integer istate: Initial polaritonic state
         """
         if (coef == None):
             if (istate == None): 
-                error_message = "Either initial states or coefficients must be given!"
+                error_message = "Either initial state or coefficients must be given!"
                 error_vars = f"(MQC) istate = {istate}, (MQC) init_coef = {coef}"
-                raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                raise ValueError (f"( {self.pol_type}.{call_name()} ) {error_message} ( {error_vars} )")
             else:
-                if (istate >= self.nst):
+                if (istate >= self.pst):
                     error_message = "Index for initial state must be smaller than number of states! The index for ground state is zero"
-                    error_vars = f"(MQC) istate = {istate}, nstates = {self.nst}"
-                    raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                    error_vars = f"(MQC) istate = {istate}, nstates = {self.nst}, nphotons = {self.nphotons}"
+                    raise ValueError (f"( {self.pol_type}.{call_name()} ) {error_message} ( {error_vars} )")
                 else:
-                    self.states[istate].coef = 1. + 0.j
-                    self.rho[istate, istate] = 1. + 0.j
+                    self.pol_states[istate].coef_a = 1. + 0.j
+                    self.rho_a[istate, istate] = 1. + 0.j
         else:
             if (isinstance(coef, list)):
-                if (len(coef) != self.nst):
+                if (len(coef) != self.pst):
                     error_message = "Number of initial coefficients must be equal to number of states!"
-                    error_vars = f"(MQC) len(init_coef) = {len(coef)}, nstates = {self.nst}"
-                    raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                    error_vars = f"(MQC) len(init_coef) = {len(coef)}, nstates = {self.nst}, nphotons = {self.nphotons}"
+                    raise ValueError (f"( {self.pol_type}.{call_name()} ) {error_message} ( {error_vars} )")
                 else:
-                    for ist in range(self.nst):
+                    for ist in range(self.pst):
                         if (isinstance(coef[ist], float)):
-                            self.states[ist].coef = coef[ist] + 0.j
+                            self.pol_states[ist].coef_a = coef[ist] + 0.j
                         elif (isinstance(coef[ist], complex)):
-                            self.states[ist].coef = coef[ist]
+                            self.pol_states[ist].coef_a = coef[ist]
                         else:
                             error_message = "Type of initial coefficients must be float or complex!"
                             error_vars = f"(MQC) init_coef[{ist}] = {coef[ist]}"
-                            raise TypeError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                            raise TypeError (f"( {self.pol_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
                     norm = 0.
-                    for ist in range(self.nst):
-                        for jst in range(self.nst):
-                            self.rho[ist, jst] = self.states[ist].coef.conjugate() * self.states[jst].coef
-                        norm += self.rho.real[ist, ist]
+                    for ist in range(self.pst):
+                        for jst in range(self.pst):
+                            self.rho_a[ist, jst] = self.pol_states[ist].coef_a.conjugate() * self.pol_states[jst].coef_a
+                        norm += self.rho_a.real[ist, ist]
 
                     if (abs(norm - 1.) >= eps):
                         error_message = "Norm for electronic wave function should be 1.0!"
                         error_vars = f"(MQC) init_coef = {coef}"
-                        raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                        raise ValueError (f"( {self.pol_type}.{call_name()} ) {error_message} ( {error_vars} )")
             else:
                 error_message = "Type of initial coefficients must be list!"
                 error_vars = f"(MQC) init_coef = {coef}"
-                raise TypeError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                raise TypeError (f"( {self.pol_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
     def print_init(self, mm):
         """ Print initial information about molecule.py
