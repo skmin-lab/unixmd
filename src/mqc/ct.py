@@ -117,11 +117,12 @@ class CT(MQC):
         """
         # Initialize PyUNIxMD
         abs_path_output_dir = os.path.join(os.getcwd(), output_dir)
-        base_dirs, unixmd_dirs, qm_log_dirs, mm_log_dirs =\
-             self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
+        base_dirs, unixmd_dirs, qed_log_dirs, qm_log_dirs, mm_log_dirs = \
+            self.run_init(None, qm, mm, output_dir, None, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
 
         bo_list = [ist for ist in range(self.nst)]
         qm.calc_coupling = True
+        qm.calc_tdp = False
 
         self.print_init(qm, mm, restart)
 
@@ -661,7 +662,7 @@ class CT(MQC):
             :param string restart: Option for controlling dynamics restarting
         """
         # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm, restart)
+        super().print_init(None, qm, mm, restart)
 
         # Print CTMQC info.
         ct_info = textwrap.dedent(f"""\

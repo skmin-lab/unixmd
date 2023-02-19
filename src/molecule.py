@@ -284,7 +284,7 @@ class Molecule(object):
         """
         if (coef == None):
             if (istate == None): 
-                error_message = "Either initial states or coefficients must be given!"
+                error_message = "Either initial state or coefficients must be given!"
                 error_vars = f"(MQC) istate = {istate}, (MQC) init_coef = {coef}"
                 raise ValueError (f"( {self.mol_type}.{call_name()} ) {error_message} ( {error_vars} )")
             else:

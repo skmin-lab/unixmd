@@ -390,7 +390,7 @@ class Polariton(object):
                 raise TypeError (f"( {self.pol_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
     def print_init(self, mm):
-        """ Print initial information about molecule.py
+        """ Print initial information about polariton.py
 
             :param object mm: MM object containing MM calculation infomation
         """
@@ -423,21 +423,30 @@ class Polariton(object):
         print (vel_info, flush=True)
 
         ### TODO: multiplicity
-        molecule_info = textwrap.dedent(f"""\
+        polariton_info = textwrap.dedent(f"""\
         {"-" * 68}
-        {"Molecule Information":>43s}
+        {"Polariton Information":>43s}
         {"-" * 68}
           Number of Atoms (QM)     = {self.nat_qm:>16d}
         """)
         if (self.l_qmmm and mm != None):
-            molecule_info += f"  Number of Atoms (MM)     = {self.nat_mm:>16d}\n"
-        molecule_info += textwrap.indent(textwrap.dedent(f"""\
+            polariton_info += f"  Number of Atoms (MM)     = {self.nat_mm:>16d}\n"
+        polariton_info += textwrap.indent(textwrap.dedent(f"""\
           Degrees of Freedom       = {int(self.ndof):>16d}
           Charge                   = {int(self.charge):>16d}
           Number of Electrons      = {int(self.nelec):>16d}
           Number of States         = {self.nst:>16d}
+
+          Number of Photons        = {self.nphotons:>16d}
+          Number of Total States   = {self.pst:>16d}
+          Photon Frequency (eV)    = {self.photon_freq / eV_to_au:>16.6f}
         """), "  ")
+        # Print field polarization vector components
+        field_info = " " * 8
+        field_info += "  ".join([f'{value:8.4f}' for value in self.field_pol_vec])
+        polariton_info += f"  Field Polarization Vec.  =\n"
+        polariton_info += field_info
         ### TODO: Model case
-        print (molecule_info, flush=True)
+        print (polariton_info, flush=True)
 
 

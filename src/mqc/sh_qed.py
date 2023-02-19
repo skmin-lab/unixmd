@@ -98,24 +98,28 @@ class SH_QED(MQC):
         # Initialize event to print
         self.event = {"HOP": []}
 
-    def run(self, qed, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
+    def run(self, qed, qm, mm=None, output_dir="./", l_save_qed_log=False, l_save_qm_log=False, \
+        l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to surface hopping dynamics
 
             :param object qed: QED object containing cavity-molecule interaction
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
             :param string output_dir: Name of directory where outputs to be saved.
+            :param boolean l_save_qed_log: Logical for saving QED calculation log
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
             :param boolean l_save_scr: Logical for saving scratch directory
             :param string restart: Option for controlling dynamics restarting
         """
         # Initialize PyUNIxMD
-        base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
-             self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
-        bo_list = [self.rstate]
+        base_dir, unixmd_dir, qed_log_dir, qm_log_dir, mm_log_dir = \
+            self.run_init(qed, qm, mm, output_dir, l_save_qed_log, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
+        bo_list = [ist for ist in range(self.pol.nst)]
+        pol_list = [self.rstate]
         qm.calc_coupling = True
-        self.print_init(qm, mm, restart)
+        qm.calc_tdp = True
+        self.print_init(qed, qm, mm, restart)
 
         if (restart == None):
             # Calculate initial input geometry at t = 0.0 s
@@ -481,15 +485,16 @@ class SH_QED(MQC):
             tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopnac])
             typewriter(tmp, unixmd_dir, "DOTPOPNAC", "a")
 
-    def print_init(self, qm, mm, restart):
+    def print_init(self, qed, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
+            :param object qed: QED object containing cavity-molecule interaction
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
             :param string restart: Option for controlling dynamics restarting
         """
-        # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm, restart)
+        # Print initial information about polariton, qed, qm, mm and thermostat
+        super().print_init(qed, qm, mm, restart)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
