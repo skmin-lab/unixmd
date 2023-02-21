@@ -185,6 +185,10 @@ class Polariton(object):
         self.rho_a = np.zeros((self.pst, self.pst), dtype=np.complex128)
         self.rho_d = np.zeros((self.pst, self.pst), dtype=np.complex128)
 
+        self.tdp = np.zeros((self.nst, self.nst, self.ndim))
+        self.tdp_old = np.zeros((self.nst, self.nst, self.ndim))
+        self.tdp_grad = np.zeros((self.nst, self.nst, 3, self.nat_qm, self.ndim))
+
         self.ekin = 0.
         self.ekin_qm = 0.
         self.epot = 0.
@@ -304,10 +308,11 @@ class Polariton(object):
         else:
             self.ekin_qm = self.ekin
 
-    def reset_bo(self, calc_coupling):
-        """ Reset BO energies, forces and nonadiabatic couplings
+    def reset_bo(self, calc_coupling, calc_tdp):
+        """ Reset BO energies, forces, nonadiabatic couplings and transition dipoles
 
             :param boolean calc_coupling: Check whether the dynamics includes coupling calculation
+            :param boolean calc_tdp: Check whether the dynamics includes transition dipole calculation
         """
         for states in self.states:
             states.energy = 0.
@@ -318,6 +323,10 @@ class Polariton(object):
                 self.nacme = np.zeros((self.nst, self.nst))
             else:
                 self.nac = np.zeros((self.nst, self.nst, self.nat_qm, self.ndim))
+
+        if (calc_tdp):
+            self.tdp = np.zeros((self.nst, self.nst, self.ndim))
+            self.tdp_grad = np.zeros((self.nst, self.nst, 3, self.nat_qm, self.ndim))
 
     def backup_bo(self):
         """ Backup BO energies and nonadiabatic couplings

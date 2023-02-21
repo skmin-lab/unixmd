@@ -124,8 +124,8 @@ class SH_QED(MQC):
         if (restart == None):
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
-            self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
+            self.pol.reset_bo(qm.calc_coupling, qm.calc_tdp)
+            qm.get_data(self.pol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
             if (not self.mol.l_nacme):
@@ -145,7 +145,7 @@ class SH_QED(MQC):
 
             if (self.l_hop):
                 if (qm.re_calc):
-                    qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
+                    qm.get_data(self.pol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
                 if (self.mol.l_qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=True)
 
@@ -173,8 +173,8 @@ class SH_QED(MQC):
             self.cl_update_position()
 
             self.mol.backup_bo()
-            self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
+            self.pol.reset_bo(qm.calc_coupling, qm.calc_tdp)
+            qm.get_data(self.pol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
@@ -203,7 +203,7 @@ class SH_QED(MQC):
 
             if (self.l_hop):
                 if (qm.re_calc):
-                    qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
+                    qm.get_data(self.pol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
                 if (self.mol.l_qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
 
