@@ -289,6 +289,38 @@ class Polariton(object):
                     self.nac[ist, jst] = - self.nac[ist, jst]
                     self.nac[jst, ist] = - self.nac[jst, ist]
 
+    def adjust_tdp(self):
+        """ Adjust phase of transition dipole moments
+        """
+        for ist in range(self.nst):
+            for jst in range(ist, self.nst):
+                ovlp = 0.
+                stdp_old = 0.
+                stdp = 0.
+
+                stdp_old = np.sum(self.tdp_old[ist, jst] ** 2)
+                stdp = np.sum(self.tdp[ist, jst] ** 2)
+
+                stdp_old = np.sqrt(stdp_old)
+                stdp = np.sqrt(stdp)
+
+                if (np.sqrt(stdp * stdp_old) < eps):
+                    ovlp = 1.
+                else:
+                    dot_tdp = 0.
+                    dot_tdp = np.sum(self.tdp_old[ist, jst] * self.tdp[ist, jst])
+                    ovlp = dot_tdp / stdp / stdp_old
+
+                if (ovlp < 0.):
+                    self.tdp[ist, jst] = - self.tdp[ist, jst]
+                    self.tdp[jst, ist] = - self.tdp[jst, ist]
+                    self.tdp_grad[ist, jst, 0] = - self.tdp_grad[ist, jst, 0]
+                    self.tdp_grad[ist, jst, 1] = - self.tdp_grad[ist, jst, 1]
+                    self.tdp_grad[ist, jst, 2] = - self.tdp_grad[ist, jst, 2]
+                    self.tdp_grad[jst, ist, 0] = - self.tdp_grad[jst, ist, 0]
+                    self.tdp_grad[jst, ist, 1] = - self.tdp_grad[jst, ist, 1]
+                    self.tdp_grad[jst, ist, 2] = - self.tdp_grad[jst, ist, 2]
+
     def get_nacme(self):
         """ Get NACME from nonadiabatic couplings
         """
@@ -335,6 +367,7 @@ class Polariton(object):
             states.energy_old = states.energy
         self.nac_old = np.copy(self.nac)
         self.nacme_old = np.copy(self.nacme)
+        self.tdp_old = np.copy(self.tdp)
 
     def get_nr_electrons(self):
         """ Get the number of electrons

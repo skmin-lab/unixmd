@@ -172,14 +172,16 @@ class SH_QED(MQC):
             self.calculate_force()
             self.cl_update_position()
 
-            self.mol.backup_bo()
+            self.pol.backup_bo()
             self.pol.reset_bo(qm.calc_coupling, qm.calc_tdp)
             qm.get_data(self.pol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
             if (not self.mol.l_nacme and self.l_adj_nac):
-                self.mol.adjust_nac()
+                self.pol.adjust_nac()
+            if (self.l_adj_tdp):
+                self.pol.adjust_tdp()
 
             self.calculate_force()
             self.cl_update_velocity()
