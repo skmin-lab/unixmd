@@ -39,13 +39,13 @@ class CT(MQC):
         self.md_type = self.__class__.__name__
 
         # Initialize input values
-        self.mols = polaritons
-        self.ntrajs = len(self.mols)
+        self.pols = polaritons
+        self.ntrajs = len(self.pols)
         self.digit = len(str(self.ntrajs))
 
-        self.nst = self.mols[0].nst
-        self.nat_qm = self.mols[0].nat_qm
-        self.ndim = self.mols[0].ndim
+        self.nst = self.pols[0].nst
+        self.nat_qm = self.pols[0].nat_qm
+        self.ndim = self.pols[0].ndim
 
         # Check compatibility between istates and init_coefs
         self.istates = istates
@@ -53,7 +53,7 @@ class CT(MQC):
         self.check_istates()
 
         # Initialize input values and coefficient for first trajectory
-        super().__init__(self.mols[0], thermostat, self.istates[0], dt, nsteps, nesteps, elec_object, \
+        super().__init__(self.pols[0], thermostat, self.istates[0], dt, nsteps, nesteps, elec_object, \
             propagator, l_print_dm, l_adj_nac, l_adj_tdp, self.init_coefs[0], unit_dt, out_freq, verbosity)
 
         # Exception for electronic propagation

@@ -66,6 +66,11 @@ class MQC_QED(object):
             error_vars = f"elec_object = {self.elec_object}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
+        if not (self.elec_object in [None, "coefficient"]):
+            error_message = "Only coefficient object is available for QED calculation!"
+            error_vars = f"elec_object = {self.elec_object}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
         self.propagator = propagator
         if (self.propagator != None):
             self.propagator = self.propagator.lower()
@@ -80,13 +85,13 @@ class MQC_QED(object):
         self.l_adj_nac = l_adj_nac
         self.l_adj_tdp = l_adj_tdp
 
-        self.rforce = np.zeros((self.mol.nat, self.mol.ndim))
+        self.rforce = np.zeros((self.pol.nat, self.pol.ndim))
 
         self.out_freq = out_freq
         self.verbosity = verbosity
 
         # Initialize coefficients and densities
-        self.mol.get_coefficient(init_coef, self.istate)
+        self.pol.get_coefficient(init_coef, self.istate)
 
     def run_init(self, qed, qm, mm, output_dir, l_save_qed_log, l_save_qm_log, l_save_mm_log, \
         l_save_scr, restart):
@@ -112,17 +117,24 @@ class MQC_QED(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check if NACVs are calculated for Ehrenfest dynamics
-        if (self.md_type == "Eh" and self.mol.l_nacme):
+        if (self.md_type == "Eh" and self.pol.l_nacme):
             error_message = "Ehrenfest dynamics needs evaluation of NACVs, check your QM object!"
             error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
+        # Exception for QED with QM/MM dynamics
+        # TODO : not yet tested
+        if (mm != None):
+            error_message = "QED using polariton object is not compatible with QM/MM now!"
+            error_vars = f"mm = {mm}"
+            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
         # Check compatibility of variables for QM and MM calculation
-        if ((self.mol.l_qmmm and mm == None) or (not self.mol.l_qmmm and mm != None)):
+        if ((self.pol.l_qmmm and mm == None) or (not self.pol.l_qmmm and mm != None)):
             error_message = "Both logical for QM/MM and MM object is necessary!"
-            error_vars = f"Molecule.l_qmmm = {self.mol.l_qmmm}, mm = {mm}"
+            error_vars = f"Polariton.l_qmmm = {self.pol.l_qmmm}, mm = {mm}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-        if (self.mol.l_qmmm and mm != None):
+        if (self.pol.l_qmmm and mm != None):
             self.check_qmmm(qm, mm)
 
         # Exception for CTMQC/Ehrenfest with QM/MM
@@ -131,28 +143,25 @@ class MQC_QED(object):
             error_vars = f"mm = {mm}"
             raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        # Check compatibility between QED and QM objects
-        if (qed != None):
-            self.check_qed(qed, qm)
-
-        # Exception for QED with QM/MM dynamics
-        if ((mm != None) and (qed != None)):
-            error_message = "QED using polariton object is not compatible with QM/MM now!"
-            error_vars = f"mm = {mm}, qed = {qed}"
+        # Exception for CTMQC/Ehrenfest/SHXF/BOMD
+        # TODO : not yet tested
+        if (self.md_type in ["CT", "Eh", "SHXF", "BOMD"]):
+            error_message = "Only SH is available for QED calculation!"
+            error_vars = f""
             raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        # Check compatibility between QED and QM objects
+        self.check_qed(qed, qm)
 
         # Set directory information
         output_dir = os.path.expanduser(output_dir)
         base_dir = []
         unixmd_dir = []
-        qed_log_dir = [None]
+        qed_log_dir = []
         qm_log_dir = []
         mm_log_dir = [None]
 
-        if (qed != None):
-            qed_log_dir = []
-
-        if (self.mol.l_qmmm and mm != None):
+        if (self.pol.l_qmmm and mm != None):
             mm_log_dir = []
 
         dir_tmp = os.path.join(os.getcwd(), output_dir)
@@ -165,10 +174,9 @@ class MQC_QED(object):
 
         for idir in base_dir:
             unixmd_dir.append(os.path.join(idir, "md"))
-            if (qed != None):
-                qed_log_dir.append(os.path.join(idir, "qed_log"))
+            qed_log_dir.append(os.path.join(idir, "qed_log"))
             qm_log_dir.append(os.path.join(idir, "qm_log"))
-            if (self.mol.l_qmmm and mm != None):
+            if (self.pol.l_qmmm and mm != None):
                 mm_log_dir.append(os.path.join(idir, "mm_log"))
 
         # Check and make directories
@@ -181,11 +189,10 @@ class MQC_QED(object):
                     raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
             # For QED output directory
-            if (qed != None):
-                if (l_save_qed_log):
-                    for qed_idir in qed_log_dir:
-                        if (not os.path.exists(qed_idir)):
-                            os.makedirs(qed_idir)
+            if (l_save_qed_log):
+                for qed_idir in qed_log_dir:
+                    if (not os.path.exists(qed_idir)):
+                        os.makedirs(qed_idir)
 
             # For QM output directory
             if (l_save_qm_log):
@@ -194,7 +201,7 @@ class MQC_QED(object):
                         os.makedirs(qm_idir)
 
             # For MM output directory
-            if (self.mol.l_qmmm and mm != None):
+            if (self.pol.l_qmmm and mm != None):
                 if (l_save_mm_log):
                     for mm_idir in mm_log_dir:
                         if (not os.path.exists(mm_idir)):
@@ -206,15 +213,14 @@ class MQC_QED(object):
                     shutil.move(md_idir, md_idir + "_old_" + str(os.getpid()))
                 os.makedirs(md_idir)
 
-                self.touch_file(qed, md_idir)
+                self.touch_file(md_idir)
 
             # For QED output directory
             for qed_idir in qed_log_dir:
-                if (qed != None):
-                    if (os.path.exists(qed_idir)):
-                        shutil.move(qed_idir, qed_idir + "_old_" + str(os.getpid()))
-                    if (l_save_qed_log):
-                        os.makedirs(qed_idir)
+                if (os.path.exists(qed_idir)):
+                    shutil.move(qed_idir, qed_idir + "_old_" + str(os.getpid()))
+                if (l_save_qed_log):
+                    os.makedirs(qed_idir)
 
             # For QM output directory
             for qm_idir in qm_log_dir:
@@ -225,7 +231,7 @@ class MQC_QED(object):
 
             # For MM output directory
             for mm_idir in mm_log_dir:
-                if (self.mol.l_qmmm and mm != None):
+                if (self.pol.l_qmmm and mm != None):
                     if (os.path.exists(mm_idir)):
                         shutil.move(mm_idir, mm_idir + "_old_" + str(os.getpid()))
                     if (l_save_mm_log):
@@ -305,16 +311,12 @@ class MQC_QED(object):
             """), "    ")
             print (restart_info, flush=True)
 
-        if (qed != None):
-            # Print self.pol information: coordinate, velocity
+        # Print self.pol information: coordinate, velocity
+        if (self.md_type != "CT"):
             self.pol.print_init(mm)
         else:
-            # Print self.mol information: coordinate, velocity
-            if (self.md_type != "CT"):
-                self.mol.print_init(mm)
-            else:
-                for itraj, mol in enumerate(self.mols):
-                    mol.print_init(mm)
+            for itraj, pol in enumerate(self.pols):
+                pol.print_init(mm)
 
         # Print dynamics information
         dynamics_info = textwrap.dedent(f"""\
@@ -324,23 +326,22 @@ class MQC_QED(object):
         """)
 
         # Print QED information
-        if (qed != None):
-            dynamics_info += textwrap.indent(textwrap.dedent(f"""\
-              QED Method               = {qed.qed_method:>16s}
-              Coupling Strength (au)   = {qed.coup_str:>16.6f}
-            """), "  ")
-            # Print RWA information
-            if (not qed.l_crt):
-                dynamics_info += f"  Rotating Wave Approx.    = {'Yes':>16s}\n\n"
-            else:
-                dynamics_info += f"  Rotating Wave Approx.    = {'No':>16s}\n\n"
+        dynamics_info += textwrap.indent(textwrap.dedent(f"""\
+          QED Method               = {qed.qed_method:>16s}
+          Coupling Strength (au)   = {qed.coup_str:>16.6f}
+        """), "  ")
+        # Print RWA information
+        if (not qed.l_crt):
+            dynamics_info += f"  Rotating Wave Approx.    = {'Yes':>16s}\n\n"
+        else:
+            dynamics_info += f"  Rotating Wave Approx.    = {'No':>16s}\n\n"
 
         # Print QM information
         dynamics_info += textwrap.dedent(f"""\
           QM Program               = {qm.qm_prog:>16s}
           QM Method                = {qm.qm_method:>16s}
         """)
-        if (self.mol.l_qmmm and mm != None):
+        if (self.pol.l_qmmm and mm != None):
             dynamics_info += textwrap.indent(textwrap.dedent(f"""\
               MM Program               = {mm.mm_prog:>16s}
               QMMM Scheme              = {mm.scheme:>16s}
@@ -369,12 +370,12 @@ class MQC_QED(object):
             dynamics_info += f"  Propagation Scheme       = {self.elec_object:>16s}\n"
 
         # Print surface hopping variables
-        if (self.md_type in ["SH", "SHXF", "SH_QED"]):
+        if (self.md_type in ["SH", "SHXF"]):
             dynamics_info += f"\n  Rescaling after Hop      = {self.hop_rescale:>16s}\n"
             dynamics_info += f"  Rescaling after Reject   = {self.hop_reject:>16s}\n"
 
         # Print ad-hoc decoherence variables
-        if (self.md_type in ["SH", "SH_QED"]):
+        if (self.md_type in ["SH"]):
             if (self.dec_correction != None):
                 dynamics_info += f"\n  Decoherence Scheme       = {self.dec_correction:>16s}\n"
                 if (self.dec_correction == "edc"):
@@ -422,52 +423,31 @@ class MQC_QED(object):
             thermostat_info = "  No Thermostat: Total energy is conserved!\n"
             print (thermostat_info, flush=True)
 
-    def touch_file(self, qed, unixmd_dir):
+    def touch_file(self, unixmd_dir):
         """ Routine to write PyUNIxMD output files
 
-            :param object qed: QED object containing cavity-molecule interaction
             :param string unixmd_dir: Directory where MD output files are written
         """
         # Energy information file header
-        if (qed != None):
-            tmp = f'{"#":5s}{"Step":9s}{"Kinetic(H)":15s}{"Potential(H)":15s}{"Total(H)":15s}' + \
-                "".join([f'E({ist})(H){"":8s}' for ist in range(self.pol.pst)])
-        else:
-            tmp = f'{"#":5s}{"Step":9s}{"Kinetic(H)":15s}{"Potential(H)":15s}{"Total(H)":15s}' + \
-                "".join([f'E({ist})(H){"":8s}' for ist in range(self.mol.nst)])
+        tmp = f'{"#":5s}{"Step":9s}{"Kinetic(H)":15s}{"Potential(H)":15s}{"Total(H)":15s}' + \
+            "".join([f'E({ist})(H){"":8s}' for ist in range(self.pol.pst)])
         typewriter(tmp, unixmd_dir, "MDENERGY", "w")
 
         if (self.md_type != "BOMD"):
-            if (qed != None):
-                # polaritonic state coefficents, densities file header
-                if (self.elec_object == "coefficient"):
-                    tmp = f'{"#":5s} Polaritonic State Coefficients: state Re-Im; see the manual for detail orders'
-                    typewriter(tmp, unixmd_dir, "QEDCOEFA", "w")
-                    typewriter(tmp, unixmd_dir, "QEDCOEFD", "w")
-                    if (self.l_print_dm):
-                        tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
-                        typewriter(tmp, unixmd_dir, "QEDPOPA", "w")
-                        tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
-                        typewriter(tmp, unixmd_dir, "QEDCOHA", "w")
-                        tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
-                        typewriter(tmp, unixmd_dir, "QEDPOPD", "w")
-                        tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
-                        typewriter(tmp, unixmd_dir, "QEDCOHD", "w")
-            else:
-                # BO coefficents, densities file header
-                if (self.elec_object == "density"):
+            # polaritonic state coefficents, densities file header
+            if (self.elec_object == "coefficient"):
+                tmp = f'{"#":5s} Polaritonic State Coefficients: state Re-Im; see the manual for detail orders'
+                typewriter(tmp, unixmd_dir, "QEDCOEFA", "w")
+                typewriter(tmp, unixmd_dir, "QEDCOEFD", "w")
+                if (self.l_print_dm):
                     tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
-                    typewriter(tmp, unixmd_dir, "BOPOP", "w")
+                    typewriter(tmp, unixmd_dir, "QEDPOPA", "w")
                     tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
-                    typewriter(tmp, unixmd_dir, "BOCOH", "w")
-                elif (self.elec_object == "coefficient"):
-                    tmp = f'{"#":5s} BO State Coefficients: state Re-Im; see the manual for detail orders'
-                    typewriter(tmp, unixmd_dir, "BOCOEF", "w")
-                    if (self.l_print_dm):
-                        tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
-                        typewriter(tmp, unixmd_dir, "BOPOP", "w")
-                        tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
-                        typewriter(tmp, unixmd_dir, "BOCOH", "w")
+                    typewriter(tmp, unixmd_dir, "QEDCOHA", "w")
+                    tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
+                    typewriter(tmp, unixmd_dir, "QEDPOPD", "w")
+                    tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
+                    typewriter(tmp, unixmd_dir, "QEDCOHD", "w")
 
             # NACME file header
             tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
@@ -479,14 +459,11 @@ class MQC_QED(object):
                 typewriter(tmp, unixmd_dir, "DOTPOPNAC", "w")
 
         # file header for SH-based methods
-        if (self.md_type in ["SH", "SHXF", "SH_QED"]):
+        if (self.md_type in ["SH", "SHXF"]):
             tmp = f'{"#":5s}{"Step":8s}{"Running State":10s}'
             typewriter(tmp, unixmd_dir, "SHSTATE", "w")
 
-            if (qed != None):
-                tmp = f'{"#":5s}{"Step":12s}' + "".join([f'Prob({ist}){"":8s}' for ist in range(self.pol.pst)])
-            else:
-                tmp = f'{"#":5s}{"Step":12s}' + "".join([f'Prob({ist}){"":8s}' for ist in range(self.mol.nst)])
+            tmp = f'{"#":5s}{"Step":12s}' + "".join([f'Prob({ist}){"":8s}' for ist in range(self.pol.pst)])
             typewriter(tmp, unixmd_dir, "SHPROB", "w")
 
         # file header for XF-based methods

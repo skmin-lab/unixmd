@@ -74,7 +74,7 @@ class SH(MQC):
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check error for incompatible cases
-        if (self.mol.l_nacme):
+        if (self.pol.l_nacme):
             # No analytical nonadiabatic couplings exist
             if (self.hop_rescale in ["velocity", "momentum", "augment"]):
                 error_message = "NACVs are not available with current QM object, only isotropic rescaling is possible!"
