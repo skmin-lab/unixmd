@@ -103,11 +103,10 @@ class SH(MQC):
             :param string restart: Option for controlling dynamics restarting
         """
         # Initialize PyUNIxMD
-        base_dir, unixmd_dir, qed_log_dir, qm_log_dir, mm_log_dir = \
-            self.run_init(None, qm, mm, output_dir, None, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
+        base_dir, unixmd_dir, qm_log_dir, mm_log_dir = \
+            self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
         bo_list = [self.rstate]
         qm.calc_coupling = True
-        qm.calc_tdp = False
         self.print_init(qm, mm, restart)
 
         if (restart == None):
@@ -482,7 +481,7 @@ class SH(MQC):
             :param string restart: Option for controlling dynamics restarting
         """
         # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(None, qm, mm, restart)
+        super().print_init(qm, mm, restart)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\

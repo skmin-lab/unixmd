@@ -86,12 +86,15 @@ class MQC(object):
         # Initialize coefficients and densities
         self.mol.get_coefficient(init_coef, self.istate)
 
-    def run_init(self, qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart):
+    def run_init(self, qed, qm, mm, output_dir, l_save_qed_log, l_save_qm_log, l_save_mm_log, \
+        l_save_scr, restart):
         """ Initialize MQC dynamics
 
+            :param object qed: QED object containing cavity-molecule interaction
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
             :param string output_dir: Location of input directory
+            :param boolean l_save_qed_log: Logical for saving QED calculation log
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
             :param boolean l_save_scr: Logical for saving scratch directory
@@ -126,12 +129,26 @@ class MQC(object):
             error_vars = f"mm = {mm}"
             raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
+        # Check compatibility between QED and QM objects
+        if (qed != None):
+            self.check_qed(qed, qm)
+
+        # Exception for QED with QM/MM dynamics
+        if ((mm != None) and (qed != None)):
+            error_message = "QED using polariton object is not compatible with QM/MM now!"
+            error_vars = f"mm = {mm}, qed = {qed}"
+            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
         # Set directory information
         output_dir = os.path.expanduser(output_dir)
         base_dir = []
         unixmd_dir = []
+        qed_log_dir = [None]
         qm_log_dir = []
         mm_log_dir = [None]
+
+        if (qed != None):
+            qed_log_dir = []
 
         if (self.mol.l_qmmm and mm != None):
             mm_log_dir = []
@@ -146,6 +163,8 @@ class MQC(object):
 
         for idir in base_dir:
             unixmd_dir.append(os.path.join(idir, "md"))
+            if (qed != None):
+                qed_log_dir.append(os.path.join(idir, "qed_log"))
             qm_log_dir.append(os.path.join(idir, "qm_log"))
             if (self.mol.l_qmmm and mm != None):
                 mm_log_dir.append(os.path.join(idir, "mm_log"))
@@ -158,6 +177,13 @@ class MQC(object):
                     error_message = f"Directory {md_idir} to be appended for restart not found!"
                     error_vars = f"restart = {restart}, output_dir = {output_dir}"
                     raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+            # For QED output directory
+            if (qed != None):
+                if (l_save_qed_log):
+                    for qed_idir in qed_log_dir:
+                        if (not os.path.exists(qed_idir)):
+                            os.makedirs(qed_idir)
 
             # For QM output directory
             if (l_save_qm_log):
@@ -178,7 +204,15 @@ class MQC(object):
                     shutil.move(md_idir, md_idir + "_old_" + str(os.getpid()))
                 os.makedirs(md_idir)
 
-                self.touch_file(md_idir)
+                self.touch_file(qed, md_idir)
+
+            # For QED output directory
+            for qed_idir in qed_log_dir:
+                if (qed != None):
+                    if (os.path.exists(qed_idir)):
+                        shutil.move(qed_idir, qed_idir + "_old_" + str(os.getpid()))
+                    if (l_save_qed_log):
+                        os.makedirs(qed_idir)
 
             # For QM output directory
             for qm_idir in qm_log_dir:
@@ -198,9 +232,9 @@ class MQC(object):
         os.chdir(base_dir[0])
 
         if (self.md_type != "CT"):
-            return base_dir[0], unixmd_dir[0], qm_log_dir[0], mm_log_dir[0]
+            return base_dir[0], unixmd_dir[0], qed_log_dir[0], qm_log_dir[0], mm_log_dir[0]
         else:
-            return base_dir, unixmd_dir, qm_log_dir, mm_log_dir
+            return base_dir, unixmd_dir, qed_log_dir, qm_log_dir, mm_log_dir
 
     def cl_update_position(self):
         """ Routine to update nuclear positions
@@ -230,9 +264,10 @@ class MQC(object):
         """
         pass
 
-    def print_init(self, qm, mm, restart):
+    def print_init(self, qed, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
+            :param object qed: QED object containing cavity-molecule interaction
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
             :param string restart: Option for controlling dynamics restarting
@@ -268,18 +303,38 @@ class MQC(object):
             """), "    ")
             print (restart_info, flush=True)
 
-        # Print self.mol information: coordinate, velocity
-        if (self.md_type != "CT"):
-            self.mol.print_init(mm)
+        if (qed != None):
+            # Print self.pol information: coordinate, velocity
+            self.pol.print_init(mm)
         else:
-            for itraj, mol in enumerate(self.mols):
-                mol.print_init(mm)
+            # Print self.mol information: coordinate, velocity
+            if (self.md_type != "CT"):
+                self.mol.print_init(mm)
+            else:
+                for itraj, mol in enumerate(self.mols):
+                    mol.print_init(mm)
 
         # Print dynamics information
         dynamics_info = textwrap.dedent(f"""\
         {"-" * 68}
         {"Dynamics Information":>43s}
         {"-" * 68}
+        """)
+
+        # Print QED information
+        if (qed != None):
+            dynamics_info += textwrap.indent(textwrap.dedent(f"""\
+              QED Method               = {qed.qed_method:>16s}
+              Coupling Strength (au)   = {qed.coup_str:>16.6f}
+            """), "  ")
+            # Print RWA information
+            if (not qed.l_crt):
+                dynamics_info += f"  Rotating Wave Approx.    = {'Yes':>16s}\n\n"
+            else:
+                dynamics_info += f"  Rotating Wave Approx.    = {'No':>16s}\n\n"
+
+        # Print QM information
+        dynamics_info += textwrap.dedent(f"""\
           QM Program               = {qm.qm_prog:>16s}
           QM Method                = {qm.qm_method:>16s}
         """)
@@ -312,12 +367,12 @@ class MQC(object):
             dynamics_info += f"  Propagation Scheme       = {self.elec_object:>16s}\n"
 
         # Print surface hopping variables
-        if (self.md_type in ["SH", "SHXF"]):
+        if (self.md_type in ["SH", "SHXF", "SH_QED"]):
             dynamics_info += f"\n  Rescaling after Hop      = {self.hop_rescale:>16s}\n"
             dynamics_info += f"  Rescaling after Reject   = {self.hop_reject:>16s}\n"
 
         # Print ad-hoc decoherence variables
-        if (self.md_type == "SH"):
+        if (self.md_type in ["SH", "SH_QED"]):
             if (self.dec_correction != None):
                 dynamics_info += f"\n  Decoherence Scheme       = {self.dec_correction:>16s}\n"
                 if (self.dec_correction == "edc"):
@@ -365,31 +420,52 @@ class MQC(object):
             thermostat_info = "  No Thermostat: Total energy is conserved!\n"
             print (thermostat_info, flush=True)
 
-    def touch_file(self, unixmd_dir):
+    def touch_file(self, qed, unixmd_dir):
         """ Routine to write PyUNIxMD output files
 
+            :param object qed: QED object containing cavity-molecule interaction
             :param string unixmd_dir: Directory where MD output files are written
         """
         # Energy information file header
-        tmp = f'{"#":5s}{"Step":9s}{"Kinetic(H)":15s}{"Potential(H)":15s}{"Total(H)":15s}' + \
-            "".join([f'E({ist})(H){"":8s}' for ist in range(self.mol.nst)])
+        if (qed != None):
+            tmp = f'{"#":5s}{"Step":9s}{"Kinetic(H)":15s}{"Potential(H)":15s}{"Total(H)":15s}' + \
+                "".join([f'E({ist})(H){"":8s}' for ist in range(self.pol.pst)])
+        else:
+            tmp = f'{"#":5s}{"Step":9s}{"Kinetic(H)":15s}{"Potential(H)":15s}{"Total(H)":15s}' + \
+                "".join([f'E({ist})(H){"":8s}' for ist in range(self.mol.nst)])
         typewriter(tmp, unixmd_dir, "MDENERGY", "w")
 
         if (self.md_type != "BOMD"):
-            # BO coefficents, densities file header
-            if (self.elec_object == "density"):
-                tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
-                typewriter(tmp, unixmd_dir, "BOPOP", "w")
-                tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
-                typewriter(tmp, unixmd_dir, "BOCOH", "w")
-            elif (self.elec_object == "coefficient"):
-                tmp = f'{"#":5s} BO State Coefficients: state Re-Im; see the manual for detail orders'
-                typewriter(tmp, unixmd_dir, "BOCOEF", "w")
-                if (self.l_print_dm):
+            if (qed != None):
+                # polaritonic state coefficents, densities file header
+                if (self.elec_object == "coefficient"):
+                    tmp = f'{"#":5s} Polaritonic State Coefficients: state Re-Im; see the manual for detail orders'
+                    typewriter(tmp, unixmd_dir, "QEDCOEFA", "w")
+                    typewriter(tmp, unixmd_dir, "QEDCOEFD", "w")
+                    if (self.l_print_dm):
+                        tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
+                        typewriter(tmp, unixmd_dir, "QEDPOPA", "w")
+                        tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
+                        typewriter(tmp, unixmd_dir, "QEDCOHA", "w")
+                        tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
+                        typewriter(tmp, unixmd_dir, "QEDPOPD", "w")
+                        tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
+                        typewriter(tmp, unixmd_dir, "QEDCOHD", "w")
+            else:
+                # BO coefficents, densities file header
+                if (self.elec_object == "density"):
                     tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
                     typewriter(tmp, unixmd_dir, "BOPOP", "w")
                     tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
                     typewriter(tmp, unixmd_dir, "BOCOH", "w")
+                elif (self.elec_object == "coefficient"):
+                    tmp = f'{"#":5s} BO State Coefficients: state Re-Im; see the manual for detail orders'
+                    typewriter(tmp, unixmd_dir, "BOCOEF", "w")
+                    if (self.l_print_dm):
+                        tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
+                        typewriter(tmp, unixmd_dir, "BOPOP", "w")
+                        tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
+                        typewriter(tmp, unixmd_dir, "BOCOH", "w")
 
             # NACME file header
             tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
@@ -401,11 +477,14 @@ class MQC(object):
                 typewriter(tmp, unixmd_dir, "DOTPOPNAC", "w")
 
         # file header for SH-based methods
-        if (self.md_type in ["SH", "SHXF"]):
+        if (self.md_type in ["SH", "SHXF", "SH_QED"]):
             tmp = f'{"#":5s}{"Step":8s}{"Running State":10s}'
             typewriter(tmp, unixmd_dir, "SHSTATE", "w")
 
-            tmp = f'{"#":5s}{"Step":12s}' + "".join([f'Prob({ist}){"":8s}' for ist in range(self.mol.nst)])
+            if (qed != None):
+                tmp = f'{"#":5s}{"Step":12s}' + "".join([f'Prob({ist}){"":8s}' for ist in range(self.pol.pst)])
+            else:
+                tmp = f'{"#":5s}{"Step":12s}' + "".join([f'Prob({ist}){"":8s}' for ist in range(self.mol.nst)])
             typewriter(tmp, unixmd_dir, "SHPROB", "w")
 
         # file header for XF-based methods
@@ -507,6 +586,30 @@ class MQC(object):
         else:
             error_message = "Incompatible QM and MM objects for QM/MM calculation!"
             error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}, (MM) mm_prog = {mm.mm_prog}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+    def check_qed(self, qed, qm):
+        """ Routine to check compatibility between QED and QM objects
+
+            :param object qed: QED object containing cavity-molecule interaction
+            :param object qm: QM object containing on-the-fly calculation infomation
+        """
+        # Now check QED object
+        if (qed.qed_method == "Jaynes_Cummings"):
+            # Now check QM object
+            if (qm.qm_prog == "dftbplus"):
+                if (qm.qm_method == "SSR"):
+                    do_qed = True
+                else:
+                    do_qed = False
+            else:
+                do_qed = False
+        else:
+            do_qed = False
+
+        if (not do_qed):
+            error_message = "Incompatible QED and QM objects!"
+            error_vars = f"(QED) qed_method = {qed.qed_method}, (QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
 
