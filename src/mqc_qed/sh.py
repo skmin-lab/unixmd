@@ -1,12 +1,12 @@
 from __future__ import division
 from build.el_propagator import el_run
-from mqc.mqc import MQC
+from mqc_qed.mqc import MQC_QED
 from misc import eps, au_to_K, call_name, typewriter
 import random, os, shutil, textwrap
 import numpy as np
 import pickle
 
-class SH_QED(MQC):
+class SH(MQC):
     """ Class for surface hopping dynamics coupled to confined cavity mode
 
         :param object polariton: Polariton object
@@ -35,14 +35,8 @@ class SH_QED(MQC):
         hop_rescale="augment", hop_reject="reverse", init_coef=None, dec_correction=None, \
         edc_parameter=0.1, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
-        super().__init__(polariton, thermostat, istate, dt, nsteps, nesteps, \
-            elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
-
-        # Initialize Polariton object
-        self.pol = self.mol
-        del self.mol
-
-        self.l_adj_tdp = l_adj_tdp
+        super().__init__(polariton, thermostat, istate, dt, nsteps, nesteps, elec_object, \
+            propagator, l_print_dm, l_adj_nac, l_adj_tdp, init_coef, unit_dt, out_freq, verbosity)
 
         # Initialize SH variables
         self.rstate = istate

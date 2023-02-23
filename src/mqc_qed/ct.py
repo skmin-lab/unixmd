@@ -1,15 +1,15 @@
 from __future__ import division
 from build.el_propagator_ct import el_run
-from mqc.mqc import MQC
+from mqc_qed.mqc import MQC_QED
 from misc import eps, au_to_K, au_to_A, call_name, typewriter, gaussian1d
 import os, shutil, textwrap
 import numpy as np
 import pickle
 
 class CT(MQC):
-    """ Class for coupled-trajectory mixed quantum-classical (CTMQC) dynamics
+    """ Class for coupled-trajectory mixed quantum-classical (CTMQC) dynamics coupled to confined cavity mode
 
-        :param object,list molecules: List for molecule objects
+        :param object,list polaritons: List for polariton objects
         :param object thermostat: Thermostat object
         :param integer,list istates: List for initial state
         :param double dt: Time interval
@@ -19,6 +19,7 @@ class CT(MQC):
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
+        :param boolean l_adj_tdp: Adjust transition dipole moments to align the phases
         :param double rho_threshold: Electronic density threshold for decoherence term calculation
         :param init_coefs: Initial BO coefficient
         :type init_coefs: double, 2D list or complex, 2D list
@@ -30,15 +31,15 @@ class CT(MQC):
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
-    def __init__(self, molecules, thermostat=None, istates=None, dt=0.5, nsteps=1000, nesteps=20, \
-        elec_object="coefficient", propagator="rk4", l_print_dm=True, l_adj_nac=True, rho_threshold=0.01, \
-        init_coefs=None, dist_parameter=10., min_sigma=0.3, const_dist_cutoff=None, const_center_cutoff=None, \
-        l_en_cons=False, unit_dt="fs", out_freq=1, verbosity=0):
+    def __init__(self, polaritons, thermostat=None, istates=None, dt=0.5, nsteps=1000, nesteps=20, \
+        elec_object="coefficient", propagator="rk4", l_print_dm=True, l_adj_nac=True, l_adj_tdp=True, \
+        rho_threshold=0.01, init_coefs=None, dist_parameter=10., min_sigma=0.3, const_dist_cutoff=None, \
+        const_center_cutoff=None, l_en_cons=False, unit_dt="fs", out_freq=1, verbosity=0):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
         # Initialize input values
-        self.mols = molecules
+        self.mols = polaritons
         self.ntrajs = len(self.mols)
         self.digit = len(str(self.ntrajs))
 
@@ -52,8 +53,8 @@ class CT(MQC):
         self.check_istates()
 
         # Initialize input values and coefficient for first trajectory
-        super().__init__(self.mols[0], thermostat, self.istates[0], dt, nsteps, nesteps, \
-            elec_object, propagator, l_print_dm, l_adj_nac, self.init_coefs[0], unit_dt, out_freq, verbosity)
+        super().__init__(self.mols[0], thermostat, self.istates[0], dt, nsteps, nesteps, elec_object, \
+            propagator, l_print_dm, l_adj_nac, l_adj_tdp, self.init_coefs[0], unit_dt, out_freq, verbosity)
 
         # Exception for electronic propagation
         if (self.elec_object != "coefficient"):
@@ -104,12 +105,15 @@ class CT(MQC):
         # Initialize event to print
         self.event = {"DECO": []}
 
-    def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
+    def run(self, qed, qm, mm=None, output_dir="./", l_save_qed_log=False, l_save_qm_log=False, \
+        l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to CTMQC dynamics
 
+            :param object qed: QED object containing cavity-molecule interaction
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
             :param string output_dir: Name of directory where outputs to be saved.
+            :param boolean l_save_qed_log: Logical for saving QED calculation log
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
             :param boolean l_save_scr: Logical for saving scratch directory
@@ -118,13 +122,14 @@ class CT(MQC):
         # Initialize PyUNIxMD
         abs_path_output_dir = os.path.join(os.getcwd(), output_dir)
         base_dirs, unixmd_dirs, qed_log_dirs, qm_log_dirs, mm_log_dirs = \
-            self.run_init(None, qm, mm, output_dir, None, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
+            self.run_init(qed, qm, mm, output_dir, l_save_qed_log, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
 
-        bo_list = [ist for ist in range(self.nst)]
+        bo_list = [ist for ist in range(self.pol.nst)]
+        pol_list = [ist for ist in range(self.pol.pst)]
         qm.calc_coupling = True
-        qm.calc_tdp = False
+        qm.calc_tdp = True
 
-        self.print_init(qm, mm, restart)
+        self.print_init(qed, qm, mm, restart)
 
         if (restart == None):
             # Calculate initial input geometry for all trajectories at t = 0.0 s
@@ -654,15 +659,16 @@ class CT(MQC):
                     "".join([f'{self.phase[itrajectory, ist, iat, idim]:15.8f}' for idim in range(self.ndim)]) for iat in range(self.nat_qm)])
                 typewriter(tmp, unixmd_dir, f"PHASE_{ist}", "a")
 
-    def print_init(self, qm, mm, restart):
+    def print_init(self, qed, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
+            :param object qed: QED object containing cavity-molecule interaction
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
             :param string restart: Option for controlling dynamics restarting
         """
-        # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(None, qm, mm, restart)
+        # Print initial information about polariton, qed, qm, mm and thermostat
+        super().print_init(qed, qm, mm, restart)
 
         # Print CTMQC info.
         ct_info = textwrap.dedent(f"""\

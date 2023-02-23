@@ -5,10 +5,10 @@ import numpy as np
 import os, shutil
 
 
-class MQC(object):
-    """ Class for nuclear/electronic propagator used in MQC dynamics
+class MQC_QED(object):
+    """ Class for nuclear/electronic propagator used in MQC dynamics coupled to confined cavity mode
 
-        :param object molecule: Molecule object
+        :param object polariton: Polariton object
         :param object thermostat: Thermostat type
         :param integer istate: Initial adiabatic state
         :param double dt: Time interval
@@ -18,19 +18,20 @@ class MQC(object):
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adj_nac: Logical to adjust nonadiabatic coupling
+        :param boolean l_adj_tdp: Adjust transition dipole moments to align the phases
         :param init_coef: Initial BO coefficient
         :type init_coef: Double, list or complex, list
         :param string unit_dt: Unit of time step (fs = femtosecond, au = atomic unit)
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
-    def __init__(self, molecule, thermostat, istate, dt, nsteps, nesteps, \
-        elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity):
+    def __init__(self, polariton, thermostat, istate, dt, nsteps, nesteps, elec_object, \
+        propagator, l_print_dm, l_adj_nac, l_adj_tdp, init_coef, unit_dt, out_freq, verbosity):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
-        # Initialize Molecule object
-        self.mol = molecule
+        # Initialize Polariton object
+        self.pol = polariton
 
         # Initialize Thermostat object
         self.thermo = thermostat
@@ -77,6 +78,7 @@ class MQC(object):
         self.l_print_dm = l_print_dm
 
         self.l_adj_nac = l_adj_nac
+        self.l_adj_tdp = l_adj_tdp
 
         self.rforce = np.zeros((self.mol.nat, self.mol.ndim))
 
