@@ -6,7 +6,7 @@ import os, shutil, textwrap
 import numpy as np
 import pickle
 
-class Eh(MQC):
+class Eh(MQC_QED):
     """ Class for Ehrenfest dynamics coupled to confined cavity mode
 
         :param object polariton: Polariton object
@@ -34,7 +34,7 @@ class Eh(MQC):
             propagator, l_print_dm, l_adj_nac, l_adj_tdp, init_coef, unit_dt, out_freq, verbosity)
 
         # Debug variables
-        self.dotpopnac = np.zeros(self.mol.nst)
+        self.dotpopnac = np.zeros(self.pol.pst)
 
     def run(self, qed, qm, mm=None, output_dir="./", l_save_qed_log=False, l_save_qm_log=False, \
         l_save_mm_log=False, l_save_scr=True, restart=None):
@@ -62,11 +62,11 @@ class Eh(MQC):
         if (restart == None):
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
-            self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
-            if (self.mol.l_qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
-            self.mol.get_nacme()
+            self.pol.reset_bo(qm.calc_coupling)
+            qm.get_data(self.pol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
+            if (self.pol.l_qmmm and mm != None):
+                mm.get_data(self.pol, base_dir, bo_list, self.istep, calc_force_only=False)
+            self.pol.get_nacme()
 
             self.update_energy()
 
@@ -91,19 +91,19 @@ class Eh(MQC):
             self.calculate_force()
             self.cl_update_position()
 
-            self.mol.backup_bo()
-            self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
-            if (self.mol.l_qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
+            self.pol.backup_bo()
+            self.pol.reset_bo(qm.calc_coupling)
+            qm.get_data(self.pol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
+            if (self.pol.l_qmmm and mm != None):
+                mm.get_data(self.pol, base_dir, bo_list, istep, calc_force_only=False)
 
             if (self.l_adj_nac):
-                self.mol.adjust_nac()
+                self.pol.adjust_nac()
 
             self.calculate_force()
             self.cl_update_velocity()
 
-            self.mol.get_nacme()
+            self.pol.get_nacme()
 
             el_run(self)
 
@@ -129,7 +129,7 @@ class Eh(MQC):
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
 
-            if (self.mol.l_qmmm and mm != None):
+            if (self.pol.l_qmmm and mm != None):
                 tmp_dir = os.path.join(unixmd_dir, "scr_mm")
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)

@@ -247,20 +247,20 @@ class MQC_QED(object):
     def cl_update_position(self):
         """ Routine to update nuclear positions
         """
-        self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.ndim)
-        self.mol.pos += self.dt * self.mol.vel
+        self.pol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.pol.mass] * self.pol.ndim)
+        self.pol.pos += self.dt * self.pol.vel
 
     def cl_update_velocity(self):
         """ Routine to update nuclear velocities
         """
-        self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.ndim)
-        self.mol.update_kinetic()
+        self.pol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.pol.mass] * self.pol.ndim)
+        self.pol.update_kinetic()
 
 #    def calculate_temperature(self):
 #        """ Routine to calculate current temperature
 #        """
 #        pass
-#        #self.temperature = self.mol.ekin * 2 / float(self.mol.ndof) * au_to_K
+#        #self.temperature = self.pol.ekin * 2 / float(self.pol.ndof) * au_to_K
 
     def calculate_force(self):
         """ Routine to calculate the forces
@@ -479,48 +479,53 @@ class MQC_QED(object):
             :param integer istep: Current MD step
         """
         # Write MOVIE.xyz file including positions and velocities
-        tmp = f'{self.mol.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
-            "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
-            "".join([f'{self.mol.pos[iat, isp] * au_to_A:15.8f}' for isp in range(self.mol.ndim)]) + \
-            "".join([f"{self.mol.vel[iat, isp]:15.8f}" for isp in range(self.mol.ndim)]) for iat in range(self.mol.nat)])
+        tmp = f'{self.pol.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
+            "".join(["\n" + f'{self.pol.symbols[iat]:5s}' + \
+            "".join([f'{self.pol.pos[iat, isp] * au_to_A:15.8f}' for isp in range(self.pol.ndim)]) + \
+            "".join([f"{self.pol.vel[iat, isp]:15.8f}" for isp in range(self.pol.ndim)]) for iat in range(self.pol.nat)])
         typewriter(tmp, unixmd_dir, "MOVIE.xyz", "a")
 
         # Write MDENERGY file including several energy information
-        tmp = f'{istep + 1:9d}{self.mol.ekin:15.8f}{self.mol.epot:15.8f}{self.mol.etot:15.8f}' \
-            + "".join([f'{states.energy:15.8f}' for states in self.mol.states])
+        tmp = f'{istep + 1:9d}{self.pol.ekin:15.8f}{self.pol.epot:15.8f}{self.pol.etot:15.8f}' \
+            + "".join([f'{states.energy:15.8f}' for states in self.pol.pol_states])
         typewriter(tmp, unixmd_dir, "MDENERGY", "a")
 
         if (self.md_type != "BOMD"):
-            # Write BOCOEF, BOPOP, BOCOH files
-            if (self.elec_object == "density"):
-                tmp = f'{istep + 1:9d}' + "".join([f'{self.mol.rho.real[ist, ist]:15.8f}' for ist in range(self.mol.nst)])
-                typewriter(tmp, unixmd_dir, "BOPOP", "a")
-                tmp = f'{istep + 1:9d}' + "".join([f"{self.mol.rho.real[ist, jst]:15.8f}{self.mol.rho.imag[ist, jst]:15.8f}" \
-                    for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
-                typewriter(tmp, unixmd_dir, "BOCOH", "a")
-            elif (self.elec_object == "coefficient"):
-                tmp = f'{istep + 1:9d}' + "".join([f'{states.coef.real:15.8f}{states.coef.imag:15.8f}' \
-                    for states in self.mol.states])
-                typewriter(tmp, unixmd_dir, "BOCOEF", "a")
+            # Write QEDCOEF, QEDPOP, QEDCOH files
+            if (self.elec_object == "coefficient"):
+                # Adiabatic quantities
+                tmp = f'{istep + 1:9d}' + "".join([f'{states.coef_a.real:15.8f}{states.coef_a.imag:15.8f}' \
+                    for states in self.pol.pol_states])
+                typewriter(tmp, unixmd_dir, "QEDCOEFA", "a")
                 if (self.l_print_dm):
-                    tmp = f'{istep + 1:9d}' + "".join([f'{self.mol.rho.real[ist, ist]:15.8f}' for ist in range(self.mol.nst)])
-                    typewriter(tmp, unixmd_dir, "BOPOP", "a")
-                    tmp = f'{istep + 1:9d}' + "".join([f"{self.mol.rho.real[ist, jst]:15.8f}{self.mol.rho.imag[ist, jst]:15.8f}" \
-                        for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
-                    typewriter(tmp, unixmd_dir, "BOCOH", "a")
+                    tmp = f'{istep + 1:9d}' + "".join([f'{self.pol.rho_a.real[ist, ist]:15.8f}' for ist in range(self.pol.pst)])
+                    typewriter(tmp, unixmd_dir, "QEDPOPA", "a")
+                    tmp = f'{istep + 1:9d}' + "".join([f"{self.pol.rho_a.real[ist, jst]:15.8f}{self.pol.rho_a.imag[ist, jst]:15.8f}" \
+                        for ist in range(self.pol.pst) for jst in range(ist + 1, self.pol.pst)])
+                    typewriter(tmp, unixmd_dir, "QEDCOHA", "a")
+                # Diabatic quantities
+                tmp = f'{istep + 1:9d}' + "".join([f'{states.coef_d.real:15.8f}{states.coef_d.imag:15.8f}' \
+                    for states in self.pol.pol_states])
+                typewriter(tmp, unixmd_dir, "QEDCOEFD", "a")
+                if (self.l_print_dm):
+                    tmp = f'{istep + 1:9d}' + "".join([f'{self.pol.rho_d.real[ist, ist]:15.8f}' for ist in range(self.pol.pst)])
+                    typewriter(tmp, unixmd_dir, "QEDPOPD", "a")
+                    tmp = f'{istep + 1:9d}' + "".join([f"{self.pol.rho_d.real[ist, jst]:15.8f}{self.pol.rho_d.imag[ist, jst]:15.8f}" \
+                        for ist in range(self.pol.pst) for jst in range(ist + 1, self.pol.pst)])
+                    typewriter(tmp, unixmd_dir, "QEDCOHD", "a")
 
             # Write NACME file
-            tmp = f'{istep + 1:10d}' + "".join([f'{self.mol.nacme[ist, jst]:15.8f}' \
-                for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
+            tmp = f'{istep + 1:10d}' + "".join([f'{self.pol.pnacme[ist, jst]:15.8f}' \
+                for ist in range(self.pol.pst) for jst in range(ist + 1, self.pol.pst)])
             typewriter(tmp, unixmd_dir, "NACME", "a")
 
             # Write NACV file
-            if (not self.mol.l_nacme and self.verbosity >= 2):
-                for ist in range(self.mol.nst):
-                    for jst in range(ist + 1, self.mol.nst):
-                        tmp = f'{self.mol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV' + \
-                            "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
-                            "".join([f'{self.mol.nac[ist, jst, iat, isp]:15.8f}' for isp in range(self.mol.ndim)]) for iat in range(self.mol.nat_qm)])
+            if (not self.pol.l_nacme and self.verbosity >= 2):
+                for ist in range(self.pol.pst):
+                    for jst in range(ist + 1, self.pol.pst):
+                        tmp = f'{self.pol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV' + \
+                            "".join(["\n" + f'{self.pol.symbols[iat]:5s}' + \
+                            "".join([f'{self.pol.pnac[ist, jst, iat, isp]:15.8f}' for isp in range(self.pol.ndim)]) for iat in range(self.pol.nat_qm)])
                         typewriter(tmp, unixmd_dir, f"NACV_{ist}_{jst}", "a")
 
     def write_final_xyz(self, unixmd_dir, istep):
@@ -530,11 +535,11 @@ class MQC_QED(object):
             :param integer istep: Current MD step
         """
         # Write FINAL.xyz file including positions and velocities
-        tmp = f'{self.mol.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)'
-        for iat in range(self.mol.nat):
-            tmp += "\n" + f'{self.mol.symbols[iat]:5s}' + \
-                "".join([f'{self.mol.pos[iat, isp] * au_to_A:15.8f}' for isp in range(self.mol.ndim)]) \
-                + "".join([f"{self.mol.vel[iat, isp]:15.8f}" for isp in range(self.mol.ndim)])
+        tmp = f'{self.pol.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)'
+        for iat in range(self.pol.nat):
+            tmp += "\n" + f'{self.pol.symbols[iat]:5s}' + \
+                "".join([f'{self.pol.pos[iat, isp] * au_to_A:15.8f}' for isp in range(self.pol.ndim)]) \
+                + "".join([f"{self.pol.vel[iat, isp]:15.8f}" for isp in range(self.pol.ndim)])
 
         typewriter(tmp, unixmd_dir, "FINAL.xyz", "w")
 

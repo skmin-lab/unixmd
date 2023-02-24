@@ -9,22 +9,22 @@ import pickle
 class Auxiliary_Molecule(object):
     """ Class for auxiliary molecule that is used for the calculation of decoherence term
 
-        :param object molecule: Molecule object
+        :param object polariton: Polariton object
     """
-    def __init__(self, molecule):
+    def __init__(self, polariton):
         # Initialize auxiliary molecule
-        self.nat = molecule.nat_qm
-        self.ndim = molecule.ndim
-        self.symbols = np.copy(molecule.symbols[0:molecule.nat_qm])
+        self.nat = polariton.nat_qm
+        self.ndim = polariton.ndim
+        self.symbols = np.copy(polariton.symbols[0:polariton.nat_qm])
 
-        self.mass = np.copy(molecule.mass[0:molecule.nat_qm])
+        self.mass = np.copy(polariton.mass[0:polariton.nat_qm])
 
-        self.pos = np.zeros((molecule.nst, self.nat, self.ndim))
-        self.vel = np.zeros((molecule.nst, self.nat, self.ndim))
+        self.pos = np.zeros((polariton.pst, self.nat, self.ndim))
+        self.vel = np.zeros((polariton.pst, self.nat, self.ndim))
         self.vel_old = np.copy(self.vel)
 
 
-class SHXF(MQC):
+class SHXF(MQC_QED):
     """ Class for DISH-XF dynamics coupled to confined cavity mode
 
         :param object polariton: Polariton object
@@ -64,8 +64,8 @@ class SHXF(MQC):
         self.rstate_old = self.rstate
 
         self.rand = 0.
-        self.prob = np.zeros(self.mol.nst)
-        self.acc_prob = np.zeros(self.mol.nst + 1)
+        self.prob = np.zeros(self.pol.pst)
+        self.acc_prob = np.zeros(self.pol.pst + 1)
 
         self.l_hop = False
         self.l_reject = False
@@ -83,7 +83,7 @@ class SHXF(MQC):
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check error for incompatible cases
-        if (self.mol.l_nacme):
+        if (self.pol.l_nacme):
             # No analytical nonadiabatic couplings exist
             if (self.hop_rescale in ["velocity", "momentum", "augment"]):
                 error_message = "NACVs are not available with current QM object, only isotropic rescaling is possible!"
@@ -98,9 +98,9 @@ class SHXF(MQC):
         # Initialize XF related variables
         self.force_hop = False
         self.l_econs_state = l_econs_state
-        self.l_coh = [False] * self.mol.nst
-        self.l_first = [False] * self.mol.nst
-        self.l_fix = [False] * self.mol.nst
+        self.l_coh = [False] * self.pol.pst
+        self.l_first = [False] * self.pol.pst
+        self.l_fix = [False] * self.pol.pst
         self.l_collapse = False
         self.rho_threshold = rho_threshold
         self.aux_econs_viol = aux_econs_viol
@@ -121,7 +121,7 @@ class SHXF(MQC):
             pass
         elif (isinstance(self.sigma, list)):
             # atom-resolved values for sigma
-            if (len(self.sigma) != self.mol.nat_qm):
+            if (len(self.sigma) != self.pol.nat_qm):
                 error_message = "Number of elements for sigma must be equal to number of atoms!"
                 error_vars = f"len(sigma) = {len(self.sigma)}"
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
@@ -134,13 +134,13 @@ class SHXF(MQC):
         self.lower_th = self.rho_threshold
 
         # Initialize auxiliary molecule object
-        self.aux = Auxiliary_Molecule(self.mol)
+        self.aux = Auxiliary_Molecule(self.pol)
         self.pos_0 = np.zeros((self.aux.nat, self.aux.ndim))
-        self.phase = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
+        self.phase = np.zeros((self.pol.pst, self.aux.nat, self.aux.ndim))
 
         # Debug variables
-        self.dotpopdec = np.zeros(self.mol.nst)
-        self.dotpopnac = np.zeros(self.mol.nst)
+        self.dotpopdec = np.zeros(self.pol.pst)
+        self.dotpopnac = np.zeros(self.pol.pst)
         self.qmom = np.zeros((self.aux.nat, self.aux.ndim))
 
         # Initialize event to print
@@ -175,21 +175,21 @@ class SHXF(MQC):
 
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
-            self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
-            if (self.mol.l_qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
-            if (not self.mol.l_nacme):
-                self.mol.get_nacme()
+            self.pol.reset_bo(qm.calc_coupling)
+            qm.get_data(self.pol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
+            if (self.pol.l_qmmm and mm != None):
+                mm.get_data(self.pol, base_dir, bo_list, self.istep, calc_force_only=False)
+            if (not self.pol.l_nacme):
+                self.pol.get_nacme()
 
             self.hop_prob()
             self.hop_check(bo_list)
             self.evaluate_hop(bo_list)
             if (self.l_hop):
                 if (qm.re_calc):
-                    qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
-                if (self.mol.l_qmmm and mm != None):
-                    mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=True)
+                    qm.get_data(self.pol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
+                if (self.pol.l_qmmm and mm != None):
+                    mm.get_data(self.pol, base_dir, bo_list, self.istep, calc_force_only=True)
 
             self.update_energy()
 
@@ -222,20 +222,20 @@ class SHXF(MQC):
             self.calculate_force()
             self.cl_update_position()
 
-            self.mol.backup_bo()
-            self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
-            if (self.mol.l_qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
+            self.pol.backup_bo()
+            self.pol.reset_bo(qm.calc_coupling)
+            qm.get_data(self.pol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
+            if (self.pol.l_qmmm and mm != None):
+                mm.get_data(self.pol, base_dir, bo_list, istep, calc_force_only=False)
 
-            if (not self.mol.l_nacme and self.l_adj_nac):
-                self.mol.adjust_nac()
+            if (not self.pol.l_nacme and self.l_adj_nac):
+                self.pol.adjust_nac()
 
             self.calculate_force()
             self.cl_update_velocity()
 
-            if (not self.mol.l_nacme):
-                self.mol.get_nacme()
+            if (not self.pol.l_nacme):
+                self.pol.get_nacme()
 
             el_run(self)
 
@@ -244,9 +244,9 @@ class SHXF(MQC):
             self.evaluate_hop(bo_list)
             if (self.l_hop):
                 if (qm.re_calc):
-                    qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
-                if (self.mol.l_qmmm and mm != None):
-                    mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
+                    qm.get_data(self.pol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
+                if (self.pol.l_qmmm and mm != None):
+                    mm.get_data(self.pol, base_dir, bo_list, istep, calc_force_only=True)
 
             if (self.thermo != None):
                 self.thermo.run(self)
@@ -279,7 +279,7 @@ class SHXF(MQC):
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
 
-            if (self.mol.l_qmmm and mm != None):
+            if (self.pol.l_qmmm and mm != None):
                 tmp_dir = os.path.join(unixmd_dir, "scr_mm")
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)

@@ -6,7 +6,7 @@ import os, shutil, textwrap
 import numpy as np
 import pickle
 
-class CT(MQC):
+class CT(MQC_QED):
     """ Class for coupled-trajectory mixed quantum-classical (CTMQC) dynamics coupled to confined cavity mode
 
         :param object,list polaritons: List for polariton objects
@@ -43,7 +43,7 @@ class CT(MQC):
         self.ntrajs = len(self.pols)
         self.digit = len(str(self.ntrajs))
 
-        self.nst = self.pols[0].nst
+        self.pst = self.pols[0].pst
         self.nat_qm = self.pols[0].nat_qm
         self.ndim = self.pols[0].ndim
 
@@ -70,21 +70,21 @@ class CT(MQC):
 
         # Initialize coefficient for other trajectories
         for itraj in range(1, self.ntrajs):
-            self.mols[itraj].get_coefficient(self.init_coefs[itraj], self.istates[itraj])
+            self.pols[itraj].get_coefficient(self.init_coefs[itraj], self.istates[itraj])
 
         # Initialize variables for CTMQC
-        self.phase = np.zeros((self.ntrajs, self.nst, self.nat_qm, self.ndim))
-        self.nst_pair = int(self.nst * (self.nst - 1) / 2)
-        self.qmom = np.zeros((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim))
-        self.K_lk = np.zeros((self.ntrajs, self.nst, self.nst))
+        self.phase = np.zeros((self.ntrajs, self.pst, self.nat_qm, self.ndim))
+        self.pst_pair = int(self.pst * (self.pnt - 1) / 2)
+        self.qmom = np.zeros((self.ntrajs, self.pst_pair, self.nat_qm, self.ndim))
+        self.K_lk = np.zeros((self.ntrajs, self.pst, self.pst))
 
         # Initialize variables to calculate quantum momentum 
         self.count_ntrajs = np.zeros((self.ntrajs, self.nat_qm, self.ndim))
-        self.sigma_lk = np.ones((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim))
+        self.sigma_lk = np.ones((self.ntrajs, self.pst_pair, self.nat_qm, self.ndim))
         self.slope_i = np.zeros((self.ntrajs, self.nat_qm, self.ndim))
         self.g_i = np.zeros((self.ntrajs)) 
         self.prod_g_i = np.ones((self.ntrajs, self.ntrajs))
-        self.center_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim))
+        self.center_lk = np.zeros((self.ntrajs, self.pst_pair, self.nat_qm, self.ndim))
 
         # Determine parameters to calculate decoherenece effect
         self.small = 1.0E-08
@@ -99,8 +99,8 @@ class CT(MQC):
         self.const_center_cutoff = const_center_cutoff
 
         self.l_en_cons = l_en_cons
-        self.dotpopnac = np.zeros((self.ntrajs, self.nst))
-        self.dotpopdec = np.zeros((self.ntrajs, self.nst))
+        self.dotpopnac = np.zeros((self.ntrajs, self.pst))
+        self.dotpopdec = np.zeros((self.ntrajs, self.pst))
 
         # Initialize event to print
         self.event = {"DECO": []}
@@ -135,13 +135,13 @@ class CT(MQC):
             # Calculate initial input geometry for all trajectories at t = 0.0 s
             self.istep = -1
             for itraj in range(self.ntrajs):
-                self.mol = self.mols[itraj]
+                self.pol = self.pols[itraj]
 
-                self.mol.reset_bo(qm.calc_coupling)
-                qm.get_data(self.mol, base_dirs[itraj], bo_list, self.dt, self.istep, calc_force_only=False)
+                self.pol.reset_bo(qm.calc_coupling)
+                qm.get_data(self.pol, base_dirs[itraj], bo_list, self.dt, self.istep, calc_force_only=False)
 
                 # TODO: QM/MM
-                self.mol.get_nacme()
+                self.pol.get_nacme()
 
                 self.update_energy()
 
@@ -151,7 +151,7 @@ class CT(MQC):
 
             for itraj in range(self.ntrajs):
 
-                self.mol = self.mols[itraj]
+                self.pol = self.pols[itraj]
 
                 self.write_md_output(itraj, unixmd_dirs[itraj], self.istep)
 
@@ -174,25 +174,25 @@ class CT(MQC):
         # Main MD loop
         for istep in range(self.istep, self.nsteps):
             for itraj in range(self.ntrajs):
-                self.mol = self.mols[itraj]
+                self.pol = self.pols[itraj]
 
                 self.calculate_force(itraj)
                 self.cl_update_position()
 
-                self.mol.backup_bo()
-                self.mol.reset_bo(qm.calc_coupling)
+                self.pol.backup_bo()
+                self.pol.reset_bo(qm.calc_coupling)
 
-                qm.get_data(self.mol, base_dirs[itraj], bo_list, self.dt, istep, calc_force_only=False)
+                qm.get_data(self.pol, base_dirs[itraj], bo_list, self.dt, istep, calc_force_only=False)
 
-                if (not self.mol.l_nacme and self.l_adj_nac):
-                    self.mol.adjust_nac()
+                if (not self.pol.l_nacme and self.l_adj_nac):
+                    self.pol.adjust_nac()
 
                 #TODO: QM/MM
 
                 self.calculate_force(itraj)
                 self.cl_update_velocity()
 
-                self.mol.get_nacme()
+                self.pol.get_nacme()
 
                 el_run(self, itraj)
 
@@ -209,7 +209,7 @@ class CT(MQC):
             self.calculate_qmom(istep)
 
             for itraj in range(self.ntrajs):
-                self.mol = self.mols[itraj]
+                self.pol = self.pols[itraj]
 
                 if ((istep + 1) % self.out_freq == 0):
                     self.write_md_output(itraj, unixmd_dirs[itraj], istep)

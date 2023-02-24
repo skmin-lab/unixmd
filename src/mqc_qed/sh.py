@@ -6,7 +6,7 @@ import random, os, shutil, textwrap
 import numpy as np
 import pickle
 
-class SH(MQC):
+class SH(MQC_QED):
     """ Class for surface hopping dynamics coupled to confined cavity mode
 
         :param object polariton: Polariton object
@@ -120,10 +120,10 @@ class SH(MQC):
             self.istep = -1
             self.pol.reset_bo(qm.calc_coupling, qm.calc_tdp)
             qm.get_data(self.pol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
-            if (self.mol.l_qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
-            if (not self.mol.l_nacme):
-                self.mol.get_nacme()
+            if (self.pol.l_qmmm and mm != None):
+                mm.get_data(self.pol, base_dir, bo_list, self.istep, calc_force_only=False)
+            if (not self.pol.l_nacme):
+                self.pol.get_nacme()
 
             self.hop_prob()
             self.hop_check(bo_list)
@@ -134,14 +134,14 @@ class SH(MQC):
                     self.correct_dec_idc()
             elif (self.dec_correction == "edc"):
                 # If kinetic is 0, coefficient/density matrix are update into itself
-                if (self.mol.ekin_qm > eps):
+                if (self.pol.ekin_qm > eps):
                     self.correct_dec_edc()
 
             if (self.l_hop):
                 if (qm.re_calc):
                     qm.get_data(self.pol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
-                if (self.mol.l_qmmm and mm != None):
-                    mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=True)
+                if (self.pol.l_qmmm and mm != None):
+                    mm.get_data(self.pol, base_dir, bo_list, self.istep, calc_force_only=True)
 
             self.update_energy()
 
@@ -169,10 +169,10 @@ class SH(MQC):
             self.pol.backup_bo()
             self.pol.reset_bo(qm.calc_coupling, qm.calc_tdp)
             qm.get_data(self.pol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
-            if (self.mol.l_qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
+            if (self.pol.l_qmmm and mm != None):
+                mm.get_data(self.pol, base_dir, bo_list, istep, calc_force_only=False)
 
-            if (not self.mol.l_nacme and self.l_adj_nac):
+            if (not self.pol.l_nacme and self.l_adj_nac):
                 self.pol.adjust_nac()
             if (self.l_adj_tdp):
                 self.pol.adjust_tdp()
@@ -180,8 +180,8 @@ class SH(MQC):
             self.calculate_force()
             self.cl_update_velocity()
 
-            if (not self.mol.l_nacme):
-                self.mol.get_nacme()
+            if (not self.pol.l_nacme):
+                self.pol.get_nacme()
 
             el_run(self)
 
@@ -194,14 +194,14 @@ class SH(MQC):
                     self.correct_dec_idc()
             elif (self.dec_correction == "edc"):
                 # If kinetic is 0, coefficient/density matrix are update into itself
-                if (self.mol.ekin_qm > eps):
+                if (self.pol.ekin_qm > eps):
                     self.correct_dec_edc()
 
             if (self.l_hop):
                 if (qm.re_calc):
                     qm.get_data(self.pol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
-                if (self.mol.l_qmmm and mm != None):
-                    mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
+                if (self.pol.l_qmmm and mm != None):
+                    mm.get_data(self.pol, base_dir, bo_list, istep, calc_force_only=True)
 
             if (self.thermo != None):
                 self.thermo.run(self)
@@ -226,7 +226,7 @@ class SH(MQC):
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
 
-            if (self.mol.l_qmmm and mm != None):
+            if (self.pol.l_qmmm and mm != None):
                 tmp_dir = os.path.join(unixmd_dir, "scr_mm")
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
