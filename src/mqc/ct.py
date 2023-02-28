@@ -122,6 +122,7 @@ class CT(MQC):
 
         bo_list = [ist for ist in range(self.nst)]
         qm.calc_coupling = True
+        qm.calc_tdp = False
 
         self.print_init(qm, mm, restart)
 

@@ -51,6 +51,7 @@ class Eh(MQC):
             self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
         bo_list = [ist for ist in range(self.mol.nst)]
         qm.calc_coupling = True
+        qm.calc_tdp = False
         self.print_init(qm, mm, restart)
 
         if (restart == None):
