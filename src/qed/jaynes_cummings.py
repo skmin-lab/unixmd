@@ -24,7 +24,6 @@ class Jaynes_Cummings(QED_calculator):
         # Generate an indicator describing the indices between polaritonic and uncoupled states
         self.get_d_ind = np.zeros((polariton.pst, 2), dtype=np.int32)
         self.cur_d_ind = np.zeros((polariton.pst, 2), dtype=np.int32)
-        self.cur_d_ind_old = np.zeros((polariton.pst, 2), dtype=np.int32)
 
         kst = 0
         for ist in range(polariton.nst):
@@ -44,11 +43,12 @@ class Jaynes_Cummings(QED_calculator):
         # Initialize permutation matrix to check current character of diabatic states
         self.permut = np.zeros((polariton.pst, polariton.pst), dtype=np.int32)
 
-    def get_data(self, polariton, base_dir, dt, istep, calc_force_only):
+    def get_data(self, polariton, base_dir, pol_list, dt, istep, calc_force_only):
         """ Construct the polaritonic and diabatic states from molecule, cavity, and interaction parts
 
             :param object polariton: Polariton object
             :param string base_dir: Base directory
+            :param integer,list pol_list: List of polaritonic states for QED calculation
             :param double dt: Time interval
             :param integer istep: Current MD step
             :param boolean calc_force_only: Logical to decide whether calculate force only
@@ -59,6 +59,8 @@ class Jaynes_Cummings(QED_calculator):
         # Step 2: Diagonalize Hamiltonian matrix and obtain eneriges
         if (not calc_force_only):
             self.solve_polaritonic_states(polariton, dt, istep)
+        # Step 3: Calculate properties of polaritonic states; forces
+        self.calculate_properties(polariton, pol_list)
         self.move_dir(base_dir)
 
     def construct_Hamiltonian(self, polariton):
@@ -202,6 +204,57 @@ class Jaynes_Cummings(QED_calculator):
         # The eigenvalues correspond to the energies of polaritonic states
         for ist in range(polariton.pst):
             polariton.pol_states[ist].energy = w[ist]
+
+    def calculate_properties(self, polariton, pol_list):
+        """ Calculate properties of polaritonic states
+            The forces for polaritonic states are calculated from the gradients
+            of electronic states and transition dipole gradients
+
+            :param object polariton: Polariton object
+            :param integer,list pol_list: List of polaritonic states for QED calculation
+        """
+        for rst in pol_list:
+            # The applied gradient on the target polaritonic state
+            qed_grad = np.zeros((polariton.nat, polariton.ndim))
+
+            # First term: Ehrenfest-like term
+            # Loop for diabatic states
+            for ist in range(polariton.pst):
+                ind_mol1 = self.get_d_ind[ist, 0]
+                ind_photon1 = self.get_d_ind[ist, 1]
+                qed_grad -= polariton.states[ind_mol1].force * self.unitary[ist, rst] ** 2.
+
+            # Second term: TDP gradients
+            # Loop for diabatic states
+            for ist in range(polariton.pst):
+                ind_mol1 = self.get_d_ind[ist, 0]
+                ind_photon1 = self.get_d_ind[ist, 1]
+                # Loop for diabatic states
+                for jst in range(polariton.pst):
+                    ind_mol2 = self.get_d_ind[jst, 0]
+                    ind_photon2 = self.get_d_ind[jst, 1]
+
+                    off_term = 0.
+                    if (ind_mol2 == ind_mol1 + 1 and ind_photon2 == ind_photon1 - 1):
+                        off_term = 1.
+                    elif (ind_mol2 == ind_mol1 - 1 and ind_photon2 == ind_photon1 + 1):
+                        off_term = 1.
+                    # For extended JC Hamiltonian, the counter-rotating terms are included
+                    if (self.l_crt):
+                        if (ind_mol2 == ind_mol1 + 1 and ind_photon2 == ind_photon1 + 1):
+                            off_term = 1.
+                        elif (ind_mol2 == ind_mol1 - 1 and ind_photon2 == ind_photon1 - 1):
+                            off_term = 1.
+
+                    if (ist != jst):
+                        field_dot_grad = np.zeros((polariton.nat, polariton.ndim))
+                        for idim in range(polariton.ndim):
+                            field_dot_grad[0:polariton.nat_qm] += polariton.field_pol_vec[idim] \
+                                * polariton.tdp_grad[ind_mol1, ind_mol2, idim]
+                        qed_grad += field_dot_grad * self.coup_str * self.unitary[ist, rst] \
+                            * self.unitary[jst, rst] * off_term
+
+            polariton.pol_states[rst].force = - np.copy(qed_grad)
 
     def backup_qed(self):
         """ Backup Hamiltonian matrix and unitary matrix
