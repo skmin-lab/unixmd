@@ -125,7 +125,7 @@ class SH(MQC_QED):
             if (not self.pol.l_nacme):
                 self.pol.get_nacme()
 
-            qed.get_data(self.pol, base_dir, calc_force_only=False)
+            qed.get_data(self.pol, base_dir, self.dt, self.istep, calc_force_only=False)
 
             self.hop_prob()
             self.hop_check(bo_list)
@@ -144,7 +144,7 @@ class SH(MQC_QED):
                     qm.get_data(self.pol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
                 if (self.pol.l_qmmm and mm != None):
                     mm.get_data(self.pol, base_dir, bo_list, self.istep, calc_force_only=True)
-                qed.get_data(self.pol, base_dir, calc_force_only=True)
+                qed.get_data(self.pol, base_dir, self.dt, self.istep, calc_force_only=True)
 
             self.update_energy()
 
@@ -170,6 +170,7 @@ class SH(MQC_QED):
             self.cl_update_position()
 
             self.pol.backup_bo()
+            qed.backup_qed()
             self.pol.reset_bo(qm.calc_coupling, qm.calc_tdp)
             qm.get_data(self.pol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
             if (self.pol.l_qmmm and mm != None):
@@ -179,7 +180,7 @@ class SH(MQC_QED):
                 self.pol.adjust_nac()
             if (self.l_adj_tdp):
                 self.pol.adjust_tdp()
-            qed.get_data(self.pol, base_dir, calc_force_only=False)
+            qed.get_data(self.pol, base_dir, self.dt, istep, calc_force_only=False)
 
             self.calculate_force()
             self.cl_update_velocity()
@@ -206,7 +207,7 @@ class SH(MQC_QED):
                     qm.get_data(self.pol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
                 if (self.pol.l_qmmm and mm != None):
                     mm.get_data(self.pol, base_dir, bo_list, istep, calc_force_only=True)
-                qed.get_data(self.pol, base_dir, calc_force_only=True)
+                qed.get_data(self.pol, base_dir, self.dt, istep, calc_force_only=True)
 
             if (self.thermo != None):
                 self.thermo.run(self)
