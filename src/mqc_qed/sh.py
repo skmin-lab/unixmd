@@ -119,6 +119,8 @@ class SH(MQC_QED):
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
             self.pol.reset_bo(qm.calc_coupling, qm.calc_tdp)
+            self.pol.reset_qed(qm.calc_coupling)
+
             qm.get_data(self.pol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
             if (self.pol.l_qmmm and mm != None):
                 mm.get_data(self.pol, base_dir, bo_list, self.istep, calc_force_only=False)
@@ -173,6 +175,8 @@ class SH(MQC_QED):
             self.pol.backup_bo()
             qed.backup_qed()
             self.pol.reset_bo(qm.calc_coupling, qm.calc_tdp)
+            self.pol.reset_qed(qm.calc_coupling)
+
             qm.get_data(self.pol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
             if (self.pol.l_qmmm and mm != None):
                 mm.get_data(self.pol, base_dir, bo_list, istep, calc_force_only=False)
@@ -188,6 +192,7 @@ class SH(MQC_QED):
 
             if (not self.pol.l_nacme):
                 self.pol.get_nacme()
+            qed.calculate_pnacme(self.pol)
 
             el_run(self)
             qed.transform(self.pol, mode="d2a")

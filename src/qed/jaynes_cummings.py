@@ -278,6 +278,28 @@ class Jaynes_Cummings(QED_calculator):
             index_step = f"index_AD.dat.{istep + 1}.{pol_list[0]}"
             shutil.copy("index_AD.dat", os.path.join(tmp_dir, index_step))
 
+    def calculate_pnacme(self, polariton):
+        """ Calculate NACME between polaritonic states
+            It consists of NACMEs and unitary matrix derivatives
+
+            :param object polariton: Polariton object
+        """
+        tmp_nacme = np.zeros((polariton.pst, polariton.pst)) 
+
+        for ist in range(polariton.pst):
+            ind_mol1 = self.get_d_ind[ist, 0]
+            ind_photon1 = self.get_d_ind[ist, 1]
+            for jst in range(ist + 1, polariton.pst):
+                ind_mol2 = self.get_d_ind[jst, 0]
+                ind_photon2 = self.get_d_ind[jst, 1]
+
+                if (ind_photon1 == ind_photon2):
+                    tmp_nacme[ist, jst] = polariton.nacme[ind_mol1, ind_mol2]
+                    tmp_nacme[jst, ist] = - tmp_nacme[ist, jst]
+
+        polariton.pnacme += np.matmul(np.transpose(self.unitary), np.matmul(tmp_nacme, self.unitary))
+        polariton.pnacme += np.matmul(np.transpose(self.unitary), self.unitary_dot)
+
     def backup_qed(self):
         """ Backup Hamiltonian matrix and unitary matrix
         """

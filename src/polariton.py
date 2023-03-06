@@ -360,6 +360,18 @@ class Polariton(object):
             self.tdp = np.zeros((self.nst, self.nst, self.ndim))
             self.tdp_grad = np.zeros((self.nst, self.nst, 3, self.nat_qm, self.ndim))
 
+    def reset_qed(self, calc_coupling):
+        """ Reset polaritonic state energies, forces, nonadiabatic couplings
+
+            :param boolean calc_coupling: Check whether the dynamics includes coupling calculation
+        """
+        for states in self.pol_states:
+            states.energy = 0.
+            states.force = np.zeros((self.nat, self.ndim))
+
+        if (calc_coupling):
+            self.pnacme = np.zeros((self.pst, self.pst))
+
     def backup_bo(self):
         """ Backup BO energies and nonadiabatic couplings
         """
