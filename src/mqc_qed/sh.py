@@ -126,6 +126,7 @@ class SH(MQC_QED):
                 self.pol.get_nacme()
 
             qed.get_data(self.pol, base_dir, pol_list, self.dt, self.istep, calc_force_only=False)
+            qed.transform(self.pol, mode="a2d")
 
             self.hop_prob()
             self.hop_check(bo_list)
@@ -189,6 +190,7 @@ class SH(MQC_QED):
                 self.pol.get_nacme()
 
             el_run(self)
+            qed.transform(self.pol, mode="d2a")
 
             self.hop_prob()
             self.hop_check(bo_list)

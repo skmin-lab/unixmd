@@ -284,4 +284,47 @@ class Jaynes_Cummings(QED_calculator):
         self.ham_d_old = np.copy(self.ham_d)
         self.unitary_old = np.copy(self.unitary)
 
+    def transform(self, polariton, mode):
+        """ Transform the coefficients using unitary operation
+
+            :param object polariton: Polariton object
+            :param string mode: Transformation mode for coefficients (a2d = to diabatic, d2a = to adiabatic)
+        """
+        # For self.unitary, 1st and 2nd ranks represent diabatic and adiabatic indices, respectively
+        if (mode == "a2d"):
+
+            # D = U * C
+            # Index for diabatic states
+            for ist in range(polariton.pst):
+                tmp_real = 0.
+                tmp_imag = 0.
+                # Index for adiabatic states
+                for jst in range(polariton.pst):
+                    tmp_real += self.unitary[ist, jst] * polariton.pol_states[jst].coef_a.real
+                    tmp_imag += self.unitary[ist, jst] * polariton.pol_states[jst].coef_a.imag
+                polariton.pol_states[ist].coef_d = complex(tmp_real, tmp_imag)
+
+            for ist in range(polariton.pst):
+                for jst in range(polariton.pst):
+                    polariton.rho_d[ist, jst] = polariton.pol_states[ist].coef_d.conjugate() \
+                        * polariton.pol_states[jst].coef_d
+
+        elif (mode == "d2a"):
+
+            # C = U^T * D; U^-1 = U^T
+            # Index for adiabatic states
+            for ist in range(polariton.pst):
+                tmp_real = 0.
+                tmp_imag = 0.
+                # Index for diabatic states
+                for jst in range(polariton.pst):
+                    tmp_real += self.unitary[jst, ist] * polariton.pol_states[jst].coef_d.real
+                    tmp_imag += self.unitary[jst, ist] * polariton.pol_states[jst].coef_d.imag
+                polariton.pol_states[ist].coef_a = complex(tmp_real, tmp_imag)
+
+            for ist in range(polariton.pst):
+                for jst in range(polariton.pst):
+                    polariton.rho_a[ist, jst] = polariton.pol_states[ist].coef_a.conjugate() \
+                        * polariton.pol_states[jst].coef_a
+
 
