@@ -137,10 +137,12 @@ class SH(MQC_QED):
             if (self.dec_correction == "idc"):
                 if (self.l_hop or self.l_reject):
                     self.correct_dec_idc()
+                    qed.transform(self.pol, mode="a2d")
             elif (self.dec_correction == "edc"):
                 # If kinetic is 0, coefficient/density matrix are update into itself
                 if (self.pol.ekin_qm > eps):
                     self.correct_dec_edc()
+                    qed.transform(self.pol, mode="a2d")
 
             if (self.l_hop):
                 if (qm.re_calc):
@@ -204,10 +206,12 @@ class SH(MQC_QED):
             if (self.dec_correction == "idc"):
                 if (self.l_hop or self.l_reject):
                     self.correct_dec_idc()
+                    qed.transform(self.pol, mode="a2d")
             elif (self.dec_correction == "edc"):
                 # If kinetic is 0, coefficient/density matrix are update into itself
                 if (self.pol.ekin_qm > eps):
                     self.correct_dec_edc()
+                    qed.transform(self.pol, mode="a2d")
 
             if (self.l_hop):
                 if (qm.re_calc):
@@ -399,55 +403,55 @@ class SH(MQC_QED):
         """ Routine to decoherence correction, instantaneous decoherence correction(IDC) scheme
         """
         if (self.elec_object == "coefficient"):
-            for states in self.mol.states:
-                states.coef = 0. + 0.j
-            self.mol.states[self.rstate].coef = 1. + 0.j
+            for states in self.pol.pol_states:
+                states.coef_a = 0. + 0.j
+            self.pol.pol_states[self.rstate].coef_a = 1. + 0.j
 
-        self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex128)
-        self.mol.rho[self.rstate, self.rstate] = 1. + 0.j
+        self.pol.rho_a = np.zeros((self.pol.pst, self.pol.pst), dtype=np.complex128)
+        self.pol.rho_a[self.rstate, self.rstate] = 1. + 0.j
 
     def correct_dec_edc(self):
         """ Routine to decoherence correction, energy-based decoherence correction(EDC) scheme
         """
         # Save exp(-dt/tau) instead of tau itself
-        exp_tau = np.array([1. if (ist == self.rstate) else np.exp(- self.dt / ((1. + self.edc_parameter / self.mol.ekin_qm) / \
-            np.abs(self.mol.states[ist].energy - self.mol.states[self.rstate].energy))) for ist in range(self.mol.nst)])
+        exp_tau = np.array([1. if (ist == self.rstate) else np.exp(- self.dt / ((1. + self.edc_parameter / self.pol.ekin_qm) / \
+            np.abs(self.pol.pol_states[ist].energy - self.pol.pol_states[self.rstate].energy))) for ist in range(self.pol.pst)])
         rho_update = 1.
 
         if (self.elec_object == "coefficient"):
             # Update coefficients
-            for ist in range(self.mol.nst):
-                # self.mol.states[self.rstate] need other updated coefficients
+            for ist in range(self.pol.pst):
+                # self.pol.pol_states[self.rstate] need other updated coefficients
                 if (ist != self.rstate):
-                    self.mol.states[ist].coef *= exp_tau[ist]
-                    rho_update -= self.mol.states[ist].coef.conjugate() * self.mol.states[ist].coef
+                    self.pol.pol_states[ist].coef_a *= exp_tau[ist]
+                    rho_update -= self.pol.pol_states[ist].coef_a.conjugate() * self.pol.pol_states[ist].coef_a
 
-            self.mol.states[self.rstate].coef *= np.sqrt(rho_update / self.mol.rho[self.rstate, self.rstate])
+            self.pol.pol_states[self.rstate].coef_a *= np.sqrt(rho_update / self.pol.rho_a[self.rstate, self.rstate])
 
             # Get density matrix elements from coefficients
-            for ist in range(self.mol.nst):
-                for jst in range(ist, self.mol.nst):
-                    self.mol.rho[ist, jst] = self.mol.states[ist].coef.conjugate() * self.mol.states[jst].coef
-                    self.mol.rho[jst, ist] = self.mol.rho[ist, jst].conjugate()
+            for ist in range(self.pol.pst):
+                for jst in range(ist, self.pol.pst):
+                    self.pol.rho_a[ist, jst] = self.pol.pol_states[ist].coef_a.conjugate() * self.pol.pol_states[jst].coef_a
+                    self.pol.rho_a[jst, ist] = self.pol.rho_a[ist, jst].conjugate()
 
-        elif (self.elec_object == "density"):
-            # save old running state element for update running state involved elements
-            rho_old_rstate = self.mol.rho[self.rstate, self.rstate]
-            for ist in range(self.mol.nst):
-                for jst in range(ist, self.mol.nst):
-                    # Update density matrix. self.mol.rho[ist, rstate] suffers half-update because exp_tau[rstate] = 1
-                    self.mol.rho[ist, jst] *= exp_tau[ist] * exp_tau[jst]
-                    self.mol.rho[jst, ist] = self.mol.rho[ist, jst].conjugate()
-
-                if (ist != self.rstate):
-                    # Update rho[self.rstate, self.rstate] by subtracting other diagonal elements
-                    rho_update -= self.mol.rho[ist, ist]
-
-            # Update rho[self.rstate, ist] and rho[ist, self.rstate] by using rho_update and rho_old_rstate
-            # rho[self.rstate, self.rstate] automatically update by double counting
-            for ist in range(self.mol.nst):
-                self.mol.rho[ist, self.rstate] *= np.sqrt(rho_update / rho_old_rstate)
-                self.mol.rho[self.rstate, ist] *= np.sqrt(rho_update / rho_old_rstate)
+#        elif (self.elec_object == "density"):
+#            # save old running state element for update running state involved elements
+#            rho_old_rstate = self.mol.rho[self.rstate, self.rstate]
+#            for ist in range(self.mol.nst):
+#                for jst in range(ist, self.mol.nst):
+#                    # Update density matrix. self.mol.rho[ist, rstate] suffers half-update because exp_tau[rstate] = 1
+#                    self.mol.rho[ist, jst] *= exp_tau[ist] * exp_tau[jst]
+#                    self.mol.rho[jst, ist] = self.mol.rho[ist, jst].conjugate()
+#
+#                if (ist != self.rstate):
+#                    # Update rho[self.rstate, self.rstate] by subtracting other diagonal elements
+#                    rho_update -= self.mol.rho[ist, ist]
+#
+#            # Update rho[self.rstate, ist] and rho[ist, self.rstate] by using rho_update and rho_old_rstate
+#            # rho[self.rstate, self.rstate] automatically update by double counting
+#            for ist in range(self.mol.nst):
+#                self.mol.rho[ist, self.rstate] *= np.sqrt(rho_update / rho_old_rstate)
+#                self.mol.rho[self.rstate, ist] *= np.sqrt(rho_update / rho_old_rstate)
 
     def calculate_force(self):
         """ Routine to calculate the forces
