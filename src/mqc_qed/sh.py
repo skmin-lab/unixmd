@@ -239,6 +239,10 @@ class SH(MQC_QED):
 
         # Delete scratch directory
         if (not l_save_scr):
+            tmp_dir = os.path.join(unixmd_dir, "scr_qed")
+            if (os.path.exists(tmp_dir)):
+                shutil.rmtree(tmp_dir)
+
             tmp_dir = os.path.join(unixmd_dir, "scr_qm")
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
@@ -456,15 +460,15 @@ class SH(MQC_QED):
     def calculate_force(self):
         """ Routine to calculate the forces
         """
-        self.rforce = np.copy(self.mol.states[self.rstate].force)
+        self.rforce = np.copy(self.pol.pol_states[self.rstate].force)
 
     def update_energy(self):
         """ Routine to update the energy of molecules in surface hopping dynamics
         """
         # Update kinetic energy
-        self.mol.update_kinetic()
-        self.mol.epot = self.mol.states[self.rstate].energy
-        self.mol.etot = self.mol.epot + self.mol.ekin
+        self.pol.update_kinetic()
+        self.pol.epot = self.pol.pol_states[self.rstate].energy
+        self.pol.etot = self.pol.epot + self.pol.ekin
 
     def write_md_output(self, unixmd_dir, istep):
         """ Write output files
@@ -492,7 +496,7 @@ class SH(MQC_QED):
         typewriter(tmp, unixmd_dir, "SHSTATE", "a")
 
         # Write SHPROB file
-        tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(self.mol.nst)])
+        tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(self.pol.pst)])
         typewriter(tmp, unixmd_dir, "SHPROB", "a")
 
     def write_dotpop(self, unixmd_dir, istep):
@@ -541,14 +545,14 @@ class SH(MQC_QED):
 
             :param integer istep: Current MD step
         """
-        ctemp = self.mol.ekin * 2. / float(self.mol.ndof) * au_to_K
+        ctemp = self.pol.ekin * 2. / float(self.pol.ndof) * au_to_K
         norm = 0.
-        for ist in range(self.mol.nst):
-            norm += self.mol.rho.real[ist, ist]
+        for ist in range(self.pol.pst):
+            norm += self.pol.rho_a.real[ist, ist]
 
         # Print INFO for each step
         INFO = f" INFO{istep + 1:>9d}{self.rstate:>5d}"
-        INFO += f"{self.mol.ekin:16.8f}{self.mol.epot:15.8f}{self.mol.etot:15.8f}"
+        INFO += f"{self.pol.ekin:16.8f}{self.pol.epot:15.8f}{self.pol.etot:15.8f}"
         INFO += f"{ctemp:13.6f}"
         INFO += f"{norm:11.5f}"
         print (INFO, flush=True)
@@ -557,7 +561,7 @@ class SH(MQC_QED):
         if (self.verbosity >= 1):
             DEBUG1 = f" DEBUG1{istep + 1:>7d}"
             DEBUG1 += f"{self.rand:11.5f}"
-            for ist in range(self.mol.nst):
+            for ist in range(self.pol.pst):
                 DEBUG1 += f"{self.acc_prob[ist]:12.5f} ({self.rstate}->{ist})"
             print (DEBUG1, flush=True)
 
