@@ -1,5 +1,6 @@
 from __future__ import division
 from qed.qed_calculator import QED_calculator
+from misc import eps
 import os, shutil
 import numpy as np
 
@@ -8,14 +9,18 @@ class Jaynes_Cummings(QED_calculator):
 
         :param object polariton: Polariton object
         :param double coupling_strength: Coupling strength for cavity-matter interaction
+        :param boolean l_check_crossing: Logical to check diabatic character of polaritonic states
         :param boolean l_crt: Logical to include the counter-rotating terms
     """
-    def __init__(self, polariton, coupling_strength=0.001, l_crt=False):
+    def __init__(self, polariton, coupling_strength=0.001, l_check_crossing=False, l_crt=False):
         # Save name of QED calculator
         super().__init__()
 
         # TODO : Should self.coup_str change to self.coupling_stregth for convention?
         self.coup_str = coupling_strength
+
+        # Check the diabatic character of adjacent two states
+        self.l_check_crossing = l_check_crossing
 
         # For simplified JC model, it excludes counter-rotating terms
         # due to the use of rotating-wave approximation
@@ -44,6 +49,8 @@ class Jaynes_Cummings(QED_calculator):
         # Initialize permutation matrix to check current character of diabatic states
         self.permut = np.zeros((polariton.pst, polariton.pst), dtype=np.int32)
 
+        self.l_trivial = False
+
     def get_data(self, polariton, base_dir, pol_list, dt, istep, calc_force_only):
         """ Construct the polaritonic and diabatic states from molecule, cavity, and interaction parts
 
@@ -59,7 +66,7 @@ class Jaynes_Cummings(QED_calculator):
         self.construct_Hamiltonian(polariton)
         # Step 2: Diagonalize Hamiltonian matrix and obtain eneriges
         if (not calc_force_only):
-            self.solve_polaritonic_states(polariton, dt, istep)
+            self.solve_polaritonic_states(polariton, pol_list, dt, istep)
             self.save_output_files(base_dir, pol_list, istep)
         # Step 3: Calculate properties of polaritonic states; forces
         self.calculate_properties(polariton, pol_list)
@@ -121,11 +128,12 @@ class Jaynes_Cummings(QED_calculator):
         with open(file_name, "w") as f:
             f.write(ham_d_row)
 
-    def solve_polaritonic_states(self, polariton, dt, istep):
+    def solve_polaritonic_states(self, polariton, pol_list, dt, istep):
         """ Diagonalize JC Hamiltonian matrix to get the unitary matrix
             The energy for polaritonic states are directly obtained from the eigenvalues
 
             :param object polariton: Polariton object
+            :param integer,list pol_list: List of polaritonic states for QED calculation
             :param double dt: Time interval
             :param integer istep: Current MD step
         """
@@ -207,6 +215,57 @@ class Jaynes_Cummings(QED_calculator):
         for ist in range(polariton.pst):
             polariton.pol_states[ist].energy = w[ist]
 
+        # Check the diabatic character of adjacent two states
+        if (istep >= 0 and self.l_check_crossing):
+            self.check_trivial_crossing(polariton, pol_list, permut_old, cur_d_ind_old)
+
+    def check_trivial_crossing(self, polariton, pol_list, permut_old, cur_d_ind_old):
+        """ Check the diabatic character of adjacent two states using permutation matrix
+
+            :param object polariton: Polariton object
+            :param integer,list pol_list: List of polaritonic states for QED calculation
+            :param permut_old: Permutation matrix at old step
+            :type permut_old: integer, 2D list
+            :param cur_d_ind_old: Indicator for diabatic character at old step
+            :type cur_d_ind_old: integer, 2D list
+        """
+        # Check whether the swap of two states occurs
+        l_swap = False
+        permut_diff_norm = np.linalg.norm(self.permut - permut_old, ord='fro')
+        if (permut_diff_norm > 1.):
+            l_swap = True
+
+        # Check whether the trivial crossing of two states occurs
+        self.l_trivial = False
+        if (l_swap):
+            # Diabatic character of running state at old step
+            ind_mol1 = cur_d_ind_old[pol_list[0], 0]
+            ind_photon1 = cur_d_ind_old[pol_list[0], 1]
+            # Diabatic character of running state at current step
+            ind_mol2 = self.cur_d_ind[pol_list[0], 0]
+            ind_photon2 = self.cur_d_ind[pol_list[0], 1]
+
+            # To decide the trivial crossing, we need the Hamiltonian matrix element
+            # For this, we must know the corresponding indices for the swap
+            # The order of Hamiltonian matrix is matched with self.get_d_ind
+            for ist in range(polariton.pst):
+                ind_mol = self.get_d_ind[ist, 0]
+                ind_photon = self.get_d_ind[ist, 1]
+                if (ind_mol == ind_mol1 and ind_photon == ind_photon1):
+                    ind_d1 = ist
+                if (ind_mol == ind_mol2 and ind_photon == ind_photon2):
+                    ind_d2 = ist
+
+            # This condition checks the coupling between two swapped states
+            if (ind_d2 != ind_d1 and abs(self.ham_d[ind_d2, ind_d1]) < eps):
+                self.l_trivial = True
+                for ist in range(polariton.pst):
+                    ind_mol = self.cur_d_ind[ist, 0]
+                    ind_photon = self.cur_d_ind[ist, 1]
+                    if (ind_mol == ind_mol1 and ind_photon == ind_photon1):
+                        # This index is used for trivial crossing hopping
+                        self.trivial_state = ist
+
     def calculate_properties(self, polariton, pol_list):
         """ Calculate properties of polaritonic states
             The forces for polaritonic states are calculated from the gradients
@@ -219,12 +278,19 @@ class Jaynes_Cummings(QED_calculator):
             # The applied gradient on the target polaritonic state
             qed_grad = np.zeros((polariton.nat, polariton.ndim))
 
+            # For trivial crossing, the index to be changed must be used
+            # for conservation of the total energy
+            if (self.l_trivial):
+                rst_new = self.trivial_state
+            else:
+                rst_new = rst
+
             # First term: Ehrenfest-like term
             # Loop for diabatic states
             for ist in range(polariton.pst):
                 ind_mol1 = self.get_d_ind[ist, 0]
                 ind_photon1 = self.get_d_ind[ist, 1]
-                qed_grad -= polariton.states[ind_mol1].force * self.unitary[ist, rst] ** 2.
+                qed_grad -= polariton.states[ind_mol1].force * self.unitary[ist, rst_new] ** 2.
 
             # Second term: TDP gradients
             # Loop for diabatic states
@@ -253,8 +319,8 @@ class Jaynes_Cummings(QED_calculator):
                         for idim in range(polariton.ndim):
                             field_dot_grad[0:polariton.nat_qm] += polariton.field_pol_vec[idim] \
                                 * polariton.tdp_grad[ind_mol1, ind_mol2, idim]
-                        qed_grad += field_dot_grad * self.coup_str * self.unitary[ist, rst] \
-                            * self.unitary[jst, rst] * off_term
+                        qed_grad += field_dot_grad * self.coup_str * self.unitary[ist, rst_new] \
+                            * self.unitary[jst, rst_new] * off_term
 
             polariton.pol_states[rst].force = - np.copy(qed_grad)
 
