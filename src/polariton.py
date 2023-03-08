@@ -497,7 +497,7 @@ class Polariton(object):
         """), "  ")
         # Print field polarization vector components
         field_info = " " * 8
-        field_info += "  ".join([f'{value:8.4f}' for value in self.field_pol_vec])
+        field_info += "  ".join([f'{value:8.4f}' for value in self.field_pol_vec]) + "\n"
         polariton_info += f"  Field Polarization Vec.  =\n"
         polariton_info += field_info
         ### TODO: Model case

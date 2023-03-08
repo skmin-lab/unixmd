@@ -337,10 +337,10 @@ class MQC_QED(object):
             dynamics_info += f"  Rotating Wave Approx.    = {'No':>16s}\n\n"
 
         # Print QM information
-        dynamics_info += textwrap.dedent(f"""\
+        dynamics_info += textwrap.indent(textwrap.dedent(f"""\
           QM Program               = {qm.qm_prog:>16s}
           QM Method                = {qm.qm_method:>16s}
-        """)
+        """), "  ")
         if (self.pol.l_qmmm and mm != None):
             dynamics_info += textwrap.indent(textwrap.dedent(f"""\
               MM Program               = {mm.mm_prog:>16s}
