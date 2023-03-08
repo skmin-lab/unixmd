@@ -13,10 +13,15 @@ math_lib_dir = None
 #math_lib_dir = "/my_disk/my_name/lapack/"
 #math_lib_dir = "${MKLROOT}/lib/intel64/"
 
+# Selects whether binaries for QED is built separately; True, False
+do_qed = False
+
 sourcefile1 = ["./src/mqc/el_prop/el_propagator.pyx", "./src/mqc/el_prop/rk4.c"]
 sourcefile2 = ["./src/mqc/el_prop/el_propagator_xf.pyx", "./src/mqc/el_prop/rk4_xf.c"]
 sourcefile3 = ["./src/mqc/el_prop/el_propagator_ct.pyx", "./src/mqc/el_prop/rk4_ct.c"]
 sourcefile4 = ["./src/qm/cioverlap/cioverlap.pyx", "./src/qm/cioverlap/tdnac.c"]
+
+sourcefile1_qed = ["./src/mqc_qed/el_prop/el_propagator.pyx", "./src/mqc_qed/el_prop/rk4.c"]
 
 # External libraries to be linked
 libs = []
@@ -48,7 +53,17 @@ extensions = [
         libraries=libs, library_dirs=lib_dirs, extra_compile_args=extra_flags)
 ]
 
-setup(
-    cmdclass = {"build_ext": build_ext},
-    ext_modules = extensions
-)
+extensions_qed = [
+    Extension("el_propagator", sources=sourcefile1_qed, include_dirs=[np.get_include()])
+]
+
+if (not do_qed):
+    setup(
+        cmdclass = {"build_ext": build_ext},
+        ext_modules = extensions
+    )
+else:
+    setup(
+        cmdclass = {"build_qed_ext": build_ext},
+        ext_modules = extensions_qed
+    )

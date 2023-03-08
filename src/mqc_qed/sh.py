@@ -1,5 +1,5 @@
 from __future__ import division
-from build.el_propagator import el_run
+from build_qed.el_propagator import el_run
 from mqc_qed.mqc import MQC_QED
 from misc import eps, au_to_K, call_name, typewriter
 import random, os, shutil, textwrap
@@ -196,7 +196,7 @@ class SH(MQC_QED):
                 self.pol.get_nacme()
             qed.calculate_pnacme(self.pol)
 
-            el_run(self)
+            el_run(self, qed)
             qed.transform(self.pol, mode="d2a")
 
             self.hop_prob(qed)
