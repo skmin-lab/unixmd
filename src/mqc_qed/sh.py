@@ -235,7 +235,7 @@ class SH(MQC_QED):
             self.fstep = istep
             restart_file = os.path.join(base_dir, "RESTART.bin")
             with open(restart_file, 'wb') as f:
-                pickle.dump({'qm':qm, 'md':self}, f)
+                pickle.dump({'qed':qed, 'qm':qm, 'md':self}, f)
 
         # Delete scratch directory
         if (not l_save_scr):
