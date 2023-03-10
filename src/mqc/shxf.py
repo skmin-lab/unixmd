@@ -162,6 +162,7 @@ class SHXF(MQC):
         bo_list = [self.rstate]
         qm.calc_coupling = True
         qm.calc_tdp = False
+        qm.calc_tdp_grad = False
         self.print_init(qm, mm, restart)
 
         if (restart == None):

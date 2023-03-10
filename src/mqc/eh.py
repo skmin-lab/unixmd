@@ -52,6 +52,7 @@ class Eh(MQC):
         bo_list = [ist for ist in range(self.mol.nst)]
         qm.calc_coupling = True
         qm.calc_tdp = False
+        qm.calc_tdp_grad = False
         self.print_init(qm, mm, restart)
 
         if (restart == None):

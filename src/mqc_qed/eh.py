@@ -57,6 +57,9 @@ class Eh(MQC_QED):
         pol_list = [ist for ist in range(self.pol.pst)]
         qm.calc_coupling = True
         qm.calc_tdp = True
+        qm.calc_tdp_grad = False
+        if (qed.force_level == "tdp"):
+            qm.calc_tdp_grad = True
         self.print_init(qed, qm, mm, restart)
 
         if (restart == None):

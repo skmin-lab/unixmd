@@ -415,7 +415,10 @@ class SSR(DFTBplus):
         # Transition dipole moment options; It is determined automatically
         if (self.calc_tdp):
             transition_dipole = "Yes"
-            transition_dipole_grad = "Yes"
+            if (self.calc_tdp_grad):
+                transition_dipole_grad = "Yes"
+            else:
+                transition_dipole_grad = "No"
             # self.re_calc option is changed to False for QED calculation
             # since the gradients for all states are already calculated
             if (istep == -1):
@@ -483,8 +486,9 @@ class SSR(DFTBplus):
             if (self.calc_tdp):
                 tdp_step = f"tdp.dat.{istep + 1}.{bo_list[0]}"
                 shutil.copy("tdp.dat", os.path.join(tmp_dir, tdp_step))
-                tdp_grad_step = f"tdp_grad.dat.{istep + 1}.{bo_list[0]}"
-                shutil.copy("tdp_grad.dat", os.path.join(tmp_dir, tdp_grad_step))
+                if (self.calc_tdp_grad):
+                    tdp_grad_step = f"tdp_grad.dat.{istep + 1}.{bo_list[0]}"
+                    shutil.copy("tdp_grad.dat", os.path.join(tmp_dir, tdp_grad_step))
 
     def extract_QM(self, molecule, bo_list, calc_force_only):
         """ Read the output files to get BO information
@@ -508,9 +512,10 @@ class SSR(DFTBplus):
             file_name = "tdp.dat"
             with open(file_name, "r") as f:
                 tdp_dat = f.read()
-            file_name = "tdp_grad.dat"
-            with open(file_name, "r") as f:
-                tdp_grad_dat = f.read()
+            if (self.calc_tdp_grad):
+                file_name = "tdp_grad.dat"
+                with open(file_name, "r") as f:
+                    tdp_grad_dat = f.read()
 
         # Energy
         if (not calc_force_only):
@@ -575,7 +580,7 @@ class SSR(DFTBplus):
                     kst += 1
 
         # TDP gradient
-        if (not calc_force_only and self.calc_tdp):
+        if (not calc_force_only and self.calc_tdp_grad):
             tmp_tdp_grad = 'mu_x gradient \(au\) :' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
             tmp_tdp_grad = re.findall(tmp_tdp_grad, tdp_grad_dat)
 

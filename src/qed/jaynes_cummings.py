@@ -1,6 +1,6 @@
 from __future__ import division
 from qed.qed_calculator import QED_calculator
-from misc import eps
+from misc import call_name, eps
 import os, shutil
 import numpy as np
 
@@ -9,15 +9,28 @@ class Jaynes_Cummings(QED_calculator):
 
         :param object polariton: Polariton object
         :param double coupling_strength: Coupling strength for cavity-matter interaction
+        :param string force_level: Level for calculation of force of target polaritonic state
         :param boolean l_check_crossing: Logical to check diabatic character of polaritonic states
         :param boolean l_crt: Logical to include the counter-rotating terms
     """
-    def __init__(self, polariton, coupling_strength=0.001, l_check_crossing=False, l_crt=False):
+    def __init__(self, polariton, coupling_strength=0.001, force_level="energy", \
+        l_check_crossing=False, l_crt=False):
         # Save name of QED calculator
         super().__init__()
 
         # TODO : Should self.coup_str change to self.coupling_stregth for convention?
         self.coup_str = coupling_strength
+
+        self.force_level = force_level.lower()
+        if not (self.force_level in ["energy", "nac", "tdp"]):
+            error_message = "Invalid method for calculation of polaritonic state gradient!"
+            error_vars = f"force_level = {self.force_level}"
+            raise ValueError (f"( {self.qed_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        if (polariton.l_nacme and self.force_level == "nac"):
+            error_message = "Chosen force computation needs evaluation of NACVs, check your QM object or QED force level!"
+            error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}, force_level = {self.force_level}"
+            raise ValueError (f"( {self.qed_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check the diabatic character of adjacent two states
         self.l_check_crossing = l_check_crossing
@@ -292,35 +305,50 @@ class Jaynes_Cummings(QED_calculator):
                 ind_photon1 = self.get_d_ind[ist, 1]
                 qed_grad -= polariton.states[ind_mol1].force * self.unitary[ist, rst_new] ** 2.
 
-            # Second term: TDP gradients
-            # Loop for diabatic states
-            for ist in range(polariton.pst):
-                ind_mol1 = self.get_d_ind[ist, 0]
-                ind_photon1 = self.get_d_ind[ist, 1]
+            if (self.force_level == "nac"):
+                # Second term: NACVs multiplied by energy difference; Hellmann-Feynman force contribution
                 # Loop for diabatic states
-                for jst in range(polariton.pst):
-                    ind_mol2 = self.get_d_ind[jst, 0]
-                    ind_photon2 = self.get_d_ind[jst, 1]
+                for ist in range(polariton.pst):
+                    ind_mol1 = self.get_d_ind[ist, 0]
+                    ind_photon1 = self.get_d_ind[ist, 1]
+                    # Loop for diabatic states
+                    for jst in range(polariton.pst):
+                        ind_mol2 = self.get_d_ind[jst, 0]
+                        ind_photon2 = self.get_d_ind[jst, 1]
+                        if (ist != jst):
+                            qed_grad += polariton.nac[ind_mol2, ind_mol1] * self.unitary[ist, rst_new] \
+                                * (self.ham_d[ist, ist] - self.ham_d[jst, jst]) * self.unitary[jst, rst_new]
 
-                    off_term = 0.
-                    if (ind_mol2 == ind_mol1 + 1 and ind_photon2 == ind_photon1 - 1):
-                        off_term = 1.
-                    elif (ind_mol2 == ind_mol1 - 1 and ind_photon2 == ind_photon1 + 1):
-                        off_term = 1.
-                    # For extended JC Hamiltonian, the counter-rotating terms are included
-                    if (self.l_crt):
-                        if (ind_mol2 == ind_mol1 + 1 and ind_photon2 == ind_photon1 + 1):
-                            off_term = 1.
-                        elif (ind_mol2 == ind_mol1 - 1 and ind_photon2 == ind_photon1 - 1):
-                            off_term = 1.
+            elif (self.force_level == "tdp"):
+                # Second term: TDP gradients; Pulay force contribution
+                # Loop for diabatic states
+                for ist in range(polariton.pst):
+                    ind_mol1 = self.get_d_ind[ist, 0]
+                    ind_photon1 = self.get_d_ind[ist, 1]
+                    # Loop for diabatic states
+                    for jst in range(polariton.pst):
+                        ind_mol2 = self.get_d_ind[jst, 0]
+                        ind_photon2 = self.get_d_ind[jst, 1]
 
-                    if (ist != jst):
-                        field_dot_grad = np.zeros((polariton.nat, polariton.ndim))
-                        for idim in range(polariton.ndim):
-                            field_dot_grad[0:polariton.nat_qm] += polariton.field_pol_vec[idim] \
-                                * polariton.tdp_grad[ind_mol1, ind_mol2, idim]
-                        qed_grad += field_dot_grad * self.coup_str * self.unitary[ist, rst_new] \
-                            * self.unitary[jst, rst_new] * off_term
+                        off_term = 0.
+                        if (ind_mol2 == ind_mol1 + 1 and ind_photon2 == ind_photon1 - 1):
+                            off_term = 1.
+                        elif (ind_mol2 == ind_mol1 - 1 and ind_photon2 == ind_photon1 + 1):
+                            off_term = 1.
+                        # For extended JC Hamiltonian, the counter-rotating terms are included
+                        if (self.l_crt):
+                            if (ind_mol2 == ind_mol1 + 1 and ind_photon2 == ind_photon1 + 1):
+                                off_term = 1.
+                            elif (ind_mol2 == ind_mol1 - 1 and ind_photon2 == ind_photon1 - 1):
+                                off_term = 1.
+
+                        if (ist != jst):
+                            field_dot_grad = np.zeros((polariton.nat, polariton.ndim))
+                            for idim in range(polariton.ndim):
+                                field_dot_grad[0:polariton.nat_qm] += polariton.field_pol_vec[idim] \
+                                    * polariton.tdp_grad[ind_mol1, ind_mol2, idim]
+                            qed_grad += field_dot_grad * self.coup_str * self.unitary[ist, rst_new] \
+                                * self.unitary[jst, rst_new] * off_term
 
             polariton.pol_states[rst].force = - np.copy(qed_grad)
 

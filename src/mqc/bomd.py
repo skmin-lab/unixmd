@@ -39,6 +39,7 @@ class BOMD(MQC):
         bo_list = [self.istate]
         qm.calc_coupling = False
         qm.calc_tdp = False
+        qm.calc_tdp_grad = False
         self.print_init(qm, mm, restart)
 
         if (restart == None):
