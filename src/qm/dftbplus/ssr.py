@@ -419,10 +419,6 @@ class SSR(DFTBplus):
                 transition_dipole_grad = "Yes"
             else:
                 transition_dipole_grad = "No"
-            # self.re_calc option is changed to False for QED calculation
-            # since the gradients for all states are already calculated
-            if (istep == -1):
-                self.re_calc = False
         else:
             transition_dipole = "No"
             transition_dipole_grad = "No"
