@@ -336,6 +336,7 @@ class MQC_QED(object):
         dynamics_info += textwrap.indent(textwrap.dedent(f"""\
           QED Method               = {qed.qed_method:>16s}
           Coupling Strength (au)   = {qed.coup_str:>16.6f}
+          Force Computation Method = {qed.force_level:>16s}
         """), "  ")
         # Print RWA information
         if (not qed.l_crt):

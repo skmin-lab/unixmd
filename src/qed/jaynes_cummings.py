@@ -13,7 +13,7 @@ class Jaynes_Cummings(QED_calculator):
         :param boolean l_check_crossing: Logical to check diabatic character of polaritonic states
         :param boolean l_crt: Logical to include the counter-rotating terms
     """
-    def __init__(self, polariton, coupling_strength=0.001, force_level="energy", \
+    def __init__(self, polariton, coupling_strength=0.001, force_level="nac", \
         l_check_crossing=False, l_crt=False):
         # Save name of QED calculator
         super().__init__()
@@ -31,6 +31,9 @@ class Jaynes_Cummings(QED_calculator):
             error_message = "Chosen force computation needs evaluation of NACVs, check your QM object or QED force level!"
             error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}, force_level = {self.force_level}"
             raise ValueError (f"( {self.qed_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        if (self.force_level in ["energy", "nac"]):
+            print ("\n\n WARNING: Chosen force computation may not be accurate for strong coupling case, carefully choose force computation! \n\n", flush=True)
 
         # Check the diabatic character of adjacent two states
         self.l_check_crossing = l_check_crossing
