@@ -129,6 +129,13 @@ class MQC_QED(object):
             error_vars = f"mm = {mm}"
             raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
+        # Exception for QED with thermostat
+        # TODO : thermostat is not yet tested with QED
+        if (self.thermo != None):
+            error_message = "QED using polariton object is not compatible with thermostat now!"
+            error_vars = f"thermostat = {self.thermo}"
+            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
         # Check compatibility of variables for QM and MM calculation
         if ((self.pol.l_qmmm and mm == None) or (not self.pol.l_qmmm and mm != None)):
             error_message = "Both logical for QM/MM and MM object is necessary!"
