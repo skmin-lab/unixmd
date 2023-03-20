@@ -115,10 +115,13 @@ def el_run(md, qed):
     # Debug
     if (verbosity >= 1):
         for ist in range(pst):
+            ind_mol1 = get_d_ind[ist][0]
             md.dotpopnac[ist] = 0.
-#            for jst in range(pst):
-#                if (jst != ist):
-#                    md.dotpopnac[ist] -= 2. * nacme[ist][jst] * md.mol.rho.real[jst, ist]
+            for jst in range(pst):
+                ind_mol2 = get_d_ind[jst][0]
+                if (jst != ist):
+                    md.dotpopnac[ist] -= 2. * (ham_d[ist][jst] * md.pol.rho_d.imag[jst, ist] \
+                        + nacme[ind_mol1][ind_mol2] * md.pol.rho_d.real[jst, ist])
 
     # Deallocate variables
     for ist in range(2):
