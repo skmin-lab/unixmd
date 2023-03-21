@@ -32,6 +32,12 @@ class Jaynes_Cummings(QED_calculator):
             error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}, force_level = {self.force_level}"
             raise ValueError (f"( {self.qed_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
+        # Set 'l_pnacme' with respect to the Hamiltonian model
+        # pNACs can be computed within JC model
+        polariton.l_pnacme = True
+        if (self.force_level == "tdp"):
+            polariton.l_pnacme = False
+
         if (self.force_level in ["energy", "nac"]):
             print ("\n\n WARNING: Chosen force computation may not be accurate for strong coupling case, carefully choose force computation! \n\n", flush=True)
 
@@ -84,8 +90,8 @@ class Jaynes_Cummings(QED_calculator):
         if (not calc_force_only):
             self.solve_polaritonic_states(polariton, pol_list, dt, istep)
             self.save_output_files(base_dir, pol_list, istep)
-        # Step 3: Calculate properties of polaritonic states; forces
-        self.calculate_properties(polariton, pol_list)
+        # Step 3: Calculate properties of polaritonic states; forces, NAC
+        self.calculate_properties(polariton, pol_list, calc_force_only)
         self.move_dir(base_dir)
 
     def construct_Hamiltonian(self, polariton):
@@ -282,13 +288,14 @@ class Jaynes_Cummings(QED_calculator):
                         # This index is used for trivial crossing hopping
                         self.trivial_state = ist
 
-    def calculate_properties(self, polariton, pol_list):
+    def calculate_properties(self, polariton, pol_list, calc_force_only):
         """ Calculate properties of polaritonic states
             The forces for polaritonic states are calculated from the gradients
             of electronic states and transition dipole gradients
 
             :param object polariton: Polariton object
             :param integer,list pol_list: List of polaritonic states for QED calculation
+            :param boolean calc_force_only: Logical to decide whether calculate force only
         """
         for rst in pol_list:
             # The applied gradient on the target polaritonic state
@@ -354,6 +361,71 @@ class Jaynes_Cummings(QED_calculator):
                                 * self.unitary[jst, rst_new] * off_term
 
             polariton.pol_states[rst].force = - np.copy(qed_grad)
+
+        # The nonadiabatic coupling vectors between polaritonic states
+        if (not calc_force_only and self.force_level == "tdp"):
+
+            # Loop for adiabatic states
+            for ist in range(polariton.pst):
+                # Loop for adiabatic states
+                for jst in range(ist + 1, polariton.pst):
+
+                    if (ist != jst):
+                        qed_nac = np.zeros((polariton.nat, polariton.ndim))
+
+                        # First term: CI term (diagonal contribution)
+                        # Loop for diabatic states
+                        for ast in range(polariton.pst):
+                            ind_mol1 = self.get_d_ind[ast, 0]
+                            qed_nac -= polariton.states[ind_mol1].force * self.unitary[ast, ist] * self.unitary[ast, jst]
+
+                        # First term: CI term (off-diagonal contribution)
+                        # Loop for diabatic states
+                        for ast in range(polariton.pst):
+                            ind_mol1 = self.get_d_ind[ast, 0]
+                            ind_photon1 = self.get_d_ind[ast, 1]
+                            # Loop for diabatic states
+                            for bst in range(polariton.pst):
+                                ind_mol2 = self.get_d_ind[bst, 0]
+                                ind_photon2 = self.get_d_ind[bst, 1]
+
+                                off_term = 0.
+                                if (ind_mol2 == ind_mol1 + 1 and ind_photon2 == ind_photon1 - 1):
+                                    off_term = 1.
+                                elif (ind_mol2 == ind_mol1 - 1 and ind_photon2 == ind_photon1 + 1):
+                                    off_term = 1.
+                                # For extended JC Hamiltonian, the counter-rotating terms are included
+                                if (self.l_crt):
+                                    if (ind_mol2 == ind_mol1 + 1 and ind_photon2 == ind_photon1 + 1):
+                                        off_term = 1.
+                                    elif (ind_mol2 == ind_mol1 - 1 and ind_photon2 == ind_photon1 - 1):
+                                        off_term = 1.
+
+                                if (ast != bst):
+                                    field_dot_grad = np.zeros((polariton.nat, polariton.ndim))
+                                    for idim in range(polariton.ndim):
+                                        field_dot_grad[0:polariton.nat_qm] += polariton.field_pol_vec[idim] \
+                                            * polariton.tdp_grad[ind_mol1, ind_mol2, idim]
+                                    qed_nac += field_dot_grad * self.coup_str * self.unitary[ast, ist] \
+                                        * self.unitary[bst, jst] * off_term
+
+                        qed_nac /= (polariton.pol_states[jst].energy - polariton.pol_states[ist].energy)
+
+                        # Second term: CSF term
+                        # Loop for diabatic states
+                        for ast in range(polariton.pst):
+                            ind_mol1 = self.get_d_ind[ast, 0]
+                            ind_photon1 = self.get_d_ind[ast, 1]
+                            # Loop for diabatic states
+                            for bst in range(polariton.pst):
+                                ind_mol2 = self.get_d_ind[bst, 0]
+                                ind_photon2 = self.get_d_ind[bst, 1]
+                                if (ind_mol1 != ind_mol2 and ind_photon1 == ind_photon2):
+                                    qed_nac += polariton.nac[ind_mol1, ind_mol2] * self.unitary[ast, ist] \
+                                        * self.unitary[bst, jst]
+
+                        polariton.pnac[ist, jst] = qed_nac
+                        polariton.pnac[jst, ist] = - qed_nac
 
     def save_output_files(self, base_dir, pol_list, istep):
         """ Save output files generated by QED calculation

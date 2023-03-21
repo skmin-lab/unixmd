@@ -86,6 +86,13 @@ class SH(MQC_QED):
 #                error_vars = f"hop_reject = {self.hop_reject}"
 #                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
+        if (self.pol.l_pnacme):
+            # No polaritonic analytical nonadiabatic couplings exist
+            if (self.hop_rescale in ["velocity", "momentum", "augment"]):
+                error_message = "pNACVs are not available with current QED object, only isotropic rescaling is possible!"
+                error_vars = f"hop_rescale = {self.hop_rescale}"
+                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
         # Debug variables
         self.dotpopnac = np.zeros(self.pol.pst)
 
@@ -131,6 +138,8 @@ class SH(MQC_QED):
                 self.pol.get_nacme()
 
             qed.get_data(self.pol, base_dir, pol_list, self.dt, self.istep, calc_force_only=False)
+            if (not self.pol.l_pnacme):
+                self.pol.get_pnacme()
             qed.transform(self.pol, mode="a2d")
 
             self.hop_prob(qed)
@@ -195,7 +204,10 @@ class SH(MQC_QED):
 
             if (not self.pol.l_nacme):
                 self.pol.get_nacme()
-            qed.calculate_pnacme(self.pol)
+            if (not self.pol.l_pnacme):
+                self.pol.get_pnacme()
+            else:
+                qed.calculate_pnacme(self.pol)
 
             el_run(self, qed)
             qed.transform(self.pol, mode="d2a")
@@ -329,23 +341,22 @@ class SH(MQC_QED):
                 a = 1.
                 b = 1.
                 det = 1.
-                # TODO: temporarily blocked; pNACV is not yet implemented
-#                if (self.hop_rescale == "velocity"):
-#                    a = np.sum(self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
-#                    b = 2. * np.sum(self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] \
-#                        * self.mol.vel[0:self.mol.nat_qm], axis=1))
-#                    c = 2. * pot_diff
-#                    det = b ** 2. - 4. * a * c
-#                elif (self.hop_rescale == "momentum"):
-#                    a = np.sum(1. / self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
-#                    b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel[0:self.mol.nat_qm], axis=1))
-#                    c = 2. * pot_diff
-#                    det = b ** 2. - 4. * a * c
-#                elif (self.hop_rescale == "augment"):
-#                    a = np.sum(1. / self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
-#                    b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel[0:self.mol.nat_qm], axis=1))
-#                    c = 2. * pot_diff
-#                    det = b ** 2. - 4. * a * c
+                if (self.hop_rescale == "velocity"):
+                    a = np.sum(self.pol.mass[0:self.pol.nat_qm] * np.sum(self.pol.pnac[self.rstate_old, self.rstate] ** 2., axis=1))
+                    b = 2. * np.sum(self.pol.mass[0:self.pol.nat_qm] * np.sum(self.pol.pnac[self.rstate_old, self.rstate] \
+                        * self.pol.vel[0:self.pol.nat_qm], axis=1))
+                    c = 2. * pot_diff
+                    det = b ** 2. - 4. * a * c
+                elif (self.hop_rescale == "momentum"):
+                    a = np.sum(1. / self.pol.mass[0:self.pol.nat_qm] * np.sum(self.pol.pnac[self.rstate_old, self.rstate] ** 2., axis=1))
+                    b = 2. * np.sum(np.sum(self.pol.pnac[self.rstate_old, self.rstate] * self.pol.vel[0:self.pol.nat_qm], axis=1))
+                    c = 2. * pot_diff
+                    det = b ** 2. - 4. * a * c
+                elif (self.hop_rescale == "augment"):
+                    a = np.sum(1. / self.pol.mass[0:self.pol.nat_qm] * np.sum(self.pol.pnac[self.rstate_old, self.rstate] ** 2., axis=1))
+                    b = 2. * np.sum(np.sum(self.pol.pnac[self.rstate_old, self.rstate] * self.pol.vel[0:self.pol.nat_qm], axis=1))
+                    c = 2. * pot_diff
+                    det = b ** 2. - 4. * a * c
 
                 # Default: hopping is allowed
                 self.l_reject = False
@@ -394,20 +405,19 @@ class SH(MQC_QED):
                     if (self.hop_rescale == "energy"):
                         self.pol.vel[0:self.pol.nat_qm] *= x
 
-                    # TODO: temporarily blocked; pNACV is not yet implemented
-#                    elif (self.hop_rescale == "velocity"):
-#                        self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate]
-#
-#                    elif (self.hop_rescale == "momentum"):
-#                        self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate] / \
-#                            self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
-#
-#                    elif (self.hop_rescale == "augment"):
-#                        if (det > 0. or self.mol.ekin_qm < pot_diff):
-#                            self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate] / \
-#                                self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
-#                        else:
-#                            self.mol.vel[0:self.mol.nat_qm] *= x
+                    elif (self.hop_rescale == "velocity"):
+                        self.pol.vel[0:self.pol.nat_qm] += x * self.pol.pnac[self.rstate_old, self.rstate]
+
+                    elif (self.hop_rescale == "momentum"):
+                        self.pol.vel[0:self.pol.nat_qm] += x * self.pol.pnac[self.rstate_old, self.rstate] / \
+                            self.pol.mass[0:self.pol.nat_qm].reshape((-1, 1))
+
+                    elif (self.hop_rescale == "augment"):
+                        if (det > 0. or self.pol.ekin_qm < pot_diff):
+                            self.pol.vel[0:self.pol.nat_qm] += x * self.pol.pnac[self.rstate_old, self.rstate] / \
+                                self.pol.mass[0:self.pol.nat_qm].reshape((-1, 1))
+                        else:
+                            self.pol.vel[0:self.pol.nat_qm] *= x
 
                 # Update kinetic energy
                 self.pol.update_kinetic()

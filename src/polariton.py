@@ -195,6 +195,7 @@ class Polariton(object):
         self.etot = 0.
 
         self.l_nacme = False
+        self.l_pnacme = False
 
         # Initialize point charges for QM/MM calculations
         if (self.l_qmmm):
@@ -328,6 +329,14 @@ class Polariton(object):
             for jst in range(ist + 1, self.nst):
                 self.nacme[ist, jst] = np.sum(self.nac[ist, jst] * self.vel[0:self.nat_qm])
                 self.nacme[jst, ist] = - self.nacme[ist, jst]
+
+    def get_pnacme(self):
+        """ Get pNACME from polaritonic nonadiabatic couplings
+        """
+        for ist in range(self.pst):
+            for jst in range(ist + 1, self.pst):
+                self.pnacme[ist, jst] = np.sum(self.pnac[ist, jst] * self.vel[0:self.nat_qm])
+                self.pnacme[jst, ist] = - self.pnacme[ist, jst]
 
     def update_kinetic(self):
         """ Get kinetic energy
