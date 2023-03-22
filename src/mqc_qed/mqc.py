@@ -461,10 +461,10 @@ class MQC_QED(object):
             tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
             typewriter(tmp, unixmd_dir, "NACME", "w")
 
-            # DOTPOPNAC file header
+            # DOTPOPNACD file header
             if (self.verbosity >= 1):
                 tmp = f'{"#":5s} Time-derivative Density Matrix by NAC: population; see the manual for detail orders'
-                typewriter(tmp, unixmd_dir, "DOTPOPNAC", "w")
+                typewriter(tmp, unixmd_dir, "DOTPOPNACD", "w")
 
         # file header for SH-based methods
         if (self.md_type in ["SH", "SHXF"]):

@@ -116,11 +116,11 @@ def el_run(md, qed):
     if (verbosity >= 1):
         for ist in range(pst):
             ind_mol1 = get_d_ind[ist][0]
-            md.dotpopnac[ist] = 0.
+            md.dotpopnac_d[ist] = 0.
             for jst in range(pst):
                 ind_mol2 = get_d_ind[jst][0]
                 if (jst != ist):
-                    md.dotpopnac[ist] -= 2. * (ham_d[ist][jst] * md.pol.rho_d.imag[jst, ist] \
+                    md.dotpopnac_d[ist] -= 2. * (ham_d[ist][jst] * md.pol.rho_d.imag[jst, ist] \
                         + nacme[ind_mol1][ind_mol2] * md.pol.rho_d.real[jst, ist])
 
     # Deallocate variables

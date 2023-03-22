@@ -94,7 +94,7 @@ class SH(MQC_QED):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Debug variables
-        self.dotpopnac = np.zeros(self.pol.pst)
+        self.dotpopnac_d = np.zeros(self.pol.pst)
 
         # Initialize event to print
         self.event = {"HOP": []}
@@ -531,10 +531,10 @@ class SH(MQC_QED):
             :param string unixmd_dir: PyUNIxMD directory
             :param integer istep: Current MD step
         """
-        # Write NAC term in DOTPOPNAC
+        # Write NAC term in DOTPOPNACD
         if (self.verbosity >= 1):
-            tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopnac])
-            typewriter(tmp, unixmd_dir, "DOTPOPNAC", "a")
+            tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopnac_d])
+            typewriter(tmp, unixmd_dir, "DOTPOPNACD", "a")
 
     def print_init(self, qed, qm, mm, restart):
         """ Routine to print the initial information of dynamics
