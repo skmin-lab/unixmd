@@ -157,6 +157,13 @@ class MQC_QED(object):
             error_vars = f""
             raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
+        # Warning for SH/SHXF
+        if (self.md_type in ["SH", "SHXF"]):
+            if (not self.pol.l_pnacme and self.hop_rescale == "energy"):
+                print ("\n\n WARNING: Isotropic rescaling for accepted hop does not require the computation of pNACVs! \n\n", flush=True)
+            if (not self.pol.l_pnacme and self.hop_reject == "keep"):
+                print ("\n\n WARNING: Keep rescaling for frustrated hop does not require the computation of pNACVs! \n\n", flush=True)
+
         # Check compatibility between QED and QM objects
         self.check_qed(qed, qm)
 
@@ -528,7 +535,7 @@ class MQC_QED(object):
             typewriter(tmp, unixmd_dir, "NACME", "a")
 
             # Write NACV file
-            if (not self.pol.l_nacme and self.verbosity >= 2):
+            if (not self.pol.l_pnacme and self.verbosity >= 2):
                 for ist in range(self.pol.pst):
                     for jst in range(ist + 1, self.pol.pst):
                         tmp = f'{self.pol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV' + \

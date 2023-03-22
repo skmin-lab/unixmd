@@ -32,12 +32,6 @@ class Jaynes_Cummings(QED_calculator):
             error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}, force_level = {self.force_level}"
             raise ValueError (f"( {self.qed_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        # Set 'l_pnacme' with respect to the Hamiltonian model
-        # pNACs can be computed within JC model
-        polariton.l_pnacme = True
-        if (self.force_level == "tdp"):
-            polariton.l_pnacme = False
-
         if (self.force_level in ["energy", "nac"]):
             print ("\n\n WARNING: Chosen force computation may not be accurate for strong coupling case, carefully choose force computation! \n\n", flush=True)
 
@@ -72,6 +66,12 @@ class Jaynes_Cummings(QED_calculator):
         self.permut = np.zeros((polariton.pst, polariton.pst), dtype=np.int32)
 
         self.l_trivial = False
+
+        # Set 'l_pnacme' with respect to the Hamiltonian model
+        # pNACs can be computed within JC model
+        polariton.l_pnacme = True
+        if (self.force_level == "tdp" and not polariton.l_nacme):
+            polariton.l_pnacme = False
 
     def get_data(self, polariton, base_dir, pol_list, dt, istep, calc_force_only):
         """ Construct the polaritonic and diabatic states from molecule, cavity, and interaction parts
@@ -292,6 +292,8 @@ class Jaynes_Cummings(QED_calculator):
         """ Calculate properties of polaritonic states
             The forces for polaritonic states are calculated from the gradients
             of electronic states and transition dipole gradients
+            The NACs between polaritonic states are calculated from the gradients,
+            NACs, and transition dipole gradients
 
             :param object polariton: Polariton object
             :param integer,list pol_list: List of polaritonic states for QED calculation
@@ -363,7 +365,7 @@ class Jaynes_Cummings(QED_calculator):
             polariton.pol_states[rst].force = - np.copy(qed_grad)
 
         # The nonadiabatic coupling vectors between polaritonic states
-        if (not calc_force_only and self.force_level == "tdp"):
+        if (not calc_force_only and not polariton.l_pnacme):
 
             # Loop for adiabatic states
             for ist in range(polariton.pst):
