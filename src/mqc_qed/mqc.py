@@ -145,16 +145,16 @@ class MQC_QED(object):
             self.check_qmmm(qm, mm)
 
         # Exception for CTMQC/Ehrenfest with QM/MM
-        if ((self.md_type in ["CT", "Eh"]) and (mm != None)):
-            error_message = "QM/MM calculation is not compatible with CTMQC or Ehrenfest now!"
-            error_vars = f"mm = {mm}"
-            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+#        if ((self.md_type in ["CT", "Eh"]) and (mm != None)):
+#            error_message = "QM/MM calculation is not compatible with CTMQC or Ehrenfest now!"
+#            error_vars = f"mm = {mm}"
+#            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        # Exception for CTMQC/Ehrenfest/SHXF/BOMD
+        # Exception for CTMQC/Ehrenfest
         # TODO : not yet tested
-        if (self.md_type in ["CT", "Eh", "SHXF", "BOMD"]):
-            error_message = "Only SH is available for QED calculation!"
-            error_vars = f""
+        if (self.md_type in ["CT", "Eh"]):
+            error_message = "Ehrenfest and CTMQC are not available for QED!"
+            error_vars = f"mqc_qed = {self.md_type}"
             raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Warning for SH/SHXF
