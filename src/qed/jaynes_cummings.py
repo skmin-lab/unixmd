@@ -1,6 +1,7 @@
 from __future__ import division
 from qed.qed_calculator import QED_calculator
 from misc import call_name, eps
+import textwrap
 import os, shutil
 import numpy as np
 
@@ -519,5 +520,24 @@ class Jaynes_Cummings(QED_calculator):
                 for jst in range(polariton.pst):
                     polariton.rho_a[ist, jst] = polariton.pol_states[ist].coef_a.conjugate() \
                         * polariton.pol_states[jst].coef_a
+
+    def print_init(self):
+        """ Print initial information about JC model
+        """
+        qed_info = textwrap.dedent(f"""\
+        {"-" * 68}
+        {"QED Information":>40s}
+        {"-" * 68}
+          QED Method               = {self.qed_method:>16s}
+          Coupling Strength (au)   = {self.coup_str:>16.6f}
+          Force Computation Method = {self.force_level:>16s}
+        """)
+
+        # Print RWA information
+        if (not self.l_crt):
+            qed_info += f"  Rotating Wave Approx.    = {'Yes':>16s}\n"
+        else:
+            qed_info += f"  Rotating Wave Approx.    = {'No':>16s}\n"
+        print (qed_info, flush=True)
 
 

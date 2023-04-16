@@ -332,24 +332,15 @@ class MQC_QED(object):
             for itraj, pol in enumerate(self.pols):
                 pol.print_init(mm)
 
+        # Print QED information
+        qed.print_init()
+
         # Print dynamics information
         dynamics_info = textwrap.dedent(f"""\
         {"-" * 68}
         {"Dynamics Information":>43s}
         {"-" * 68}
         """)
-
-        # Print QED information
-        dynamics_info += textwrap.indent(textwrap.dedent(f"""\
-          QED Method               = {qed.qed_method:>16s}
-          Coupling Strength (au)   = {qed.coup_str:>16.6f}
-          Force Computation Method = {qed.force_level:>16s}
-        """), "  ")
-        # Print RWA information
-        if (not qed.l_crt):
-            dynamics_info += f"  Rotating Wave Approx.    = {'Yes':>16s}\n\n"
-        else:
-            dynamics_info += f"  Rotating Wave Approx.    = {'No':>16s}\n\n"
 
         # Print QM information
         dynamics_info += textwrap.indent(textwrap.dedent(f"""\
@@ -466,7 +457,7 @@ class MQC_QED(object):
 
             # NACME file header
             tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
-            typewriter(tmp, unixmd_dir, "NACME", "w")
+            typewriter(tmp, unixmd_dir, "PNACME", "w")
 
             # DOTPOPNACD file header
             if (self.verbosity >= 1):
@@ -532,7 +523,7 @@ class MQC_QED(object):
             # Write NACME file
             tmp = f'{istep + 1:10d}' + "".join([f'{self.pol.pnacme[ist, jst]:15.8f}' \
                 for ist in range(self.pol.pst) for jst in range(ist + 1, self.pol.pst)])
-            typewriter(tmp, unixmd_dir, "NACME", "a")
+            typewriter(tmp, unixmd_dir, "PNACME", "a")
 
             # Write NACV file
             if (not self.pol.l_pnacme and self.verbosity >= 2):
@@ -541,7 +532,7 @@ class MQC_QED(object):
                         tmp = f'{self.pol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV' + \
                             "".join(["\n" + f'{self.pol.symbols[iat]:5s}' + \
                             "".join([f'{self.pol.pnac[ist, jst, iat, isp]:15.8f}' for isp in range(self.pol.ndim)]) for iat in range(self.pol.nat_qm)])
-                        typewriter(tmp, unixmd_dir, f"NACV_{ist}_{jst}", "a")
+                        typewriter(tmp, unixmd_dir, f"PNACV_{ist}_{jst}", "a")
 
     def write_final_xyz(self, unixmd_dir, istep):
         """ Write final positions and velocities
