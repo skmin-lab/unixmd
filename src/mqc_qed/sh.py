@@ -177,7 +177,7 @@ class SH(MQC_QED):
             self.cl_update_position()
 
             self.pol.backup_bo()
-            qed.backup_qed()
+            qed.backup_qed(self.pol)
             self.pol.reset_bo(qm.calc_coupling, qm.calc_tdp)
             self.pol.reset_qed(qm.calc_coupling)
 

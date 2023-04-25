@@ -473,10 +473,10 @@ class MQC_QED(object):
             typewriter(tmp, unixmd_dir, "SHPROB", "w")
 
         # file header for XF-based methods
-        if (self.md_type in ["SHXF", "CT"]):
+        if (self.md_type in ["SHXF"]):
             if (self.verbosity >= 1):
                 tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
-                typewriter(tmp, unixmd_dir, "DOTPOPDEC", "w")
+                typewriter(tmp, unixmd_dir, "DOTPOPDECD", "w")
 
     def write_md_output(self, unixmd_dir, istep):
         """ Write output files

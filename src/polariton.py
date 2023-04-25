@@ -12,7 +12,6 @@ class State(object):
     def __init__(self, ndim, nat):
         # Initialize variables
         self.energy = 0.
-        self.energy_old = 0.
         self.force = np.zeros((nat, ndim))
         self.multiplicity = 1
 
@@ -26,6 +25,7 @@ class Polaritonic_State(object):
     def __init__(self, ndim, nat):
         # Initialize variables
         self.energy = 0.
+        self.energy_old = 0.
         self.force = np.zeros((nat, ndim))
         # Initialize the electronic coefficients (adiabatic and diabatic)
         self.coef_a = 0. + 0.j
@@ -370,7 +370,7 @@ class Polariton(object):
             self.tdp_grad = np.zeros((self.nst, self.nst, 3, self.nat_qm, self.ndim))
 
     def reset_qed(self, calc_coupling):
-        """ Reset polaritonic state energies, forces, nonadiabatic couplings
+        """ Reset polaritonic state energies, forces and nonadiabatic couplings
 
             :param boolean calc_coupling: Check whether the dynamics includes coupling calculation
         """
@@ -382,10 +382,8 @@ class Polariton(object):
             self.pnacme = np.zeros((self.pst, self.pst))
 
     def backup_bo(self):
-        """ Backup BO energies and nonadiabatic couplings
+        """ Backup nonadiabatic couplings and transition dipoles
         """
-        for states in self.states:
-            states.energy_old = states.energy
         self.nac_old = np.copy(self.nac)
         self.nacme_old = np.copy(self.nacme)
         self.tdp_old = np.copy(self.tdp)

@@ -472,9 +472,14 @@ class Jaynes_Cummings(QED_calculator):
         polariton.pnacme += np.matmul(np.transpose(self.unitary), np.matmul(tmp_nacme, self.unitary))
         polariton.pnacme += np.matmul(np.transpose(self.unitary), self.unitary_dot)
 
-    def backup_qed(self):
-        """ Backup Hamiltonian matrix and unitary matrix
+    def backup_qed(self, polariton):
+        """ Backup Hamiltonian matrix, unitary matrix and polaritonic state energies
+
+            :param object polariton: Polariton object
         """
+        for states in polariton.pol_states:
+            states.energy_old = states.energy
+
         self.ham_d_old = np.copy(self.ham_d)
         self.unitary_old = np.copy(self.unitary)
 
