@@ -39,20 +39,20 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     // P_1(\exp( - i D_1))P_1^{-1} \times P_2(\exp( - i D_2))P_2^{-1} \times \cdots \times P_n(\exp( - i D_n))P_n^{-1}
     
     // where E is energy, sigma is nonadiabatic coupling matrix elements(NACME), n is interpolation step number, 
-    // P is eigenvectors of matrix form of (E - i * sigam) * dt
-    // D is diagonal matrix which diagonal elements are eigenvalue of matrix form of (E - i * sigma) * dt
+    // P is a matrix consisting of eigenvectors of (E - i * sigma) * dt
+    // D is a diagonal matrix consisting of eigenvalue of matrix form of (E - i * sigma) * dt
     // energy and NACME terms are interpolated. Because of that, diagonal matrix and eigenvector are changed. 
-    // They are different value at different time step.
+    // The values of energy and NACME terms will be changed at each interpolated time step.
     double *eenergy = malloc(nst * sizeof(double));
-    double *eigenvalue = malloc(nst * sizeof(double)); // eigenvalue of matrix form of (energy - i * NACME) * dt
+    double *eigenvalue = malloc(nst * sizeof(double)); // eigenvalue of (energy - i * NACME) * dt
     double *rwork = malloc((3 * nst - 2) * sizeof(double)); // temporary value for zheev
     double complex *exponent = malloc((nst * nst) * sizeof(double complex)); // (energy - i * NACME) * dt
-    double complex *coef_new = malloc(nst * sizeof(double complex)); // need to calculate coef
+    double complex *coef_new = malloc(nst * sizeof(double complex)); // updated coefficient
     double complex *propagator = malloc((nst * nst) * sizeof(double complex)); // double complex type of exp( - i * exponent)
     dcomplex *exp_idiag = malloc((nst * nst) * sizeof(dcomplex)); // diagonal matrix using eigenvalue, exp( - i * D)
-    dcomplex *eigenvectors = malloc((nst * nst) * sizeof(dcomplex)); // it is eigenvectors, P
+    dcomplex *eigenvectors = malloc((nst * nst) * sizeof(dcomplex)); // The eigenvectors, P
     dcomplex *tmp_mat= malloc((nst * nst) * sizeof(dcomplex));
-    dcomplex *exp_iexponent = malloc((nst * nst) * sizeof(dcomplex)); // dg_exp_iexponent is diagonalized exp( - i * exponent). it is Pexp( - i * D)P^-1 
+    dcomplex *exp_iexponent = malloc((nst * nst) * sizeof(dcomplex)); // exp_iexponent is diagonalized exp( - i * exponent). it is Pexp( - i * D)P^-1 
     dcomplex *product_old = malloc((nst * nst) * sizeof(dcomplex)); // product_old is product of Pexp( - i * D)P^-1 until previous step (old)
     dcomplex *product_new = malloc((nst * nst) * sizeof(dcomplex)); // product_new is product of Pexp( - i * D)P^-1 until current step (new)
     dcomplex *identity = malloc((nst * nst) * sizeof(dcomplex)); // identity matrix
