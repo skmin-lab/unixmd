@@ -4,25 +4,29 @@
 #include <math.h>
 
 // Routine to calculate cdot contribution originating from XF term
-static void xf_cdot(int pst, double **dec_mat, double complex *c, double complex *xfcdot){
+static void xf_cdot(int pst, double **unitary, double **dec_mat, double complex *c, double complex *xfcdot){
 
     double *rho = malloc(pst * sizeof(double));
 
-    int ist, jst;
+    int ast, ist, jst;
 
     // Calculate densities from current coefficients
     for(ist = 0; ist < pst; ist++){
         rho[ist] = creal(conj(c[ist]) * c[ist]);
     }
 
-    for(ist = 0; ist < pst; ist++){
-        xfcdot[ist] = 0.0 + 0.0 * I;
+    for(ast = 0; ast < pst; ast++){
+        xfcdot[ast] = 0.0 + 0.0 * I;
     }
 
-    for(ist = 0; ist < pst; ist++){
-        for(jst = 0; jst < pst; jst++){
-            xfcdot[ist] -= rho[jst] * dec_mat[jst][ist] * c[ist];
+    for(ast = 0; ast < pst; ast++){
+
+        for(ist = 0; ist < pst; ist++){
+            for(jst = 0; jst < pst; jst++){
+                xfcdot[ast] -= unitary[ast][ist] * rho[jst] * dec_mat[jst][ist] * c[ist];
+            }
         }
+
     }
 
     free(rho);
@@ -30,13 +34,34 @@ static void xf_cdot(int pst, double **dec_mat, double complex *c, double complex
 }
 
 // Routine to print xf debug info 
-static void xf_print_coef(int pst, double complex *coef, double complex *xfcdot, double *dotpopdec){
+static void xf_print_coef(int pst, double **unitary, double **dec_mat, double complex *coef_d,
+    double complex *coef_a, double *dotpopdec){
 
-    int ist;
+    double *rho = malloc(pst * sizeof(double));
+
+    int ast, ist, jst;
 
     for(ist = 0; ist < pst; ist++){
-        dotpopdec[ist] = 2.0 * creal(xfcdot[ist] * conj(coef[ist]));
+        rho[ist] = creal(conj(coef_a[ist]) * coef_a[ist]);
     }
+
+    for(ast = 0; ast < pst; ast++){
+        dotpopdec[ast] = 0.0;
+    }
+
+    for(ast = 0; ast < pst; ast++){
+
+        for(ist = 0; ist < pst; ist++){
+            for(jst = 0; jst < pst; jst++){
+                dotpopdec[ast] -= unitary[ast][ist] * rho[jst] * dec_mat[jst][ist]
+                    * creal( conj(coef_a[ist]) * coef_d[ast] + coef_a[ist] * conj(coef_d[ast]) );
+            }
+        }
+
+    }
+
+    free(rho);
+
 }
 
 //// Routine to calculate rhodot contribution originated from XF term

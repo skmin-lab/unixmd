@@ -7,9 +7,9 @@ cimport numpy as np
 cdef extern from "rk4_xf.c":
     void rk4(int nat, int ndim, int pst, int nesteps, int verbosity, double dt, \
         char *elec_object, bint *l_coh, double *mass, double *sigma, int **get_d_ind, \
-        double **ham_d, double **ham_d_old, double **nacme, double **nacme_old, \
-        double **pos, double ***aux_pos, double ***phase, double *dotpopdec, \
-        double complex *coef, double **qmom)
+        double **unitary, double **ham_d, double **ham_d_old, double **nacme, \
+        double **nacme_old, double **pos, double ***aux_pos, double ***phase, \
+        double *dotpopdec, double complex *coef, double **qmom)
 
 def el_run(md, qed):
     cdef:
@@ -18,6 +18,7 @@ def el_run(md, qed):
         double *mass
         double *sigma
         int **get_d_ind
+        double **unitary
         double **ham_d
         double **ham_d_old
         double **nacme
@@ -46,6 +47,7 @@ def el_run(md, qed):
 
     get_d_ind = <int**> PyMem_Malloc(pst * sizeof(int*))
 
+    unitary = <double**> PyMem_Malloc(pst * sizeof(double*))
     ham_d = <double**> PyMem_Malloc(pst * sizeof(double*))
     ham_d_old = <double**> PyMem_Malloc(pst * sizeof(double*))
 
@@ -62,6 +64,7 @@ def el_run(md, qed):
         get_d_ind[ist] = <int*> PyMem_Malloc(2 * sizeof(int))
 
     for ist in range(pst):
+        unitary[ist] = <double*> PyMem_Malloc(pst * sizeof(double))
         ham_d[ist] = <double*> PyMem_Malloc(pst * sizeof(double))
         ham_d_old[ist] = <double*> PyMem_Malloc(pst * sizeof(double))
 
@@ -91,6 +94,7 @@ def el_run(md, qed):
 
     for ist in range(pst):
         for jst in range(pst):
+            unitary[ist][jst] = qed.unitary[ist, jst]
             ham_d[ist][jst] = qed.ham_d[ist, jst]
             ham_d_old[ist][jst] = qed.ham_d_old[ist, jst]
 
@@ -139,8 +143,8 @@ def el_run(md, qed):
     # Propagate electrons depending on the propagator
     if (md.propagator == "rk4"):
         rk4(aux_nat, aux_ndim, pst, nesteps, verbosity, dt, elec_object_c, l_coh, mass, \
-            sigma, get_d_ind, ham_d, ham_d_old, nacme, nacme_old, pos, aux_pos, phase, \
-            dotpopdec_d, coef_d, qmom)
+            sigma, get_d_ind, unitary, ham_d, ham_d_old, nacme, nacme_old, pos, aux_pos, \
+            phase, dotpopdec_d, coef_d, qmom)
 
     # Assign variables from C to python
     if (md.elec_object == "coefficient"):
@@ -193,6 +197,7 @@ def el_run(md, qed):
         PyMem_Free(get_d_ind[ist])
 
     for ist in range(pst):
+        PyMem_Free(unitary[ist])
         PyMem_Free(ham_d[ist])
         PyMem_Free(ham_d_old[ist])
 
@@ -214,6 +219,7 @@ def el_run(md, qed):
 
     PyMem_Free(get_d_ind)
 
+    PyMem_Free(unitary)
     PyMem_Free(ham_d)
     PyMem_Free(ham_d_old)
 

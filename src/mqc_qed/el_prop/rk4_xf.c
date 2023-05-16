@@ -5,12 +5,13 @@
 #include <string.h>
 #include "derivs.h"
 #include "derivs_xf.h"
+#include "transform.h"
 
 // Routine for coefficient propagation scheme in rk4 propagator
 static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, double dt,
-    int *l_coh, double *mass, double *sigma, int **get_d_ind, double **ham_d, double **ham_d_old,
-    double **nacme, double **nacme_old, double **pos, double ***aux_pos, double ***phase,
-    double *dotpopdec, double complex *coef, double **qmom);
+    int *l_coh, double *mass, double *sigma, int **get_d_ind, double **unitary, double **ham_d,
+    double **ham_d_old, double **nacme, double **nacme_old, double **pos, double ***aux_pos,
+    double ***phase, double *dotpopdec_d, double complex *coef_d, double **qmom);
 
 // Routine for density propagation scheme in rk4 propagator
 //static void rk4_rho(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
@@ -20,13 +21,13 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
 
 // Interface routine for propagation scheme in rk4 propagator
 static void rk4(int nat, int ndim, int pst, int nesteps, int verbosity, double dt, char *elec_object,
-    int *l_coh, double *mass, double *sigma, int **get_d_ind, double **ham_d, double **ham_d_old,
-    double **nacme, double **nacme_old, double **pos, double ***aux_pos, double ***phase,
-    double *dotpopdec, double complex *coef, double **qmom){
+    int *l_coh, double *mass, double *sigma, int **get_d_ind, double **unitary, double **ham_d,
+    double **ham_d_old, double **nacme, double **nacme_old, double **pos, double ***aux_pos,
+    double ***phase, double *dotpopdec_d, double complex *coef_d, double **qmom){
 
     if(strcmp(elec_object, "coefficient") == 0){
-        rk4_coef(nat, ndim, pst, nesteps, verbosity, dt, l_coh, mass, sigma, get_d_ind,
-            ham_d, ham_d_old, nacme, nacme_old, pos, aux_pos, phase, dotpopdec, coef, qmom);
+        rk4_coef(nat, ndim, pst, nesteps, verbosity, dt, l_coh, mass, sigma, get_d_ind, unitary,
+            ham_d, ham_d_old, nacme, nacme_old, pos, aux_pos, phase, dotpopdec_d, coef_d, qmom);
     }
 //    else if(strcmp(elec_object, "density") == 0){
 //        rk4_rho(nat, ndim, nst, nesteps, dt, l_coh, mass, energy, energy_old, sigma,
@@ -37,9 +38,9 @@ static void rk4(int nat, int ndim, int pst, int nesteps, int verbosity, double d
 
 // Routine for coefficient propagation scheme in rk4 propagator
 static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, double dt,
-    int *l_coh, double *mass, double *sigma, int **get_d_ind, double **ham_d, double **ham_d_old,
-    double **nacme, double **nacme_old, double **pos, double ***aux_pos, double ***phase,
-    double *dotpopdec, double complex *coef, double **qmom){
+    int *l_coh, double *mass, double *sigma, int **get_d_ind, double **unitary, double **ham_d,
+    double **ham_d_old, double **nacme, double **nacme_old, double **pos, double ***aux_pos,
+    double ***phase, double *dotpopdec_d, double complex *coef_d, double **qmom){
 
     double complex *k1 = malloc(pst * sizeof(double complex));
     double complex *k2 = malloc(pst * sizeof(double complex));
@@ -49,6 +50,7 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
     double complex *variation = malloc(pst * sizeof(double complex));
     double complex *c_dot = malloc(pst * sizeof(double complex));
     double complex *xf_c_dot = malloc(pst * sizeof(double complex));
+    double complex *coef_a = malloc(pst * sizeof(double complex));
     double complex *coef_new = malloc(pst * sizeof(double complex));
     double complex **prop_mat = malloc(pst * sizeof(double complex));
     double **dec_mat = malloc(pst * sizeof(double*));
@@ -72,7 +74,8 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
 
     for(iestep = 0; iestep < nesteps; iestep++){
 
-        // TODO: Is the interpolation for aux_pos and phase needed?
+        // Get polaritonic state coefficients for calculation of decoherence term
+        transform_d2a(pst, unitary, coef_d, coef_a);
 
         // Get quantum momentum from auxiliary positions and sigma values
         for(iat = 0; iat < nat; iat++){
@@ -83,7 +86,7 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
         for(ist = 0; ist < pst; ist++){
 
             if(l_coh[ist] == 1){
-                rho = creal(conj(coef[ist]) * coef[ist]);
+                rho = creal(conj(coef_a[ist]) * coef_a[ist]);
                 for(iat = 0; iat < nat; iat++){
                     for(isp = 0; isp < ndim; isp++){
                         qmom[iat][isp] += 0.5 * rho * (pos[iat][isp] - aux_pos[ist][iat][isp])
@@ -116,7 +119,7 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
         }
 
         // Calculate cdot contribution originating from XF term
-        xf_cdot(pst, dec_mat, coef, xf_c_dot);
+        xf_cdot(pst, unitary, dec_mat, coef_a, xf_c_dot);
 
         // Interpolate ham_d and NACME terms between time t and t + dt
         for(ist = 0; ist < pst; ist++){
@@ -147,12 +150,12 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
         }
 
         // Calculate k1
-        cdot(pst, prop_mat, coef, c_dot);
+        cdot(pst, prop_mat, coef_d, c_dot);
 
         for(ist = 0; ist < pst; ist++){
             k1[ist] = edt * (c_dot[ist] + xf_c_dot[ist]);
             kfunction[ist] = 0.5 * k1[ist];
-            coef_new[ist] = coef[ist] + kfunction[ist];
+            coef_new[ist] = coef_d[ist] + kfunction[ist];
         }
 
         // Calculate k2
@@ -161,7 +164,7 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
         for(ist = 0; ist < pst; ist++){
             k2[ist] = edt * (c_dot[ist] + xf_c_dot[ist]);
             kfunction[ist] = 0.5 * (- 1.0 + sqrt(2.0)) * k1[ist] + (1.0 - 0.5 * sqrt(2.0)) * k2[ist];
-            coef_new[ist] = coef[ist] + kfunction[ist];
+            coef_new[ist] = coef_d[ist] + kfunction[ist];
         }
 
         // Calculate k3
@@ -170,7 +173,7 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
         for(ist = 0; ist < pst; ist++){
             k3[ist] = edt * (c_dot[ist] + xf_c_dot[ist]);
             kfunction[ist] = - 0.5 * sqrt(2.0) * k2[ist] + (1.0 + 0.5 * sqrt(2.0)) * k3[ist];
-            coef_new[ist] = coef[ist] + kfunction[ist];
+            coef_new[ist] = coef_d[ist] + kfunction[ist];
         }
 
         // Calculate k4
@@ -180,7 +183,7 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
             k4[ist] = edt * (c_dot[ist] + xf_c_dot[ist]);
             variation[ist] = (k1[ist] + (2.0 - sqrt(2.0)) * k2[ist] + (2.0 + sqrt(2.0))
                 * k3[ist] + k4[ist]) / 6.0;
-            coef_new[ist] = coef[ist] + variation[ist];
+            coef_new[ist] = coef_d[ist] + variation[ist];
         }
 
         // TODO : Is this part necessary?
@@ -188,13 +191,14 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
 //        norm = dot(nst, coef_new, coef_new);
         for(ist = 0; ist < pst; ist++){
 //            coef_new[ist] /= sqrt(norm);
-            coef[ist] = coef_new[ist];
+            coef_d[ist] = coef_new[ist];
         }
 
     }
 
     if(verbosity >= 1){
-        xf_print_coef(pst, coef, xf_c_dot, dotpopdec);
+        transform_d2a(pst, unitary, coef_d, coef_a);
+        xf_print_coef(pst, unitary, dec_mat, coef_d, coef_a, dotpopdec_d);
     }
 
     for(ist = 0; ist < pst; ist++){
@@ -212,6 +216,7 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
     free(variation);
     free(c_dot);
     free(xf_c_dot);
+    free(coef_a);
     free(coef_new);
     free(prop_mat);
     free(dec_mat);
