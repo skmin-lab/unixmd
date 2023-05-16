@@ -48,11 +48,11 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     double *rwork = malloc((3 * nst - 2) * sizeof(double)); // temporary value for zheev
     double complex *exponent = malloc((nst * nst) * sizeof(double complex)); // (energy - i * NACME) * dt
     double complex *coef_new = malloc(nst * sizeof(double complex)); // need to calculate coef
-    double complex *exp_iexponent = malloc((nst * nst) * sizeof(double complex)); // double complex type of exp( - i * exponent)
+    double complex *propagator = malloc((nst * nst) * sizeof(double complex)); // double complex type of exp( - i * exponent)
     dcomplex *exp_idiag = malloc((nst * nst) * sizeof(dcomplex)); // diagonal matrix using eigenvalue, exp( - i * D)
     dcomplex *eigenvectors = malloc((nst * nst) * sizeof(dcomplex)); // it is eigenvectors, P
     dcomplex *tmp_mat= malloc((nst * nst) * sizeof(dcomplex));
-    dcomplex *dg_exp_iexponent = malloc((nst * nst) * sizeof(dcomplex)); // dg_exp_iexponent is diagonalized exp( - i * exponent). it is Pexp( - i * D)P^-1 
+    dcomplex *exp_iexponent = malloc((nst * nst) * sizeof(dcomplex)); // dg_exp_iexponent is diagonalized exp( - i * exponent). it is Pexp( - i * D)P^-1 
     dcomplex *product_old = malloc((nst * nst) * sizeof(dcomplex)); // product_old is product of Pexp( - i * D)P^-1 until previous step (old)
     dcomplex *product_new = malloc((nst * nst) * sizeof(dcomplex)); // product_new is product of Pexp( - i * D)P^-1 until current step (new)
     dcomplex *identity = malloc((nst * nst) * sizeof(dcomplex)); // identity matrix
@@ -78,7 +78,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         identity[nst * ist + ist].imag = 0.0;
         product_old[nst * ist + ist].real = 1.0;
         product_old[nst * ist + ist].imag = 0.0;
-        for(jst = ist; jst < nst; jst++){       
+        for(jst = ist + 1; jst < nst; jst++){       
             // off-diagonal elements to zero 
             // upper triangle
             identity[nst * ist + jst].real = 0.0;
@@ -161,8 +161,8 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
 
         // Compute the product ( P * exp( - i * D ) * P^-1) and update the product for every electronic step
         zgemm_("N", "N", &nst, &nst, &nst, &dcone, eigenvectors, &nst, exp_idiag, &nst, &dczero, tmp_mat, &nst); // P * exp( - i * D)
-        zgemm_("N", "C", &nst, &nst, &nst, &dcone, tmp_mat, &nst, eigenvectors, &nst, &dczero, dg_exp_iexponent, &nst); // Pexp( - i * D) * P^-1 
-        zgemm_("N", "N", &nst, &nst, &nst, &dcone, dg_exp_iexponent, &nst, product_old, &nst, &dczero, product_new, &nst); // Pexp( - i * D)P^-1 * (old Pexp( - i * D)P^-1 )
+        zgemm_("N", "C", &nst, &nst, &nst, &dcone, tmp_mat, &nst, eigenvectors, &nst, &dczero, exp_iexponent, &nst); // Pexp( - i * D) * P^-1 
+        zgemm_("N", "N", &nst, &nst, &nst, &dcone, exp_iexponent, &nst, product_old, &nst, &dczero, product_new, &nst); // Pexp( - i * D)P^-1 * (old Pexp( - i * D)P^-1 )
 
         // Update coefficent 
         zgemm_("N", "N", &nst, &nst, &nst, &dcone, identity, &nst, product_new, &nst, &dczero, product_old, &nst); // to keep Pexp( - i * D)P^-1 value in total_coef_dcom 
@@ -170,7 +170,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
 
     // Convert the data type for the term ( exp( - i * exponent )) to original double complex to make propagation matrix
     for(ist = 0; ist < nst * nst; ist++){
-        exp_iexponent[ist] = product_new[ist].real + product_new[ist].imag * I;
+        propagator[ist] = product_new[ist].real + product_new[ist].imag * I;
     }
 
     // matrix - vector multiplication //TODO Is it necessary to change this to zgemv?
@@ -178,7 +178,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     for(ist = 0; ist < nst; ist++){
         tmp_coef = 0.0 + 0.0 * I;
         for (jst = 0; jst < nst; jst++){
-            tmp_coef += exp_iexponent[nst * jst + ist] * coef[jst];
+            tmp_coef += propagator[nst * jst + ist] * coef[jst];
         }
         coef_new[ist] = tmp_coef;
     }
@@ -192,8 +192,8 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     }
   
     free(coef_new);
+    free(propagator);
     free(exp_iexponent);
-    free(dg_exp_iexponent);
     free(identity);
     free(product_new);
     free(product_old);
