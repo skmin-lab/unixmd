@@ -9,7 +9,7 @@ cdef extern from "rk4_xf.c":
         char *elec_object, bint *l_coh, double *mass, double *sigma, int **get_d_ind, \
         double **unitary, double **ham_d, double **ham_d_old, double **nacme, \
         double **nacme_old, double **pos, double ***aux_pos, double ***phase, \
-        double *dotpopdec, double complex *coef, double **qmom)
+        double *dotpopdec, double complex *coef_d, double **qmom)
 
 def el_run(md, qed):
     cdef:

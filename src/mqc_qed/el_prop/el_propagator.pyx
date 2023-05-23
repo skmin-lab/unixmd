@@ -6,7 +6,7 @@ cimport numpy as np
 
 cdef extern from "rk4.c":
     void rk4(int pst, int nesteps, double dt, char *elec_object, int **get_d_ind, double **ham_d, \
-        double **ham_d_old, double **nacme, double **nacme_old, double complex *coef)
+        double **ham_d_old, double **nacme, double **nacme_old, double complex *coef_d)
 
 def el_run(md, qed):
     cdef:
@@ -16,7 +16,7 @@ def el_run(md, qed):
         double **ham_d_old
         double **nacme
         double **nacme_old
-        double complex *coef_a, *coef_d
+        double complex *coef_d
 #        double complex **rho
 
         bytes py_bytes

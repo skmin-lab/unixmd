@@ -7,7 +7,7 @@
 
 // Routine for coefficient propagation scheme in rk4 propagator
 static void rk4_coef(int pst, int nesteps, double dt, int **get_d_ind, double **ham_d,
-    double **ham_d_old, double **nacme, double **nacme_old, double complex *coef);
+    double **ham_d_old, double **nacme, double **nacme_old, double complex *coef_d);
 
 // Routine for density propagation scheme in rk4 propagator
 //static void rk4_rho(int nst, int nesteps, double dt, double *energy, double *energy_old,
@@ -15,10 +15,10 @@ static void rk4_coef(int pst, int nesteps, double dt, int **get_d_ind, double **
 
 // Interface routine for propagation scheme in rk4 propagator
 static void rk4(int pst, int nesteps, double dt, char *elec_object, int **get_d_ind, double **ham_d,
-    double **ham_d_old, double **nacme, double **nacme_old, double complex *coef){
+    double **ham_d_old, double **nacme, double **nacme_old, double complex *coef_d){
 
     if(strcmp(elec_object, "coefficient") == 0){
-        rk4_coef(pst, nesteps, dt, get_d_ind, ham_d, ham_d_old, nacme, nacme_old, coef);
+        rk4_coef(pst, nesteps, dt, get_d_ind, ham_d, ham_d_old, nacme, nacme_old, coef_d);
     }
 //    else if(strcmp(elec_object, "density") == 0){
 //        rk4_rho(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, rho);
@@ -28,7 +28,7 @@ static void rk4(int pst, int nesteps, double dt, char *elec_object, int **get_d_
 
 // Routine for coefficient propagation scheme in rk4 propagator
 static void rk4_coef(int pst, int nesteps, double dt, int **get_d_ind, double **ham_d,
-    double **ham_d_old, double **nacme, double **nacme_old, double complex *coef){
+    double **ham_d_old, double **nacme, double **nacme_old, double complex *coef_d){
 
     double complex *k1 = malloc(pst * sizeof(double complex));
     double complex *k2 = malloc(pst * sizeof(double complex));
@@ -82,12 +82,12 @@ static void rk4_coef(int pst, int nesteps, double dt, int **get_d_ind, double **
         }
 
         // Calculate k1
-        cdot(pst, prop_mat, coef, c_dot);
+        cdot(pst, prop_mat, coef_d, c_dot);
 
         for(ist = 0; ist < pst; ist++){
             k1[ist] = edt * c_dot[ist];
             kfunction[ist] = 0.5 * k1[ist];
-            coef_new[ist] = coef[ist] + kfunction[ist];
+            coef_new[ist] = coef_d[ist] + kfunction[ist];
         }
 
         // Calculate k2
@@ -96,7 +96,7 @@ static void rk4_coef(int pst, int nesteps, double dt, int **get_d_ind, double **
         for(ist = 0; ist < pst; ist++){
             k2[ist] = edt * c_dot[ist];
             kfunction[ist] = 0.5 * (- 1.0 + sqrt(2.0)) * k1[ist] + (1.0 - 0.5 * sqrt(2.0)) * k2[ist];
-            coef_new[ist] = coef[ist] + kfunction[ist];
+            coef_new[ist] = coef_d[ist] + kfunction[ist];
         }
 
         // Calculate k3
@@ -105,7 +105,7 @@ static void rk4_coef(int pst, int nesteps, double dt, int **get_d_ind, double **
         for(ist = 0; ist < pst; ist++){
             k3[ist] = edt * c_dot[ist];
             kfunction[ist] = - 0.5 * sqrt(2.0) * k2[ist] + (1.0 + 0.5 * sqrt(2.0)) * k3[ist];
-            coef_new[ist] = coef[ist] + kfunction[ist];
+            coef_new[ist] = coef_d[ist] + kfunction[ist];
         }
 
         // Calculate k4
@@ -115,7 +115,7 @@ static void rk4_coef(int pst, int nesteps, double dt, int **get_d_ind, double **
             k4[ist] = edt * c_dot[ist];
             variation[ist] = (k1[ist] + (2.0 - sqrt(2.0)) * k2[ist] + (2.0 + sqrt(2.0))
                 * k3[ist] + k4[ist]) / 6.0;
-            coef_new[ist] = coef[ist] + variation[ist];
+            coef_new[ist] = coef_d[ist] + variation[ist];
         }
 
         // TODO : Is this part necessary?
@@ -123,7 +123,7 @@ static void rk4_coef(int pst, int nesteps, double dt, int **get_d_ind, double **
 //        norm = dot(nst, coef_new, coef_new);
         for(ist = 0; ist < pst; ist++){
 //            coef_new[ist] /= sqrt(norm);
-            coef[ist] = coef_new[ist];
+            coef_d[ist] = coef_new[ist];
         }
 
     }
