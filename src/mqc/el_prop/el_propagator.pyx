@@ -13,7 +13,6 @@ cdef extern from "exponential.c":
     void expon(int nst, int nesteps, double dt, char *elec_object, double *energy, \
         double *energy_old, double **nacme, double **nacme_old, double complex *coef)
 
-
 def el_run(md):
     cdef:
         char *elec_object_c
