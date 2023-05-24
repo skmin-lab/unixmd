@@ -5,7 +5,7 @@
 #include <string.h>
 
 // Complex datatype 
-struct _dcomplex { double real, imag; };
+struct _dcomplex {double real, imag;};
 typedef struct _dcomplex dcomplex;
 
 // Importing heev and gemm
@@ -24,7 +24,7 @@ static void expon(int nst, int nesteps, double dt, char *elec_object, double *en
     if(strcmp(elec_object, "coefficient") == 0){
         expon_coef(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, coef);
     }
-/*    else if(strcmp(elec_object, "density") == 0){
+    /*    else if(strcmp(elec_object, "density") == 0){
         expon_rho(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, rho);
     }*/
 
@@ -32,13 +32,13 @@ static void expon(int nst, int nesteps, double dt, char *elec_object, double *en
 
 static void expon_coef(int nst, int nesteps, double dt, double *energy, double *energy_old, 
     double **nacme, double **nacme_old, double complex *coef){
-   
+
     // (E - i \sigma) dt = PDP^{-1} (diagonalization) 
     // \exp( - i (E - i \sigma) dt) = P \exp( - i D) P^{-1} 
     // \exp( - i (E_1 - i \sigma_1) dt ) \times \exp( - i (E_2 - i \sigma_2) dt) \times \cdots \times \exp( - i (E_n - i \sigma_n) dt) = 
     // P_1(\exp( - i D_1))P_1^{-1} \times P_2(\exp( - i D_2))P_2^{-1} \times \cdots \times P_n(\exp( - i D_n))P_n^{-1}
-    
-    // where E is energy, sigma is nonadiabatic coupling matrix elements(NACME), n is interpolation step number, 
+
+    // where E is energy, sigma is nonadiabatic coupling matrix elements(NACME), and n is the interpolation step number, 
     // P is a matrix consisting of eigenvectors of (E - i * sigma) * dt
     // D is a diagonal matrix consisting of eigenvalues of (E - i * sigma) * dt
     double *eenergy = malloc(nst * sizeof(double));
@@ -49,7 +49,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     double complex *propagator = malloc((nst * nst) * sizeof(double complex)); // double complex type of exp( - i * exponent)
     dcomplex *exp_idiag = malloc((nst * nst) * sizeof(dcomplex)); // diagonal matrix using eigenvalue, exp( - i * D)
     dcomplex *eigenvectors = malloc((nst * nst) * sizeof(dcomplex)); // The eigenvectors, P
-    dcomplex *tmp_mat= malloc((nst * nst) * sizeof(dcomplex));
+    dcomplex *tmp_mat = malloc((nst * nst) * sizeof(dcomplex));
     dcomplex *exp_iexponent = malloc((nst * nst) * sizeof(dcomplex)); // exp_iexponent is diagonalized exp( - i * exponent). It is Pexp( - i * D)P^-1 
     dcomplex *product_old = malloc((nst * nst) * sizeof(dcomplex)); // product_old is product of Pexp( - i * D)P^-1 until previous step (old)
     dcomplex *product_new = malloc((nst * nst) * sizeof(dcomplex)); // product_new is product of Pexp( - i * D)P^-1 until current step (new)
@@ -108,7 +108,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     //     identity[nst * ist + ist].real = 1.0;
     //     product_old[nst * ist + ist].real = 1.0;
     // }
-   
+
     frac = 1.0 / (double)nesteps;
     edt = dt * frac;
 
@@ -141,7 +141,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
             eigenvectors[ist].real = creal(exponent[ist]);
             eigenvectors[ist].imag = cimag(exponent[ist]);
         }
-        
+
         // Diagonalize the matrix (exponent) to obtain eigenvectors and eigenvalues.
         // After this operation, eigenvectors becomes the eigenvectors defined as P.
         lwork = -1;
@@ -188,7 +188,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     for(ist = 0; ist < nst; ist++){
         free(dv[ist]);
     }
-  
+
     free(coef_new);
     free(propagator);
     free(exp_iexponent);

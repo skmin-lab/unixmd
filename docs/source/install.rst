@@ -40,8 +40,8 @@ command in the top-level directory of the program which contains setup.py file.
    $ cd unixmd/
    $ python3 setup.py build_ext -b ./src/build
 
-You can select type of math libraries and path of math libraries by modifying **math_lib_type** and **math_lib_dir**
-defined in setup.py file as follows:
+You can select the type of math libraries and the path of math libraries by modifying **math_lib_type** and **math_lib_dir**
+defined in the setup.py file as follows:
 
 .. code-block:: python
    :linenos:
