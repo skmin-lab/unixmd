@@ -38,7 +38,7 @@ static void rk4_coef(int pst, int nesteps, double dt, int **get_d_ind, double **
     double complex *variation = malloc(pst * sizeof(double complex));
     double complex *c_dot = malloc(pst * sizeof(double complex));
     double complex *coef_new = malloc(pst * sizeof(double complex));
-    double complex **prop_mat = malloc(pst * sizeof(double complex));
+    double complex **prop_mat = malloc(pst * sizeof(double complex*));
 
     int ist, jst, iestep, ind_mol1, ind_mol2, ind_photon1, ind_photon2;
     // TODO : Is norm necessary?

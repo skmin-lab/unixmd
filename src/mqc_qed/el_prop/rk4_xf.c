@@ -52,7 +52,7 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
     double complex *xf_c_dot = malloc(pst * sizeof(double complex));
     double complex *coef_a = malloc(pst * sizeof(double complex));
     double complex *coef_new = malloc(pst * sizeof(double complex));
-    double complex **prop_mat = malloc(pst * sizeof(double complex));
+    double complex **prop_mat = malloc(pst * sizeof(double complex*));
     double **dec_mat = malloc(pst * sizeof(double*));
 
     int ist, jst, iestep, ind_mol1, ind_mol2, ind_photon1, ind_photon2;
