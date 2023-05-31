@@ -14,23 +14,23 @@ extern void zgemm_(char *transa, char *transb, int *m, int *n, int *k, dcomplex 
     dcomplex *b, int *ldb, dcomplex *beta, dcomplex *c, int *ldc);
 
 // Routine for coefficient propagation scheme in exponential propagator
-static void expon_coef(int nst, int nesteps, double dt, double *energy, double *energy_old,
+static void exponential_coef(int nst, int nesteps, double dt, double *energy, double *energy_old,
     double **nacme, double **nacme_old, double complex *coef);
 
 // Interface routine for propagation scheme in exponential propagator
-static void expon(int nst, int nesteps, double dt, char *elec_object, double *energy, double *energy_old,
+static void exponential(int nst, int nesteps, double dt, char *elec_object, double *energy, double *energy_old,
     double **nacme, double **nacme_old, double complex *coef){
 
     if(strcmp(elec_object, "coefficient") == 0){
-        expon_coef(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, coef);
+        exponential_coef(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, coef);
     }
 //    else if(strcmp(elec_object, "density") == 0){
-//        expon_rho(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, rho);
+//        exponential_rho(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, rho);
 //    }
 
 }
 
-static void expon_coef(int nst, int nesteps, double dt, double *energy, double *energy_old,
+static void exponential_coef(int nst, int nesteps, double dt, double *energy, double *energy_old,
     double **nacme, double **nacme_old, double complex *coef){
 
     double *eenergy = malloc(nst * sizeof(double));
@@ -39,10 +39,10 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     double *eigenvalues = malloc(nst * sizeof(double));
     double *rwork = malloc((3 * nst - 2) * sizeof(double));
     // (energy - i * NACME) * dt
-    double complex *exponent = malloc((nst * nst) * sizeof(double complex));
+    double complex **exponent = malloc(nst * sizeof(double complex*));
     double complex *coef_new = malloc(nst * sizeof(double complex));
     // Final expression of exp(- i * exponent)
-    double complex *propagator = malloc((nst * nst) * sizeof(double complex));
+    double complex **propagator = malloc(nst * sizeof(double complex*));
     // Diagonal matrix using eigenvalues, exp(- i * D)
     dcomplex *exp_idiag = malloc((nst * nst) * sizeof(dcomplex));
     // Eigenvectors of (energy - i * NACME) * dt, P
@@ -62,6 +62,8 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
 
     for(ist = 0; ist < nst; ist++){
         dv[ist] = malloc(nst * sizeof(double));
+        exponent[ist] = malloc(nst * sizeof(double complex));
+        propagator[ist] = malloc(nst * sizeof(double complex));
     }
 
     dcomplex dcone = {1.0, 0.0};
@@ -125,18 +127,20 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
         for(ist = 0; ist < nst; ist++){
             for (jst = 0; jst < nst; jst++){
                 if (ist == jst){
-                    exponent[nst * ist + jst] = (eenergy[ist] - eenergy[0]) * edt;
+                    exponent[ist][jst] = (eenergy[ist] - eenergy[0]) * edt;
                 }
                 else{
-                    exponent[nst * ist + jst] = - 1.0 * I * dv[jst][ist] * edt;
+                    exponent[ist][jst] = - 1.0 * I * dv[ist][jst] * edt;
                 }
             }
         }
 
         // Convert the data type for exponent to dcomplex to exploit external math libraries
-        for(ist = 0; ist < nst * nst; ist++){
-            eigenvectors[ist].real = creal(exponent[ist]);
-            eigenvectors[ist].imag = cimag(exponent[ist]);
+        for(ist = 0; ist < nst; ist++){
+            for(jst = 0; jst < nst; jst++){
+                eigenvectors[nst * ist + jst].real = creal(exponent[jst][ist]);
+                eigenvectors[nst * ist + jst].imag = cimag(exponent[jst][ist]);
+            }
         }
 
         // Diagonalize the matrix (exponent) to obtain eigenvectors and eigenvalues
@@ -164,8 +168,10 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     }
 
     // Convert the data type for the term (exp(- i * exponent)) to double complex to make propagation matrix
-    for(ist = 0; ist < nst * nst; ist++){
-        propagator[ist] = product_new[ist].real + product_new[ist].imag * I;
+    for(ist = 0; ist < nst; ist++){
+        for(jst = 0; jst < nst; jst++){
+            propagator[ist][jst] = product_new[nst * jst + ist].real + product_new[nst * jst + ist].imag * I;
+        }
     }
 
     // Update the coefficients using the propagation matrix
@@ -174,7 +180,7 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     for(ist = 0; ist < nst; ist++){
         tmp_coef = 0.0 + 0.0 * I;
         for (jst = 0; jst < nst; jst++){
-            tmp_coef += propagator[nst * jst + ist] * coef[jst];
+            tmp_coef += propagator[ist][jst] * coef[jst];
         }
         coef_new[ist] = tmp_coef;
     }
@@ -184,6 +190,8 @@ static void expon_coef(int nst, int nesteps, double dt, double *energy, double *
     }
 
     for(ist = 0; ist < nst; ist++){
+        free(propagator[ist]);
+        free(exponent[ist]);
         free(dv[ist]);
     }
 
