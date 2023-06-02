@@ -314,7 +314,7 @@ class MQC(object):
 
         if (self.md_type != "BOMD"):
             dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
-            dynamics_info += f"  Propagator               = {self.propagator:>16s}\n"
+            dynamics_info += f"  Electronic Propagator    = {self.propagator:>16s}\n"
             dynamics_info += f"  Propagation Scheme       = {self.elec_object:>16s}\n"
 
         # Print surface hopping variables
