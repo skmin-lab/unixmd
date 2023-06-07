@@ -169,32 +169,28 @@ static void exponential_coef(int nat, int ndim, int nst, int nesteps, double dt,
         // Compute the product (P * exp(- i * D) * P^-1) and update the product for every electronic step
         zgemm_("N", "N", &nst, &nst, &nst, &dcone, eigenvectors, &nst, exp_idiag, &nst, &dczero, tmp_mat, &nst);
         zgemm_("N", "C", &nst, &nst, &nst, &dcone, tmp_mat, &nst, eigenvectors, &nst, &dczero, exp_iexponent, &nst);
-        // Update the product
-        zgemm_("N", "N", &nst, &nst, &nst, &dcone, exp_iexponent, &nst, product_old, &nst, &dczero, product_new, &nst);
-        // Backup the product
-        zgemm_("N", "N", &nst, &nst, &nst, &dcone, identity, &nst, product_new, &nst, &dczero, product_old, &nst);
-    }
 
-    // Convert the data type for the term (exp(- i * exponent)) to double complex to make propagation matrix
-    for(ist = 0; ist < nst; ist++){
-        for(jst = 0; jst < nst; jst++){
-            propagator[ist][jst] = product_new[nst * jst + ist].real + product_new[nst * jst + ist].imag * I;
+        // Convert the data type for the term (exp(- i * exponent)) to double complex to make propagation matrix
+        for(ist = 0; ist < nst; ist++){
+            for(jst = 0; jst < nst; jst++){
+                propagator[ist][jst] = exp_iexponent[nst * jst + ist].real + exp_iexponent[nst * jst + ist].imag * I;
+            }
         }
-    }
 
-    // Update the coefficients using the propagation matrix
-    // TODO Is it necessary to change this to zgemv?
-//    zgemv_("N", &nst, &nst, &dcone, product_old, &nst, coef, 1, &dczero, tmp_coef, 1)
-    for(ist = 0; ist < nst; ist++){
-        tmp_coef = 0.0 + 0.0 * I;
-        for (jst = 0; jst < nst; jst++){
-            tmp_coef += propagator[ist][jst] * coef[jst];
+        // Update the coefficients using the propagation matrix
+        // TODO Is it necessary to change this to zgemv?
+//        zgemv_("N", &nst, &nst, &dcone, product_old, &nst, coef, 1, &dczero, tmp_coef, 1)
+        for(ist = 0; ist < nst; ist++){
+            tmp_coef = 0.0 + 0.0 * I;
+            for (jst = 0; jst < nst; jst++){
+                tmp_coef += propagator[ist][jst] * coef[jst];
+            }
+            coef_new[ist] = tmp_coef;
         }
-        coef_new[ist] = tmp_coef;
-    }
 
-    for(ist = 0; ist < nst; ist++){
-        coef[ist] = coef_new[ist];
+        for(ist = 0; ist < nst; ist++){
+            coef[ist] = coef_new[ist];
+        }
     }
 
     for(ist = 0; ist < nst; ist++){
