@@ -14,24 +14,32 @@ extern void zgemm_(char *transa, char *transb, int *m, int *n, int *k, dcomplex 
     dcomplex *b, int *ldb, dcomplex *beta, dcomplex *c, int *ldc);
 
 // Routine for coefficient propagation scheme in exponential propagator
-static void exponential_coef(int nst, int nesteps, double dt, double *energy, double *energy_old,
-    double **nacme, double **nacme_old, double complex *coef);
+static void exponential_coef(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
+    double *mass, double *energy, double *energy_old, double *sigma, double **nacme,
+    double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *coef,
+    int verbosity, double *dotpopdec);
 
 // Interface routine for propagation scheme in exponential propagator
-static void exponential(int nst, int nesteps, double dt, char *elec_object, double *energy, double *energy_old,
-    double **nacme, double **nacme_old, double complex *coef){
+static void exponential(int nat, int ndim, int nst, int nesteps, double dt, char *elec_object, int *l_coh,
+    double *mass, double *energy, double *energy_old, double *sigma, double **nacme, double **nacme_old,
+    double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *coef, int verbosity,
+    double *dotpopdec){
 
     if(strcmp(elec_object, "coefficient") == 0){
-        exponential_coef(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, coef);
+        exponential_coef(nat, ndim, nst, nesteps, dt, l_coh, mass, energy, energy_old, sigma,
+            nacme, nacme_old, pos, qmom, aux_pos, phase, coef, verbosity, dotpopdec);
     }
 //    else if(strcmp(elec_object, "density") == 0){
-//        exponential_rho(nst, nesteps, dt, energy, energy_old, nacme, nacme_old, rho);
+//        exponential_rho(nat, ndim, nst, nesteps, dt, l_coh, mass, energy, energy_old, sigma,
+//            nacme, nacme_old, pos, qmom, aux_pos, phase, rho, verbosity, dotpopdec);
 //    }
 
 }
 
-static void exponential_coef(int nst, int nesteps, double dt, double *energy, double *energy_old,
-    double **nacme, double **nacme_old, double complex *coef){
+static void exponential_coef(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
+    double *mass, double *energy, double *energy_old, double *sigma, double **nacme,
+    double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *coef,
+    int verbosity, double *dotpopdec){
 
     double *eenergy = malloc(nst * sizeof(double));
     double **dv = malloc(nst * sizeof(double*));
