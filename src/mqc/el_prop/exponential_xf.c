@@ -198,7 +198,7 @@ static void exponential_coef(int nat, int ndim, int nst, int nesteps, double dt,
         for(ist = 0; ist < nst; ist++){
             for (jst = 0; jst < nst; jst++){
                 if (ist == jst){
-                    exponent[ist][jst] = (eenergy[ist] - eenergy[0] + dec_h[ist][jst]) * edt;
+                    exponent[ist][jst] = (eenergy[ist] - eenergy[0]) * edt;
                 }
                 else{
                     exponent[ist][jst] = (- 1.0 * I * dv[ist][jst] + dec_h[ist][jst]) * edt;
