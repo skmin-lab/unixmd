@@ -254,6 +254,16 @@ static void exponential_coef(int nat, int ndim, int nst, int nesteps, double dt,
         for(ist = 0; ist < nst; ist++){
             coef[ist] = coef_new[ist];
         }
+
+    }
+
+    if(verbosity >= 1){
+        for(ist = 0; ist < nst; ist++){
+            dotpopdec[ist] = 0;
+            for(jst = 0; jst < nst; jst++){
+                dotpopdec[ist] -= 2 * creal(dec[jst][ist] * conj(coef[ist]) * coef[ist] * conj(coef[jst]) * coef[jst]);
+            }
+        }
     }
 
     for(ist = 0; ist < nst; ist++){
