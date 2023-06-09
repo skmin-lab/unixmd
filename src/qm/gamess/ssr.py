@@ -1,7 +1,7 @@
 from __future__ import division
 from qm.gamess.gamess import GAMESS
 from misc import data, call_name, au_to_A
-import textwrap
+import os, shutil, textwrap
 
 class SSR(GAMESS):
     """ Class for SSR method of GAMESS
@@ -68,6 +68,7 @@ class SSR(GAMESS):
         """
         super().get_data(base_dir, calc_force_only)
         self.get_input(molecule, bo_list)
+        self.run_QM(base_dir, istep, bo_list)
         self.move_dir(base_dir)
 
     def get_input(self, molecule, bo_list):
@@ -217,5 +218,46 @@ class SSR(GAMESS):
             file_name = "gamess.inp.3"
             with open(file_name, "w") as f:
                 f.write(input_gamess)
+
+    def run_QM(self, base_dir, istep, bo_list):
+        """ Run SSR calculation and save the output files to qm_log directory
+
+            :param string base_dir: Base directory
+            :param integer istep: Current MD step
+            :param integer,list bo_list: List of BO states for BO calculation
+        """
+        # Environmental variable setting
+        user_scr_dir = os.path.join(self.scr_qm_dir, "userscr")
+        os.makedirs(user_scr_dir)
+        os.environ["USERSCR"] = user_scr_dir
+        os.environ["TMPDIR"] = self.scr_qm_dir
+        os.environ["GMSPATH"] = self.qm_path
+
+        # Set run command
+        qm_command = os.path.join(self.qm_path, "rungms")
+        command = f"{qm_command} gamess {self.version} {self.nthreads} >& gamess.log"
+        # OpenMP setting
+        os.environ["OMP_NUM_THREADS"] = "1"
+
+        # Run GAMESS method
+        shutil.copy("gamess.inp.1", "gamess.inp")
+        os.system(command)
+        shutil.copy("gamess.log", "gamess.log.1")
+
+        if (self.nac == "Yes"):
+            shutil.copy("gamess.inp.2", "gamess.inp")
+            os.system(command)
+            shutil.copy("gamess.log", "gamess.log.2")
+
+            shutil.copy("gamess.inp.3", "gamess.inp")
+            os.system(command)
+            shutil.copy("gamess.log", "gamess.log.3")
+
+        # Copy the output file to 'qm_log' directory
+        tmp_dir = os.path.join(base_dir, "qm_log")
+        if (os.path.exists(tmp_dir)):
+            command = f"cat gamess.log.1 gamess.log.2 gamess.log.3 > gamess.log"
+            log_step = f"gamess.log.{istep + 1}.{bo_list[0]}"
+            shutil.copy("gamess.log", os.path.join(tmp_dir, log_step))
 
 
