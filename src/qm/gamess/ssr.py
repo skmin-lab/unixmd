@@ -1,7 +1,8 @@
 from __future__ import division
 from qm.gamess.gamess import GAMESS
-from misc import data, call_name, au_to_A
-import os, shutil, textwrap
+from misc import data, call_name, au_to_A, eps
+import os, shutil, re, textwrap
+import numpy as np
 
 class SSR(GAMESS):
     """ Class for SSR method of GAMESS
@@ -69,6 +70,7 @@ class SSR(GAMESS):
         super().get_data(base_dir, calc_force_only)
         self.get_input(molecule, bo_list)
         self.run_QM(base_dir, istep, bo_list)
+        self.extract_QM(molecule, bo_list)
         self.move_dir(base_dir)
 
     def get_input(self, molecule, bo_list):
@@ -274,5 +276,111 @@ class SSR(GAMESS):
             os.system(command)
             log_step = f"gamess.log.{istep + 1}.{bo_list[0]}"
             shutil.copy("gamess.log", os.path.join(tmp_dir, log_step))
+
+    def extract_QM(self, molecule, bo_list):
+        """ Read the output files to get BO information
+
+            :param object molecule: Molecule object
+            :param integer,list bo_list: List of BO states for BO calculation
+        """
+        # Read 'gamess.log.1' file
+        file_name = "gamess.log.1"
+        with open(file_name, "r") as f:
+            log_out = f.read()
+
+        # Energy
+        if (self.l_state_interactions):
+            # SSR state
+            energy = re.findall('SSR state\s\d\s+([-]\S+)', log_out)
+            energy = np.array(energy, dtype=np.float64)
+            for ist in range(molecule.nst):
+                molecule.states[ist].energy = energy[ist]
+        else:
+            # SA-REKS state
+            tmp_e = '\(PPS\):\S+\s+([-]\S+)'
+            energy = re.findall(tmp_e, log_out)
+            energy = np.array(energy, dtype=np.float64)
+            molecule.states[0].energy = energy[0]
+            tmp_e = '\(OSS\):\S+\s+([-]\S+)'
+            energy = re.findall(tmp_e, log_out)
+            energy = np.array(energy, dtype=np.float64)
+            molecule.states[1].energy = energy[0]
+
+        # Force
+        tmp_g = 'GRADIENT OF THE ENERGY\n\s+' + '-' * 22 + '\n\n UNITS ARE HARTREE/BOHR' + \
+            "\s+E'X\s+E'Y\s+E'Z \n" + "\s+\d+ \S+\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)\n" * molecule.nat_qm
+        grad = re.findall(tmp_g, log_out)
+        grad = np.array(grad[0], dtype=np.float64)
+        grad = grad.reshape(molecule.nat_qm, 3, order='C')
+
+        if (self.nac == "No"):
+            # SSR or SA-REKS force
+            molecule.states[bo_list[0]].force = - np.copy(grad)
+        else:
+            # Read coefficients
+            ssr_coef = np.zeros((molecule.nst, molecule.nst))
+            coef = re.findall('SSR state\s\d\s+[-]\S+\s+([-]*\S+)\s+([-]*\S+)', log_out)
+            coef = np.array(coef, dtype=np.float64)
+            for ist in range(molecule.nst):
+                ssr_coef[ist] = coef[ist]
+
+            # Save SSR gradient
+            ssr_grad = np.zeros((molecule.nst, molecule.nat, molecule.ndim))
+            ssr_grad[bo_list[0]] = np.copy(grad)
+
+            # Read 'gamess.log.2' file
+            file_name = "gamess.log.2"
+            with open(file_name, "r") as f:
+                log_out = f.read()
+
+            # Read SA-REKS gradient
+            sa_grad = np.zeros((molecule.nst, molecule.nat, molecule.ndim))
+
+            grad = re.findall(tmp_g, log_out)
+            grad = np.array(grad[0], dtype=np.float64)
+            grad = grad.reshape(molecule.nat_qm, 3, order='C')
+            sa_grad[bo_list[0]] = np.copy(grad)
+
+            # Read 'gamess.log.3' file
+            file_name = "gamess.log.3"
+            with open(file_name, "r") as f:
+                log_out = f.read()
+
+            # Read averaged functional gradient
+            avg_grad = np.zeros((molecule.nat, molecule.ndim))
+
+            grad = re.findall(tmp_g, log_out)
+            grad = np.array(grad[0], dtype=np.float64)
+            grad = grad.reshape(molecule.nat_qm, 3, order='C')
+            avg_grad = np.copy(grad)
+
+            ssr_grad[1 - bo_list[0]] = 2. * avg_grad - ssr_grad[bo_list[0]]
+            sa_grad[1 - bo_list[0]] = 2. * avg_grad - sa_grad[bo_list[0]]
+
+            for ist in range(molecule.nst):
+                molecule.states[ist].force = - ssr_grad[ist]
+
+            # Calculate G and g vectors from SSR and SA-REKS gradients
+            G_vec = np.zeros((molecule.nat, molecule.ndim))
+            g_vec = np.zeros((molecule.nat, molecule.ndim))
+
+            G_vec = 0.5 * (ssr_grad[0] - ssr_grad[1])
+            g_vec = 0.5 * (sa_grad[0] - sa_grad[1])
+
+            # Calculate NACVs from G, g and coefficients
+            cos_theta = ssr_coef[0, 0] ** 2. - ssr_coef[0, 1] ** 2.
+            sin_theta = 2. * ssr_coef[0, 0] * ssr_coef[0, 1]
+            if (abs(sin_theta) <= 0.0001):
+                if (sin_theta <= eps):
+                    sin_theta = - 0.0001
+                else:
+                    sin_theta = 0.0001
+
+            H_vec = np.zeros((molecule.nat, molecule.ndim))
+            H_vec = (cos_theta / sin_theta * (G_vec - cos_theta * g_vec) + sin_theta * g_vec) \
+                / (molecule.states[1].energy - molecule.states[0].energy)
+
+            molecule.nac[0, 1] = np.copy(H_vec)
+            molecule.nac[1, 0] = - np.copy(H_vec)
 
 
