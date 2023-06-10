@@ -230,7 +230,9 @@ class SSR(GAMESS):
         user_scr_dir = os.path.join(self.scr_qm_dir, "userscr")
         os.makedirs(user_scr_dir)
         os.environ["USERSCR"] = user_scr_dir
-        os.environ["TMPDIR"] = self.scr_qm_dir
+        tmp_dir = os.path.join(self.scr_qm_dir, "tmp")
+        os.makedirs(tmp_dir)
+        os.environ["TMPDIR"] = tmp_dir
         os.environ["GMSPATH"] = self.qm_path
 
         # Set run command
@@ -245,10 +247,22 @@ class SSR(GAMESS):
         shutil.copy("gamess.log", "gamess.log.1")
 
         if (self.nac == "Yes"):
+            if (os.path.exists(user_scr_dir)):
+                shutil.rmtree(user_scr_dir)
+            os.makedirs(user_scr_dir)
+            if (os.path.exists(tmp_dir)):
+                shutil.rmtree(tmp_dir)
+            os.makedirs(tmp_dir)
             shutil.copy("gamess.inp.2", "gamess.inp")
             os.system(command)
             shutil.copy("gamess.log", "gamess.log.2")
 
+            if (os.path.exists(user_scr_dir)):
+                shutil.rmtree(user_scr_dir)
+            os.makedirs(user_scr_dir)
+            if (os.path.exists(tmp_dir)):
+                shutil.rmtree(tmp_dir)
+            os.makedirs(tmp_dir)
             shutil.copy("gamess.inp.3", "gamess.inp")
             os.system(command)
             shutil.copy("gamess.log", "gamess.log.3")
@@ -257,6 +271,7 @@ class SSR(GAMESS):
         tmp_dir = os.path.join(base_dir, "qm_log")
         if (os.path.exists(tmp_dir)):
             command = f"cat gamess.log.1 gamess.log.2 gamess.log.3 > gamess.log"
+            os.system(command)
             log_step = f"gamess.log.{istep + 1}.{bo_list[0]}"
             shutil.copy("gamess.log", os.path.join(tmp_dir, log_step))
 
