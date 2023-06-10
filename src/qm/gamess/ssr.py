@@ -386,7 +386,7 @@ class SSR(GAMESS):
                     sin_theta = 0.0001
 
             H_vec = np.zeros((molecule.nat, molecule.ndim))
-            H_vec = (cos_theta / sin_theta * (G_vec - cos_theta * g_vec) + sin_theta * g_vec) \
+            H_vec = 0.5 * (cos_theta / sin_theta * (G_vec - cos_theta * g_vec) + sin_theta * g_vec) \
                 / (molecule.states[1].energy - molecule.states[0].energy)
 
             molecule.nac[0, 1] = np.copy(H_vec)
