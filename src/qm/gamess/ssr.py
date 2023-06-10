@@ -12,14 +12,18 @@ class SSR(GAMESS):
         :param string memory: Allocatable memory in the calculations
         :param string functional: Exchange-correlation functional information
         :param integer active_space: Active space for SSR calculation
+        :param integer reks_max_iter: Maximum number of REKS SCF iterations
         :param double shift: Level shifting value in REKS SCF iterations
         :param boolean l_state_interactions: Include state-interaction terms to SA-REKS
+        :param double cpreks_grad_tol: Gradient tolerance for CP-REKS equations
+        :param integer cpreks_max_iter: Maximum number of CP-REKS iterations
         :param string qm_path: Path for QM binary
         :param integer nthreads: Number of threads in the calculations
         :param string version: Version of GAMESS, check $VERNO
     """
     def __init__(self, molecule, basis_set="6-31g*", memory="50", functional="bhhlyp", \
-        active_space=2, shift=0.3, l_state_interactions=False, qm_path="./", nthreads=1, version="00"):
+        active_space=2, reks_max_iter=30, shift=0.3, l_state_interactions=False, \
+        cpreks_grad_tol=1E-6, cpreks_max_iter=100, qm_path="./", nthreads=1, version="00"):
         # Initialize GAMESS common variables
         super(SSR, self).__init__(basis_set, memory, qm_path, nthreads, version)
 
@@ -42,8 +46,12 @@ class SSR(GAMESS):
                 error_vars = f"Molecule.nstates = {molecule.nst}"
                 raise NotImplementedError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
+        self.reks_max_iter = reks_max_iter
         self.shift = shift
         self.l_state_interactions = l_state_interactions
+
+        self.cpreks_grad_tol = cpreks_grad_tol
+        self.cpreks_max_iter = cpreks_max_iter
 
         # Check the closed shell for systems
         if (not int(molecule.nelec) % 2 == 0):
@@ -125,7 +133,7 @@ class SSR(GAMESS):
         input_control = textwrap.indent(textwrap.dedent(f"""\
         $contrl
         scftyp=REKS runtyp={runtyp} dfttyp={self.functional}
-        units=angs icharg={molecule.charge} mult=1
+        units=angs maxit={self.reks_max_iter} icharg={molecule.charge} mult=1
         $end
         """), " ")
 
@@ -156,6 +164,7 @@ class SSR(GAMESS):
         input_reks = textwrap.indent(textwrap.dedent(f"""\
         $reks
         rexType={reks_type} rexTarget={bo_list[0] + 1} rexShift={self.shift}
+        rxCGit={self.cpreks_max_iter} rxCGth={self.cpreks_grad_tol}
         $end
         """), " ")
 
