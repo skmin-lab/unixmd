@@ -12,6 +12,7 @@ class SSR(GAMESS):
         :param string memory: Allocatable memory in the calculations
         :param string functional: Exchange-correlation functional information
         :param integer active_space: Active space for SSR calculation
+        :param string guess: Initial guess for REKS SCF iterations
         :param integer reks_rho_tol: Density convergence for REKS SCF iterations
         :param integer reks_max_iter: Maximum number of REKS SCF iterations
         :param boolean l_reks_diis: Use DIIS algorithm for REKS SCF iterations
@@ -24,8 +25,8 @@ class SSR(GAMESS):
         :param string version: Version of GAMESS, check $VERNO
     """
     def __init__(self, molecule, basis_set="6-31g*", memory="50", functional="bhhlyp", \
-        active_space=2, reks_rho_tol=5, reks_max_iter=30, l_reks_diis=True, shift=0.3, \
-        l_state_interactions=False, cpreks_grad_tol=1E-6, cpreks_max_iter=100, \
+        active_space=2, guess="dft", reks_rho_tol=5, reks_max_iter=30, l_reks_diis=True, \
+        shift=0.3, l_state_interactions=False, cpreks_grad_tol=1E-6, cpreks_max_iter=100, \
         qm_path="./", nthreads=1, version="00"):
         # Initialize GAMESS common variables
         super(SSR, self).__init__(basis_set, memory, qm_path, nthreads, version)
@@ -48,6 +49,13 @@ class SSR(GAMESS):
                 error_message = "GAMESS does not support single-state REKS calculation!"
                 error_vars = f"Molecule.nstates = {molecule.nst}"
                 raise NotImplementedError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        # Set initial guess for REKS SCF iterations
+        self.guess = guess.lower()
+        if not (self.guess in ["dft", "read"]):
+            error_message = "Invalid initial guess for SSR!"
+            error_vars = f"guess = {self.guess}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.reks_rho_tol = reks_rho_tol
         self.reks_max_iter = reks_max_iter
@@ -80,16 +88,29 @@ class SSR(GAMESS):
             :param integer istep: Current MD step
             :param boolean calc_force_only: Logical to decide whether calculate force only
         """
+        self.copy_files(istep)
         super().get_data(base_dir, calc_force_only)
-        self.get_input(molecule, bo_list)
+        self.get_input(molecule, istep, bo_list)
         self.run_QM(base_dir, istep, bo_list)
         self.extract_QM(molecule, bo_list)
         self.move_dir(base_dir)
 
-    def get_input(self, molecule, bo_list):
+    def copy_files(self, istep):
+        """ Copy necessary scratch files in previous step
+
+            :param integer istep: Current MD step
+        """
+        # Copy required files to read initial guess
+        if (self.guess == "read" and istep >= 0):
+            # After T = 0.0 s
+            shutil.copy(os.path.join(self.scr_qm_dir, "./userscr/gamess.dat"), \
+                os.path.join(self.scr_qm_dir, "../gamess.dat"))
+
+    def get_input(self, molecule, istep, bo_list):
         """ Generate GAMESS input files: gamess.inp.xx
 
             :param object molecule: Molecule object
+            :param integer istep: Current MD step
             :param integer,list bo_list: List of BO states for BO calculation
         """
         # Geometry Block
@@ -132,20 +153,60 @@ class SSR(GAMESS):
         $end
         """), " ")
 
-        # Control Block: calculate gradient option
-        runtyp = "gradient"
+        # Guess options
+        if (self.guess == "read"):
+            if (istep == -1):
+                self.do_dft = True
+            elif (istep >= 0):
+                # Move previous file to currect directory
+                os.rename("../gamess.dat", os.path.join(self.scr_qm_dir, "gamess.dat"))
+                self.do_dft = False
+        elif (self.guess == "dft"):
+            self.do_dft = True
 
-        input_control = textwrap.indent(textwrap.dedent(f"""\
-        $contrl
-        scftyp=REKS runtyp={runtyp} dfttyp={self.functional}
-        units=angs maxit={self.reks_max_iter} icharg={molecule.charge} mult=1
-        $end
-        """), " ")
+        if (self.do_dft):
+            # Control Block: Run DFT method to obtain initial guess of REKS calculation
+            input_control_dft = textwrap.indent(textwrap.dedent(f"""\
+            $contrl
+            scftyp=rhf runtyp=energy dfttyp={self.functional} pltorb=.true.
+            units=angs maxit={self.reks_max_iter} icharg={molecule.charge} mult=1
+            $end
+            """), " ")
 
         # SCF Block
         input_scf = textwrap.indent(textwrap.dedent(f"""\
         $scf
         nconv={self.reks_rho_tol}
+        $end
+        """), " ")
+
+        if (self.do_dft):
+            # Make 'gamess.inp.0' file
+            input_gamess = ""
+
+            input_gamess += input_control_dft
+            input_gamess += input_system
+            input_gamess += input_basis
+            input_gamess += input_scf
+            input_gamess += input_data
+
+            # Write 'gamess.inp.0' file
+            file_name = "gamess.inp.0"
+            with open(file_name, "w") as f:
+                f.write(input_gamess)
+
+        # Control Block: calculate gradient option in REKS method
+        input_control_reks = textwrap.indent(textwrap.dedent(f"""\
+        $contrl
+        scftyp=REKS runtyp=gradient dfttyp={self.functional} pltorb=.true.
+        units=angs maxit={self.reks_max_iter} icharg={molecule.charge} mult=1
+        $end
+        """), " ")
+
+        # Guess Block
+        input_guess = textwrap.indent(textwrap.dedent(f"""\
+        $guess
+        guess=moread norb={int(molecule.nelec / 2 + 30)}
         $end
         """), " ")
 
@@ -189,11 +250,12 @@ class SSR(GAMESS):
         # Make 'gamess.inp.1' file
         input_gamess = ""
 
-        input_gamess += input_control
+        input_gamess += input_control_reks
         input_gamess += input_system
         input_gamess += input_basis
         input_gamess += input_scf
         input_gamess += input_reks
+        input_gamess += input_guess
         input_gamess += input_data
 
         # Write 'gamess.inp.1' file
@@ -204,7 +266,6 @@ class SSR(GAMESS):
         # For evaluation of NACVs, two additional calculations are required
         if (self.nac == "Yes"):
             # Second calculation
-            # TODO : To reduce computational cost, reading eigenvectors is essential
             # REKS Block: calculate gradient for target SA-REKS state
             input_reks = textwrap.indent(textwrap.dedent(f"""\
             $reks
@@ -216,11 +277,12 @@ class SSR(GAMESS):
             # Make 'gamess.inp.2' file
             input_gamess = ""
 
-            input_gamess += input_control
+            input_gamess += input_control_reks
             input_gamess += input_system
             input_gamess += input_basis
             input_gamess += input_scf
             input_gamess += input_reks
+            input_gamess += input_guess
             input_gamess += input_data
 
             # Write 'gamess.inp.2' file
@@ -229,7 +291,6 @@ class SSR(GAMESS):
                 f.write(input_gamess)
 
             # Third calculation
-            # TODO : To reduce computational cost, reading eigenvectors is essential
             # REKS Block: calculate gradient for averaged functional
             input_reks = textwrap.indent(textwrap.dedent(f"""\
             $reks
@@ -241,11 +302,12 @@ class SSR(GAMESS):
             # Make 'gamess.inp.3' file
             input_gamess = ""
 
-            input_gamess += input_control
+            input_gamess += input_control_reks
             input_gamess += input_system
             input_gamess += input_basis
             input_gamess += input_scf
             input_gamess += input_reks
+            input_gamess += input_guess
             input_gamess += input_data
 
             # Write 'gamess.inp.3' file
@@ -276,17 +338,77 @@ class SSR(GAMESS):
         os.environ["OMP_NUM_THREADS"] = "1"
 
         # Run GAMESS method
-        shutil.copy("gamess.inp.1", "gamess.inp")
-        os.system(command)
-        shutil.copy("gamess.log", "gamess.log.1")
+        # Preparation: Run DFT to obtain initial guess
+        if (self.do_dft):
+            shutil.copy("gamess.inp.0", "gamess.inp")
+            os.system(command)
+            shutil.copy("gamess.log", "gamess.log.0")
 
-        if (self.nac == "Yes"):
+            # Save the molecular orbitals
+            guess_file = os.path.join(user_scr_dir, "gamess.dat")
+            shutil.copy(guess_file, "gamess.dat")
+
             if (os.path.exists(user_scr_dir)):
                 shutil.rmtree(user_scr_dir)
             os.makedirs(user_scr_dir)
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
             os.makedirs(tmp_dir)
+
+        if (istep == -1):
+            # Read the number of basis functions
+            # Read 'gamess.log.0' file
+            file_name = "gamess.log.0"
+            with open(file_name, "r") as f:
+                log_out = f.read()
+
+            nbasis = re.findall('BASIS FUNCTIONS =\s+(\S+)', log_out)
+            nbasis = np.array(nbasis[0], dtype=np.int32)
+
+            # Read 'gamess.dat' file
+            if (nbasis % 5 == 0):
+                ncol = nbasis // 5
+            else:
+                ncol = nbasis // 5 + 1
+            # Calculate total number of lines for the molecular orbitals
+            self.total_nrow = nbasis * ncol + 1
+
+        # Add the initial guess to input file
+        mo_command = f"grep 'VEC' -A {self.total_nrow} gamess.dat > gamess.vec"
+        os.system(mo_command)
+
+        cat_command = f"cat gamess.inp.1 gamess.vec > tmp.inp"
+        os.system(cat_command)
+        os.rename("tmp.inp", "gamess.inp.1")
+
+        # First calculation: Run REKS using initial guess obtained from DFT or previous result
+        shutil.copy("gamess.inp.1", "gamess.inp")
+        os.system(command)
+        shutil.copy("gamess.log", "gamess.log.1")
+
+        if (self.nac == "Yes"):
+            # Save the molecular orbitals
+            guess_file = os.path.join(user_scr_dir, "gamess.dat")
+            shutil.copy(guess_file, "gamess.dat")
+
+            # Add the initial guess to input file
+            mo_command = f"grep 'VEC' -A {self.total_nrow} gamess.dat > gamess.vec"
+            os.system(mo_command)
+
+            cat_command = f"cat gamess.inp.2 gamess.vec > tmp.inp"
+            os.system(cat_command)
+            os.rename("tmp.inp", "gamess.inp.2")
+            cat_command = f"cat gamess.inp.3 gamess.vec > tmp.inp"
+            os.system(cat_command)
+            os.rename("tmp.inp", "gamess.inp.3")
+
+            if (os.path.exists(user_scr_dir)):
+                shutil.rmtree(user_scr_dir)
+            os.makedirs(user_scr_dir)
+            if (os.path.exists(tmp_dir)):
+                shutil.rmtree(tmp_dir)
+            os.makedirs(tmp_dir)
+            # Second calculation: Run REKS using initial guess obtained from REKS
             shutil.copy("gamess.inp.2", "gamess.inp")
             os.system(command)
             shutil.copy("gamess.log", "gamess.log.2")
@@ -297,6 +419,7 @@ class SSR(GAMESS):
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
             os.makedirs(tmp_dir)
+            # Third calculation: Run REKS using initial guess obtained from REKS
             shutil.copy("gamess.inp.3", "gamess.inp")
             os.system(command)
             shutil.copy("gamess.log", "gamess.log.3")
@@ -304,7 +427,10 @@ class SSR(GAMESS):
         # Copy the output file to 'qm_log' directory
         tmp_dir = os.path.join(base_dir, "qm_log")
         if (os.path.exists(tmp_dir)):
-            command = f"cat gamess.log.1 gamess.log.2 gamess.log.3 > gamess.log"
+            if (self.do_dft):
+                command = f"cat gamess.log.0 gamess.log.1 gamess.log.2 gamess.log.3 > gamess.log"
+            else:
+                command = f"cat gamess.log.1 gamess.log.2 gamess.log.3 > gamess.log"
             os.system(command)
             log_step = f"gamess.log.{istep + 1}.{bo_list[0]}"
             shutil.copy("gamess.log", os.path.join(tmp_dir, log_step))
