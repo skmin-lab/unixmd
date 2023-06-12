@@ -206,7 +206,7 @@ class SSR(GAMESS):
         # Guess Block
         input_guess = textwrap.indent(textwrap.dedent(f"""\
         $guess
-        guess=moread norb={int(molecule.nelec / 2 + 30)}
+        guess=moread norb={int(molecule.nelec / 2 + 1)}
         $end
         """), " ")
 
