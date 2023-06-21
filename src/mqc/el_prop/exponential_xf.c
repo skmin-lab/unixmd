@@ -62,11 +62,6 @@ static void exponential_coef(int nat, int ndim, int nst, int nesteps, double dt,
     dcomplex *tmp_mat = malloc((nst * nst) * sizeof(dcomplex));
     // exp(- i * exponent) = P * exp(- i * D) * P^-1
     dcomplex *exp_iexponent = malloc((nst * nst) * sizeof(dcomplex));
-    // Product of P * exp(- i * D) * P^-1 until previous step
-    dcomplex *product_old = malloc((nst * nst) * sizeof(dcomplex));
-    // Product of P * exp(- i * D) * P^-1 until current step
-    dcomplex *product_new = malloc((nst * nst) * sizeof(dcomplex));
-    dcomplex *identity = malloc((nst * nst) * sizeof(dcomplex));
 
     int ist, jst, isp, iat, iestep, lwork, info;
     double frac, edt;
@@ -86,27 +81,6 @@ static void exponential_coef(int nat, int ndim, int nst, int nesteps, double dt,
     dcomplex wkopt;
     dcomplex *work;
 
-    for(ist = 0; ist < nst; ist++){
-        // Diagonal element
-        identity[nst * ist + ist].real = 1.0;
-        identity[nst * ist + ist].imag = 0.0;
-        product_old[nst * ist + ist].real = 1.0;
-        product_old[nst * ist + ist].imag = 0.0;
-        for(jst = ist + 1; jst < nst; jst++){
-            // Off-diagonal elements
-            // Upper triangle
-            identity[nst * ist + jst].real = 0.0;
-            identity[nst * ist + jst].imag = 0.0;
-            product_old[nst * ist + jst].real = 0.0;
-            product_old[nst * ist + jst].imag = 0.0;
-            // Lower triangle
-            identity[nst * jst + ist].real = 0.0;
-            identity[nst * jst + ist].imag = 0.0;
-            product_old[nst * jst + ist].real = 0.0;
-            product_old[nst * jst + ist].imag = 0.0;
-        }
-    }
-
     for(ist = 0; ist < nst * nst; ist++){
         exp_idiag[ist].real = 0.0;
         exp_idiag[ist].imag = 0.0;
@@ -114,14 +88,7 @@ static void exponential_coef(int nat, int ndim, int nst, int nesteps, double dt,
 
     /*
     // TODO : Use memset
-    memset(identity, 0, (nst * nst)*sizeof(identity[0]));
-    memset(product_old, 0, (nst * nst)*sizeof(product_old[0]));
     memset(exp_idiag, 0, (nst * nst)*sizeof(exp_idiag[0]));
-
-    for(ist = 0; ist < nst; ist++){
-        identity[nst * ist + ist].real = 1.0;
-        product_old[nst * ist + ist].real = 1.0;
-    }
     */
 
     frac = 1.0 / (double)nesteps;
@@ -152,6 +119,7 @@ static void exponential_coef(int nat, int ndim, int nst, int nesteps, double dt,
 
         // Get quantum momentum from auxiliary positions and sigma values
         for(ist = 0; ist < nst; ist++){ 
+
             if(l_coh[ist] == 1){
                 for(iat = 0; iat < nat; iat++){
                     for(isp = 0; isp < ndim; isp++){
@@ -242,7 +210,6 @@ static void exponential_coef(int nat, int ndim, int nst, int nesteps, double dt,
 
         // Update the coefficients using the propagation matrix
         // TODO Is it necessary to change this to zgemv?
-//        zgemv_("N", &nst, &nst, &dcone, product_old, &nst, coef, 1, &dczero, tmp_coef, 1)
         for(ist = 0; ist < nst; ist++){
             tmp_coef = 0.0 + 0.0 * I;
             for (jst = 0; jst < nst; jst++){
@@ -278,9 +245,6 @@ static void exponential_coef(int nat, int ndim, int nst, int nesteps, double dt,
     free(coef_new);
     free(propagator);
     free(exp_iexponent);
-    free(identity);
-    free(product_new);
-    free(product_old);
     free(eigenvectors);
     free(exp_idiag);
     free(tmp_mat);
