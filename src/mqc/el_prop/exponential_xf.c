@@ -3,6 +3,7 @@
 #include <complex.h>
 #include <math.h>
 #include <string.h>
+#include "exp_print.h"
 
 // Complex datatype
 struct _dcomplex {double real, imag;};
@@ -225,12 +226,7 @@ static void exponential_coef(int nat, int ndim, int nst, int nesteps, double dt,
     }
 
     if(verbosity >= 1){
-        for(ist = 0; ist < nst; ist++){
-            dotpopdec[ist] = 0;
-            for(jst = 0; jst < nst; jst++){
-                dotpopdec[ist] -= 2 * creal(dec[jst][ist] * conj(coef[ist]) * coef[ist] * conj(coef[jst]) * coef[jst]);
-            }
-        }
+        exp_xf_print_coef(nst, coef, dec, dotpopdec);
     }
 
     for(ist = 0; ist < nst; ist++){
