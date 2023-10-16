@@ -49,7 +49,7 @@ Please cite the following work when publishing results from PyUNIxMD program:
 
 \I. S. Lee, J.-K. Ha, D. Han, T. I. Kim, S. W. Moon, & S. K. Min. (2021). PyUNIxMD: A Python-based excited state molecular dynamics package. Journal of Computational Chemistry, 42:1755-1766. 2021
 
-\T. I. Kim, J.-K. Ha, & S. K. Min. (2022). Coupled- and independent-trajectory approaches based on the exact factorization using the PyUNIxMD package. Topics in Current Chemistry, 380:8. 2022
+\T. I. Kim, J.-K. Ha, & S. K. Min. (2022). Coupled- and independent-trajectory approaches based on the exact factorization using the PyUNIxMD package. Topics in Current Chemistry, 380:153-179. 2022
 
 ..
   Acknowledgement
