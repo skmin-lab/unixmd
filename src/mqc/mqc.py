@@ -261,6 +261,10 @@ class MQC(object):
         {" " * 4}PyUNIxMD: A Python-based excited state molecular dynamics package.
         {" " * 4}Journal of Computational Chemistry, 42:1755-1766. 2021
 
+        {" " * 4}T. I. Kim, J.-K. Ha, S. & K. Min.
+        {" " * 4}Coupled- and independent-trajectory approaches based on the exact factorization using the PyUNIxMD package.
+        {" " * 4}Topics in Current Chemistry, 380:8. 2022
+
         {" " * 4}PyUNIxMD begins on {cur_time}
         """)
         print (prog_info, flush=True)
