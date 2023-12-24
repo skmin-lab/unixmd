@@ -1,6 +1,6 @@
 from __future__ import division
 from qm.dftbplus.dftbplus import DFTBplus
-from qm.dftbplus.dftbpar import spin_w, spin_w_lc, max_l
+from qm.dftbplus.dftbpar import spin_w, spin_w_lc, onsite_uu, onsite_ud, onsite_lc_uu, onsite_lc_ud, onsite_lc_lr, max_l
 from misc import au_to_A, call_name
 import os, shutil, re, textwrap
 import numpy as np
@@ -47,10 +47,6 @@ class SSR(DFTBplus):
         self.scc_max_iter = scc_max_iter
 
         self.l_onsite = l_onsite
-        if (self.l_onsite):
-            error_message = "Onsite-correction not implemented!"
-            error_vars = f"l_onsite = {self.l_onsite}"
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.l_range_sep = l_range_sep
         self.lc_method = lc_method.lower()
@@ -222,6 +218,30 @@ class SSR(DFTBplus):
               }}
             """), "  ")
             input_dftb += input_ham_spin
+
+            # Onsite-corrected DFTB (OC-DFTB) option
+            if (self.l_onsite):
+                if (self.l_range_sep):
+                    onsite_const_uu = ("\n" + " " * 18).join([f"  {itype}uu = {{ {onsite_lc_uu[f'{itype}']} }}" for itype in self.atom_type])
+                    onsite_const_ud = ("\n" + " " * 18).join([f"  {itype}ud = {{ {onsite_lc_ud[f'{itype}']} }}" for itype in self.atom_type])
+                    onsite_const_lc = ("\n" + " " * 18).join([f"  {itype}lc = {{ {onsite_lc_lr[f'{itype}']} }}" for itype in self.atom_type])
+                    input_ham_oc = textwrap.indent(textwrap.dedent(f"""\
+                      OnsiteCorrection = {{
+                      {onsite_const_uu}
+                      {onsite_const_ud}
+                      {onsite_const_lc}
+                      }}
+                    """), "  ")
+                else:
+                    onsite_const_uu = ("\n" + " " * 18).join([f"  {itype}uu = {{ {onsite_uu[f'{itype}']} }}" for itype in self.atom_type])
+                    onsite_const_ud = ("\n" + " " * 18).join([f"  {itype}ud = {{ {onsite_ud[f'{itype}']} }}" for itype in self.atom_type])
+                    input_ham_oc = textwrap.indent(textwrap.dedent(f"""\
+                      OnsiteCorrection = {{
+                      {onsite_const_uu}
+                      {onsite_const_ud}
+                      }}
+                    """), "  ")
+                input_dftb += input_ham_oc
 
             # Long-range corrected DFTB (LC-DFTB) option
             if (self.l_range_sep):
