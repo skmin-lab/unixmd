@@ -69,9 +69,14 @@ class MQC(object):
         if (self.propagator != None):
             self.propagator = self.propagator.lower()
 
-        if not (self.propagator in [None, "rk4"]):
+        if not (self.propagator in [None, "rk4", "exponential"]):
             error_message = "Invalid electronic propagator!"
             error_vars = f"propagator = {self.propagator}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        if (self.propagator == "exponential" and self.elec_object != "coefficient"):
+            error_message = "exponential propagator is incompatible with objects other than coefficient"
+            error_vars = f"elec_object = {self.elec_object}, propagator = {self.propagator}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.l_print_dm = l_print_dm
@@ -309,6 +314,7 @@ class MQC(object):
 
         if (self.md_type != "BOMD"):
             dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
+            dynamics_info += f"  Electronic Propagator    = {self.propagator:>16s}\n"
             dynamics_info += f"  Propagation Scheme       = {self.elec_object:>16s}\n"
 
         # Print surface hopping variables

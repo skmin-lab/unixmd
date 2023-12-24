@@ -4,19 +4,17 @@ from Cython.Distutils import build_ext
 
 import numpy as np
 
-# Selects which type of math libraries to be used; Available options: None, lapack, mkl
-math_lib_type = None
+# Selects the type of math libraries to be used; Available options: lapack, mkl
+math_lib_type = "mkl"
 #math_lib_type = "lapack"
-#math_lib_type = "mkl"
 # Directories including the math libraries
-math_lib_dir = None
+math_lib_dir = "${MKLROOT}/lib/intel64/"
 #math_lib_dir = "/my_disk/my_name/lapack/"
-#math_lib_dir = "${MKLROOT}/lib/intel64/"
 
 # Selects whether binaries for QED is built separately; True, False
 do_qed = False
 
-sourcefile1 = ["./src/mqc/el_prop/el_propagator.pyx", "./src/mqc/el_prop/rk4.c"]
+sourcefile1 = ["./src/mqc/el_prop/el_propagator.pyx", "./src/mqc/el_prop/rk4.c", "./src/mqc/el_prop/exponential.c"]
 sourcefile2 = ["./src/mqc/el_prop/el_propagator_xf.pyx", "./src/mqc/el_prop/rk4_xf.c"]
 sourcefile3 = ["./src/mqc/el_prop/el_propagator_ct.pyx", "./src/mqc/el_prop/rk4_ct.c"]
 sourcefile4 = ["./src/qm/cioverlap/cioverlap.pyx", "./src/qm/cioverlap/tdnac.c"]
@@ -31,9 +29,7 @@ lib_dirs = []
 # Extra flags for compilation
 extra_flags = []
 
-if (math_lib_type == None):
-    pass
-elif (math_lib_type == "lapack"):
+if (math_lib_type == "lapack"):
     libs += ["lapack", "refblas", "gfortran"]
     lib_dirs += [math_lib_dir]
     extra_flags += ["-D HAVE_LAPACK"]
@@ -47,7 +43,8 @@ else:
     raise ValueError (f"( setup.py ) {error_message} ( {error_vars} )")
 
 extensions = [
-    Extension("el_propagator", sources=sourcefile1, include_dirs=[np.get_include()]),
+    Extension("el_propagator", sources=sourcefile1,  include_dirs=[np.get_include()], \
+        libraries=libs, library_dirs=lib_dirs),
     Extension("el_propagator_xf", sources=sourcefile2, include_dirs=[np.get_include()]),
     Extension("el_propagator_ct", sources=sourcefile3, include_dirs=[np.get_include()]),
     Extension("cioverlap", sources=sourcefile4, include_dirs=[np.get_include()], \
