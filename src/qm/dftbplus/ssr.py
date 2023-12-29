@@ -329,6 +329,11 @@ class SSR(DFTBplus):
                 error_vars = f"Molecule.nstates = {molecule.nst}"
                 raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
+        input_reks_init = textwrap.dedent(f"""\
+        REKS = {space}{{
+        """)
+        input_dftb += input_reks_init
+
         # Include state-interaction terms to SA-REKS; SI-SA-REKS
         if (self.l_state_interactions):
             do_ssr = "Yes"
@@ -405,8 +410,7 @@ class SSR(DFTBplus):
         else:
             relaxed_density = "No"
 
-        input_reks = textwrap.dedent(f"""\
-        REKS = {space}{{
+        input_reks_body = textwrap.indent(textwrap.dedent(f"""\
           Energy = {{
             Functional = {energy_functional}
             StateInteractions = {do_ssr}
@@ -425,10 +429,31 @@ class SSR(DFTBplus):
           }}
           RelaxedDensity = {relaxed_density}
           NonAdiabaticCoupling = {self.nac}
+        """), "  ")
+        input_dftb += input_reks_body
+
+        # Transition dipole moment options; It is determined automatically
+        if (self.calc_tdp):
+            transition_dipole = "Yes"
+            if (self.calc_tdp_grad):
+                transition_dipole_grad = "Yes"
+            else:
+                transition_dipole_grad = "No"
+        else:
+            transition_dipole = "No"
+            transition_dipole_grad = "No"
+
+        input_reks_tdp = textwrap.indent(textwrap.dedent(f"""\
+          TransitionDipole = {transition_dipole}
+          TransitionDipoleGradient = {transition_dipole_grad}
+        """), "  ")
+        input_dftb += input_reks_tdp
+
+        input_reks_end = textwrap.indent(textwrap.dedent(f"""\
           VerbosityLevel = 1
         }}
-        """)
-        input_dftb += input_reks
+        """), "  ")
+        input_dftb += input_reks_end
 
         # ParserOptions Block
         if (self.version == "19.1"):
@@ -474,6 +499,12 @@ class SSR(DFTBplus):
             shutil.copy("detailed.out", os.path.join(tmp_dir, detailed_out_step))
             log_step = f"log.{istep + 1}.{bo_list[0]}"
             shutil.copy("log", os.path.join(tmp_dir, log_step))
+            if (self.calc_tdp):
+                tdp_step = f"tdp.dat.{istep + 1}.{bo_list[0]}"
+                shutil.copy("tdp.dat", os.path.join(tmp_dir, tdp_step))
+                if (self.calc_tdp_grad):
+                    tdp_grad_step = f"tdp_grad.dat.{istep + 1}.{bo_list[0]}"
+                    shutil.copy("tdp_grad.dat", os.path.join(tmp_dir, tdp_grad_step))
 
     def extract_QM(self, molecule, bo_list, calc_force_only):
         """ Read the output files to get BO information
@@ -491,6 +522,16 @@ class SSR(DFTBplus):
         file_name = "detailed.out"
         with open(file_name, "r") as f:
             detailed_out = f.read()
+
+        # Read 'tdp.dat' and 'tdp_grad.dat' file
+        if (self.calc_tdp):
+            file_name = "tdp.dat"
+            with open(file_name, "r") as f:
+                tdp_dat = f.read()
+            if (self.calc_tdp_grad):
+                file_name = "tdp_grad.dat"
+                with open(file_name, "r") as f:
+                    tdp_grad_dat = f.read()
 
         # Energy
         if (not calc_force_only):
@@ -540,6 +581,56 @@ class SSR(DFTBplus):
                     nac = nac.reshape(molecule.nat_qm, 3, order='C')
                     molecule.nac[ist, jst] = nac
                     molecule.nac[jst, ist] = - nac
+                    kst += 1
+
+        # TDP
+        if (not calc_force_only and self.calc_tdp):
+            kst = 0
+            for ist in range(molecule.nst):
+                for jst in range(ist + 1, molecule.nst):
+                    tmp_tdp = 'Transition Dipole moment \(au\)    :' + '\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)'
+                    tdp = re.findall(tmp_tdp, tdp_dat)
+                    tdp = np.array(tdp[kst], dtype=np.float64)
+                    molecule.tdp[ist, jst] = tdp
+                    molecule.tdp[jst, ist] = tdp
+                    kst += 1
+
+        # TDP gradient
+        if (not calc_force_only and self.calc_tdp_grad):
+            tmp_tdp_grad = 'mu_x gradient \(au\) :' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+            tmp_tdp_grad = re.findall(tmp_tdp_grad, tdp_grad_dat)
+
+            kst = 0
+            for ist in range(molecule.nst):
+                for jst in range(ist + 1, molecule.nst):
+                    tdp_grad = np.array(tmp_tdp_grad[kst], dtype=np.float64)
+                    tdp_grad = tdp_grad.reshape(molecule.nat_qm, 3, order='C')
+                    molecule.tdp_grad[ist, jst, 0] = tdp_grad
+                    molecule.tdp_grad[jst, ist, 0] = tdp_grad
+                    kst += 1
+
+            tmp_tdp_grad = 'mu_y gradient \(au\) :' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+            tmp_tdp_grad = re.findall(tmp_tdp_grad, tdp_grad_dat)
+
+            kst = 0
+            for ist in range(molecule.nst):
+                for jst in range(ist + 1, molecule.nst):
+                    tdp_grad = np.array(tmp_tdp_grad[kst], dtype=np.float64)
+                    tdp_grad = tdp_grad.reshape(molecule.nat_qm, 3, order='C')
+                    molecule.tdp_grad[ist, jst, 1] = tdp_grad
+                    molecule.tdp_grad[jst, ist, 1] = tdp_grad
+                    kst += 1
+
+            tmp_tdp_grad = 'mu_z gradient \(au\) :' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+            tmp_tdp_grad = re.findall(tmp_tdp_grad, tdp_grad_dat)
+
+            kst = 0
+            for ist in range(molecule.nst):
+                for jst in range(ist + 1, molecule.nst):
+                    tdp_grad = np.array(tmp_tdp_grad[kst], dtype=np.float64)
+                    tdp_grad = tdp_grad.reshape(molecule.nat_qm, 3, order='C')
+                    molecule.tdp_grad[ist, jst, 2] = tdp_grad
+                    molecule.tdp_grad[jst, ist, 2] = tdp_grad
                     kst += 1
 
 
