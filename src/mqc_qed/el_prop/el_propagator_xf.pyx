@@ -33,6 +33,7 @@ def el_run(md, qed):
 
         bytes py_bytes
         int ist, jst, nst, pst, nesteps, iat, aux_nat, isp, aux_ndim, verbosity
+        int ind_mol1, int_mol2
         double dt
 
     # Assign size variables
