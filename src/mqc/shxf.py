@@ -22,6 +22,7 @@ class Auxiliary_Molecule(object):
         self.pos = np.zeros((molecule.nst, self.nat, self.ndim))
         self.vel = np.zeros((molecule.nst, self.nat, self.ndim))
         self.vel_old = np.copy(self.vel)
+        self.vel_refl = np.copy(self.vel)
 
 
 class SHXF(MQC):
@@ -45,7 +46,6 @@ class SHXF(MQC):
         :param init_coef: Initial BO coefficient
         :type init_coef: double, list or complex, list
         :param boolean l_econs_state: Logical to use identical total energies for all auxiliary trajectories
-        :param string aux_econs_viol: How to treat trajectories violating the total energy conservation
         :param string unit_dt: Unit of time interval
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
@@ -53,7 +53,8 @@ class SHXF(MQC):
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
         hop_reject="reverse", rho_threshold=0.01, sigma=None, init_coef=None, \
-        l_econs_state=True, aux_econs_viol="fix", unit_dt="fs", out_freq=1, verbosity=0):
+        l_econs_state=True, aux_econs_viol="fix", unit_dt="fs", out_freq=1, verbosity=0, \
+        l_asymp=True, l_afssh=True, l_td_sigma=False, l_econs_phase=False, l_bc=True, refl_vel="collapse", refl_dim="total"):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
             elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
@@ -94,6 +95,7 @@ class SHXF(MQC):
 #                error_vars = f"hop_reject = {self.hop_reject}"
 #                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
+        
         # Initialize XF related variables
         self.force_hop = False
         self.l_econs_state = l_econs_state
@@ -110,11 +112,13 @@ class SHXF(MQC):
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.sigma = sigma
+        
         if (self.sigma == None):
-            error_message = "Sigma for auxiliary trajectories must be set in running script!"
-            error_vars = f"sigma = {self.sigma}"
-            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-
+            if (not self.l_td_sigma):
+                error_message = "Sigma for auxiliary trajectories must be set in running script!"
+                error_vars = f"sigma = {self.sigma}"
+                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+        
         if (isinstance(self.sigma, float)):
             # uniform value for sigma
             pass
@@ -125,25 +129,53 @@ class SHXF(MQC):
                 error_vars = f"len(sigma) = {len(self.sigma)}"
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
-            error_message = "Type of sigma must be float or list consisting of float!"
-            error_vars = f"sigma = {self.sigma}"
-            raise TypeError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-
+            if (not self.l_td_sigma):
+                error_message = "Type of sigma must be float or list consisting of float!"
+                error_vars = f"sigma = {self.sigma}"
+                raise TypeError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+        
         self.upper_th = 1. - self.rho_threshold
         self.lower_th = self.rho_threshold
 
         # Initialize auxiliary molecule object
         self.aux = Auxiliary_Molecule(self.mol)
         self.pos_0 = np.zeros((self.aux.nat, self.aux.ndim))
-        self.phase = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
+        self.phase = np.array(np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim)))
 
         # Debug variables
         self.dotpopdec = np.zeros(self.mol.nst)
         self.dotpopnac = np.zeros(self.mol.nst)
-        self.qmom = np.zeros((self.aux.nat, self.aux.ndim))
+        self.qmom = np.zeros((self.mol.nst, self.mol.nst, self.aux.nat, self.aux.ndim))
+        
+        self.df = np.zeros((self.mol.nst, self.mol.nst, self.aux.nat, self.aux.ndim))
+        self.k_lk = np.zeros((self.mol.nst, self.mol.nst))
+        self.l_asymp = l_asymp        
+        self.l_econs_phase = l_econs_phase
+        
+        # Initialize AFSSH related variables
+        self.l_afssh = l_afssh
+        self.l_td_sigma = l_td_sigma
+        self.dR = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
+        self.dP = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
+        self.dF = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
+        self.dF_old = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
+
+        # Initialize branching-correction variables
+        self.mom = np.zeros((self.mol.nst, self.mol.nat_qm, self.aux.ndim))
+        self.phase_refl = np.array(np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim)))
+        self.l_bc = l_bc
+        self.l_refl = False
+        self.refl_vel = refl_vel
+        self.refl_dim = refl_dim
+        if (not (refl_dim == "total" or "atomwise")):
+            raise ValueError (f"vel_refl must be 'total' or 'ndim'")
+
+        if (not (refl_vel == "keep" or "stop" or "collapse")):
+            raise ValueError (f"vel_refl must be 'keep' or 'stop'")
+        
 
         # Initialize event to print
-        self.event = {"HOP": [], "DECO": []}
+        self.event = {"HOP": [], "DECO": [], "REFL": []}
 
     def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to decoherence-induced surface hopping dynamics
@@ -164,6 +196,7 @@ class SHXF(MQC):
         self.print_init(qm, mm, restart)
 
         if (restart == None):
+
             # Initialize decoherence variables
             self.append_sigma()
 
@@ -194,6 +227,7 @@ class SHXF(MQC):
             if (self.l_collapse):
                 self.check_decoherence()
                 self.check_coherence()
+            self.calc_k_lk()
 
             self.write_md_output(unixmd_dir, self.istep)
             self.print_step(self.istep)
@@ -233,12 +267,11 @@ class SHXF(MQC):
 
             el_run(self)
 
-            self.hop_prob()
+            self.hop_prob(istep)
             self.hop_check(bo_list)
-            self.evaluate_hop(bo_list)
-            if (self.l_hop):
-                if (qm.re_calc):
-                    qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
+            self.evaluate_hop(bo_list, istep)
+            if (qm.re_calc and self.l_hop):
+                qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
                 if (self.mol.l_qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
 
@@ -254,6 +287,7 @@ class SHXF(MQC):
             if (self.l_collapse):
                 self.check_decoherence()
                 self.check_coherence()
+            self.calc_k_lk()
 
             if ((istep + 1) % self.out_freq == 0):
                 self.write_md_output(unixmd_dir, istep)
@@ -266,6 +300,11 @@ class SHXF(MQC):
             restart_file = os.path.join(base_dir, "RESTART.bin")
             with open(restart_file, 'wb') as f:
                 pickle.dump({'qm':qm, 'md':self}, f)
+            
+            det = self.mol.pos[0, 0] * self.mol.vel[0, 0]
+            if (self.l_asymp and det > 0. and np.abs(self.mol.pos[0, 0]) > np.abs(20.)):
+                print(f"Trajectory reached asymptotic region")
+                break
 
         # Delete scratch directory
         if (not l_save_scr):
@@ -278,7 +317,7 @@ class SHXF(MQC):
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
 
-    def hop_prob(self):
+    def hop_prob(self, istep):
         """ Routine to calculate hopping probabilities
 
             :param integer istep: Current MD step
@@ -329,7 +368,7 @@ class SHXF(MQC):
                 self.rstate = ist
                 bo_list[0] = self.rstate
 
-    def evaluate_hop(self, bo_list):
+    def evaluate_hop(self, bo_list, istep):
         """ Routine to evaluate hopping and velocity rescaling
 
             :param integer,list bo_list: List of BO states for BO calculation
@@ -391,8 +430,16 @@ class SHXF(MQC):
                 self.l_hop = False
 
                 if (self.force_hop):
+                    if (self.elec_object == "coefficient"):
+                        for ist in range(self.mol.nst):
+                            if (ist == self.rstate_old):
+                                self.mol.states[ist].coef = 1. + 0.j
+                            else:
+                                self.mol.states[ist].coef = 0. + 0.j
+                    else:
+                        self.mol.rho[:,:] = 0. + 0.j
+                        self.mol.rho[self.rstate_old, self.rstate_old] = 1. + 0.j
                     self.event["HOP"].append(f"Collapse density: reset the density according to the current state {self.rstate_old}")
-                    self.set_decoherence(self.rstate_old)
 
                 self.force_hop = False
 
@@ -501,14 +548,18 @@ class SHXF(MQC):
             :param integer one_st: State index that its population is one
         """
         self.phase = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
+        self.qmom = np.zeros((self.mol.nst, self.mol.nst, self.aux.nat, self.aux.ndim))
+        self.df = np.zeros((self.mol.nst, self.mol.nst, self.aux.nat, self.aux.ndim))
+        self.k_lk = np.zeros((self.mol.nst, self.mol.nst))
         self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex128)
         self.mol.rho[one_st, one_st] = 1. + 0.j
 
         self.l_coh = [False] * self.mol.nst
         self.l_first = [False] * self.mol.nst
         self.l_fix = [False] * self.mol.nst
+        self.l_refl = False
 
-        self.event["DECO"].append(f"Destroy auxiliary trajectories: decohered to {one_st} state")
+        self.event["DECO"].append(f"Destroy auxiliary trajectories: decohered to {ist} state")
 
         if (self.elec_object == "coefficient"):
             for ist in range(self.mol.nst):
@@ -520,52 +571,148 @@ class SHXF(MQC):
     def aux_propagator(self):
         """ Routine to propagate auxiliary molecule
         """
-        # Get auxiliary position
-        for ist in range(self.mol.nst):
-            if (self.l_coh[ist]):
-                if (self.l_first[ist]):
-                    self.aux.pos[ist] = self.mol.pos[0:self.aux.nat]
-                else:
-                    if (ist == self.rstate):
+        self.l_collapse = False
+        if (not self.l_afssh):
+            # Original scheme (Ha, J. Phys. Chem. Lett. 2018, 9, 1094)
+            # Get auxiliary position
+            for ist in range(self.mol.nst):
+                if (self.l_coh[ist]):
+                    if (self.l_first[ist]):
                         self.aux.pos[ist] = self.mol.pos[0:self.aux.nat]
                     else:
-                        self.aux.pos[ist] += self.aux.vel[ist] * self.dt
-
-        self.pos_0 = np.copy(self.aux.pos[self.rstate])
-
-        # Get auxiliary velocity
-        self.l_collapse = False
-        self.aux.vel_old = np.copy(self.aux.vel)
-        for ist in range(self.mol.nst):
-            # Calculate propagation factor alpha
-            if (self.l_coh[ist]):
-                if (self.l_fix[ist]):
-                    alpha = 0.
-                else:
-                    if (ist == self.rstate):
-                        alpha = self.mol.ekin_qm
-                    else:
-                        if (self.l_first[ist]):
-                            alpha = self.mol.ekin_qm
-                            if (self.l_econs_state):
-                                alpha += self.mol.states[self.rstate].energy - self.mol.states[ist].energy
+                        if (ist == self.rstate):
+                            self.aux.pos[ist] = self.mol.pos[0:self.aux.nat]
                         else:
-                            ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
-                            alpha = ekin_old + self.mol.states[ist].energy_old - self.mol.states[ist].energy
-                    if (alpha < 0.):
+                            self.aux.pos[ist] += self.aux.vel[ist] * self.dt
+
+            self.pos_0 = np.copy(self.aux.pos[self.rstate])
+
+            # Get auxiliary velocity
+            self.aux.vel_old = np.copy(self.aux.vel)
+            for ist in range(self.mol.nst):
+                # Calculate propagation factor alpha
+                if (self.l_coh[ist]):
+                    if (self.l_fix[ist]):
                         alpha = 0.
-                        if (self.aux_econs_viol == "fix"):
-                            self.l_fix[ist] = True
-                            self.event["DECO"].append(f"Energy conservation violated, the auxiliary trajectory on state {ist} is fixed.")
-                        elif (self.aux_econs_viol == "collapse"):
+                    else:
+                        if (ist == self.rstate):
+                            alpha = self.mol.ekin_qm
+                        else:
+                            if (self.l_first[ist]):
+                                alpha = self.mol.ekin_qm
+                                if (self.l_econs_state):
+                                    alpha += self.mol.states[self.rstate].energy - self.mol.states[ist].energy
+                            else:
+                                ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
+                                alpha = ekin_old + self.mol.states[ist].energy_old - self.mol.states[ist].energy
+                        if (alpha < 0.):
+                            alpha = 0.
+                            if (self.aux_econs_viol == "fix"):
+                                self.l_fix[ist] = True
+                                self.event["DECO"].append(f"Energy conservation violated, the auxiliary trajectory on state {ist} is fixed.")
+                            elif (self.aux_econs_viol == "collapse"):
+                                self.l_collapse = True
+                                self.collapse(ist)
+                                self.event["DECO"].append(f"Energy conservation violated, collapse the {ist} state coefficient/density to zero.")
+
+                    # Calculate auxiliary velocity from alpha
+                    alpha /= self.mol.ekin_qm
+                    self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] * np.sqrt(alpha)
+                    if (self.l_refl):
+                        if (ist != self.rstate):
+                            self.aux.vel[ist] = self.aux.vel_refl[ist]
+         
+        else:
+
+            # AFSSH EOMs
+           
+            self.aux.vel_old = np.copy(self.aux.vel)
+            rst = self.rstate
+            rho_rst = self.mol.rho.real[rst, rst]
+           
+            for ist in range(self.mol.nst):
+                if (self.l_coh[ist]):
+                    
+                    rho_ist = self.mol.rho.real[ist, ist]
+                    self.dF_old[ist] =  np.copy(self.dF[ist])
+                    self.dF[ist] =  rho_ist * (self.mol.states[ist].force - self.mol.states[rst].force)
+                    
+                    if (self.l_first[ist]):
+                        self.dR[ist] = 0.
+                        self.dP[ist] = 0.
+                        self.aux.pos[ist] = self.mol.pos[0:self.aux.nat] 
+                        self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] 
+                    else:
+                        # Velocity Verlet
+                        self.dP[ist] += 0.5 * self.dt * self.dF_old[ist]
+                        self.dR[ist] += self.dt * self.dP[ist] / np.column_stack([self.aux.mass] * self.aux.ndim)
+                        self.dP[ist] += 0.5 * self.dt * self.dF[ist]
+                        self.aux.pos[ist] = self.mol.pos[0:self.aux.nat] + self.dR[ist] / rho_ist  
+                        self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] + self.dP[ist] / np.column_stack([self.aux.mass] * self.aux.ndim) / rho_ist 
+                    if (ist != self.rstate):
+                        # Testing if the reflection is on
+                        if (self.l_refl):
+                            self.aux.vel[ist] = self.aux.vel_refl[ist]
+                        
+                        ekin = np.sum(0.5 * self.mol.mass * np.sum(self.mol.vel ** 2, axis=1))
+                        alpha = ekin + self.mol.states[self.rstate].energy - self.mol.states[ist].energy
+                        
+                        # Testing if the total energy of aux traj is conserved
+                        if (alpha < 0.):
                             self.l_collapse = True
                             self.collapse(ist)
-                            self.event["DECO"].append(f"Energy conservation violated, collapse the {ist} state coefficient/density to zero.")
+                            self.event["DECO"].append(f"Energy conservation violated, collaps the {ist} state coefficient/density to zero")
+                else:
+                    self.dR[ist] = 0.
+                    self.dP[ist] = 0.
+                    self.dF[ist] = 0.
+                    self.aux.pos[ist] = self.mol.pos[0:self.aux.nat]
+                    self.aux.vel[ist] = self.mol.vel[0:self.aux.nat]
 
-                # Calculate auxiliary velocity from alpha
-                alpha /= self.mol.ekin_qm
-                self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] * np.sqrt(alpha)
+            
+            self.pos_0 = np.copy(self.aux.pos[self.rstate])
+        
+        if (self.l_td_sigma):
+            # Only two-state case is implemented..
+            if (self.l_first[0]):
+                self.sigma = np.ones((self.aux.nat, self.aux.ndim)) * 100000.
+            else:
+                for iat in range(self.aux.nat):
+                    for isp in range(self.aux.ndim):
+                        if ((np.abs(self.aux.vel[0, iat, isp] - self.aux.vel[1, iat, isp])) * self.aux.mass[iat] > eps):
+                            self.sigma[iat, isp] = np.sqrt(0.5 * np.abs(\
+                               (self.aux.pos[0, iat, isp] - self.aux.pos[1, iat, isp])/\
+                               (self.aux.vel[0, iat, isp] - self.aux.vel[1, iat, isp]))\
+                                / self.aux.mass[iat])
+                        else:
+                            self.sigma = np.ones((self.aux.nat, self.aux.ndim)) * 100000.
+        # Get reflection
+        if (self.l_bc):
+            self.get_reflection()
 
+    def get_reflection(self):
+        """ Routine to check reflection of real trajectory
+        """
+        fdotp = 0.
+        fdotp_new = 0.
+        for iat in range(self.mol.nat_qm):
+            self.mom[self.rstate, iat] = self.mol.mass[iat] * self.mol.vel[iat] 
+
+        fdotp = np.sum(self.mom[self.rstate, 0:self.mol.nat_qm] * self.mol.states[self.rstate].force[0:self.mol.nat_qm])
+        fdotp_new = fdotp + \
+            np.sum(self.mol.states[self.rstate].force[0:self.mol.nat_qm] * self.mol.states[self.rstate].force[0:self.mol.nat_qm] * self.dt)
+
+        if (fdotp * fdotp_new < 0.):
+            self.l_refl = True
+            self.event["REFL"].append(f"Reflection occurs on running state {self.rstate}!")
+            if (self.refl_vel == "keep"):
+                self.aux.vel_refl = np.copy(self.aux.vel)
+            elif (self.refl_vel == "stop"):
+                self.aux.vel_refl = np.zeros((self.mol.nst, self.mol.nat, self.mol.ndim))
+            elif (self.refl_vel == "collapse"):
+                self.set_decoherence(self.rstate)
+                self.event["DECO"].append(f"Destroy auxiliary trajectories: decohered to {self.rstate} state")
+                
     def collapse(self, cstate):
         """ Routine to collapse coefficient/density of a state to zero
         """
@@ -581,7 +728,7 @@ class SHXF(MQC):
         self.mol.rho[cstate,:] = 0. + 0.j
         self.mol.rho[:,cstate] = 0. + 0.j
         self.mol.rho /= fac
-         
+
     def get_phase(self):
         """ Routine to calculate phase term
         """
@@ -594,13 +741,70 @@ class SHXF(MQC):
                         self.phase[ist, iat] += self.aux.mass[iat] * \
                             (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
 
+    def calc_k_lk(self):
+        """ Routine to calculate decoherence term k_lk
+        """ 
+        
+        self.k_lk = np.zeros((self.mol.nst, self.mol.nst))
+        self.qmom = np.zeros((self.mol.nst, self.mol.nst, self.aux.nat, self.aux.ndim))
+
+        if (self.l_econs_phase):
+            self.df = np.zeros((self.mol.nst, self.mol.nst, self.aux.nat, self.aux.ndim))
+            # Calculate P*v
+            fac = np.sum(self.aux.mass * np.sum(self.mol.vel ** 2, axis=1))
+        
+        # Calculate state-pair quantum momentum and phase difference
+        for ist in range(self.mol.nst):
+            for jst in range(ist + 1, self.mol.nst):
+                if (self.l_coh[ist] and self.l_coh[jst]):
+                    # Calculate quantum momentum
+                    for iat in range(self.aux.nat):
+                        self.qmom[ist, jst, iat] = (self.pos_0[iat] - self.aux.pos[ist, iat]) * self.mol.rho.real[ist, ist]\
+                                                 + (self.pos_0[iat] - self.aux.pos[jst, iat]) * self.mol.rho.real[jst, jst]
+                        self.qmom[ist, jst, iat] /= self.aux.mass[iat] * self.sigma[iat] ** 2
+                    
+                    # Calculate phase difference
+                    if (self.l_first[ist] or self.l_first[jst]):
+                        self.df[ist, jst] = np.zeros((self.aux.nat, self.aux.ndim))
+                    elif (self.l_econs_phase):
+                        if (fac < eps):
+                            alpha = 0.
+                        else:
+                            alpha = - (self.mol.states[ist].energy - self.mol.states[jst].energy) / fac
+                        for iat in range(self.aux.nat):
+                            self.df[ist, jst, iat] = alpha * self.aux.mass[iat] * self.mol.vel[iat]
+                    else:
+                        for iat in range(self.aux.nat):
+                            self.df[ist, jst, iat] += self.aux.mass[iat] * (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
+                            self.df[ist, jst, iat] -= self.aux.mass[iat] * (self.aux.vel[jst, iat] - self.aux.vel_old[jst, iat])
+                
+                self.qmom[jst, ist] = np.copy(self.qmom[ist, jst])
+                self.df[jst, ist] = - 1. * self.df[ist, jst]
+
+        self.qmom /= 2. * (self.mol.nst - 1)
+
+        # Calculate state-pair 
+        for ist in range(self.mol.nst):
+            for jst in range(ist + 1, self.mol.nst):
+                if (self.l_coh[ist] and self.l_coh[jst]):
+                    for iat in range(self.aux.nat):
+                        self.k_lk[ist, jst] += np.sum(self.qmom[ist, jst, iat] * self.df[ist, jst, iat])
+                self.k_lk[jst, ist] = - 1. * self.k_lk[ist, jst]
+
     def append_sigma(self):
         """ Routine to append sigma values when single float number is provided
         """
         # Create a list from single float number
         if (isinstance(self.sigma, float)):
             sigma = self.sigma
-            self.sigma = self.aux.nat * [sigma]
+            self.sigma = np.array(self.aux.nat * [self.aux.ndim * [sigma]])
+        if (isinstance(self.sigma, list)):
+            sigma = []
+            for sgm in self.sigma:
+                sigma.append(self.aux.nat * [sgm])
+            self.sigma = sigma[:]
+        if (self.l_td_sigma):
+            self.sigma = np.array(self.aux.nat * [self.aux.ndim * [0.0]])
 
     def write_md_output(self, unixmd_dir, istep):
         """ Write output files
@@ -655,23 +859,25 @@ class SHXF(MQC):
             :param string unixmd_dir: PyUNIxMD directory
             :param integer istep: Current MD step
         """
-        # Write auxiliary trajectories
+        # Write auxiliary trajectories #CAUTION!! ONLY 0,1 pair is written. Only for test.
         if (self.verbosity >= 2 and True in self.l_coh):
             # Write quantum momenta
             tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum (au)' + \
                 "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
-                "".join([f'{self.qmom[iat, isp]:15.8f}' for isp in range(self.aux.ndim)]) for iat in range(self.aux.nat)])
+                "".join([f'{self.qmom[0, 1, iat, isp]:15.8f}' for isp in range(self.aux.ndim)]) for iat in range(self.aux.nat)])
             typewriter(tmp, unixmd_dir, f"QMOM", "a")
 
             # Write auxiliary variables
-            for ist in range(self.mol.nst):
+            for ist in range(1):
                 if (self.l_coh[ist]):
                     # Write auxiliary phase
                     tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Phase (au)' + \
                         "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
-                        "".join([f'{self.phase[ist, iat, isp]:15.8f}' for isp in range(self.aux.ndim)]) for iat in range(self.aux.nat)])
+                        "".join([f'{self.df[0, 1, iat, isp]:15.8f}' for isp in range(self.aux.ndim)]) for iat in range(self.aux.nat)])
                     typewriter(tmp, unixmd_dir, f"AUX_PHASE_{ist}", "a")
 
+            for ist in range(self.mol.nst):
+                if (self.l_coh[ist]):
                     # Write auxiliary trajectory movie files
                     tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
                         "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
@@ -706,6 +912,16 @@ class SHXF(MQC):
             DEBUG1 = f" #DEBUG1{'STEP':>6s}{'Rand.':>11s}{'Acc. Hopping Prob.':>28s}"
             dynamics_step_info += "\n" + DEBUG1
 
+        # Print DEBUG2 for each step
+        if (self.verbosity >= 2):
+            DEBUG2 = f" #DEBUG2{'STEP':>6s}{'Acc. Hopping Prob.':>22s}"
+            dynamics_step_info += "\n" + DEBUG2
+
+        # Print DEBUG3 for each step
+        if (self.l_td_sigma and self.verbosity >= 3):
+            DEBUG3 = f" #DEBUG3{'STEP':>6s}{'Sigma':>9s}{'dR0':>7s}{'dR1':>7s}{'dP0':>7s}{'dP1':>7s}"
+            dynamics_step_info += "\n" + DEBUG3
+        
         print (dynamics_step_info, flush=True)
 
     def print_step(self, istep):
@@ -733,6 +949,19 @@ class SHXF(MQC):
                 DEBUG1 += f"{self.acc_prob[ist]:12.5f} ({self.rstate}->{ist})"
             print (DEBUG1, flush=True)
 
+        # Print DEBUG2 for each step
+        if (self.verbosity >= 2):
+            DEBUG2 = f" DEBUG2{istep + 1:>7d}"
+            for ist in range(self.mol.nst):
+                DEBUG2 += f"{self.acc_prob[ist]:12.5f} ({self.rstate}->{ist})"
+            print (DEBUG2, flush=True)
+
+        # Print DEBUG3 for each step
+        if (self.l_td_sigma and self.verbosity >= 3):
+            DEBUG3 = f" DEBUG3{istep + 1:>7d}"
+            DEBUG3 += f"{self.sigma[0][0]:12.5f}{self.dR[0, 0, 0]:12.5f}{self.dR[1, 0, 0]:12.5f}{self.dP[0, 0, 0]:12.5f}{self.dP[1, 0, 0]:12.5f}"
+            print (DEBUG3, flush=True)
+        
         # Print event in SHXF
         for category, events in self.event.items():
             if (len(events) != 0):
@@ -740,5 +969,6 @@ class SHXF(MQC):
                     print (f" {category}{istep + 1:>9d}  {ievent}", flush=True)
         self.event["HOP"] = []
         self.event["DECO"] = []
+        self.event["REFL"] = []
 
 
