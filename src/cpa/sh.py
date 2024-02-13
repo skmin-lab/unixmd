@@ -1,12 +1,12 @@
 from __future__ import division
 from build.el_propagator import el_run
-from cpa.mqc import MQC
+from cpa.cpa import CPA
 from misc import eps, au_to_K, call_name, typewriter
 import random, os, shutil, textwrap
 import numpy as np
 import pickle
 
-class SH(MQC):
+class SH(CPA):
     """ Class for surface hopping dynamics with CPA
 
         :param object molecule: Molecule object
@@ -62,5 +62,20 @@ class SH(MQC):
         # Initialize event to print
         self.event = {"HOP": []}
 
-    def run(self):
-        pass
+    def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
+        """ Run MQC dynamics according to surface hopping dynamics
+
+            :param object qm: QM object containing on-the-fly calculation infomation
+            :param object mm: MM object containing MM calculation infomation
+            :param string output_dir: Name of directory where outputs to be saved.
+            :param boolean l_save_qm_log: Logical for saving QM calculation log
+            :param boolean l_save_mm_log: Logical for saving MM calculation log
+            :param boolean l_save_scr: Logical for saving scratch directory
+            :param string restart: Option for controlling dynamics restarting
+        """
+        # Initialize PyUNIxMD
+        base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
+             self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
+        bo_list = [self.rstate]
+        qm.calc_coupling = False
+        self.print_init(qm, mm, restart)
