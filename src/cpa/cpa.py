@@ -5,7 +5,7 @@ import numpy as np
 import os, shutil
 
 
-class MQC(object):
+class CPA(object):
     """ Class for electronic propagator used in MQC dynamics with classical path approximation
 
         :param object molecule: Molecule object
@@ -84,25 +84,255 @@ class MQC(object):
         # Initialize coefficients and densities
         self.mol.get_coefficient(init_coef, self.istate)
 
-    def run_init(self):
+    def run_init(self, qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart):
         """ Initialize MQC dynamics
+
+            :param object qm: QM object containing on-the-fly calculation infomation
+            :param object mm: MM object containing MM calculation infomation
+            :param string output_dir: Location of input directory
+            :param boolean l_save_qm_log: Logical for saving QM calculation log
+            :param boolean l_save_mm_log: Logical for saving MM calculation log
+            :param boolean l_save_scr: Logical for saving scratch directory
+            :param string restart: Option for controlling dynamics restarting
         """
-        pass
+        # Check whether the restart option is right
+        if (restart != None):
+            restart = restart.lower()
+
+        if not (restart in [None, "write", "append"]):
+            error_message = "Invalid restart option!"
+            error_vars = f"restart = {restart}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        # Check if NACVs are calculated for Ehrenfest dynamics
+        if (self.md_type == "Eh" and self.mol.l_nacme):
+            error_message = "Ehrenfest dynamics needs evaluation of NACVs, check your QM object!"
+            error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        # Check compatibility of variables for QM and MM calculation
+        if ((self.mol.l_qmmm and mm == None) or (not self.mol.l_qmmm and mm != None)):
+            error_message = "Both logical for QM/MM and MM object is necessary!"
+            error_vars = f"Molecule.l_qmmm = {self.mol.l_qmmm}, mm = {mm}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+        if (self.mol.l_qmmm and mm != None):
+            self.check_qmmm(qm, mm)
+
+        # Exception for CTMQC/Ehrenfest with QM/MM
+        if ((self.md_type in ["CT", "Eh"]) and (mm != None)):
+            error_message = "QM/MM calculation is not compatible with CTMQC or Ehrenfest now!"
+            error_vars = f"mm = {mm}"
+            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        # Set directory information
+        output_dir = os.path.expanduser(output_dir)
+        base_dir = []
+        unixmd_dir = []
+        qm_log_dir = []
+        mm_log_dir = [None]
+
+        if (self.mol.l_qmmm and mm != None):
+            mm_log_dir = []
+
+        dir_tmp = os.path.join(os.getcwd(), output_dir)
+        base_dir.append(dir_tmp)
+
+        for idir in base_dir:
+            unixmd_dir.append(os.path.join(idir, "md"))
+            qm_log_dir.append(os.path.join(idir, "qm_log"))
+            if (self.mol.l_qmmm and mm != None):
+                mm_log_dir.append(os.path.join(idir, "mm_log"))
+
+        # Check and make directories
+        if (restart == "append"):
+            # For MD output directory
+            for md_idir in unixmd_dir:
+                if (not os.path.exists(md_idir)):
+                    error_message = f"Directory {md_idir} to be appended for restart not found!"
+                    error_vars = f"restart = {restart}, output_dir = {output_dir}"
+                    raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+            # For QM output directory
+            if (l_save_qm_log):
+                for qm_idir in qm_log_dir:
+                    if (not os.path.exists(qm_idir)):
+                        os.makedirs(qm_idir)
+
+            # For MM output directory
+            if (self.mol.l_qmmm and mm != None):
+                if (l_save_mm_log):
+                    for mm_idir in mm_log_dir:
+                        if (not os.path.exists(mm_idir)):
+                            os.makedirs(mm_idir)
+        else:
+            # For MD output directory
+            for md_idir in unixmd_dir:
+                if (os.path.exists(md_idir)):
+                    shutil.move(md_idir, md_idir + "_old_" + str(os.getpid()))
+                os.makedirs(md_idir)
+
+                self.touch_file(md_idir)
+
+            # For QM output directory
+            for qm_idir in qm_log_dir:
+                if (os.path.exists(qm_idir)):
+                    shutil.move(qm_idir, qm_idir + "_old_" + str(os.getpid()))
+                if (l_save_qm_log):
+                    os.makedirs(qm_idir)
+
+            # For MM output directory
+            for mm_idir in mm_log_dir:
+                if (self.mol.l_qmmm and mm != None):
+                    if (os.path.exists(mm_idir)):
+                        shutil.move(mm_idir, mm_idir + "_old_" + str(os.getpid()))
+                    if (l_save_mm_log):
+                        os.makedirs(mm_idir)
+
+        os.chdir(base_dir[0])
+
+        return base_dir, unixmd_dir, qm_log_dir, mm_log_dir
 
     def update_potential(self):
         """ Routine to update the potential of molecules
         """
         pass
 
-    def print_init(self):
+    def print_init(self, qm, mm, restart):
         """ Routine to print the initial information of dynamics
-        """
-        pass
 
-    def touch_file(self):
-        """ Routine to write PyUNIxMD output files
+            :param object qm: QM object containing on-the-fly calculation infomation
+            :param object mm: MM object containing MM calculation infomation
+            :param string restart: Option for controlling dynamics restarting
         """
-        pass
+        # Print PyUNIxMD version
+        cur_time = datetime.datetime.now()
+        cur_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
+        prog_info = textwrap.dedent(f"""\
+        {"-" * 68}
+
+        {"PyUNIxMD version 20.1":>43s}
+
+        {"< Developers >":>40s}
+        {" " * 4}Seung Kyu Min,  In Seong Lee,  Jong-Kwon Ha,  Daeho Han,
+        {" " * 4}Kicheol Kim,  Tae In Kim,  Sung Wook Moon
+
+        {"-" * 68}
+
+        {" " * 4}Please cite PyUNIxMD as follows:
+        {" " * 4}I. S. Lee, J.-K. Ha, D. Han, T. I. Kim, S. W. Moon, & S. K. Min.
+        {" " * 4}PyUNIxMD: A Python-based excited state molecular dynamics package.
+        {" " * 4}Journal of Computational Chemistry, 42:1755-1766. 2021
+
+        {" " * 4}PyUNIxMD begins on {cur_time}
+        """)
+        print (prog_info, flush=True)
+
+        # Print restart info
+        if (restart != None):
+            restart_info = textwrap.indent(textwrap.dedent(f"""\
+            Dynamics is restarted from the last step of a previous dynamics.
+            Restart Mode: {restart}
+            """), "    ")
+            print (restart_info, flush=True)
+
+        # Print self.mol information: coordinate, velocity
+        self.mol.print_init(mm)
+
+        # Print dynamics information
+        dynamics_info = textwrap.dedent(f"""\
+        {"-" * 68}
+        {"Dynamics Information":>43s}
+        {"-" * 68}
+          QM Program               = {qm.qm_prog:>16s}
+          QM Method                = {qm.qm_method:>16s}
+        """)
+        if (self.mol.l_qmmm and mm != None):
+            dynamics_info += textwrap.indent(textwrap.dedent(f"""\
+              MM Program               = {mm.mm_prog:>16s}
+              QMMM Scheme              = {mm.scheme:>16s}
+            """), "  ")
+            # Print charge embedding in MM program
+            if (mm.embedding != None):
+                dynamics_info += f"  Charge Embedding         = {mm.embedding:>16s}\n"
+            else:
+                dynamics_info += f"  Charge Embedding         = {'No':>16s}\n"
+            # Print vdw interaction in MM program
+            if (mm.vdw != None):
+                dynamics_info += f"  VDW Interaction          = {mm.vdw:>16s}\n"
+            else:
+                dynamics_info += f"  VDW Interaction          = {'No':>16s}\n"
+        
+        dynamics_info += textwrap.indent(textwrap.dedent(f"""\
+
+          MQC Method               = {self.md_type:>16s}
+          Time Interval (fs)       = {self.dt / fs_to_au:16.6f}
+          Initial State (0:GS)     = {self.istate:>16d}
+          Nuclear Step             = {self.nsteps:>16d}
+        """), "  ")
+
+        dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
+        dynamics_info += f"  Electronic Propagator    = {self.propagator:>16s}\n"
+        dynamics_info += f"  Propagation Scheme       = {self.elec_object:>16s}\n"
+
+        # Print ad-hoc decoherence variables
+        if (self.md_type == "SH"):
+            if (self.dec_correction != None):
+                dynamics_info += f"\n  Decoherence Scheme       = {self.dec_correction:>16s}\n"
+                if (self.dec_correction == "edc"):
+                    dynamics_info += f"  Energy Constant          = {self.edc_parameter:>16.6f}\n"
+        
+        # Print system information
+        dynamics_info += f"\n  Output Frequency         = {self.out_freq:>16d}\n"
+        dynamics_info += f"  Verbosity Level          = {self.verbosity:>16d}\n"
+
+        print (dynamics_info, flush=True)
+
+    def touch_file(self, unixmd_dir):
+        """ Routine to write PyUNIxMD output files
+
+            :param string unixmd_dir: Directory where MD output files are written
+        """
+        # Energy information file header
+        tmp = f'{"#":5s}{"Step":9s}{"Kinetic(H)":15s}{"Potential(H)":15s}{"Total(H)":15s}' + \
+            "".join([f'E({ist})(H){"":8s}' for ist in range(self.mol.nst)])
+        typewriter(tmp, unixmd_dir, "MDENERGY", "w")
+
+        # BO coefficents, densities file header
+        if (self.elec_object == "density"):
+            tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
+            typewriter(tmp, unixmd_dir, "BOPOP", "w")
+            tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
+            typewriter(tmp, unixmd_dir, "BOCOH", "w")
+        elif (self.elec_object == "coefficient"):
+            tmp = f'{"#":5s} BO State Coefficients: state Re-Im; see the manual for detail orders'
+            typewriter(tmp, unixmd_dir, "BOCOEF", "w")
+            if (self.l_print_dm):
+                tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
+                typewriter(tmp, unixmd_dir, "BOPOP", "w")
+                tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
+                typewriter(tmp, unixmd_dir, "BOCOH", "w")
+
+        # NACME file header
+        tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
+        typewriter(tmp, unixmd_dir, "NACME", "w")
+
+        # DOTPOPNAC file header
+        if (self.verbosity >= 1):
+            tmp = f'{"#":5s} Time-derivative Density Matrix by NAC: population; see the manual for detail orders'
+            typewriter(tmp, unixmd_dir, "DOTPOPNAC", "w")
+
+        # file header for SH-based methods
+        if (self.md_type in ["SH", "SHXF"]):
+            tmp = f'{"#":5s}{"Step":8s}{"Running State":10s}'
+            typewriter(tmp, unixmd_dir, "SHSTATE", "w")
+
+            tmp = f'{"#":5s}{"Step":12s}' + "".join([f'Prob({ist}){"":8s}' for ist in range(self.mol.nst)])
+            typewriter(tmp, unixmd_dir, "SHPROB", "w")
+
+        # file header for XF-based methods
+        if (self.md_type in ["SHXF"]):
+            if (self.verbosity >= 1):
+                tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
 
     def write_md_output(self, unixmd_dir, istep):
         """ Write output files

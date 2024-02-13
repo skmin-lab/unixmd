@@ -6,7 +6,7 @@ import random, os, shutil, textwrap
 import numpy as np
 import pickle
 
-class SH(CPA):
+class SH_CPA(CPA):
     """ Class for surface hopping dynamics with CPA
 
         :param object molecule: Molecule object
@@ -63,7 +63,7 @@ class SH(CPA):
         self.event = {"HOP": []}
 
     def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
-        """ Run MQC dynamics according to surface hopping dynamics
+        """ Run CPA dynamics according to surface hopping dynamics
 
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
@@ -79,3 +79,32 @@ class SH(CPA):
         bo_list = [self.rstate]
         qm.calc_coupling = False
         self.print_init(qm, mm, restart)
+
+    def print_init(self, qm, mm, restart):
+        """ Routine to print the initial information of dynamics
+
+            :param object qm: QM object containing on-the-fly calculation infomation
+            :param object mm: MM object containing MM calculation infomation
+            :param string restart: Option for controlling dynamics restarting
+        """
+        # Print initial information about molecule, qm, mm and thermostat
+        super().print_init(qm, mm, restart)
+
+        # Print dynamics information for start line
+        dynamics_step_info = textwrap.dedent(f"""\
+
+        {"-" * 118}
+        {"Start Dynamics":>65s}
+        {"-" * 118}
+        """)
+
+        # Print INIT for each step
+        INIT = f" #INFO{'STEP':>8s}{'State':>7s}{'Kinetic(H)':>14s}{'Potential(H)':>15s}{'Total(H)':>13s}{'Temperature(K)':>17s}{'Norm.':>8s}"
+        dynamics_step_info += INIT
+
+        # Print DEBUG1 for each step
+        if (self.verbosity >= 1):
+            DEBUG1 = f" #DEBUG1{'STEP':>6s}{'Rand.':>11s}{'Acc. Hopping Prob.':>28s}"
+            dynamics_step_info += "\n" + DEBUG1
+
+        print (dynamics_step_info, flush=True)
