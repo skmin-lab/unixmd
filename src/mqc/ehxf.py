@@ -2,7 +2,7 @@ from __future__ import division
 from build.el_propagator_xf import el_run
 from mqc.mqc import MQC
 from misc import au_to_K, call_name, typewriter
-import os, shutil, textwrap
+import random, os, shutil, textwrap
 import numpy as np
 import pickle
 
@@ -56,6 +56,18 @@ class EhXF(MQC):
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
             elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
 
+        # Initialize SH variables
+        self.rstate = istate
+        self.rstate_old = self.rstate
+
+        self.rand = 0.
+        self.prob = np.zeros(self.mol.nst)
+        self.acc_prob = np.zeros(self.mol.nst + 1)
+
+        self.l_hop = False
+        self.l_reject = False
+
+        ##shkim no hop_rescale~
         # Initialize XF related variables
         self.force_hop = False
         self.l_xf_force = l_xf_force 
@@ -115,7 +127,7 @@ class EhXF(MQC):
         # Initialize PyUNIxMD
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir =\
              self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
-        bo_list = [ist for ist in range(self.mol.nst)]
+        bo_list = [self.rstate]
         qm.calc_coupling = True
         self.print_init(qm, mm, restart)
 
@@ -130,6 +142,14 @@ class EhXF(MQC):
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
             self.mol.get_nacme()
+
+            self.hop_prob()
+            self.hop_check(bo_list)
+            if (self.l_hop):
+                if (qm.re_calc):
+                    qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
+                if (self.mol.l_qmmm and mm != None):
+                    mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=True)
 
             self.update_energy()
 
@@ -170,6 +190,14 @@ class EhXF(MQC):
 
             el_run(self)
 
+            self.hop_prob()
+            self.hop_check(bo_list)
+            if (self.l_hop):
+                if (qm.re_calc):
+                    qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
+                if (self.mol.l_qmmm and mm != None):
+                    mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
+
             if (self.thermo != None):
                 self.thermo.run(self)
 
@@ -196,6 +224,64 @@ class EhXF(MQC):
                 tmp_dir = os.path.join(unixmd_dir, "scr_mm")
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
+
+    def hop_prob(self):
+        """ Routine to calculate hopping probabilities
+
+            :param integer istep: Current MD step
+        """
+        # Reset surface hopping variables
+        self.rstate_old = self.rstate
+
+        self.prob = np.zeros(self.mol.nst)
+        self.acc_prob = np.zeros(self.mol.nst + 1)
+
+        self.l_hop = False
+        self.force_hop = False
+
+        accum = 0.
+
+        if (self.mol.rho.real[self.rstate, self.rstate] < self.lower_th):
+            self.force_hop = True
+
+        for ist in range(self.mol.nst):
+            if (ist != self.rstate):
+                if (self.force_hop):
+                    self.prob[ist] = self.mol.rho.real[ist, ist] / self.upper_th
+                else:
+                    self.prob[ist] = - 2. * self.mol.rho.real[ist, self.rstate] * \
+                        self.mol.nacme[ist, self.rstate] * self.dt / self.mol.rho.real[self.rstate, self.rstate]
+
+                if (self.prob[ist] < 0.):
+                    self.prob[ist] = 0.
+                accum += self.prob[ist]
+            self.acc_prob[ist + 1] = accum
+        psum = self.acc_prob[self.mol.nst]
+
+        if (psum > 1.):
+            self.prob /= psum
+            self.acc_prob /= psum
+
+    def hop_check(self, bo_list):
+        """ Routine to check hopping occurs with random number
+
+            :param integer,list bo_list: List of BO states for BO calculation
+        """
+        self.rand = random.random()
+        for ist in range(self.mol.nst):
+            if (ist == self.rstate):
+                continue
+            if (self.rand > self.acc_prob[ist] and self.rand <= self.acc_prob[ist + 1]):
+                self.l_hop = True
+                self.rstate = ist
+                bo_list[0] = self.rstate
+
+        # Record hopping event
+        if (self.rstate != self.rstate_old):
+            if (self.force_hop):
+                self.event["HOP"].append(f"Accept hopping: force hop {self.rstate_old} -> {self.rstate}")
+            else:
+                self.event["HOP"].append(f"Accept hopping: hop {self.rstate_old} -> {self.rstate}")
 
     def calculate_force(self):
         """ Calculate the Ehrenfest force
