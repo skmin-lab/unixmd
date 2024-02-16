@@ -152,6 +152,8 @@ class EhXF(MQC):
             self.check_coherence()
             self.aux_propagator()
             self.get_phase()
+            if (self.l_xf_force):
+                self.calc_xf_force()
 
             self.write_md_output(unixmd_dir, self.istep)
             self.print_step(self.istep)
@@ -207,6 +209,8 @@ class EhXF(MQC):
             self.check_coherence()
             self.aux_propagator()
             self.get_phase()
+            if (self.l_xf_force):
+                self.calc_xf_force()
 
             if ((istep + 1) % self.out_freq == 0):
                 self.write_md_output(unixmd_dir, istep)
@@ -300,6 +304,9 @@ class EhXF(MQC):
             for jst in range(ist + 1, self.mol.nst):
                 self.rforce += 2. * self.mol.nac[ist, jst] * self.mol.rho.real[ist, jst] \
                     * (self.mol.states[ist].energy - self.mol.states[jst].energy)
+
+        if (self.l_xf_force):
+            self.rforce += self.xf_force
 
     def update_energy(self):
         """ Routine to update the energy of molecules in Ehrenfest dynamics
@@ -431,6 +438,29 @@ class EhXF(MQC):
                     for iat in range(self.aux.nat):
                         self.phase[ist, iat] += self.aux.mass[iat] * \
                             (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
+
+    def calc_xf_force(self):
+        """ Routine to calculate nuclear force originating from XF term
+        """
+        # TODO: temporary calculation for qmom with state-dependency, will be removed in next PR
+        self.qmom = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
+        for ist in range(self.mol.nst):
+            if (self.l_coh[ist]):
+                for iat in range(self.aux.nat):
+                    self.qmom[ist, iat, :] += 0.5 * self.mol.rho.real[ist, ist] / self.aux.mass[iat] \
+                        / self.sigma[iat] ** 2. * (self.pos_0[iat, :] - self.aux.pos[ist, iat, :])
+
+        self.xf_force = np.zeros((self.mol.nat, self.mol.ndim))
+        for ist in range(self.mol.nst):
+            for jst in range(self.mol.nst):
+                if (self.l_coh[ist] and self.l_coh[jst]):
+                    fac = 0.
+                    for iat in range(self.aux.nat):
+                        fac += np.sum((self.qmom[ist, iat] + self.qmom[jst, iat]) * \
+                            (self.phase[ist, iat] - self.phase[jst, iat])) \
+                            / (self.mol.nst - 1)
+                    self.xf_force += self.mol.rho.real[ist, ist] * self.mol.rho.real[jst, jst] \
+                         * fac * (self.phase[ist] - self.phase[jst])
 
     def append_sigma(self):
         """ Routine to append sigma values when single float number is provided
