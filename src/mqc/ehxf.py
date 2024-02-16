@@ -1,13 +1,13 @@
 from __future__ import division
-from build.el_propagator import el_run
+from build.el_propagator_xf import el_run
 from mqc.mqc import MQC
 from misc import au_to_K, call_name, typewriter
 import os, shutil, textwrap
 import numpy as np
 import pickle
 
-class Eh(MQC):
-    """ Class for Ehrenfest dynamics
+class EhXF(MQC):
+    """ Class for EhXF dynamics
 
         :param object molecule: Molecule object
         :param object thermostat: Thermostat object

@@ -25,7 +25,7 @@ class Auxiliary_Molecule(object):
 
 
 class SHXF(MQC):
-    """ Class for DISH-XF dynamics
+    """ Class for SHXF dynamics
 
         :param object molecule: Molecule object
         :param object thermostat: Thermostat object
