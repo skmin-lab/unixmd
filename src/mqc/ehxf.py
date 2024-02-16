@@ -102,7 +102,7 @@ class EhXF(MQC):
         self.qmom = np.zeros((self.aux.nat, self.aux.ndim))
 
     def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
-        """ Run MQC dynamics according to Ehrenfest dynamics
+        """ Run MQC dynamics according to decoherence-induced Ehrenfest dynamics
 
             :param object qm: QM object containing on-the-fly calculation infomation
             :param object mm: MM object containing MM calculation infomation
@@ -120,6 +120,9 @@ class EhXF(MQC):
         self.print_init(qm, mm, restart)
 
         if (restart == None):
+            # Initialize decoherence variables
+            self.append_sigma()
+
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
             self.mol.reset_bo(qm.calc_coupling)
@@ -216,6 +219,14 @@ class EhXF(MQC):
         for ist, istate in enumerate(self.mol.states):
             self.mol.epot += self.mol.rho.real[ist, ist] * self.mol.states[ist].energy
         self.mol.etot = self.mol.epot + self.mol.ekin
+
+    def append_sigma(self):
+        """ Routine to append sigma values when single float number is provided
+        """
+        # Create a list from single float number
+        if (isinstance(self.sigma, float)):
+            sigma = self.sigma
+            self.sigma = self.aux.nat * [sigma]
 
     def write_md_output(self, unixmd_dir, istep):
         """ Write output files
