@@ -6,6 +6,24 @@ import os, shutil, textwrap
 import numpy as np
 import pickle
 
+class Auxiliary_Molecule(object):
+    """ Class for auxiliary molecule that is used for the calculation of decoherence term
+
+        :param object molecule: Molecule object
+    """
+    def __init__(self, molecule):
+        # Initialize auxiliary molecule
+        self.nat = molecule.nat_qm
+        self.ndim = molecule.ndim
+        self.symbols = np.copy(molecule.symbols[0:molecule.nat_qm])
+
+        self.mass = np.copy(molecule.mass[0:molecule.nat_qm])
+
+        self.pos = np.zeros((molecule.nst, self.nat, self.ndim))
+        self.vel = np.zeros((molecule.nst, self.nat, self.ndim))
+        self.vel_old = np.copy(self.vel)
+
+
 class EhXF(MQC):
     """ Class for EhXF dynamics
 
@@ -19,21 +37,69 @@ class EhXF(MQC):
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adj_nac: Logical to adjust nonadiabatic coupling
+        :param double rho_threshold: Electronic density threshold for decoherence term calculation
+        :param sigma: Width of nuclear wave packet of auxiliary trajectory
+        :type sigma: double or double,list
         :param init_coef: Initial BO coefficient
-        :type init_coef: Double, list or complex, list
+        :type init_coef: double, list or complex, list
+        :param boolean l_xf_force: Logical to inlcude XF contribution to the total force
+        :param boolean l_econs_state: Logical to use identical total energies for all auxiliary trajectories
         :param string unit_dt: Unit of time step (fs = femtosecond, au = atomic unit)
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, \
-        init_coef=None, unit_dt="fs", out_freq=1, verbosity=0):
+        rho_threshold=0.01, sigma=None, init_coef=None, l_xf_force=True,  l_econs_state=True, \
+        unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
             elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
 
+        # Initialize XF related variables
+        self.force_hop = False
+        self.l_xf_force = l_xf_force 
+        self.l_econs_state = l_econs_state
+        self.l_coh = [False] * self.mol.nst
+        self.l_first = [False] * self.mol.nst
+        # TODO : l_fix?
+        #self.l_fix = [False] * self.mol.nst
+        self.rho_threshold = rho_threshold
+        # TODO : aux_econs_viol?
+        #self.aux_econs_viol = aux_econs_viol
+
+        self.sigma = sigma
+        if (self.sigma == None):
+            error_message = "Sigma for auxiliary trajectories must be set in running script!"
+            error_vars = f"sigma = {self.sigma}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        if (isinstance(self.sigma, float)):
+            # uniform value for sigma
+            pass
+        elif (isinstance(self.sigma, list)):
+            # atom-resolved values for sigma
+            if (len(self.sigma) != self.mol.nat_qm):
+                error_message = "Number of elements for sigma must be equal to number of atoms!"
+                error_vars = f"len(sigma) = {len(self.sigma)}"
+                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+        else:
+            error_message = "Type of sigma must be float or list consisting of float!"
+            error_vars = f"sigma = {self.sigma}"
+            raise TypeError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        self.upper_th = 1. - self.rho_threshold
+        self.lower_th = self.rho_threshold
+
+        # Initialize auxiliary molecule object
+        self.aux = Auxiliary_Molecule(self.mol)
+        self.pos_0 = np.zeros((self.aux.nat, self.aux.ndim))
+        self.phase = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
+
         # Debug variables
+        self.dotpopdec = np.zeros(self.mol.nst)
         self.dotpopnac = np.zeros(self.mol.nst)
+        self.qmom = np.zeros((self.aux.nat, self.aux.ndim))
 
     def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to Ehrenfest dynamics
