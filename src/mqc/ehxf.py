@@ -67,7 +67,6 @@ class EhXF(MQC):
         self.l_hop = False
         self.l_reject = False
 
-        ##shkim no hop_rescale~
         # Initialize XF related variables
         self.force_hop = False
         self.l_xf_force = l_xf_force 
@@ -153,6 +152,11 @@ class EhXF(MQC):
 
             self.update_energy()
 
+            self.check_decoherence()
+            self.check_coherence()
+            self.aux_propagator()
+            self.get_phase()
+
             self.write_md_output(unixmd_dir, self.istep)
             self.print_step(self.istep)
 
@@ -202,6 +206,11 @@ class EhXF(MQC):
                 self.thermo.run(self)
 
             self.update_energy()
+
+            self.check_decoherence()
+            self.check_coherence()
+            self.aux_propagator()
+            self.get_phase()
 
             if ((istep + 1) % self.out_freq == 0):
                 self.write_md_output(unixmd_dir, istep)
@@ -305,6 +314,147 @@ class EhXF(MQC):
         for ist, istate in enumerate(self.mol.states):
             self.mol.epot += self.mol.rho.real[ist, ist] * self.mol.states[ist].energy
         self.mol.etot = self.mol.epot + self.mol.ekin
+
+    def check_decoherence(self):
+        """ Routine to check if the electronic state is decohered
+        """
+        if (self.l_hop):
+            if (True in self.l_coh):
+                self.event["DECO"].append(f"Destroy auxiliary trajectories: hopping occurs")
+            self.l_coh = [False] * self.mol.nst
+            self.l_first = [False] * self.mol.nst
+            self.l_fix = [False] * self.mol.nst
+        else:
+            for ist in range(self.mol.nst):
+                if (self.l_coh[ist]):
+                    rho = self.mol.rho.real[ist, ist]
+                    if (rho > self.upper_th):
+                        self.set_decoherence(ist)
+                        return
+
+    def check_coherence(self):
+        """ Routine to check coherence among BO states
+        """
+        count = 0
+        tmp_st = ""
+        for ist in range(self.mol.nst):
+            rho = self.mol.rho.real[ist, ist]
+            if (rho > self.upper_th or rho < self.lower_th):
+                self.l_coh[ist] = False
+            else:
+                if (self.l_coh[ist]):
+                    self.l_first[ist] = False
+                else:
+                    self.l_first[ist] = True
+                    tmp_st += f"{ist}, "
+                self.l_coh[ist] = True
+                count += 1
+
+        if (count < 2):
+            self.l_coh = [False] * self.mol.nst
+            self.l_first = [False] * self.mol.nst
+            tmp_st = ""
+
+        if (len(tmp_st) >= 1):
+            tmp_st = tmp_st.rstrip(', ')
+            self.event["DECO"].append(f"Generate auxiliary trajectory on {tmp_st} state")
+
+    def set_decoherence(self, one_st):
+        """ Routine to reset coefficient/density if the state is decohered
+
+            :param integer one_st: State index that its population is one
+        """
+        self.phase = np.zeros((self.mol.nst, self.aux.nat, self.aux.ndim))
+        self.mol.rho = np.zeros((self.mol.nst, self.mol.nst), dtype=np.complex128)
+        self.mol.rho[one_st, one_st] = 1. + 0.j
+
+        self.l_coh = [False] * self.mol.nst
+        self.l_first = [False] * self.mol.nst
+        # TODO : l_fix?
+        #self.l_fix = [False] * self.mol.nst
+
+        self.event["DECO"].append(f"Destroy auxiliary trajectories: decohered to {one_st} state")
+
+        if (self.elec_object == "coefficient"):
+            for ist in range(self.mol.nst):
+                if (ist == one_st):
+                    self.mol.states[ist].coef /= np.absolute(self.mol.states[ist].coef).real
+                else:
+                    self.mol.states[ist].coef = 0. + 0.j
+
+    def aux_propagator(self):
+        """ Routine to propagate auxiliary molecule
+        """
+        # Get auxiliary position
+        for ist in range(self.mol.nst):
+            if (self.l_coh[ist]):
+                if (self.l_first[ist]):
+                    self.aux.pos[ist] = self.mol.pos[0:self.aux.nat]
+                else:
+                    self.aux.pos[ist] += self.aux.vel[ist] * self.dt
+
+        self.pos_0 = np.copy(self.aux.pos[self.rstate])
+
+        # Get auxiliary velocity
+        self.l_collapse = False
+        self.aux.vel_old = np.copy(self.aux.vel)
+        for ist in range(self.mol.nst):
+            # Calculate propagation factor alpha
+            if (self.l_coh[ist]):
+                if (self.l_fix[ist]):
+                    alpha = 0.
+                else:
+                    if (ist == self.rstate):
+                        alpha = self.mol.ekin_qm
+                    else:
+                        if (self.l_first[ist]):
+                            alpha = self.mol.ekin_qm
+                            if (self.l_econs_state):
+                                alpha += self.mol.states[self.rstate].energy - self.mol.states[ist].energy
+                        else:
+                            ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
+                            alpha = ekin_old + self.mol.states[ist].energy_old - self.mol.states[ist].energy
+                    if (alpha < 0.):
+                        alpha = 0.
+                        if (self.aux_econs_viol == "fix"):
+                            self.l_fix[ist] = True
+                            self.event["DECO"].append(f"Energy conservation violated, the auxiliary trajectory on state {ist} is fixed.")
+                        elif (self.aux_econs_viol == "collapse"):
+                            self.l_collapse = True
+                            self.collapse(ist)
+                            self.event["DECO"].append(f"Energy conservation violated, collapse the {ist} state coefficient/density to zero.")
+
+                # Calculate auxiliary velocity from alpha
+                alpha /= self.mol.ekin_qm
+                self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] * np.sqrt(alpha)
+
+    def collapse(self, cstate):
+        """ Routine to collapse coefficient/density of a state to zero
+        """
+        fac = 1. - self.mol.rho.real[cstate, cstate]
+
+        if (self.elec_object == "coefficient"):
+            for ist in range(self.mol.nst):
+                if (ist == cstate):
+                    self.mol.states[ist].coef = 0. + 0.j
+                else:
+                    self.mol.states[ist].coef /= np.sqrt(fac)
+
+        self.mol.rho[cstate,:] = 0. + 0.j
+        self.mol.rho[:,cstate] = 0. + 0.j
+        self.mol.rho /= fac
+         
+    def get_phase(self):
+        """ Routine to calculate phase term
+        """
+        for ist in range(self.mol.nst):
+            if (self.l_coh[ist]):
+                if (self.l_first[ist]):
+                    self.phase[ist] = 0.
+                else:
+                    for iat in range(self.aux.nat):
+                        self.phase[ist, iat] += self.aux.mass[iat] * \
+                            (self.aux.vel[ist, iat] - self.aux.vel_old[ist, iat])
 
     def append_sigma(self):
         """ Routine to append sigma values when single float number is provided
