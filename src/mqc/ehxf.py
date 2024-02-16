@@ -108,6 +108,9 @@ class EhXF(MQC):
         self.dotpopnac = np.zeros(self.mol.nst)
         self.qmom = np.zeros((self.aux.nat, self.aux.ndim))
 
+        # Initialize event to print
+        self.event = {"HOP": [], "DECO": []}
+
     def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to decoherence-induced Ehrenfest dynamics
 
