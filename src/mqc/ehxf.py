@@ -73,11 +73,7 @@ class EhXF(MQC):
         self.l_econs_state = l_econs_state
         self.l_coh = [False] * self.mol.nst
         self.l_first = [False] * self.mol.nst
-        # TODO : l_fix?
-        #self.l_fix = [False] * self.mol.nst
         self.rho_threshold = rho_threshold
-        # TODO : aux_econs_viol?
-        #self.aux_econs_viol = aux_econs_viol
 
         self.sigma = sigma
         if (self.sigma == None):
@@ -370,8 +366,6 @@ class EhXF(MQC):
 
         self.l_coh = [False] * self.mol.nst
         self.l_first = [False] * self.mol.nst
-        # TODO : l_fix?
-        #self.l_fix = [False] * self.mol.nst
 
         self.event["DECO"].append(f"Destroy auxiliary trajectories: decohered to {one_st} state")
 
@@ -381,6 +375,19 @@ class EhXF(MQC):
                     self.mol.states[ist].coef /= np.absolute(self.mol.states[ist].coef).real
                 else:
                     self.mol.states[ist].coef = 0. + 0.j
+
+        epot_new = 0.
+        for ist, istate in enumerate(self.mol.states):
+            epot_new += self.mol.rho.real[ist, ist] * self.mol.states[ist].energy
+        alpha = self.mol.etot - epot_new
+
+        if (alpha >= 0.):
+            alpha /= self.mol.ekin_qm
+            alpha = np.sqrt(alpha)
+        else:
+            alpha = 0.
+
+        self.mol.vel *= alpha
 
     def aux_propagator(self):
         """ Routine to propagate auxiliary molecule
@@ -396,54 +403,23 @@ class EhXF(MQC):
         self.pos_0 = np.copy(self.aux.pos[self.rstate])
 
         # Get auxiliary velocity
-        self.l_collapse = False
         self.aux.vel_old = np.copy(self.aux.vel)
         for ist in range(self.mol.nst):
             # Calculate propagation factor alpha
             if (self.l_coh[ist]):
-                if (self.l_fix[ist]):
-                    alpha = 0.
+                if (self.l_first[ist]):
+                    alpha = self.mol.ekin_qm
+                    if (self.l_econs_state):
+                        alpha += self.mol.epot - self.mol.states[ist].energy
                 else:
-                    if (ist == self.rstate):
-                        alpha = self.mol.ekin_qm
-                    else:
-                        if (self.l_first[ist]):
-                            alpha = self.mol.ekin_qm
-                            if (self.l_econs_state):
-                                alpha += self.mol.states[self.rstate].energy - self.mol.states[ist].energy
-                        else:
-                            ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
-                            alpha = ekin_old + self.mol.states[ist].energy_old - self.mol.states[ist].energy
-                    if (alpha < 0.):
-                        alpha = 0.
-                        if (self.aux_econs_viol == "fix"):
-                            self.l_fix[ist] = True
-                            self.event["DECO"].append(f"Energy conservation violated, the auxiliary trajectory on state {ist} is fixed.")
-                        elif (self.aux_econs_viol == "collapse"):
-                            self.l_collapse = True
-                            self.collapse(ist)
-                            self.event["DECO"].append(f"Energy conservation violated, collapse the {ist} state coefficient/density to zero.")
+                    alpha = self.mol.ekin_qm + self.mol.epot - self.mol.states[ist].energy
+                if (alpha < 0.):
+                    alpha = 0.
 
                 # Calculate auxiliary velocity from alpha
                 alpha /= self.mol.ekin_qm
                 self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] * np.sqrt(alpha)
 
-    def collapse(self, cstate):
-        """ Routine to collapse coefficient/density of a state to zero
-        """
-        fac = 1. - self.mol.rho.real[cstate, cstate]
-
-        if (self.elec_object == "coefficient"):
-            for ist in range(self.mol.nst):
-                if (ist == cstate):
-                    self.mol.states[ist].coef = 0. + 0.j
-                else:
-                    self.mol.states[ist].coef /= np.sqrt(fac)
-
-        self.mol.rho[cstate,:] = 0. + 0.j
-        self.mol.rho[:,cstate] = 0. + 0.j
-        self.mol.rho /= fac
-         
     def get_phase(self):
         """ Routine to calculate phase term
         """
