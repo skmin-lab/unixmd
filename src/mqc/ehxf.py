@@ -485,16 +485,34 @@ class EhXF(MQC):
         # Write time-derivative BO population
         self.write_dotpop(unixmd_dir, istep)
 
+    def write_sh(self, unixmd_dir, istep):
+        """ Write hopping-related quantities into files
+
+            :param string unixmd_dir: PyUNIxMD directory
+            :param integer istep: Current MD step
+        """
+        # Write SHSTATE file
+        tmp = f'{istep + 1:9d}{"":14s}{self.rstate}'
+        typewriter(tmp, unixmd_dir, "SHSTATE", "a")
+
+        # Write SHPROB file
+        tmp = f'{istep + 1:9d}' + "".join([f'{self.prob[ist]:15.8f}' for ist in range(self.mol.nst)])
+        typewriter(tmp, unixmd_dir, "SHPROB", "a")
+
     def write_dotpop(self, unixmd_dir, istep):
         """ Write time-derivative BO population
 
             :param string unixmd_dir: PyUNIxMD directory
             :param integer istep: Current MD step
         """
-        # Write NAC term in DOTPOPNAC
         if (self.verbosity >= 1):
+            # Write NAC term in DOTPOPNAC
             tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopnac])
             typewriter(tmp, unixmd_dir, "DOTPOPNAC", "a")
+
+            # Write decoherence term in DOTPOPDEC
+            tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopdec])
+            typewriter(tmp, unixmd_dir, "DOTPOPDEC", "a")
 
     def print_init(self, qm, mm, restart):
         """ Routine to print the initial information of dynamics
@@ -525,16 +543,36 @@ class EhXF(MQC):
 
             :param integer istep: Current MD step
         """
+        if (istep == -1):
+            max_prob = 0.
+            hstate = self.rstate
+        else:
+            max_prob = max(self.prob)
+            hstate = np.where(self.prob == max_prob)[0][0]
+
         ctemp = self.mol.ekin * 2. / float(self.mol.ndof) * au_to_K
         norm = 0.
         for ist in range(self.mol.nst):
             norm += self.mol.rho.real[ist, ist]
 
         # Print INFO for each step
-        INFO = f" INFO{istep + 1:>9d} "
+        INFO = f" INFO{istep + 1:>9d}{self.rstate:>5d}{max_prob:11.5f} ({self.rstate}->{hstate}){self.rand:11.5f}"
         INFO += f"{self.mol.ekin:14.8f}{self.mol.epot:15.8f}{self.mol.etot:15.8f}"
         INFO += f"{ctemp:13.6f}"
         INFO += f"{norm:11.5f}"
         print (INFO, flush=True)
 
+        # Print DEBUG1 for each step
+        if (self.verbosity >= 1):
+            DEBUG1 = f" DEBUG1{istep + 1:>7d}"
+            for ist in range(self.mol.nst):
+                DEBUG1 += f"{self.mol.states[ist].energy:17.8f} "
+            print (DEBUG1, flush=True)
 
+        # Print event in EhXF
+        for category, events in self.event.items():
+            if (len(events) != 0):
+                for ievent in events:
+                    print (f" {category}{istep + 1:>9d}  {ievent}", flush=True)
+        self.event["HOP"] = []
+        self.event["DECO"] = []
