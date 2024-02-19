@@ -52,7 +52,7 @@ class SHXF(MQC):
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
-        hop_reject="reverse", rho_threshold=0.01, sigma=None, init_coef=None, \
+        hop_reject="reverse", rho_threshold=0.01, sigma=None, init_coef=None, l_td_sigma=False\
         l_econs_state=True, aux_econs_viol="fix", unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
@@ -101,6 +101,7 @@ class SHXF(MQC):
         self.l_first = [False] * self.mol.nst
         self.l_fix = [False] * self.mol.nst
         self.l_collapse = False
+        self.l_td_sigma = l_td_sigma
         self.rho_threshold = rho_threshold
         self.aux_econs_viol = aux_econs_viol
 
@@ -111,9 +112,10 @@ class SHXF(MQC):
 
         self.sigma = sigma
         if (self.sigma == None):
-            error_message = "Sigma for auxiliary trajectories must be set in running script!"
-            error_vars = f"sigma = {self.sigma}"
-            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+            if (not self.l_td_sigma):
+                error_message = "Sigma for auxiliary trajectories must be set in running script!"
+                error_vars = f"sigma = {self.sigma}"
+                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         if (isinstance(self.sigma, float)):
             # uniform value for sigma
@@ -125,9 +127,15 @@ class SHXF(MQC):
                 error_vars = f"len(sigma) = {len(self.sigma)}"
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
-            error_message = "Type of sigma must be float or list consisting of float!"
-            error_vars = f"sigma = {self.sigma}"
-            raise TypeError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+            if (not self.l_td_sigma):
+                error_message = "Type of sigma must be float or list consisting of float!"
+                error_vars = f"sigma = {self.sigma}"
+                raise TypeError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        if (self.l_td_sigma and self.mol.nst>=2):
+            error_message = "TD sigma is not available for systems with more than two states!"
+            error_vars = f"nstate = {self.mol.nst}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.upper_th = 1. - self.rho_threshold
         self.lower_th = self.rho_threshold
@@ -566,6 +574,21 @@ class SHXF(MQC):
                 alpha /= self.mol.ekin_qm
                 self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] * np.sqrt(alpha)
 
+        if (self.l_td_sigma):
+            # Only two-state case is implemented..
+            if (self.l_first[0]):
+                self.sigma = np.ones((self.aux.nat, self.aux.ndim)) * 100000.
+            else:
+                for iat in range(self.aux.nat):
+                    for isp in range(self.aux.ndim):
+                        if ((np.abs(self.aux.vel[0, iat, isp] - self.aux.vel[1, iat, isp])) * self.aux.mass[iat] > eps):
+                            self.sigma[iat, isp] = np.sqrt(0.5 * np.abs(\
+                               (self.aux.pos[0, iat, isp] - self.aux.pos[1, iat, isp])/\
+                               (self.aux.vel[0, iat, isp] - self.aux.vel[1, iat, isp]))\
+                                / self.aux.mass[iat])
+                        else:
+                            self.sigma = np.ones((self.aux.nat, self.aux.ndim)) * 100000.
+
     def collapse(self, cstate):
         """ Routine to collapse coefficient/density of a state to zero
         """
@@ -600,7 +623,14 @@ class SHXF(MQC):
         # Create a list from single float number
         if (isinstance(self.sigma, float)):
             sigma = self.sigma
-            self.sigma = self.aux.nat * [sigma]
+            self.sigma = np.array(self.aux.nat * [self.aux.ndim * [sigma]])
+        if (isinstance(self.sigma, list)):
+            sigma = []
+            for sgm in self.sigma:
+                sigma.append(self.aux.nat * [sgm])
+            self.sigma = sigma[:]
+        if (self.l_td_sigma):
+            self.sigma = np.array(self.aux.nat * [self.aux.ndim * [0.0]])
 
     def write_md_output(self, unixmd_dir, istep):
         """ Write output files
