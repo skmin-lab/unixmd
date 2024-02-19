@@ -38,7 +38,7 @@ static void xf_cdot(int nat, int ndim, int nst, int *l_coh, double *mass, double
             for(iat = 0; iat < nat; iat++){
                 for(isp = 0; isp < ndim; isp++){
                     qmom[iat][isp] += 0.5 * rho[ist] * (pos[iat][isp] - aux_pos[ist][iat][isp])
-                        / pow(sigma[iat], 2.0) / mass[iat];
+                        / pow(sigma[iat][isp], 2.0) / mass[iat];
                 }
             }
         }
@@ -117,7 +117,7 @@ static void xf_rhodot(int nat, int ndim, int nst, int *l_coh, double *mass, doub
             for(iat = 0; iat < nat; iat++){
                 for(isp = 0; isp < ndim; isp++){
                     qmom[iat][isp] += 0.5 * creal(rho[ist][ist]) * (pos[iat][isp] - aux_pos[ist][iat][isp])
-                        / pow(sigma[iat], 2.0) / mass[iat];
+                        / pow(sigma[iat][isp], 2.0) / mass[iat];
                 }
             }
         }

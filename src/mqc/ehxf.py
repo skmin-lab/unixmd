@@ -40,6 +40,7 @@ class EhXF(MQC):
         :param double rho_threshold: Electronic density threshold for decoherence term calculation
         :param sigma: Width of nuclear wave packet of auxiliary trajectory
         :type sigma: double or double,list
+        :param boolean l_td_sigma: Logical to use time dependent sigma
         :param init_coef: Initial BO coefficient
         :type init_coef: double, list or complex, list
         :param boolean l_xf_force: Logical to inlcude XF contribution to the total force
@@ -98,10 +99,10 @@ class EhXF(MQC):
                 error_vars = f"sigma = {self.sigma}"
                 raise TypeError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        if (self.l_td_sigma and self.mol.nst>=2):
-            error_message = "TD sigma is not available for systems with more than two states!"
-            error_vars = f"nstate = {self.mol.nst}"
-            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+        if (self.l_td_sigma and self.mol.nst > 2):
+            error_message = "Time-dependent sigma is not available for systems with more than two states!"
+            error_vars = f"nstates = {self.mol.nst}"
+            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.upper_th = 1. - self.rho_threshold
         self.lower_th = self.rho_threshold
@@ -439,9 +440,11 @@ class EhXF(MQC):
                 self.aux.vel[ist] = self.mol.vel[0:self.aux.nat] * np.sqrt(alpha)
 
         if (self.l_td_sigma):
-            # Only two-state case is implemented..
+            # TODO Only two-state case is implemented..
             if (self.l_first[0]):
-                self.sigma = np.ones((self.aux.nat, self.aux.ndim)) * 100000.
+                for iat in range(self.aux.nat):
+                    for isp in range(self.aux.ndim):
+                        self.sigma[iat, isp] = 100000
             else:
                 for iat in range(self.aux.nat):
                     for isp in range(self.aux.ndim):
@@ -451,7 +454,9 @@ class EhXF(MQC):
                                (self.aux.vel[0, iat, isp] - self.aux.vel[1, iat, isp]))\
                                 / self.aux.mass[iat])
                         else:
-                            self.sigma = np.ones((self.aux.nat, self.aux.ndim)) * 100000.
+                            for iat in range(self.aux.nat):
+                                for isp in range(self.aux.ndim):
+                                    self.sigma[iat, isp] = 100000
 
     def get_phase(self):
         """ Routine to calculate phase term
@@ -495,11 +500,12 @@ class EhXF(MQC):
         if (isinstance(self.sigma, float)):
             sigma = self.sigma
             self.sigma = np.array(self.aux.nat * [self.aux.ndim * [sigma]])
-        if (isinstance(self.sigma, list)):
+        elif (isinstance(self.sigma, list)):
             sigma = []
             for sgm in self.sigma:
                 sigma.append(self.aux.nat * [sgm])
             self.sigma = sigma[:]
+        else:
         if (self.l_td_sigma):
             self.sigma = np.array(self.aux.nat * [self.aux.ndim * [0.0]])
 
