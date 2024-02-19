@@ -8,28 +8,16 @@ extern void dgemm_(char* transa, char* transb, int* m, int* n, int* k, double* a
     double* a, int* lda, double* b, int* ldb, double* beta, double* c, int* ldc);
 #endif
 
-// Routine to calculate overlap and permutation matrix in MO basis between two time steps
-static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **permut_mat,
-    double **ao_overlap, double **mo_coef_old, double **mo_coef_new);
+// Routine to calculate overlap and phase-correction factor in MO basis between two time steps
+static void calc_MO_over(int nbasis, int nst, double **mo_overlap, double *ph_fac,
+    double **ao_overlap, double **mo_coef_old, double **mo_coef_new, int l_spin_restricted);
 
 // Routine to match phase of MO coefficients and orderings between two time steps
-static void MO_phase_order(int nbasis, int norb, double **mo_coef_new, double **permut_mat);
-
-// Routine to match phase of CI coefficients and orderings between two time steps
-static void CI_phase_order(int nst, int norb, int nocc, int nvirt, int *orb_ini, int *orb_final,
-    double ***ci_coef_old, double ***ci_coef_new, double **permut_mat);
-
-// Routine to match phase for the states between two time steps
-static void state_phase(int nst, int nocc, int nvirt, int *orb_ini, int *orb_final,
-    double ***ci_coef_old, double ***ci_coef_new);
-
-// Routine to normalize CI coefficients
-static void norm_CI_coef(int nst, int nocc, int nvirt, int *orb_ini, int *orb_final, double ***ci_coef);
+static void MO_phase_order(int nbasis, int nst, double **mo_coef_new, double *ph_fac);
 
 // Routine to calculate TDNAC term used in electronic propagation
-static void TD_NAC(int istep, int nst, int nbasis, int norb, int nocc, int nvirt, double dt,
-    int *orb_ini, int *orb_final, double **nacme, double **ao_overlap, double **mo_coef_old,
-    double **mo_coef_new, double ***ci_coef_old, double ***ci_coef_new){
+static void TD_NAC_ORB(int istep, int nst, int nbasis, double dt,
+    double **nacme, double **ao_overlap, double **mo_coef_old, double **mo_coef_new, int l_spin_restricted){
 
     double **mo_overlap = malloc(norb * sizeof(double*));
     double **permut_mat = malloc(norb * sizeof(double*));
@@ -404,7 +392,7 @@ static void calc_MO_over(int nbasis, int norb, double **mo_overlap, double **per
 }
 
 // Routine to match phase of MO coefficients and orderings between two time steps
-static void MO_phase_order(int nbasis, int norb, double **mo_coef_new, double **permut_mat){
+static void MO_phase_order(int nbasis, int nst, double **mo_coef_new, double *ph_fac){
 
     double **tmp_mo = malloc(norb * sizeof(double*));
     int ibasis, iorb, jorb;
@@ -441,133 +429,6 @@ static void MO_phase_order(int nbasis, int norb, double **mo_coef_new, double **
     }
 
     free(tmp_mo);
-
-}
-
-// Routine to match phase of CI coefficients and orderings between two time steps
-// TODO : Is this correct method to match phase (or order) for CI coefficients?
-static void CI_phase_order(int nst, int norb, int nocc, int nvirt, int *orb_ini, int *orb_final,
-    double ***ci_coef_old, double ***ci_coef_new, double **permut_mat){
-
-    double **tmp_ci = malloc(norb * sizeof(double*));
-    double **tmp_ci_new = malloc(norb * sizeof(double*));
-    int ist, iorb, jorb, aorb, borb;
-
-    // Initialize temporary CI arrays; C' and C
-    for(iorb = 0; iorb < norb; iorb++){
-        tmp_ci[iorb] = malloc(norb * sizeof(double));
-        tmp_ci_new[iorb] = malloc(norb * sizeof(double));
-    }
-
-    // CI coefficients for S_0 are zero
-    for(ist = 1; ist < nst; ist++){
-
-        for(iorb = orb_ini[0]; iorb < orb_final[0]; iorb++){
-            for(aorb = orb_ini[0]; aorb < orb_final[0]; aorb++){
-                // Assign CI coefficients at time t to new symmetric array
-                if(iorb < nocc && aorb >= nocc){
-                    tmp_ci[iorb][aorb] = ci_coef_new[ist][iorb][aorb - nocc];
-                }
-                else if(iorb >= nocc && aorb < nocc){
-                    tmp_ci[iorb][aorb] = ci_coef_new[ist][aorb][iorb - nocc];
-                }
-                else{
-                    tmp_ci[iorb][aorb] = 0.0;
-                }
-                // Initialize new empty array for phase correction
-                tmp_ci_new[iorb][aorb] = 0.0;
-            }
-        }
-
-        // Decide the phase and ordering for CI coefficients using permutation matrix; C' = O * C * O
-        // TODO : The phases for occupied and virtual orbitals are matched when permutation is diagonal matrix
-        for(jorb = orb_ini[0]; jorb < orb_final[0]; jorb++){
-            for(borb = orb_ini[0]; borb < orb_final[0]; borb++){
-
-                for(iorb = orb_ini[0]; iorb < orb_final[0]; iorb++){
-                    for(aorb = orb_ini[0]; aorb < orb_final[0]; aorb++){
-                        tmp_ci_new[jorb][borb] += permut_mat[jorb][iorb] * tmp_ci[iorb][aorb] * permut_mat[aorb][borb];
-                    }
-                }
-
-            }
-        }
-
-        // Apply new phase correction for the CI coefficients; C = C'
-        for(iorb = orb_ini[0]; iorb < nocc; iorb++){
-            for(aorb = 0; aorb < orb_final[0] - nocc; aorb++){
-                ci_coef_new[ist][iorb][aorb] = tmp_ci_new[iorb][nocc + aorb];
-            }
-        }
-
-    }
-
-    // Deallocate temporary CI arrays; C' and C
-    for(iorb = 0; iorb < norb; iorb++){
-        free(tmp_ci[iorb]);
-        free(tmp_ci_new[iorb]);
-    }
-
-    free(tmp_ci);
-    free(tmp_ci_new);
-
-}
-
-// Routine to match phase for the states between two time steps
-static void state_phase(int nst, int nocc, int nvirt, int *orb_ini, int *orb_final,
-    double ***ci_coef_old, double ***ci_coef_new){
-
-    double val;
-    int ist, iorb, aorb;
-
-    // CI coefficients for S_0 are zero
-    for(ist = 1; ist < nst; ist++){
-
-        val = 0.0;
-        for(iorb = orb_ini[0]; iorb < nocc; iorb++){
-            for(aorb = 0; aorb < orb_final[0] - nocc; aorb++){
-                val += ci_coef_old[ist][iorb][aorb] * ci_coef_new[ist][iorb][aorb];
-            }
-        }
-
-        if(val < 0.0){
-            for(iorb = orb_ini[0]; iorb < nocc; iorb++){
-                for(aorb = 0; aorb < orb_final[0] - nocc; aorb++){
-                    ci_coef_new[ist][iorb][aorb] *= -1.0;
-                }
-            }
-        }
-
-    }
-
-}
-
-// Routine to normalize CI coefficients
-static void norm_CI_coef(int nst, int nocc, int nvirt, int *orb_ini, int *orb_final, double ***ci_coef){
-
-    double norm;
-    int ist, iorb, aorb;
-
-    // CI coefficients for S_0 are zero
-    for(ist = 1; ist < nst; ist++){
-
-        // Calculate normalization value for CI coefficients
-        norm = 0.0;
-        for(iorb = orb_ini[0]; iorb < nocc; iorb++){
-            for(aorb = 0; aorb < orb_final[0] - nocc; aorb++){
-                norm += pow(ci_coef[ist][iorb][aorb], 2);
-            }
-        }
-        norm = sqrt(norm);
-
-        // Normalize the CI coefficients
-        for(iorb = orb_ini[0]; iorb < nocc; iorb++){
-            for(aorb = 0; aorb < orb_final[0] - nocc; aorb++){
-                ci_coef[ist][iorb][aorb] /= norm;
-            }
-        }
-
-    }
 
 }
 
