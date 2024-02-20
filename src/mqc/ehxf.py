@@ -506,8 +506,8 @@ class EhXF(MQC):
                 sigma.append(self.aux.nat * [sgm])
                 self.sigma = sigma[:]
         else:
-        if (self.l_td_sigma):
-            self.sigma = np.array(self.aux.nat * [self.aux.ndim * [0.0]])
+            if (self.l_td_sigma):
+                self.sigma = np.array(self.aux.nat * [self.aux.ndim * [0.0]])
 
     def write_md_output(self, unixmd_dir, istep):
         """ Write output files
