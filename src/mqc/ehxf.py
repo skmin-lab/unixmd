@@ -51,7 +51,7 @@ class EhXF(MQC):
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, \
-        rho_threshold=0.01, sigma=None, init_coef=None, l_xf_force=True,  l_econs_state=True, \
+        rho_threshold=0.01, sigma=None, init_coef=None, l_xf_force=True, l_econs_state=True, \
         l_td_sigma=False, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
