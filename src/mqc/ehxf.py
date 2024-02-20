@@ -444,7 +444,7 @@ class EhXF(MQC):
             if (self.l_first[0]):
                 for iat in range(self.aux.nat):
                     for isp in range(self.aux.ndim):
-                        self.sigma[iat, isp] = 100000
+                        self.sigma[iat, isp] = 100000.
             else:
                 for iat in range(self.aux.nat):
                     for isp in range(self.aux.ndim):
@@ -456,7 +456,7 @@ class EhXF(MQC):
                         else:
                             for iat in range(self.aux.nat):
                                 for isp in range(self.aux.ndim):
-                                    self.sigma[iat, isp] = 100000
+                                    self.sigma[iat, isp] = 100000.
 
     def get_phase(self):
         """ Routine to calculate phase term
@@ -504,7 +504,7 @@ class EhXF(MQC):
             sigma = []
             for sgm in self.sigma:
                 sigma.append(self.aux.nat * [sgm])
-            self.sigma = sigma[:]
+                self.sigma = sigma[:]
         else:
         if (self.l_td_sigma):
             self.sigma = np.array(self.aux.nat * [self.aux.ndim * [0.0]])

@@ -90,7 +90,7 @@ def el_run(md):
     for iat in range(aux_nat):
         for isp in range(aux_ndim):
             pos[iat][isp] = md.pos_0[iat, isp]
-            sigma[iat][isp] = md.sigma[iat,isp]
+            sigma[iat][isp] = md.sigma[iat, isp]
 
     for ist in range(nst):
         l_coh[ist] = md.l_coh[ist]
