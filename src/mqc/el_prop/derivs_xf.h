@@ -4,7 +4,7 @@
 #include <math.h>
 
 // Routine to calculate cdot contribution originated from XF term
-static void xf_cdot(int nat, int ndim, int nst, int *l_coh, double *mass, double *sigma,
+static void xf_cdot(int nat, int ndim, int nst, int *l_coh, double *mass, double **sigma,
     double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *c, double complex *xfcdot){
 
     double **dec = malloc(nst * sizeof(double*));
@@ -89,7 +89,7 @@ static void xf_print_coef(int nst, double complex *coef, double complex *xfcdot,
 }
 
 // Routine to calculate rhodot contribution originated from XF term
-static void xf_rhodot(int nat, int ndim, int nst, int *l_coh, double *mass, double *sigma,
+static void xf_rhodot(int nat, int ndim, int nst, int *l_coh, double *mass, double **sigma,
     double **pos, double **qmom, double ***aux_pos, double ***phase, double complex **rho, double complex **xfrhodot){
 
     double **dec = malloc(nst * sizeof(double*));

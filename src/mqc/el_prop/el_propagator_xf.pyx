@@ -6,7 +6,7 @@ cimport numpy as np
 
 cdef extern from "rk4_xf.c":
     void rk4(int nat, int ndim, int nst, int nesteps, double dt, char *elec_object, \
-        bint *l_coh, double *mass, double *energy, double *energy_old, double *sigma, \
+        bint *l_coh, double *mass, double *energy, double *energy_old, double **sigma, \
         double **nacme, double **nacme_old, double **pos, double **qmom, double ***aux_pos, \
         double ***phase, double complex *coef, double complex **rho, int verbosity, \
         double *dotpopdec)
@@ -18,7 +18,7 @@ def el_run(md):
         double *mass
         double *energy
         double *energy_old
-        double *sigma
+        double **sigma
         double **nacme
         double **nacme_old
         double **pos
