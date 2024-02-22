@@ -174,6 +174,7 @@ def el_run(md):
     for iat in range(aux_nat):
         PyMem_Free(pos[iat])
         PyMem_Free(qmom[iat])
+        PyMem_Free(sigma[iat])
 
     for ist in range(nst):
         PyMem_Free(aux_pos[ist])
