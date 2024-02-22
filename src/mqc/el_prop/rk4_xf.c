@@ -8,19 +8,19 @@
 
 // Routine for coefficient propagation scheme in rk4 propagator
 static void rk4_coef(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
-    double *mass, double *energy, double *energy_old, double *sigma, double **nacme,
+    double *mass, double *energy, double *energy_old, double **sigma, double **nacme,
     double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *coef,
     int verbosity, double *dotpopdec);
 
 // Routine for density propagation scheme in rk4 propagator
 static void rk4_rho(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
-    double *mass, double *energy, double *energy_old, double *sigma, double **nacme,
+    double *mass, double *energy, double *energy_old, double **sigma, double **nacme,
     double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex **rho,
     int verbosity, double *dotpopdec);
 
 // Interface routine for propagation scheme in rk4 propagator
 static void rk4(int nat, int ndim, int nst, int nesteps, double dt, char *elec_object, int *l_coh,
-    double *mass, double *energy, double *energy_old, double *sigma, double **nacme, double **nacme_old,
+    double *mass, double *energy, double *energy_old, double **sigma, double **nacme, double **nacme_old,
     double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *coef, double complex **rho,
     int verbosity, double *dotpopdec){
 
@@ -37,7 +37,7 @@ static void rk4(int nat, int ndim, int nst, int nesteps, double dt, char *elec_o
 
 // Routine for coefficient propagation scheme in rk4 propagator
 static void rk4_coef(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
-    double *mass, double *energy, double *energy_old, double *sigma, double **nacme,
+    double *mass, double *energy, double *energy_old, double **sigma, double **nacme,
     double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *coef,
     int verbosity, double *dotpopdec){
 
@@ -148,7 +148,7 @@ static void rk4_coef(int nat, int ndim, int nst, int nesteps, double dt, int *l_
 
 // Routine for density propagation scheme in rk4 propagator
 static void rk4_rho(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
-    double *mass, double *energy, double *energy_old, double *sigma, double **nacme,
+    double *mass, double *energy, double *energy_old, double **sigma, double **nacme,
     double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex **rho,
     int verbosity, double *dotpopdec){
 

@@ -6,7 +6,7 @@ cimport numpy as np
 
 cdef extern from "rk4_xf.c":
     void rk4(int nat, int ndim, int nst, int nesteps, double dt, char *elec_object, \
-        bint *l_coh, double *mass, double *energy, double *energy_old, double *sigma, \
+        bint *l_coh, double *mass, double *energy, double *energy_old, double **sigma, \
         double **nacme, double **nacme_old, double **pos, double **qmom, double ***aux_pos, \
         double ***phase, double complex *coef, double complex **rho, int verbosity, \
         double *dotpopdec)
@@ -18,7 +18,7 @@ def el_run(md):
         double *mass
         double *energy
         double *energy_old
-        double *sigma
+        double **sigma
         double **nacme
         double **nacme_old
         double **pos
@@ -43,12 +43,12 @@ def el_run(md):
     mass = <double*> PyMem_Malloc(aux_nat * sizeof(double))
     energy = <double*> PyMem_Malloc(nst * sizeof(double))
     energy_old = <double*> PyMem_Malloc(nst * sizeof(double))
-    sigma = <double*> PyMem_Malloc(aux_nat * sizeof(double))
 
     nacme = <double**> PyMem_Malloc(nst * sizeof(double*))
     nacme_old = <double**> PyMem_Malloc(nst * sizeof(double*))
     pos = <double**> PyMem_Malloc(aux_nat * sizeof(double*))
     qmom = <double**> PyMem_Malloc(aux_nat * sizeof(double*))
+    sigma = <double**> PyMem_Malloc(aux_nat * sizeof(double*))
 
     aux_pos = <double***> PyMem_Malloc(nst * sizeof(double**))
     phase = <double***> PyMem_Malloc(nst * sizeof(double**))
@@ -60,6 +60,7 @@ def el_run(md):
     for iat in range(aux_nat):
         pos[iat] = <double*> PyMem_Malloc(aux_ndim * sizeof(double))
         qmom[iat] = <double*> PyMem_Malloc(aux_ndim * sizeof(double))
+        sigma[iat] = <double*> PyMem_Malloc(aux_ndim * sizeof(double))
 
     for ist in range(nst):
         aux_pos[ist] = <double**> PyMem_Malloc(aux_nat * sizeof(double*))
@@ -80,7 +81,6 @@ def el_run(md):
 
     for iat in range(aux_nat):
         mass[iat] = md.aux.mass[iat]
-        sigma[iat] = md.sigma[iat]
 
     for ist in range(nst):
         for jst in range(nst):
@@ -90,6 +90,7 @@ def el_run(md):
     for iat in range(aux_nat):
         for isp in range(aux_ndim):
             pos[iat][isp] = md.pos_0[iat, isp]
+            sigma[iat][isp] = md.sigma[iat, isp]
 
     for ist in range(nst):
         l_coh[ist] = md.l_coh[ist]
@@ -173,6 +174,7 @@ def el_run(md):
     for iat in range(aux_nat):
         PyMem_Free(pos[iat])
         PyMem_Free(qmom[iat])
+        PyMem_Free(sigma[iat])
 
     for ist in range(nst):
         PyMem_Free(aux_pos[ist])
