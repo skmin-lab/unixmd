@@ -633,7 +633,7 @@ class SHXF(MQC):
             sigma = []
             for sgm in self.sigma:
                 sigma.append(self.aux.nat * [sgm])
-                self.sigma = sigma[:]
+            self.sigma = sigma[:]
         else:
             if (self.l_td_sigma):
                 self.sigma = np.array(self.aux.nat * [self.aux.ndim * [0.0]])
