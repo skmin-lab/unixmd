@@ -12,7 +12,7 @@ math_lib_dir = "${MKLROOT}/lib/intel64/"
 #math_lib_dir = "/my_disk/my_name/lapack/"
 
 sourcefile1 = ["./src/mqc/el_prop/el_propagator.pyx", "./src/mqc/el_prop/rk4.c", "./src/mqc/el_prop/exponential.c"]
-sourcefile2 = ["./src/mqc/el_prop/el_propagator_xf.pyx", "./src/mqc/el_prop/rk4_xf.c"]
+sourcefile2 = ["./src/mqc/el_prop/el_propagator_xf.pyx", "./src/mqc/el_prop/rk4_xf.c", "./src/mqc/el_prop/exponential_xf.c"]
 sourcefile3 = ["./src/mqc/el_prop/el_propagator_ct.pyx", "./src/mqc/el_prop/rk4_ct.c"]
 sourcefile4 = ["./src/qm/cioverlap/cioverlap.pyx", "./src/qm/cioverlap/tdnac.c"]
 
@@ -39,7 +39,8 @@ else:
 extensions = [
     Extension("el_propagator", sources=sourcefile1,  include_dirs=[np.get_include()], \
         libraries=libs, library_dirs=lib_dirs),
-    Extension("el_propagator_xf", sources=sourcefile2, include_dirs=[np.get_include()]),
+    Extension("el_propagator_xf", sources=sourcefile2, include_dirs=[np.get_include()], \
+        libraries=libs, library_dirs=lib_dirs),
     Extension("el_propagator_ct", sources=sourcefile3, include_dirs=[np.get_include()]),
     Extension("cioverlap", sources=sourcefile4, include_dirs=[np.get_include()], \
         libraries=libs, library_dirs=lib_dirs, extra_compile_args=extra_flags)
