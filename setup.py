@@ -20,7 +20,7 @@ sourcefile3 = ["./src/mqc/el_prop/el_propagator_ct.pyx", "./src/mqc/el_prop/rk4_
 sourcefile4 = ["./src/qm/cioverlap/cioverlap.pyx", "./src/qm/cioverlap/tdnac.c"]
 
 sourcefile1_qed = ["./src/mqc_qed/el_prop/el_propagator.pyx", "./src/mqc_qed/el_prop/rk4.c"]
-sourcefile2_qed = ["./src/mqc_qed/el_prop/el_propagator_xf.pyx", "./src/mqc_qed/el_prop/rk4_xf.c"]
+sourcefile2_qed = ["./src/mqc_qed/el_prop/el_propagator_xf.pyx", "./src/mqc_qed/el_prop/rk4_xf.c", "./src/mqc_qed/el_prop/exponential_xf.c"]
 
 # External libraries to be linked
 libs = []

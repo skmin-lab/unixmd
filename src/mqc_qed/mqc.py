@@ -75,7 +75,7 @@ class MQC_QED(object):
         if (self.propagator != None):
             self.propagator = self.propagator.lower()
 
-        if not (self.propagator in [None, "rk4"]):
+        if not (self.propagator in [None, "rk4", "exponential"]):
             error_message = "Invalid electronic propagator!"
             error_vars = f"propagator = {self.propagator}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
@@ -373,6 +373,7 @@ class MQC_QED(object):
 
         if (self.md_type != "BOMD"):
             dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
+            dynamics_info += f"  Electronic Propagator    = {self.propagator:>16s}\n"
             dynamics_info += f"  Propagation Scheme       = {self.elec_object:>16s}\n"
 
         # Print surface hopping variables

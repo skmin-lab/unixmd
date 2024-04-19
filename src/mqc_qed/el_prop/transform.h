@@ -1,3 +1,6 @@
+#ifndef TRANSFORM_H
+#define TRANSFORM_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>
@@ -23,5 +26,6 @@ static void transform_d2a(int pst, double **unitary, double complex *coef_d, dou
     }
 
 }
+#endif
 
 

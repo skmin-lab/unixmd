@@ -1,3 +1,6 @@
+#ifndef DERIVS_XF_H
+#define DERIVS_XF_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>
@@ -63,6 +66,7 @@ static void xf_print_coef(int pst, double **unitary, double **dec_mat, double co
     free(rho);
 
 }
+#endif
 
 //// Routine to calculate rhodot contribution originated from XF term
 //static void xf_rhodot(int nat, int ndim, int nst, int *l_coh, double *mass, double *sigma,
