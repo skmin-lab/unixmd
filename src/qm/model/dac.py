@@ -74,8 +74,8 @@ class DAC(Model):
         molecule.states[0].energy = 0.5 * (H[0, 0] + H[1, 1]) - 0.5 * sqa
         molecule.states[1].energy = 0.5 * (H[0, 0] + H[1, 1]) + 0.5 * sqa
 
-        molecule.states[0].force = np.dot(unitary[:, 1], np.matmul(dH, unitary[:, 1]))
-        molecule.states[1].force = np.dot(unitary[:, 0], np.matmul(dH, unitary[:, 0]))
+        molecule.states[0].force = - np.dot(unitary[:, 0], np.matmul(dH, unitary[:, 0]))
+        molecule.states[1].force = - np.dot(unitary[:, 1], np.matmul(dH, unitary[:, 1]))
 
         molecule.nac[0, 1, 0, 0] = np.dot(unitary[:, 0], np.matmul(dH, unitary[:, 1])) / sqa
         molecule.nac[1, 0, 0, 0] = - molecule.nac[0, 1, 0, 0]
