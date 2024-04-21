@@ -154,7 +154,7 @@ def el_run(md, qed):
             sigma, get_d_ind, unitary, ham_d, ham_d_old, nacme, nacme_old, pos, aux_pos, \
             phase, dotpopdec_d, coef_d, qmom)
 
-    elif (md.propagator == "expon"):
+    elif (md.propagator == "exponential"):
         exponential(aux_nat, aux_ndim, pst, nesteps, verbosity, dt, elec_object_c, l_coh, \
             mass, sigma, get_d_ind, unitary, ham_d, ham_d_old, nacme, nacme_old, pos, aux_pos, \
             phase, dotpopdec_d, coef_d, qmom)

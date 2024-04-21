@@ -3,8 +3,7 @@
 #include <complex.h>
 #include <math.h>
 #include <string.h>
-#include "derivs_xf.h"
-#include "transform.h"
+#include "derivs.h"
 
 // Complex datatype
 struct _dcomplex {double real, imag;};
@@ -17,10 +16,8 @@ extern void zgemm_(char *transa, char *transb, int *m, int *n, int *k, dcomplex 
     dcomplex *a, int *lda, dcomplex *b, int *ldb, dcomplex *beta, dcomplex *c, int *ldc);
 
 // Routine for coefficient propagation scheme in exponential propagator
-static void exponential_coef(int nat, int ndim, int pst, int nesteps, int verbosity, double dt,
-    int *l_coh, double *mass, double *sigma, int **get_d_ind, double **unitary, double **ham_d,
-    double **ham_d_old, double **nacme, double **nacme_old, double **pos, double ***aux_pos,
-    double ***phase, double *dotpopdec_d, double complex *coef_d, double **qmom);
+static void exponential_coef(int pst, int nesteps, double dt, int **get_d_ind, double **ham_d,
+    double **ham_d_old, double **nacme, double **nacme_old, double complex *coef_d);
 
 // Routine for density propagation scheme in rk4 propagator
 //static void rk4_rho(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
@@ -29,14 +26,11 @@ static void exponential_coef(int nat, int ndim, int pst, int nesteps, int verbos
 //    int verbosity, double *dotpopdec);
 
 // Interface routine for propagation scheme in exponential propagator
-static void exponential(int nat, int ndim, int pst, int nesteps, int verbosity, double dt, char *elec_object,
-    int *l_coh, double *mass, double *sigma, int **get_d_ind, double **unitary, double **ham_d,
-    double **ham_d_old, double **nacme, double **nacme_old, double **pos, double ***aux_pos,
-    double ***phase, double *dotpopdec_d, double complex *coef_d, double **qmom){
+static void exponential(int pst, int nesteps, double dt, char *elec_object, int **get_d_ind, double **ham_d,
+    double **ham_d_old, double **nacme, double **nacme_old, double complex *coef_d){
 
     if(strcmp(elec_object, "coefficient") == 0){
-        exponential_coef(nat, ndim, pst, nesteps, verbosity, dt, l_coh, mass, sigma, get_d_ind, unitary,
-            ham_d, ham_d_old, nacme, nacme_old, pos, aux_pos, phase, dotpopdec_d, coef_d, qmom);
+        exponential_coef(pst, nesteps, dt, get_d_ind, ham_d, ham_d_old, nacme, nacme_old, coef_d);
     }
 //    else if(strcmp(elec_object, "density") == 0){
 //        rk4_rho(nat, ndim, nst, nesteps, dt, l_coh, mass, energy, energy_old, sigma,
@@ -46,17 +40,11 @@ static void exponential(int nat, int ndim, int pst, int nesteps, int verbosity, 
 }
 
 // Routine for coefficient propagation scheme in exponential propagator
-static void exponential_coef(int nat, int ndim, int pst, int nesteps, int verbosity, double dt,
-    int *l_coh, double *mass, double *sigma, int **get_d_ind, double **unitary, double **ham_d,
-    double **ham_d_old, double **nacme, double **nacme_old, double **pos, double ***aux_pos,
-    double ***phase, double *dotpopdec_d, double complex *coef_d, double **qmom){
+static void exponential_coef(int pst, int nesteps, double dt, int **get_d_ind, double **ham_d,
+    double **ham_d_old, double **nacme, double **nacme_old, double complex *coef_d){
 
-    double complex *coef_a = malloc(pst * sizeof(double complex));
     double complex *coef_new = malloc(pst * sizeof(double complex));
     double complex **prop_mat = malloc(pst * sizeof(double complex*));
-    double complex **rho_a = malloc(pst * sizeof(double complex*));
-    double **dec_mat = malloc(pst * sizeof(double*));
-    double complex **dec_mat_d = malloc(pst * sizeof(double complex*));
 
     // (Hamiltonian - i * (NACME + decoherence)) * dt
     double complex **exponent = malloc((pst) * sizeof(double complex*));
@@ -87,20 +75,13 @@ static void exponential_coef(int nat, int ndim, int pst, int nesteps, int verbos
     dcomplex dcone = {1.0, 0.0};
     dcomplex dczero = {0.0, 0.0};
 
-    int ist, jst, kst, ast, bst, iestep, ind_mol1, ind_mol2, ind_photon1, ind_photon2;
-    int iat, isp;
+    int ist, jst, kst, iestep, ind_mol1, ind_mol2, ind_photon1, ind_photon2;
     // TODO : Is norm necessary?
     double frac, edt, erel, tmp1, tmp2;//, norm;
     double complex tmp_coef;
 
     for(ist = 0; ist < pst; ist++){
         prop_mat[ist] = malloc(pst * sizeof(double complex));
-    }
-
-    for(ist = 0; ist < pst; ist++){
-        rho_a[ist] = malloc(pst * sizeof(double complex));
-        dec_mat[ist] = malloc(pst * sizeof(double));
-        dec_mat_d[ist] = malloc(pst * sizeof(double complex));
     }
 
     for(ist = 0; ist < pst; ist++){
@@ -137,71 +118,6 @@ static void exponential_coef(int nat, int ndim, int pst, int nesteps, int verbos
     frac = 1.0 / (double)nesteps;
     edt = dt * frac;
 
-    // Get polaritonic state coefficients for calculation of decoherence term
-    transform_d2a(pst, unitary, coef_d, coef_a);
-    for(ist = 0; ist < pst; ist++){
-        for(jst = 0; jst < pst; jst++){
-            rho_a[ist][jst] = conj(coef_a[ist]) * coef_a[jst];
-        }
-    }
-
-    // Get quantum momentum from auxiliary positions and sigma values
-    for(iat = 0; iat < nat; iat++){
-        for(isp = 0; isp < ndim; isp++){
-            qmom[iat][isp] = 0.0;
-        }
-    }
-    for(ist = 0; ist < pst; ist++){
-
-        if(l_coh[ist] == 1){
-            for(iat = 0; iat < nat; iat++){
-                for(isp = 0; isp < ndim; isp++){
-                    qmom[iat][isp] += 0.5 * rho_a[ist][ist] * (pos[iat][isp] - aux_pos[ist][iat][isp])
-                        / pow(sigma[iat], 2.0) / mass[iat];
-                }
-            }
-        }
-
-    }
-
-    // Get decoherence term from quantum momentum and phase
-    for(ist = 0; ist < pst; ist++){
-        for(jst = 0; jst < pst; jst++){
-            dec_mat[ist][jst] = 0.0;
-        }
-    }
-    for(ist = 0; ist < pst; ist++){
-        for(jst = ist + 1; jst < pst; jst++){
-
-            if(l_coh[ist] == 1 && l_coh[jst] == 1){
-                for(iat = 0; iat < nat; iat++){
-                    for(isp = 0; isp < ndim; isp++){
-                        dec_mat[ist][jst] += qmom[iat][isp] * (phase[ist][iat][isp] - phase[jst][iat][isp]);
-                    }
-                }
-            }
-            dec_mat[jst][ist] = - 1.0 * dec_mat[ist][jst];
-
-        }
-    }
-
-    // Transform the decoherence term to uncoupled basis
-    for(ast = 0; ast < pst; ast++){
-        for(bst = 0; bst < pst; bst++){
-
-            dec_mat_d[ast][bst] = 0.0 + 0.0 * I;
-            for(ist = 0; ist < pst; ist++){
-                for(jst = 0; jst < pst; jst++){
-                    if(ist != jst){
-                        dec_mat_d[ast][bst] += unitary[ast][ist] * dec_mat[jst][ist]
-                            * rho_a[jst][ist] * unitary[bst][jst];
-                    }
-                }
-            }
-
-        }
-    }
-
     for(iestep = 0; iestep < nesteps; iestep++){
 
         // Interpolate ham_d and NACME terms between time t and t + dt
@@ -236,7 +152,7 @@ static void exponential_coef(int nat, int ndim, int pst, int nesteps, int verbos
         // exponent = (Hamiltonian - i * (NACME + decoherence)) * dt
         for(ist = 0; ist < pst; ist++){
             for (jst = 0; jst < pst; jst++){
-                exponent[ist][jst] = (prop_mat[ist][jst] * I - dec_mat_d[ist][jst] * I) * edt;
+                exponent[ist][jst] = prop_mat[ist][jst] * I * edt;
             }
         }
 
@@ -307,30 +223,16 @@ static void exponential_coef(int nat, int ndim, int pst, int nesteps, int verbos
         coef_d[ist] = coef_new[ist];
     }
 
-    if(verbosity >= 1){
-        transform_d2a(pst, unitary, coef_d, coef_a);
-        xf_print_coef(pst, unitary, dec_mat, coef_d, coef_a, dotpopdec_d);
-    }
-
     for(ist = 0; ist < pst; ist++){
         free(prop_mat[ist]);
-    }
-    for(ist = 0; ist < pst; ist++){
-        free(rho_a[ist]);
-        free(dec_mat[ist]);
-        free(dec_mat_d[ist]);
     }
     for(ist = 0; ist < pst; ist++){
         free(exponent[ist]);
         free(propagator[ist]);
     }
 
-    free(coef_a);
     free(coef_new);
     free(prop_mat);
-    free(rho_a);
-    free(dec_mat);
-    free(dec_mat_d);
 
     free(exponent);
     free(propagator);

@@ -8,6 +8,10 @@ cdef extern from "rk4.c":
     void rk4(int pst, int nesteps, double dt, char *elec_object, int **get_d_ind, double **ham_d, \
         double **ham_d_old, double **nacme, double **nacme_old, double complex *coef_d)
 
+cdef extern from "exponential.c":
+    void exponential(int pst, int nesteps, double dt, char *elec_object, int **get_d_ind, \
+        double **ham_d, double **ham_d_old, double **nacme, double **nacme_old, double complex *coef_d)
+
 def el_run(md, qed):
     cdef:
         char *elec_object_c
@@ -21,7 +25,7 @@ def el_run(md, qed):
 
         bytes py_bytes
         int ist, jst, nst, pst, nesteps, verbosity
-        int ind_mol1, int_mol2
+        int ind_mol1, ind_mol2
         double dt
 
     # Assign size variables
@@ -90,6 +94,9 @@ def el_run(md, qed):
     # Propagate electrons depending on the propagator
     if (md.propagator == "rk4"):
         rk4(pst, nesteps, dt, elec_object_c, get_d_ind, ham_d, ham_d_old, nacme, nacme_old, coef_d)
+
+    elif (md.propagator == "exponential"):
+        exponential(pst, nesteps, dt, elec_object_c, get_d_ind, ham_d, ham_d_old, nacme, nacme_old, coef_d)
 
     # Assign variables from C to python
     if (md.elec_object == "coefficient"):
