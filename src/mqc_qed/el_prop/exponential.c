@@ -44,7 +44,7 @@ static void exponential_coef(int pst, int nesteps, double dt, int **get_d_ind, d
     double **ham_d_old, double **nacme, double **nacme_old, double complex *coef_d){
 
     double complex *coef_new = malloc(pst * sizeof(double complex));
-    double complex **prop_mat = malloc(pst * sizeof(double complex*));
+    double complex **prop_mat_d = malloc(pst * sizeof(double complex*));
 
     // (Hamiltonian - i * (NACME + decoherence)) * dt
     double complex **exponent = malloc((pst) * sizeof(double complex*));
@@ -81,7 +81,7 @@ static void exponential_coef(int pst, int nesteps, double dt, int **get_d_ind, d
     double complex tmp_coef;
 
     for(ist = 0; ist < pst; ist++){
-        prop_mat[ist] = malloc(pst * sizeof(double complex));
+        prop_mat_d[ist] = malloc(pst * sizeof(double complex));
     }
 
     for(ist = 0; ist < pst; ist++){
@@ -143,7 +143,7 @@ static void exponential_coef(int pst, int nesteps, double dt, int **get_d_ind, d
                     tmp2 = nacme_old[ind_mol1][ind_mol2] + (nacme[ind_mol1][ind_mol2] - nacme_old[ind_mol1][ind_mol2])
                         * (double)iestep * frac;
                 }
-                prop_mat[ist][jst] = - 1.0 * tmp1 * I - tmp2;
+                prop_mat_d[ist][jst] = - 1.0 * tmp1 * I - tmp2;
 
             }
         }
@@ -152,7 +152,7 @@ static void exponential_coef(int pst, int nesteps, double dt, int **get_d_ind, d
         // exponent = (Hamiltonian - i * (NACME + decoherence)) * dt
         for(ist = 0; ist < pst; ist++){
             for (jst = 0; jst < pst; jst++){
-                exponent[ist][jst] = prop_mat[ist][jst] * I * edt;
+                exponent[ist][jst] = prop_mat_d[ist][jst] * I * edt;
             }
         }
 
@@ -224,7 +224,7 @@ static void exponential_coef(int pst, int nesteps, double dt, int **get_d_ind, d
     }
 
     for(ist = 0; ist < pst; ist++){
-        free(prop_mat[ist]);
+        free(prop_mat_d[ist]);
     }
     for(ist = 0; ist < pst; ist++){
         free(exponent[ist]);
@@ -232,7 +232,7 @@ static void exponential_coef(int pst, int nesteps, double dt, int **get_d_ind, d
     }
 
     free(coef_new);
-    free(prop_mat);
+    free(prop_mat_d);
 
     free(exponent);
     free(propagator);

@@ -38,7 +38,7 @@ static void xf_cdot(int pst, double **unitary, double **dec_mat, double complex 
 
 // Routine to print xf debug info 
 static void xf_print_coef(int pst, double **unitary, double **dec_mat, double complex *coef_d,
-    double complex *coef_a, double *dotpopdec){
+    double complex *coef_a, double *dotpopdec_d){
 
     double *rho = malloc(pst * sizeof(double));
 
@@ -49,14 +49,14 @@ static void xf_print_coef(int pst, double **unitary, double **dec_mat, double co
     }
 
     for(ast = 0; ast < pst; ast++){
-        dotpopdec[ast] = 0.0;
+        dotpopdec_d[ast] = 0.0;
     }
 
     for(ast = 0; ast < pst; ast++){
 
         for(ist = 0; ist < pst; ist++){
             for(jst = 0; jst < pst; jst++){
-                dotpopdec[ast] -= unitary[ast][ist] * rho[jst] * dec_mat[jst][ist]
+                dotpopdec_d[ast] -= unitary[ast][ist] * rho[jst] * dec_mat[jst][ist]
                     * creal( conj(coef_a[ist]) * coef_d[ast] + coef_a[ist] * conj(coef_d[ast]) );
             }
         }

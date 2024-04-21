@@ -52,7 +52,7 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
     double complex *xf_c_dot = malloc(pst * sizeof(double complex));
     double complex *coef_a = malloc(pst * sizeof(double complex));
     double complex *coef_new = malloc(pst * sizeof(double complex));
-    double complex **prop_mat = malloc(pst * sizeof(double complex*));
+    double complex **prop_mat_d = malloc(pst * sizeof(double complex*));
     double **dec_mat = malloc(pst * sizeof(double*));
 
     int ist, jst, iestep, ind_mol1, ind_mol2, ind_photon1, ind_photon2;
@@ -62,7 +62,7 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
     double rho;
 
     for(ist = 0; ist < pst; ist++){
-        prop_mat[ist] = malloc(pst * sizeof(double complex));
+        prop_mat_d[ist] = malloc(pst * sizeof(double complex));
     }
 
     for(ist = 0; ist < pst; ist++){
@@ -144,13 +144,13 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
                     tmp2 = nacme_old[ind_mol1][ind_mol2] + (nacme[ind_mol1][ind_mol2] - nacme_old[ind_mol1][ind_mol2])
                         * (double)iestep * frac;
                 }
-                prop_mat[ist][jst] = - 1.0 * tmp1 * I - tmp2;
+                prop_mat_d[ist][jst] = - 1.0 * tmp1 * I - tmp2;
 
             }
         }
 
         // Calculate k1
-        cdot(pst, prop_mat, coef_d, c_dot);
+        cdot(pst, prop_mat_d, coef_d, c_dot);
 
         for(ist = 0; ist < pst; ist++){
             k1[ist] = edt * (c_dot[ist] + xf_c_dot[ist]);
@@ -159,7 +159,7 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
         }
 
         // Calculate k2
-        cdot(pst, prop_mat, coef_new, c_dot);
+        cdot(pst, prop_mat_d, coef_new, c_dot);
 
         for(ist = 0; ist < pst; ist++){
             k2[ist] = edt * (c_dot[ist] + xf_c_dot[ist]);
@@ -168,7 +168,7 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
         }
 
         // Calculate k3
-        cdot(pst, prop_mat, coef_new, c_dot);
+        cdot(pst, prop_mat_d, coef_new, c_dot);
 
         for(ist = 0; ist < pst; ist++){
             k3[ist] = edt * (c_dot[ist] + xf_c_dot[ist]);
@@ -177,7 +177,7 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
         }
 
         // Calculate k4
-        cdot(pst, prop_mat, coef_new, c_dot);
+        cdot(pst, prop_mat_d, coef_new, c_dot);
 
         for(ist = 0; ist < pst; ist++){
             k4[ist] = edt * (c_dot[ist] + xf_c_dot[ist]);
@@ -202,7 +202,7 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
     }
 
     for(ist = 0; ist < pst; ist++){
-        free(prop_mat[ist]);
+        free(prop_mat_d[ist]);
     }
     for(ist = 0; ist < pst; ist++){
         free(dec_mat[ist]);
@@ -218,7 +218,7 @@ static void rk4_coef(int nat, int ndim, int pst, int nesteps, int verbosity, dou
     free(xf_c_dot);
     free(coef_a);
     free(coef_new);
-    free(prop_mat);
+    free(prop_mat_d);
     free(dec_mat);
 
 }

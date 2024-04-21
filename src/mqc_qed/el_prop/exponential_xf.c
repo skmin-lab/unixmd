@@ -53,7 +53,7 @@ static void exponential_coef(int nat, int ndim, int pst, int nesteps, int verbos
 
     double complex *coef_a = malloc(pst * sizeof(double complex));
     double complex *coef_new = malloc(pst * sizeof(double complex));
-    double complex **prop_mat = malloc(pst * sizeof(double complex*));
+    double complex **prop_mat_d = malloc(pst * sizeof(double complex*));
     double complex **rho_a = malloc(pst * sizeof(double complex*));
     double **dec_mat = malloc(pst * sizeof(double*));
     double complex **dec_mat_d = malloc(pst * sizeof(double complex*));
@@ -94,7 +94,7 @@ static void exponential_coef(int nat, int ndim, int pst, int nesteps, int verbos
     double complex tmp_coef;
 
     for(ist = 0; ist < pst; ist++){
-        prop_mat[ist] = malloc(pst * sizeof(double complex));
+        prop_mat_d[ist] = malloc(pst * sizeof(double complex));
     }
 
     for(ist = 0; ist < pst; ist++){
@@ -227,7 +227,7 @@ static void exponential_coef(int nat, int ndim, int pst, int nesteps, int verbos
                     tmp2 = nacme_old[ind_mol1][ind_mol2] + (nacme[ind_mol1][ind_mol2] - nacme_old[ind_mol1][ind_mol2])
                         * (double)iestep * frac;
                 }
-                prop_mat[ist][jst] = - 1.0 * tmp1 * I - tmp2;
+                prop_mat_d[ist][jst] = - 1.0 * tmp1 * I - tmp2;
 
             }
         }
@@ -236,7 +236,7 @@ static void exponential_coef(int nat, int ndim, int pst, int nesteps, int verbos
         // exponent = (Hamiltonian - i * (NACME + decoherence)) * dt
         for(ist = 0; ist < pst; ist++){
             for (jst = 0; jst < pst; jst++){
-                exponent[ist][jst] = (prop_mat[ist][jst] * I - dec_mat_d[ist][jst] * I) * edt;
+                exponent[ist][jst] = (prop_mat_d[ist][jst] * I - dec_mat_d[ist][jst] * I) * edt;
             }
         }
 
@@ -313,7 +313,7 @@ static void exponential_coef(int nat, int ndim, int pst, int nesteps, int verbos
     }
 
     for(ist = 0; ist < pst; ist++){
-        free(prop_mat[ist]);
+        free(prop_mat_d[ist]);
     }
     for(ist = 0; ist < pst; ist++){
         free(rho_a[ist]);
@@ -327,7 +327,7 @@ static void exponential_coef(int nat, int ndim, int pst, int nesteps, int verbos
 
     free(coef_a);
     free(coef_new);
-    free(prop_mat);
+    free(prop_mat_d);
     free(rho_a);
     free(dec_mat);
     free(dec_mat_d);

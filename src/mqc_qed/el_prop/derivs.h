@@ -24,7 +24,7 @@
 //}
 
 // Routine to calculate cdot contribution originated from Ehrenfest term
-static void cdot(int pst, double complex **prop_mat, double complex *c, double complex *c_dot){
+static void cdot(int pst, double complex **prop_mat_d, double complex *c, double complex *c_dot){
 
     int ist, jst;
 
@@ -34,7 +34,7 @@ static void cdot(int pst, double complex **prop_mat, double complex *c, double c
 
     for(ist = 0; ist < pst; ist++){
         for(jst = 0; jst < pst; jst++){
-            c_dot[ist] += prop_mat[ist][jst] * c[jst];
+            c_dot[ist] += prop_mat_d[ist][jst] * c[jst];
         }
     }
 
