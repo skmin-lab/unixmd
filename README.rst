@@ -16,6 +16,7 @@ When you publish a work using any part of PyUNIxMD code, please cite the followi
 
 * PyUNIxMD: A Python-based excited state molecular dynamics package. *J. Comp. Chem.* **2021**, DOI: `10.1002/jcc.26711 <https://doi.org/10.1002/jcc.26711>`_
 
+* Coupled- and independent-trajectory approaches based on the exact factorization using the PyUNIxMD package. *Top. Cur. Chem.* **2022**, DOI: `10.1007/s41061-021-00361-7 <https://doi.org/10.1007/s41061-021-00361-7>`_
 
 Requirements
 ============
