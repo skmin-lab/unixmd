@@ -94,8 +94,8 @@ class SH(MQC):
     def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to surface hopping dynamics
 
-            :param object qm: QM object containing on-the-fly calculation infomation
-            :param object mm: MM object containing MM calculation infomation
+            :param object qm: QM object containing on-the-fly calculation information
+            :param object mm: MM object containing MM calculation information
             :param string output_dir: Name of directory where outputs to be saved.
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
@@ -476,8 +476,8 @@ class SH(MQC):
     def print_init(self, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
-            :param object qm: QM object containing on-the-fly calculation infomation
-            :param object mm: MM object containing MM calculation infomation
+            :param object qm: QM object containing on-the-fly calculation information
+            :param object mm: MM object containing MM calculation information
             :param string restart: Option for controlling dynamics restarting
         """
         # Print initial information about molecule, qm, mm and thermostat
@@ -503,7 +503,7 @@ class SH(MQC):
         print (dynamics_step_info, flush=True)
 
     def print_step(self, istep):
-        """ Routine to print each steps infomation about dynamics
+        """ Routine to print each steps information about dynamics
 
             :param integer istep: Current MD step
         """
