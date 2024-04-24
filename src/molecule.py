@@ -330,7 +330,7 @@ class Molecule(object):
     def print_init(self, mm):
         """ Print initial information about molecule.py
 
-            :param object mm: MM object containing MM calculation infomation
+            :param object mm: MM object containing MM calculation information
         """
         geom_info = textwrap.dedent(f"""\
         {"-" * 68}
