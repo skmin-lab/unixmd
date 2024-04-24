@@ -1,6 +1,3 @@
-#ifndef DERIVS_H
-#define DERIVS_H
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>
@@ -39,7 +36,6 @@ static void cdot(int pst, double complex **prop_mat_d, double complex *c, double
     }
 
 }
-#endif
 
 //// Routine to calculate rhodot contribution originated from Ehrenfest term
 //static void rhodot(int nst, double *e, double **dv, double complex **rho, double complex **rho_dot){

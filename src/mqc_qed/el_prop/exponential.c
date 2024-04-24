@@ -3,7 +3,6 @@
 #include <complex.h>
 #include <math.h>
 #include <string.h>
-#include "derivs.h"
 
 // Complex datatype
 struct _dcomplex {double real, imag;};
