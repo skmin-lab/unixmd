@@ -110,8 +110,8 @@ class CT(MQC_QED):
         """ Run MQC dynamics according to CTMQC dynamics
 
             :param object qed: QED object containing cavity-molecule interaction
-            :param object qm: QM object containing on-the-fly calculation infomation
-            :param object mm: MM object containing MM calculation infomation
+            :param object qm: QM object containing on-the-fly calculation information
+            :param object mm: MM object containing MM calculation information
             :param string output_dir: Name of directory where outputs to be saved.
             :param boolean l_save_qed_log: Logical for saving QED calculation log
             :param boolean l_save_qm_log: Logical for saving QM calculation log

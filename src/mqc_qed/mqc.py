@@ -98,8 +98,8 @@ class MQC_QED(object):
         """ Initialize MQC dynamics
 
             :param object qed: QED object containing cavity-molecule interaction
-            :param object qm: QM object containing on-the-fly calculation infomation
-            :param object mm: MM object containing MM calculation infomation
+            :param object qm: QM object containing on-the-fly calculation information
+            :param object mm: MM object containing MM calculation information
             :param string output_dir: Location of input directory
             :param boolean l_save_qed_log: Logical for saving QED calculation log
             :param boolean l_save_qm_log: Logical for saving QM calculation log
@@ -290,8 +290,8 @@ class MQC_QED(object):
         """ Routine to print the initial information of dynamics
 
             :param object qed: QED object containing cavity-molecule interaction
-            :param object qm: QM object containing on-the-fly calculation infomation
-            :param object mm: MM object containing MM calculation infomation
+            :param object qm: QM object containing on-the-fly calculation information
+            :param object mm: MM object containing MM calculation information
             :param string restart: Option for controlling dynamics restarting
         """
         # Print PyUNIxMD version
@@ -553,8 +553,8 @@ class MQC_QED(object):
     def check_qmmm(self, qm, mm):
         """ Routine to check compatibility between QM and MM objects
 
-            :param object qm: QM object containing on-the-fly calculation infomation
-            :param object mm: MM object containing MM calculation infomation
+            :param object qm: QM object containing on-the-fly calculation information
+            :param object mm: MM object containing MM calculation information
         """
         # Now check MM object
         if (mm.mm_prog == "Tinker"):
@@ -583,7 +583,7 @@ class MQC_QED(object):
         """ Routine to check compatibility between QED and QM objects
 
             :param object qed: QED object containing cavity-molecule interaction
-            :param object qm: QM object containing on-the-fly calculation infomation
+            :param object qm: QM object containing on-the-fly calculation information
         """
         # Now check QED object
         if (qed.qed_method == "Jaynes_Cummings"):
