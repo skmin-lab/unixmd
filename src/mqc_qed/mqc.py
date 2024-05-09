@@ -521,16 +521,16 @@ class MQC_QED(object):
                         for ist in range(self.pol.pst) for jst in range(ist + 1, self.pol.pst)])
                     typewriter(tmp, unixmd_dir, "QEDCOHD", "a")
 
-            # Write NACME file
+            # Write PNACME file
             tmp = f'{istep + 1:10d}' + "".join([f'{self.pol.pnacme[ist, jst]:15.8f}' \
                 for ist in range(self.pol.pst) for jst in range(ist + 1, self.pol.pst)])
             typewriter(tmp, unixmd_dir, "PNACME", "a")
 
-            # Write NACV file
+            # Write PNACV file
             if (not self.pol.l_pnacme and self.verbosity >= 2):
                 for ist in range(self.pol.pst):
                     for jst in range(ist + 1, self.pol.pst):
-                        tmp = f'{self.pol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV' + \
+                        tmp = f'{self.pol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}PNACV' + \
                             "".join(["\n" + f'{self.pol.symbols[iat]:5s}' + \
                             "".join([f'{self.pol.pnac[ist, jst, iat, isp]:15.8f}' for isp in range(self.pol.ndim)]) for iat in range(self.pol.nat_qm)])
                         typewriter(tmp, unixmd_dir, f"PNACV_{ist}_{jst}", "a")

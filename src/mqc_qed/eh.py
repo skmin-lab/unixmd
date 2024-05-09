@@ -58,7 +58,7 @@ class Eh(MQC_QED):
         qm.calc_coupling = True
         qm.calc_tdp = True
         qm.calc_tdp_grad = False
-        if (qed.force_level == "tdp"):
+        if (qed.force_level == "full"):
             qm.calc_tdp_grad = True
         self.print_init(qed, qm, mm, restart)
 

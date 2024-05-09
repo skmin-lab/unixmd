@@ -44,11 +44,11 @@ class BOMD(MQC_QED):
         bo_list = [ist for ist in range(self.pol.nst)]
         pol_list = [self.istate]
         qm.calc_coupling = False
-        if (qed.force_level == "nac"):
+        if (qed.force_level == "hf"):
             qm.calc_coupling = True
         qm.calc_tdp = True
         qm.calc_tdp_grad = False
-        if (qed.force_level == "tdp"):
+        if (qed.force_level == "full"):
             qm.calc_tdp_grad = True
         self.print_init(qed, qm, mm, restart)
 

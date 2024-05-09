@@ -33,7 +33,7 @@ class Polaritonic_State(object):
 
 
 class Polariton(object):
-    """ Class for a polariton object including State objects
+    """ Class for a polariton object including State and Polaritonic_State objects
 
         :param string geometry: A string containing atomic positions and velocities
         :param integer ndim: Dimension of space

@@ -14,7 +14,7 @@ class Jaynes_Cummings(QED_calculator):
         :param boolean l_check_crossing: Logical to check diabatic character of polaritonic states
         :param boolean l_crt: Logical to include the counter-rotating terms
     """
-    def __init__(self, polariton, coupling_strength=0.001, force_level="nac", \
+    def __init__(self, polariton, coupling_strength=0.001, force_level="hf", \
         l_check_crossing=False, l_crt=False):
         # Save name of QED calculator
         super().__init__()
@@ -23,17 +23,17 @@ class Jaynes_Cummings(QED_calculator):
         self.coup_str = coupling_strength
 
         self.force_level = force_level.lower()
-        if not (self.force_level in ["energy", "nac", "tdp"]):
+        if not (self.force_level in ["diag_only", "hf", "full"]):
             error_message = "Invalid method for calculation of polaritonic state gradient!"
             error_vars = f"force_level = {self.force_level}"
             raise ValueError (f"( {self.qed_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        if (polariton.l_nacme and self.force_level == "nac"):
+        if (polariton.l_nacme and self.force_level == "hf"):
             error_message = "Chosen force computation needs evaluation of NACVs, check your QM object or QED force level!"
             error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}, force_level = {self.force_level}"
             raise ValueError (f"( {self.qed_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        if (self.force_level in ["energy", "nac"]):
+        if (self.force_level in ["diag_only", "hf"]):
             print ("\n\n WARNING: Chosen force computation may not be accurate for strong coupling case, carefully choose force computation! \n\n", flush=True)
 
         # Check the diabatic character of adjacent two states
@@ -71,7 +71,7 @@ class Jaynes_Cummings(QED_calculator):
         # Set 'l_pnacme' with respect to the Hamiltonian model
         # pNACs can be computed within JC model
         polariton.l_pnacme = True
-        if (self.force_level == "tdp" and not polariton.l_nacme):
+        if (self.force_level == "full" and not polariton.l_nacme):
             polariton.l_pnacme = False
 
     def get_data(self, polariton, base_dir, pol_list, dt, istep, calc_force_only):
@@ -318,7 +318,7 @@ class Jaynes_Cummings(QED_calculator):
                 ind_photon1 = self.get_d_ind[ist, 1]
                 qed_grad -= polariton.states[ind_mol1].force * self.unitary[ist, rst_new] ** 2.
 
-            if (self.force_level == "nac"):
+            if (self.force_level == "hf"):
                 # Second term: NACVs multiplied by energy difference; Hellmann-Feynman force contribution
                 # Loop for diabatic states
                 for ist in range(polariton.pst):
@@ -332,7 +332,7 @@ class Jaynes_Cummings(QED_calculator):
                             qed_grad += polariton.nac[ind_mol2, ind_mol1] * self.unitary[ist, rst_new] \
                                 * (self.ham_d[ist, ist] - self.ham_d[jst, jst]) * self.unitary[jst, rst_new]
 
-            elif (self.force_level == "tdp"):
+            elif (self.force_level == "full"):
                 # Second term: TDP gradients; Pulay force contribution
                 # Loop for diabatic states
                 for ist in range(polariton.pst):
