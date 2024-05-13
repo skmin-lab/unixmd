@@ -1,15 +1,15 @@
 from __future__ import division
 from build.el_propagator_ct import el_run
-from mqc.mqc import MQC
+from mqc_qed.mqc import MQC_QED
 from misc import eps, au_to_K, au_to_A, call_name, typewriter, gaussian1d
 import os, shutil, textwrap
 import numpy as np
 import pickle
 
-class CT(MQC):
-    """ Class for coupled-trajectory mixed quantum-classical (CTMQC) dynamics
+class CT(MQC_QED):
+    """ Class for coupled-trajectory mixed quantum-classical (CTMQC) dynamics coupled to confined cavity mode
 
-        :param object,list molecules: List for molecule objects
+        :param object,list polaritons: List for polariton objects
         :param object thermostat: Thermostat object
         :param integer,list istates: List for initial state
         :param double dt: Time interval
@@ -19,6 +19,7 @@ class CT(MQC):
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
+        :param boolean l_adj_tdp: Adjust transition dipole moments to align the phases
         :param double rho_threshold: Electronic density threshold for decoherence term calculation
         :param init_coefs: Initial BO coefficient
         :type init_coefs: double, 2D list or complex, 2D list
@@ -30,21 +31,21 @@ class CT(MQC):
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
-    def __init__(self, molecules, thermostat=None, istates=None, dt=0.5, nsteps=1000, nesteps=20, \
-        elec_object="coefficient", propagator="rk4", l_print_dm=True, l_adj_nac=True, rho_threshold=0.01, \
-        init_coefs=None, dist_parameter=10., min_sigma=0.3, const_dist_cutoff=None, const_center_cutoff=None, \
-        l_en_cons=False, unit_dt="fs", out_freq=1, verbosity=0):
+    def __init__(self, polaritons, thermostat=None, istates=None, dt=0.5, nsteps=1000, nesteps=20, \
+        elec_object="coefficient", propagator="rk4", l_print_dm=True, l_adj_nac=True, l_adj_tdp=True, \
+        rho_threshold=0.01, init_coefs=None, dist_parameter=10., min_sigma=0.3, const_dist_cutoff=None, \
+        const_center_cutoff=None, l_en_cons=False, unit_dt="fs", out_freq=1, verbosity=0):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
         # Initialize input values
-        self.mols = molecules
-        self.ntrajs = len(self.mols)
+        self.pols = polaritons
+        self.ntrajs = len(self.pols)
         self.digit = len(str(self.ntrajs))
 
-        self.nst = self.mols[0].nst
-        self.nat_qm = self.mols[0].nat_qm
-        self.ndim = self.mols[0].ndim
+        self.pst = self.pols[0].pst
+        self.nat_qm = self.pols[0].nat_qm
+        self.ndim = self.pols[0].ndim
 
         # Check compatibility between istates and init_coefs
         self.istates = istates
@@ -52,8 +53,8 @@ class CT(MQC):
         self.check_istates()
 
         # Initialize input values and coefficient for first trajectory
-        super().__init__(self.mols[0], thermostat, self.istates[0], dt, nsteps, nesteps, \
-            elec_object, propagator, l_print_dm, l_adj_nac, self.init_coefs[0], unit_dt, out_freq, verbosity)
+        super().__init__(self.pols[0], thermostat, self.istates[0], dt, nsteps, nesteps, elec_object, \
+            propagator, l_print_dm, l_adj_nac, l_adj_tdp, self.init_coefs[0], unit_dt, out_freq, verbosity)
 
         # Exception for electronic propagation
         if (self.elec_object != "coefficient"):
@@ -69,21 +70,21 @@ class CT(MQC):
 
         # Initialize coefficient for other trajectories
         for itraj in range(1, self.ntrajs):
-            self.mols[itraj].get_coefficient(self.init_coefs[itraj], self.istates[itraj])
+            self.pols[itraj].get_coefficient(self.init_coefs[itraj], self.istates[itraj])
 
         # Initialize variables for CTMQC
-        self.phase = np.zeros((self.ntrajs, self.nst, self.nat_qm, self.ndim))
-        self.nst_pair = int(self.nst * (self.nst - 1) / 2)
-        self.qmom = np.zeros((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim))
-        self.K_lk = np.zeros((self.ntrajs, self.nst, self.nst))
+        self.phase = np.zeros((self.ntrajs, self.pst, self.nat_qm, self.ndim))
+        self.pst_pair = int(self.pst * (self.pnt - 1) / 2)
+        self.qmom = np.zeros((self.ntrajs, self.pst_pair, self.nat_qm, self.ndim))
+        self.K_lk = np.zeros((self.ntrajs, self.pst, self.pst))
 
         # Initialize variables to calculate quantum momentum 
         self.count_ntrajs = np.zeros((self.ntrajs, self.nat_qm, self.ndim))
-        self.sigma_lk = np.ones((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim))
+        self.sigma_lk = np.ones((self.ntrajs, self.pst_pair, self.nat_qm, self.ndim))
         self.slope_i = np.zeros((self.ntrajs, self.nat_qm, self.ndim))
         self.g_i = np.zeros((self.ntrajs)) 
         self.prod_g_i = np.ones((self.ntrajs, self.ntrajs))
-        self.center_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim))
+        self.center_lk = np.zeros((self.ntrajs, self.pst_pair, self.nat_qm, self.ndim))
 
         # Determine parameters to calculate decoherenece effect
         self.small = 1.0E-08
@@ -98,18 +99,21 @@ class CT(MQC):
         self.const_center_cutoff = const_center_cutoff
 
         self.l_en_cons = l_en_cons
-        self.dotpopnac = np.zeros((self.ntrajs, self.nst))
-        self.dotpopdec = np.zeros((self.ntrajs, self.nst))
+        self.dotpopnac = np.zeros((self.ntrajs, self.pst))
+        self.dotpopdec = np.zeros((self.ntrajs, self.pst))
 
         # Initialize event to print
         self.event = {"DECO": []}
 
-    def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
+    def run(self, qed, qm, mm=None, output_dir="./", l_save_qed_log=False, l_save_qm_log=False, \
+        l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to CTMQC dynamics
 
+            :param object qed: QED object containing cavity-molecule interaction
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
             :param string output_dir: Name of directory where outputs to be saved.
+            :param boolean l_save_qed_log: Logical for saving QED calculation log
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
             :param boolean l_save_scr: Logical for saving scratch directory
@@ -117,27 +121,30 @@ class CT(MQC):
         """
         # Initialize PyUNIxMD
         abs_path_output_dir = os.path.join(os.getcwd(), output_dir)
-        base_dirs, unixmd_dirs, qm_log_dirs, mm_log_dirs = \
-            self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
+        base_dirs, unixmd_dirs, qed_log_dirs, qm_log_dirs, mm_log_dirs = \
+            self.run_init(qed, qm, mm, output_dir, l_save_qed_log, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
 
-        bo_list = [ist for ist in range(self.nst)]
+        bo_list = [ist for ist in range(self.pol.nst)]
+        pol_list = [ist for ist in range(self.pol.pst)]
         qm.calc_coupling = True
-        qm.calc_tdp = False
+        qm.calc_tdp = True
         qm.calc_tdp_grad = False
+        if (qed.force_level == "full"):
+            qm.calc_tdp_grad = True
 
-        self.print_init(qm, mm, restart)
+        self.print_init(qed, qm, mm, restart)
 
         if (restart == None):
             # Calculate initial input geometry for all trajectories at t = 0.0 s
             self.istep = -1
             for itraj in range(self.ntrajs):
-                self.mol = self.mols[itraj]
+                self.pol = self.pols[itraj]
 
-                self.mol.reset_bo(qm.calc_coupling)
-                qm.get_data(self.mol, base_dirs[itraj], bo_list, self.dt, self.istep, calc_force_only=False)
+                self.pol.reset_bo(qm.calc_coupling)
+                qm.get_data(self.pol, base_dirs[itraj], bo_list, self.dt, self.istep, calc_force_only=False)
 
                 # TODO: QM/MM
-                self.mol.get_nacme()
+                self.pol.get_nacme()
 
                 self.update_energy()
 
@@ -147,7 +154,7 @@ class CT(MQC):
 
             for itraj in range(self.ntrajs):
 
-                self.mol = self.mols[itraj]
+                self.pol = self.pols[itraj]
 
                 self.write_md_output(itraj, unixmd_dirs[itraj], self.istep)
 
@@ -170,25 +177,25 @@ class CT(MQC):
         # Main MD loop
         for istep in range(self.istep, self.nsteps):
             for itraj in range(self.ntrajs):
-                self.mol = self.mols[itraj]
+                self.pol = self.pols[itraj]
 
                 self.calculate_force(itraj)
                 self.cl_update_position()
 
-                self.mol.backup_bo()
-                self.mol.reset_bo(qm.calc_coupling)
+                self.pol.backup_bo()
+                self.pol.reset_bo(qm.calc_coupling)
 
-                qm.get_data(self.mol, base_dirs[itraj], bo_list, self.dt, istep, calc_force_only=False)
+                qm.get_data(self.pol, base_dirs[itraj], bo_list, self.dt, istep, calc_force_only=False)
 
-                if (not self.mol.l_nacme and self.l_adj_nac):
-                    self.mol.adjust_nac()
+                if (not self.pol.l_nacme and self.l_adj_nac):
+                    self.pol.adjust_nac()
 
                 #TODO: QM/MM
 
                 self.calculate_force(itraj)
                 self.cl_update_velocity()
 
-                self.mol.get_nacme()
+                self.pol.get_nacme()
 
                 el_run(self, itraj)
 
@@ -205,7 +212,7 @@ class CT(MQC):
             self.calculate_qmom(istep)
 
             for itraj in range(self.ntrajs):
-                self.mol = self.mols[itraj]
+                self.pol = self.pols[itraj]
 
                 if ((istep + 1) % self.out_freq == 0):
                     self.write_md_output(itraj, unixmd_dirs[itraj], istep)
@@ -655,15 +662,16 @@ class CT(MQC):
                     "".join([f'{self.phase[itrajectory, ist, iat, idim]:15.8f}' for idim in range(self.ndim)]) for iat in range(self.nat_qm)])
                 typewriter(tmp, unixmd_dir, f"PHASE_{ist}", "a")
 
-    def print_init(self, qm, mm, restart):
+    def print_init(self, qed, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
-            :param object qm: QM object containing on-the-fly calculation information
-            :param object mm: MM object containing MM calculation information
+            :param object qed: QED object containing cavity-molecule interaction
+            :param object qm: QM object containing on-the-fly calculation infomation
+            :param object mm: MM object containing MM calculation infomation
             :param string restart: Option for controlling dynamics restarting
         """
-        # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm, restart)
+        # Print initial information about polariton, qed, qm, mm and thermostat
+        super().print_init(qed, qm, mm, restart)
 
         # Print CTMQC info.
         ct_info = textwrap.dedent(f"""\
@@ -722,7 +730,7 @@ class CT(MQC):
         print (dynamics_step_info, flush=True)
 
     def print_step(self, istep, itrajectory):
-        """ Routine to print each trajectory information at each step about dynamics
+        """ Routine to print each trajectory infomation at each step about dynamics
 
             :param integer istep: Current MD step
             :param integer itrajectory: Current trajectory

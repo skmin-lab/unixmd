@@ -1,15 +1,15 @@
 from __future__ import division
 from build.el_propagator import el_run
-from mqc.mqc import MQC
+from mqc_qed.mqc import MQC_QED
 from misc import au_to_K, call_name, typewriter
 import os, shutil, textwrap
 import numpy as np
 import pickle
 
-class Eh(MQC):
-    """ Class for Ehrenfest dynamics
+class Eh(MQC_QED):
+    """ Class for Ehrenfest dynamics coupled to confined cavity mode
 
-        :param object molecule: Molecule object
+        :param object polariton: Polariton object
         :param object thermostat: Thermostat object
         :param integer istate: Initial state
         :param double dt: Time interval
@@ -19,50 +19,57 @@ class Eh(MQC):
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adj_nac: Logical to adjust nonadiabatic coupling
+        :param boolean l_adj_tdp: Adjust transition dipole moments to align the phases
         :param init_coef: Initial BO coefficient
         :type init_coef: Double, list or complex, list
         :param string unit_dt: Unit of time step (fs = femtosecond, au = atomic unit)
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
-    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
-        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, \
+    def __init__(self, polariton, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
+        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, l_adj_tdp=True, \
         init_coef=None, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
-        super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
+        super().__init__(polariton, thermostat, istate, dt, nsteps, nesteps, elec_object, \
+            propagator, l_print_dm, l_adj_nac, l_adj_tdp, init_coef, unit_dt, out_freq, verbosity)
 
         # Debug variables
-        self.dotpopnac = np.zeros(self.mol.nst)
+        self.dotpopnac = np.zeros(self.pol.pst)
 
-    def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
+    def run(self, qed, qm, mm=None, output_dir="./", l_save_qed_log=False, l_save_qm_log=False, \
+        l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to Ehrenfest dynamics
 
+            :param object qed: QED object containing cavity-molecule interaction
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
             :param string output_dir: Name of directory where outputs to be saved.
+            :param boolean l_save_qed_log: Logical for saving QED calculation log
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
             :param boolean l_save_scr: Logical for saving scratch directory
             :param string restart: Option for controlling dynamics restarting
         """
         # Initialize PyUNIxMD
-        base_dir, unixmd_dir, qm_log_dir, mm_log_dir = \
-            self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
-        bo_list = [ist for ist in range(self.mol.nst)]
+        base_dir, unixmd_dir, qed_log_dir, qm_log_dir, mm_log_dir = \
+            self.run_init(qed, qm, mm, output_dir, l_save_qed_log, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
+        bo_list = [ist for ist in range(self.pol.nst)]
+        pol_list = [ist for ist in range(self.pol.pst)]
         qm.calc_coupling = True
-        qm.calc_tdp = False
+        qm.calc_tdp = True
         qm.calc_tdp_grad = False
-        self.print_init(qm, mm, restart)
+        if (qed.force_level == "full"):
+            qm.calc_tdp_grad = True
+        self.print_init(qed, qm, mm, restart)
 
         if (restart == None):
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
-            self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
-            if (self.mol.l_qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
-            self.mol.get_nacme()
+            self.pol.reset_bo(qm.calc_coupling)
+            qm.get_data(self.pol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
+            if (self.pol.l_qmmm and mm != None):
+                mm.get_data(self.pol, base_dir, bo_list, self.istep, calc_force_only=False)
+            self.pol.get_nacme()
 
             self.update_energy()
 
@@ -87,19 +94,19 @@ class Eh(MQC):
             self.calculate_force()
             self.cl_update_position()
 
-            self.mol.backup_bo()
-            self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
-            if (self.mol.l_qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
+            self.pol.backup_bo()
+            self.pol.reset_bo(qm.calc_coupling)
+            qm.get_data(self.pol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
+            if (self.pol.l_qmmm and mm != None):
+                mm.get_data(self.pol, base_dir, bo_list, istep, calc_force_only=False)
 
             if (self.l_adj_nac):
-                self.mol.adjust_nac()
+                self.pol.adjust_nac()
 
             self.calculate_force()
             self.cl_update_velocity()
 
-            self.mol.get_nacme()
+            self.pol.get_nacme()
 
             el_run(self)
 
@@ -125,7 +132,7 @@ class Eh(MQC):
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
 
-            if (self.mol.l_qmmm and mm != None):
+            if (self.pol.l_qmmm and mm != None):
                 tmp_dir = os.path.join(unixmd_dir, "scr_mm")
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
@@ -176,15 +183,16 @@ class Eh(MQC):
             tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopnac])
             typewriter(tmp, unixmd_dir, "DOTPOPNAC", "a")
 
-    def print_init(self, qm, mm, restart):
+    def print_init(self, qed, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
+            :param object qed: QED object containing cavity-molecule interaction
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
             :param string restart: Option for controlling dynamics restarting
         """
-        # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm, restart)
+        # Print initial information about polariton, qed, qm, mm and thermostat
+        super().print_init(qed, qm, mm, restart)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\

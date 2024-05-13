@@ -1,54 +1,64 @@
 from __future__ import division
-from mqc.mqc import MQC
+from mqc_qed.mqc import MQC_QED
 from misc import au_to_K, call_name
 import os, shutil, textwrap
 import numpy as np
 import pickle
 
-class BOMD(MQC):
-    """ Class for born-oppenheimer molecular dynamics (BOMD)
+class BOMD(MQC_QED):
+    """ Class for born-oppenheimer molecular dynamics (BOMD) coupled to confined cavity mode
 
-        :param object molecule: Molecule object
+        :param object polariton: Polariton object
         :param object thermostat: Thermostat object
         :param integer istate: Electronic state
         :param double dt: Time interval
         :param integer nsteps: Total step of nuclear propagation
+        :param boolean l_adj_tdp: Adjust transition dipole moments to align the phases
         :param string unit_dt: Unit of time step
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
-    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, unit_dt="fs", out_freq=1, verbosity=0):
+    def __init__(self, polariton, thermostat=None, istate=0, dt=0.5, nsteps=1000, l_adj_tdp=True, \
+        unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
-        super().__init__(molecule, thermostat, istate, dt, nsteps, None, None, None, \
-            False, None, None, unit_dt, out_freq, verbosity)
+        super().__init__(polariton, thermostat, istate, dt, nsteps, None, None, None, \
+            False, None, l_adj_tdp, None, unit_dt, out_freq, verbosity)
 
-    def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
+    def run(self, qed, qm, mm=None, output_dir="./", l_save_qed_log=False, l_save_qm_log=False, \
+        l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to BOMD
 
+            :param object qed: QED object containing cavity-molecule interaction
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
             :param string output_dir: Name of directory where outputs to be saved.
+            :param boolean l_save_qed_log: Logical for saving QED calculation log
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
             :param boolean l_save_scr: Logical for saving scratch directory
             :param string restart: Option for controlling dynamics restarting
         """
         # Initialize PyUNIxMD
-        base_dir, unixmd_dir, qm_log_dir, mm_log_dir = \
-            self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
-        bo_list = [self.istate]
+        base_dir, unixmd_dir, qed_log_dir, qm_log_dir, mm_log_dir = \
+            self.run_init(qed, qm, mm, output_dir, l_save_qed_log, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
+        bo_list = [ist for ist in range(self.pol.nst)]
+        pol_list = [self.istate]
         qm.calc_coupling = False
-        qm.calc_tdp = False
+        if (qed.force_level == "hf"):
+            qm.calc_coupling = True
+        qm.calc_tdp = True
         qm.calc_tdp_grad = False
-        self.print_init(qm, mm, restart)
+        if (qed.force_level == "full"):
+            qm.calc_tdp_grad = True
+        self.print_init(qed, qm, mm, restart)
 
         if (restart == None):
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
-            self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
-            if (self.mol.l_qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
+            self.pol.reset_bo(qm.calc_coupling)
+            qm.get_data(self.pol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
+            if (self.pol.l_qmmm and mm != None):
+                mm.get_data(self.pol, base_dir, bo_list, self.istep, calc_force_only=False)
             self.update_energy()
             self.write_md_output(unixmd_dir, self.istep)
             self.print_step(self.istep)
@@ -71,10 +81,10 @@ class BOMD(MQC):
             self.calculate_force()
             self.cl_update_position()
 
-            self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
-            if (self.mol.l_qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
+            self.pol.reset_bo(qm.calc_coupling)
+            qm.get_data(self.pol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
+            if (self.pol.l_qmmm and mm != None):
+                mm.get_data(self.pol, base_dir, bo_list, istep, calc_force_only=False)
 
             self.calculate_force()
             self.cl_update_velocity()
@@ -101,7 +111,7 @@ class BOMD(MQC):
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
 
-            if (self.mol.l_qmmm and mm != None):
+            if (self.pol.l_qmmm and mm != None):
                 tmp_dir = os.path.join(unixmd_dir, "scr_mm")
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
@@ -119,15 +129,16 @@ class BOMD(MQC):
         self.mol.epot = self.mol.states[self.istate].energy
         self.mol.etot = self.mol.epot + self.mol.ekin
 
-    def print_init(self, qm, mm, restart):
+    def print_init(self, qed, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
+            :param object qed: QED object containing cavity-molecule interaction
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
             :param string restart: Option for controlling dynamics restarting
         """
-        # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm, restart)
+        # Print initial information about polariton, qed, qm, mm and thermostat
+        super().print_init(qed, qm, mm, restart)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
