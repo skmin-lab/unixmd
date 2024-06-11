@@ -1,5 +1,6 @@
 from __future__ import division
 from misc import fs_to_au, au_to_A, call_name, typewriter
+from trajectory import Trajectory
 import textwrap, datetime
 import numpy as np
 import os, shutil
@@ -39,6 +40,9 @@ class MQC(object):
         self.istate = istate
         self.nsteps = nsteps
         self.nesteps = nesteps
+
+        # Initialize Trajectory object
+        self.traj = Trajectory(self.mol, self.nsteps)
 
         # Initialize time step
         self.istep = -1
