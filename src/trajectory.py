@@ -13,4 +13,13 @@ class Trajectory (object):
         self.energy = np.zeros((nsteps + 1, molecule.nst))
         self.force = np.zeros((nsteps + 1, molecule.nat, molecule.ndim))
         self.nacme = np.zeros((nsteps + 1, molecule.nst, molecule.nst))
-        
+
+    def read_QM_from_file(self):
+        """
+        """
+        pass
+
+    def read_RV_from_file(self):
+        """
+        """
+        pass
