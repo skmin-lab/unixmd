@@ -33,11 +33,20 @@ class FileIO(Model):
         molecule.nacme = np.copy(trajectory.nacme[istep])
 
     def update_position(self, molecule, istep):
+        """ Routine to update pre-computed nuclear positions
+            
+            :param object molecule: molecule object
+            :param integer istep: current MD step
         """
-        """
-        pass
+        molecule.pos = np.copy(trajectory.pos[istep])
+        
 
     def update_velocity(self, molecule, istep):
+        """ Routine to update pre-computed nuclear velocities
+            
+            :param object molecule: molecule object
+            :param integer istep: current MD step
         """
-        """
-        pass
+        molecule.vel = np.copy(trajectory.vel[istep])
+        molecule.update_kinetic()
+
