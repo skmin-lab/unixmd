@@ -15,10 +15,13 @@ class SH(MQC):
         :param double dt: Time interval
         :param integer nsteps: Total step of nuclear propagation
         :param integer nesteps: Total step of electronic propagation
+        :param integer cpa_index: Initial index for running MQC dynamics with sampled data
+        :param string samp_dir: Path of sampling data folder
         :param string elec_object: Electronic equation of motions
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
+        :param boolean l_cpa: Logical to know whether CPA dynamics or not
         :param string hop_rescale: Velocity rescaling method after successful hop
         :param string hop_reject: Velocity rescaling method after frustrated hop
         :param init_coef: Initial BO coefficient
@@ -29,8 +32,8 @@ class SH(MQC):
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
-    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
-        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
+    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, cpa_index=0, samp_dir="./"\
+        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, l_cpa=False, hop_rescale="augment", \
         hop_reject="reverse", init_coef=None, dec_correction=None, edc_parameter=0.1, \
         unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
@@ -47,6 +50,11 @@ class SH(MQC):
 
         self.l_hop = False
         self.l_reject = False
+
+        # For CPA dynamics
+        self.l_cpa = l_cpa
+        self.cpa_index = cpa_index
+        self.samp_dir = samp_dir
 
         self.hop_rescale = hop_rescale.lower()
         if not (self.hop_rescale in ["energy", "velocity", "momentum", "augment"]):
@@ -110,6 +118,11 @@ class SH(MQC):
         qm.calc_tdp = False
         qm.calc_tdp_grad = False
         self.print_init(qm, mm, restart)
+
+        # for CPA dynamics
+        if (self.l_cpa):
+            traj.read_QM_from_file(self.cpa_index, self.nsteps, self.samp_dir)
+            traj.read_RV_from_file(self.cpa_index, self.nsteps, self.samp_dir)
 
         if (restart == None):
             # Calculate initial input geometry at t = 0.0 s
