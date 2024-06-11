@@ -31,3 +31,13 @@ class FileIO(Model):
             molecule.states[ist].energy = np.copy(trajectory.energy[istep][ist])
         molecule.force = np.copy(trajectory.force[istep])
         molecule.nacme = np.copy(trajectory.nacme[istep])
+
+    def update_position(self, molecule, istep):
+        """
+        """
+        pass
+
+    def update_velocity(self, molecule, istep):
+        """
+        """
+        pass

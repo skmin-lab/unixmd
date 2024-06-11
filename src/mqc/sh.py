@@ -173,7 +173,11 @@ class SH(MQC):
         for istep in range(self.istep, self.nsteps):
 
             self.calculate_force()
-            self.cl_update_position()
+
+            if not (self.l_cpa):
+                self.cl_update_position()
+            else:
+                qm.update_position(self.mol, istep)
 
             self.mol.backup_bo()
             self.mol.reset_bo(qm.calc_coupling)
@@ -184,8 +188,11 @@ class SH(MQC):
             if (not self.mol.l_nacme and self.l_adj_nac):
                 self.mol.adjust_nac()
 
-            self.calculate_force()
-            self.cl_update_velocity()
+            if not (self.l_cpa):
+                self.calculate_force()
+                self.cl_update_velocity()
+            else:
+                qm.update_velocity(self.mol, istep)
 
             if (not self.mol.l_nacme):
                 self.mol.get_nacme()
