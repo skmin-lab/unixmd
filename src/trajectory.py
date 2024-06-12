@@ -1,5 +1,7 @@
 from __future__ import division
 import numpy as np
+import os
+import pickle
 
 class Trajectory (object):
     """ Class to save BOMD trajectory data for CPA dynamics
