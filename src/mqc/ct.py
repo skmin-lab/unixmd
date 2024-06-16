@@ -52,7 +52,7 @@ class CT(MQC):
         self.check_istates()
 
         # Initialize input values and coefficient for first trajectory
-        super().__init__(self.mols[0], thermostat, self.istates[0], dt, nsteps, nesteps, \
+        super().__init__(self.mols[0], None, thermostat, self.istates[0], dt, nsteps, nesteps, \
             elec_object, propagator, l_print_dm, l_adj_nac, self.init_coefs[0], unit_dt, out_freq, verbosity)
 
         # Exception for electronic propagation

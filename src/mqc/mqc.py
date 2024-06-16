@@ -1,6 +1,5 @@
 from __future__ import division
 from misc import fs_to_au, au_to_A, call_name, typewriter
-from trajectory import Trajectory
 import textwrap, datetime
 import numpy as np
 import os, shutil
@@ -10,6 +9,7 @@ class MQC(object):
     """ Class for nuclear/electronic propagator used in MQC dynamics
 
         :param object molecule: Molecule object
+        :param object trajectory: Trajectory object
         :param object thermostat: Thermostat type
         :param integer istate: Initial adiabatic state
         :param double dt: Time interval
@@ -25,13 +25,16 @@ class MQC(object):
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
-    def __init__(self, molecule, thermostat, istate, dt, nsteps, nesteps, \
+    def __init__(self, molecule, trajectory, thermostat, istate, dt, nsteps, nesteps, \
         elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
         # Initialize Molecule object
         self.mol = molecule
+
+        # Initialize Trajectory object
+        self.traj = trajectory
 
         # Initialize Thermostat object
         self.thermo = thermostat
@@ -40,9 +43,6 @@ class MQC(object):
         self.istate = istate
         self.nsteps = nsteps
         self.nesteps = nesteps
-
-        # Initialize Trajectory object
-        self.traj = Trajectory(self.mol, self.nsteps)
 
         # Initialize time step
         self.istep = -1

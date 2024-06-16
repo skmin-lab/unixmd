@@ -1,16 +1,19 @@
 from __future__ import division
 from qm.model.model import Model
-from trajectory import Trajectory
 import numpy as np
 
 class FileIO(Model):
     """ Class for fetching pre-calculated sampling data used in CPA dynamics
 
         :param object molecule: molecule object
+        :param object trajectory: trajectory object
     """
-    def __init__(self, molecule):
+    def __init__(self, molecule, trajectory):
         # Initialize model common variables
         super(FileIO, self).__init__(None)
+
+        # Initialize trajectory object
+        self.trajectory = trajectory
 
         # NACME is pre-caculated during BOMD sampling, so we do not need to get NACME
         molecule.l_nacme = False

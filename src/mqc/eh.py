@@ -29,7 +29,7 @@ class Eh(MQC):
         elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, \
         init_coef=None, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
-        super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
+        super().__init__(molecule, None, thermostat, istate, dt, nsteps, nesteps, \
             elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
 
         # Debug variables
