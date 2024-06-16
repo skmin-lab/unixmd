@@ -145,7 +145,7 @@ class EhXF(MQC):
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
             self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
+            qm.get_data(self.mol, None, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
             self.mol.get_nacme()
@@ -154,7 +154,7 @@ class EhXF(MQC):
             self.hop_check(bo_list)
             if (self.l_hop):
                 if (qm.re_calc):
-                    qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
+                    qm.get_data(self.mol, None, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
                 if (self.mol.l_qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=True)
 
@@ -190,7 +190,7 @@ class EhXF(MQC):
 
             self.mol.backup_bo()
             self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
+            qm.get_data(self.mol, None, base_dir, bo_list, self.dt, istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
@@ -208,7 +208,7 @@ class EhXF(MQC):
             self.hop_check(bo_list)
             if (self.l_hop):
                 if (qm.re_calc):
-                    qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
+                    qm.get_data(self.mol, None, base_dir, bo_list, self.dt, istep, calc_force_only=True)
                 if (self.mol.l_qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
 
