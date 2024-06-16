@@ -10,6 +10,7 @@ class SH(MQC):
     """ Class for surface hopping dynamics
 
         :param object molecule: Molecule object
+        :param object trajectory: Trajectory object
         :param object thermostat: Thermostat object
         :param integer istate: Initial state
         :param double dt: Time interval
@@ -32,7 +33,7 @@ class SH(MQC):
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
-    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, cpa_index=0, samp_dir="./"\
+    def __init__(self, molecule, trajectory=None, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, cpa_index=0, samp_dir="./"\
         elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, l_cpa=False, hop_rescale="augment", \
         hop_reject="reverse", init_coef=None, dec_correction=None, edc_parameter=0.1, \
         unit_dt="fs", out_freq=1, verbosity=0):
