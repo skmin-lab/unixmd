@@ -227,7 +227,7 @@ class SHXF(MQC):
             self.calculate_force()
             self.cl_update_position()
 
-            self.mol.backup_bo()
+            self.mol.backup_bo(qm.calc_coupling)
             self.mol.reset_bo(qm.calc_coupling)
             qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):

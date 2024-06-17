@@ -252,18 +252,22 @@ class Molecule(object):
             states.force = np.zeros((self.nat, self.ndim))
 
         if (calc_coupling):
-            if (self.l_nacme):
-                self.nacme = np.zeros((self.nst, self.nst))
-            else:
+            self.nacme = np.zeros((self.nst, self.nst))
+            if (not self.l_nacme):
                 self.nac = np.zeros((self.nst, self.nst, self.nat_qm, self.ndim))
 
-    def backup_bo(self):
+    def backup_bo(self, calc_coupling):
         """ Backup BO energies and nonadiabatic couplings
+
+            :param boolean calc_coupling: Check whether the dynamics includes coupling calculation
         """
         for states in self.states:
             states.energy_old = states.energy
-        self.nac_old = np.copy(self.nac)
-        self.nacme_old = np.copy(self.nacme)
+
+        if (calc_coupling):
+            self.nacme_old = np.copy(self.nacme)
+            if (not self.l_nacme):
+                self.nac_old = np.copy(self.nac)
 
     def get_nr_electrons(self):
         """ Get the number of electrons

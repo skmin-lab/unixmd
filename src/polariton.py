@@ -349,24 +349,26 @@ class Polariton(object):
         else:
             self.ekin_qm = self.ekin
 
-    def reset_bo(self, calc_coupling, calc_tdp):
+    def reset_bo(self, calc_coupling, calc_tdp, calc_tdp_grad):
         """ Reset BO energies, forces, nonadiabatic couplings and transition dipoles
 
             :param boolean calc_coupling: Check whether the dynamics includes coupling calculation
             :param boolean calc_tdp: Check whether the dynamics includes transition dipole calculation
+            :param boolean calc_tdp_grad: Check whether the dynamics includes transition dipole gradient calculation
         """
         for states in self.states:
             states.energy = 0.
             states.force = np.zeros((self.nat, self.ndim))
 
         if (calc_coupling):
-            if (self.l_nacme):
-                self.nacme = np.zeros((self.nst, self.nst))
-            else:
+            self.nacme = np.zeros((self.nst, self.nst))
+            if (not self.l_nacme):
                 self.nac = np.zeros((self.nst, self.nst, self.nat_qm, self.ndim))
 
         if (calc_tdp):
             self.tdp = np.zeros((self.nst, self.nst, self.ndim))
+
+        if (calc_tdp_grad):
             self.tdp_grad = np.zeros((self.nst, self.nst, 3, self.nat_qm, self.ndim))
 
     def reset_qed(self, calc_coupling):
@@ -380,13 +382,22 @@ class Polariton(object):
 
         if (calc_coupling):
             self.pnacme = np.zeros((self.pst, self.pst))
+            if (not self.l_pnacme):
+                self.pnac = np.zeros((self.pst, self.pst, self.nat_qm, self.ndim))
 
-    def backup_bo(self):
+    def backup_bo(self, calc_coupling, calc_tdp):
         """ Backup nonadiabatic couplings and transition dipoles
+
+            :param boolean calc_coupling: Check whether the dynamics includes coupling calculation
+            :param boolean calc_tdp: Check whether the dynamics includes transition dipole calculation
         """
-        self.nac_old = np.copy(self.nac)
-        self.nacme_old = np.copy(self.nacme)
-        self.tdp_old = np.copy(self.tdp)
+        if (calc_coupling):
+            self.nacme_old = np.copy(self.nacme)
+            if (not self.l_nacme):
+                self.nac_old = np.copy(self.nac)
+
+        if (calc_tdp):
+            self.tdp_old = np.copy(self.tdp)
 
     def get_nr_electrons(self):
         """ Get the number of electrons

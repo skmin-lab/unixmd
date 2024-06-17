@@ -120,7 +120,7 @@ class SH(MQC_QED):
         if (restart == None):
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
-            self.pol.reset_bo(qm.calc_coupling, qm.calc_tdp)
+            self.pol.reset_bo(qm.calc_coupling, qm.calc_tdp, qm.calc_tdp_grad)
             self.pol.reset_qed(qm.calc_coupling)
 
             qm.get_data(self.pol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
@@ -176,9 +176,9 @@ class SH(MQC_QED):
             self.calculate_force()
             self.cl_update_position()
 
-            self.pol.backup_bo()
-            qed.backup_qed(self.pol)
-            self.pol.reset_bo(qm.calc_coupling, qm.calc_tdp)
+            self.pol.backup_bo(qm.calc_coupling, qm.calc_tdp)
+            qed.backup_qed()
+            self.pol.reset_bo(qm.calc_coupling, qm.calc_tdp, qm.calc_tdp_grad)
             self.pol.reset_qed(qm.calc_coupling)
 
             qm.get_data(self.pol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
