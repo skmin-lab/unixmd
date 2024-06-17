@@ -134,7 +134,7 @@ class CT(MQC):
                 self.mol = self.mols[itraj]
 
                 self.mol.reset_bo(qm.calc_coupling)
-                qm.get_data(self.mol, base_dirs[itraj], bo_list, self.dt, self.istep, calc_force_only=False)
+                qm.get_data(self.mol, None, base_dirs[itraj], bo_list, self.dt, self.istep, calc_force_only=False)
 
                 # TODO: QM/MM
                 self.mol.get_nacme()
@@ -173,12 +173,12 @@ class CT(MQC):
                 self.mol = self.mols[itraj]
 
                 self.calculate_force(itraj)
-                self.cl_update_position()
+                self.cl_update_position(istep)
 
                 self.mol.backup_bo()
                 self.mol.reset_bo(qm.calc_coupling)
 
-                qm.get_data(self.mol, base_dirs[itraj], bo_list, self.dt, istep, calc_force_only=False)
+                qm.get_data(self.mol, None, base_dirs[itraj], bo_list, self.dt, istep, calc_force_only=False)
 
                 if (not self.mol.l_nacme and self.l_adj_nac):
                     self.mol.adjust_nac()
@@ -186,7 +186,7 @@ class CT(MQC):
                 #TODO: QM/MM
 
                 self.calculate_force(itraj)
-                self.cl_update_velocity()
+                self.cl_update_velocity(istep)
 
                 self.mol.get_nacme()
 

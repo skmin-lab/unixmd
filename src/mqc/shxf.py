@@ -225,7 +225,7 @@ class SHXF(MQC):
         for istep in range(self.istep, self.nsteps):
 
             self.calculate_force()
-            self.cl_update_position()
+            self.cl_update_position(istep)
 
             self.mol.backup_bo()
             self.mol.reset_bo(qm.calc_coupling)
@@ -237,7 +237,7 @@ class SHXF(MQC):
                 self.mol.adjust_nac()
 
             self.calculate_force()
-            self.cl_update_velocity()
+            self.cl_update_velocity(istep)
 
             if (not self.mol.l_nacme):
                 self.mol.get_nacme()

@@ -21,9 +21,10 @@ class FileIO(Model):
         # Gradient of several states are pre-calculated during BOMD sampling
         self.re_calc = False
 
-    def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
+    def get_data(self, molecule, trajectory, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, force and nonadiabatic coupling matrix elements from pre-calculated sampling data
             :param object molecule: molecule object
+            :param object trajectory: trajectory object
             :param string base_dir: base directory
             :param integer,list bo_list: list of BO states for BO calculation
             :param double dt: time interval
@@ -34,22 +35,4 @@ class FileIO(Model):
             molecule.states[ist].energy = np.copy(trajectory.energy[istep][ist])
         molecule.force = np.copy(trajectory.force[istep])
         molecule.nacme = np.copy(trajectory.nacme[istep])
-
-    def update_position(self, molecule, istep):
-        """ Routine to update pre-computed nuclear positions
-            
-            :param object molecule: molecule object
-            :param integer istep: current MD step
-        """
-        molecule.pos = np.copy(trajectory.pos[istep])
-        
-
-    def update_velocity(self, molecule, istep):
-        """ Routine to update pre-computed nuclear velocities
-            
-            :param object molecule: molecule object
-            :param integer istep: current MD step
-        """
-        molecule.vel = np.copy(trajectory.vel[istep])
-        molecule.update_kinetic()
 

@@ -1,5 +1,4 @@
 from __future__ import division
-from build.el_propagator import el_run
 from mqc.mqc import MQC
 from misc import eps, au_to_K, call_name, typewriter
 import random, os, shutil, textwrap
@@ -167,10 +166,7 @@ class SH(MQC):
 
             self.calculate_force()
 
-            if not (self.l_cpa):
-                self.cl_update_position()
-            else:
-                qm.update_position(self.mol, istep)
+            self.cl_update_position(istep)
 
             self.mol.backup_bo()
             self.mol.reset_bo(qm.calc_coupling)
@@ -181,11 +177,8 @@ class SH(MQC):
             if (not self.mol.l_nacme and self.l_adj_nac):
                 self.mol.adjust_nac()
 
-            if not (self.l_cpa):
-                self.calculate_force()
-                self.cl_update_velocity()
-            else:
-                qm.update_velocity(self.mol, istep)
+            self.calculate_force()
+            self.cl_update_velocity(istep)
 
             if (not self.mol.l_nacme):
                 self.mol.get_nacme()

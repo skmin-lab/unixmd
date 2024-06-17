@@ -217,17 +217,30 @@ class MQC(object):
         else:
             return base_dir, unixmd_dir, qm_log_dir, mm_log_dir
 
-    def cl_update_position(self):
+    def cl_update_position(self, istep):
         """ Routine to update nuclear positions
-        """
-        self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.ndim)
-        self.mol.pos += self.dt * self.mol.vel
 
-    def cl_update_velocity(self):
-        """ Routine to update nuclear velocities
+            :param integer istep: Current MD step
         """
-        self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.ndim)
-        self.mol.update_kinetic()
+
+        if (self.l_cpa):
+            molecule.pos = np.copy(trajectory.pos[istep])
+        else:
+            self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.ndim)
+            self.mol.pos += self.dt * self.mol.vel
+
+    def cl_update_velocity(self, istep):
+        """ Routine to update nuclear velocities
+        
+            :param integer istep: Current MD step
+        """
+
+        if (self.l_cpa):
+            molecule.vel = np.copy(trajectory.vel[istep])
+            molecule.update_kinetic()
+        else:
+            self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.ndim)
+            self.mol.update_kinetic()
 
 #    def calculate_temperature(self):
 #        """ Routine to calculate current temperature
