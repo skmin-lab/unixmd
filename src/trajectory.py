@@ -24,7 +24,7 @@ class Trajectory (object):
         self.force = np.zeros((nsteps + 1, molecule.nat, molecule.ndim))
         self.nacme = np.zeros((nsteps + 1, molecule.nst, molecule.nst))
 
-    def read_QM_from_file(self, nsteps):
+    def read_RV_from_file(self, nsteps):
         """ Routine to save precomputed atomic position, velocities for CPA dynamics
             
             :param integer nsteps: Total step of nuclear propagation
@@ -46,7 +46,7 @@ class Trajectory (object):
         self.vel[nsteps] = Data["vel"]
         
 
-    def read_RV_from_file(self):
+    def read_QM_from_file(self, nsteps):
         """ Routine to save precomputed energy, force, NACME for CPA dynamics
             
             :param integer nsteps: Total step of nuclear propagation

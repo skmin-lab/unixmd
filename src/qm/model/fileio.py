@@ -2,7 +2,7 @@ from __future__ import division
 from qm.model.model import Model
 import numpy as np
 
-class FileIO(Model):
+class File_IO(Model):
     """ Class for fetching pre-calculated sampling data used in CPA dynamics
 
         :param object molecule: molecule object
@@ -10,7 +10,7 @@ class FileIO(Model):
     """
     def __init__(self, molecule, trajectory):
         # Initialize model common variables
-        super(FileIO, self).__init__(None)
+        super(File_IO, self).__init__(None)
 
         # Initialize trajectory object
         self.trajectory = trajectory
