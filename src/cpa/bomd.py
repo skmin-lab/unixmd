@@ -1,5 +1,9 @@
 from __future__ import division
 from cpa.cpa import CPA
+from misc import eps, au_to_K, call_name, typewriter
+import os, shutil, textwrap
+import numpy as np
+import pickle
 
 class BOMD(CPA):
     """ Class for born-oppenheimer molecular dynamics (BOMD) sampling
@@ -44,7 +48,7 @@ class BOMD(CPA):
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir = \
             self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
         bo_list = [self.istate]
-        qm.calc_coupling = False
+        qm.calc_coupling = True
         qm.calc_tdp = False
         qm.calc_tdp_grad = False
         self.print_init(qm, mm, restart)
@@ -78,6 +82,7 @@ class BOMD(CPA):
             self.calculate_force()
             self.cl_update_position(istep)
 
+            self.mol.backup_bo()
             self.mol.reset_bo(qm.calc_coupling)
             qm.get_data(self.mol, None, base_dir, bo_list, self.dt, istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):
@@ -90,6 +95,8 @@ class BOMD(CPA):
                 self.thermo.run(self)
 
             self.update_energy()
+
+            self.save_bin(istep)
 
             if ((istep + 1) % self.out_freq == 0):
                 self.write_md_output(unixmd_dir, istep)
@@ -113,9 +120,18 @@ class BOMD(CPA):
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
 
-    def save_bin(self):
+    def save_bin(self, istep):
         """ Routine to save MD info of each step using pickle
+
+            :param integer istep: Current MD step
         """
+        filename = os.path.join(self.samp_dir, f"QM.{istep}.bin")
+        with open(filename, "wb") as f:
+            pickle.dump({"energy":np.array([x.energy for x in self.mol.states]), "force":self.rforce, "nacme":self.mol.nacme}, f)
+
+        filename = os.path.join(self.samp_dir, f"RV.{istep}.bin")
+        with open(filename, "wb") as f:
+            pickle.dump({"pos":self.mol.pos, "vel":self.mol.vel}, f)
 
     def calculate_force(self):
         """ Routine to calculate the forces
