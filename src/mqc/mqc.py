@@ -36,6 +36,11 @@ class MQC(object):
         # Initialize Trajectory object
         self.traj = trajectory
 
+        if (self.traj != None):
+            self.l_cpa = True
+        else:
+            self.l_cpa = False
+
         # Initialize Thermostat object
         self.thermo = thermostat
 

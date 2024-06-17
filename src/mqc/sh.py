@@ -20,7 +20,6 @@ class SH(MQC):
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
-        :param boolean l_cpa: Logical to know whether CPA dynamics or not
         :param string hop_rescale: Velocity rescaling method after successful hop
         :param string hop_reject: Velocity rescaling method after frustrated hop
         :param init_coef: Initial BO coefficient
@@ -32,7 +31,7 @@ class SH(MQC):
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, trajectory=None, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
-        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, l_cpa=False, hop_rescale="augment", \
+        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
         hop_reject="reverse", init_coef=None, dec_correction=None, edc_parameter=0.1, \
         unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
@@ -49,9 +48,6 @@ class SH(MQC):
 
         self.l_hop = False
         self.l_reject = False
-
-        # For CPA dynamics
-        self.l_cpa = l_cpa
 
         self.hop_rescale = hop_rescale.lower()
         if not (self.hop_rescale in ["energy", "velocity", "momentum", "augment"]):
