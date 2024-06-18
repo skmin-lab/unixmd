@@ -175,7 +175,7 @@ class CT(MQC):
                 self.calculate_force(itraj)
                 self.cl_update_position()
 
-                self.mol.backup_bo()
+                self.mol.backup_bo(qm.calc_coupling)
                 self.mol.reset_bo(qm.calc_coupling)
 
                 qm.get_data(self.mol, base_dirs[itraj], bo_list, self.dt, istep, calc_force_only=False)
