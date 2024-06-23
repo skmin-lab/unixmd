@@ -9,7 +9,6 @@ class SH(MQC):
     """ Class for surface hopping dynamics
 
         :param object molecule: Molecule object
-        :param object trajectory: Trajectory object
         :param object thermostat: Thermostat object
         :param integer istate: Initial state
         :param double dt: Time interval
@@ -29,12 +28,12 @@ class SH(MQC):
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
-    def __init__(self, molecule, trajectory=None, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
+    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
         elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
         hop_reject="reverse", init_coef=None, dec_correction=None, edc_parameter=0.1, \
         unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
-        super().__init__(molecule, trajectory, thermostat, istate, dt, nsteps, nesteps, \
+        super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
             elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
 
         # Initialize SH variables
@@ -91,11 +90,12 @@ class SH(MQC):
         # Initialize event to print
         self.event = {"HOP": []}
 
-    def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
+    def run(self, qm, mm=None, traj=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to surface hopping dynamics
 
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
+            :param object traj: Trajectory object for CPA dynamics
             :param string output_dir: Name of directory where outputs to be saved.
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
@@ -111,7 +111,10 @@ class SH(MQC):
         qm.calc_tdp_grad = False
         self.print_init(qm, mm, restart)
 
-        # for CPA dynamics
+        # For CPA dynamics
+        if (traj != None):
+            self.l_cpa = True
+
         if (self.l_cpa):
             traj.read_QM_from_file(self.nsteps)
             traj.read_RV_from_file(self.nsteps)
@@ -120,7 +123,7 @@ class SH(MQC):
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
             self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, self.traj, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
+            qm.get_data(self.mol, traj, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
             if (not self.mol.l_nacme):
@@ -140,7 +143,7 @@ class SH(MQC):
 
             if (self.l_hop):
                 if (qm.re_calc):
-                    qm.get_data(self.mol, self.traj, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
+                    qm.get_data(self.mol, traj, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
                 if (self.mol.l_qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=True)
 
@@ -170,7 +173,7 @@ class SH(MQC):
 
             self.mol.backup_bo()
             self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, self.traj, base_dir, bo_list, self.dt, istep, calc_force_only=False)
+            qm.get_data(self.mol, traj, base_dir, bo_list, self.dt, istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
@@ -199,7 +202,7 @@ class SH(MQC):
 
             if (self.l_hop):
                 if (qm.re_calc):
-                    qm.get_data(self.mol, self.traj, base_dir, bo_list, self.dt, istep, calc_force_only=True)
+                    qm.get_data(self.mol, traj, base_dir, bo_list, self.dt, istep, calc_force_only=True)
                 if (self.mol.l_qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
 
@@ -281,7 +284,7 @@ class SH(MQC):
             :param integer,list bo_list: List of BO states for BO calculation
             :param integer istep: Current MD step
         """
-        if (self.l_hop):
+        if (self.l_hop and not self.l_cpa):
             # Calculate potential difference between hopping states
             pot_diff = self.mol.states[self.rstate].energy - self.mol.states[self.rstate_old].energy
 
