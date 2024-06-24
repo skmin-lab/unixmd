@@ -211,10 +211,11 @@ class MQC(object):
         else:
             return base_dir, unixmd_dir, qm_log_dir, mm_log_dir
 
-    def cl_update_position(self, istep):
+    def cl_update_position(self, istep, trajectory=None):
         """ Routine to update nuclear positions
 
             :param integer istep: Current MD step
+            :param object trajectory: Trajectory object for CPA dynamics
         """
 
         if (self.l_cpa):
@@ -223,10 +224,11 @@ class MQC(object):
             self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.ndim)
             self.mol.pos += self.dt * self.mol.vel
 
-    def cl_update_velocity(self, istep):
+    def cl_update_velocity(self, istep, trajectory=None):
         """ Routine to update nuclear velocities
         
             :param integer istep: Current MD step
+            :param object trajectory: Trajectory object for CPA dynamics
         """
 
         if (self.l_cpa):

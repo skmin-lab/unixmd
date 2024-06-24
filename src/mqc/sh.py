@@ -128,7 +128,7 @@ class SH(MQC):
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
             if (self.l_cpa):
-                cl_update_velocity(self.istep)
+                cl_update_velocity(self.istep, traj)
             if (not self.mol.l_nacme and not self.l_cpa):
                 self.mol.get_nacme()
 
@@ -172,7 +172,7 @@ class SH(MQC):
 
             self.calculate_force()
 
-            self.cl_update_position(istep)
+            self.cl_update_position(istep, traj)
 
             self.mol.backup_bo()
             self.mol.reset_bo(qm.calc_coupling)
@@ -184,7 +184,7 @@ class SH(MQC):
                 self.mol.adjust_nac()
 
             self.calculate_force()
-            self.cl_update_velocity(istep)
+            self.cl_update_velocity(istep, traj)
 
             if (not self.mol.l_nacme and not self.l_cpa):
                 self.mol.get_nacme()
