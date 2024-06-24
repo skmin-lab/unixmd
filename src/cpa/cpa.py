@@ -1,6 +1,6 @@
 from __future__ import division
 from misc import fs_to_au, au_to_A, call_name, typewriter
-import textwraom datetime
+import textwrap, datetime
 import numpy as np
 import os, shutil
 
@@ -18,7 +18,7 @@ class CPA(object):
     def __init__(self, molecule, thermostat, istate, dt, nsteps, \
         l_print_dm, unit_dt, out_freq, verbosity):
         # Save name of MQC dynamics
-        self.md_type = self.__class__.name__
+        self.md_type = self.__class__.__name__
 
         # Initialize Molecule object
         self.mol = molecule
@@ -46,6 +46,8 @@ class CPA(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         self.l_print_dm = l_print_dm
+
+        self.rforce = np.zeros((self.mol.nat, self.mol.ndim))
 
         self.out_freq = out_freq
         self.verbosity = verbosity

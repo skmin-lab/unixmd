@@ -80,7 +80,7 @@ class BOMD(CPA):
         for istep in range(self.istep, self.nsteps):
 
             self.calculate_force()
-            self.cl_update_position(istep)
+            self.cl_update_position()
 
             self.mol.backup_bo()
             self.mol.reset_bo(qm.calc_coupling)
@@ -89,7 +89,7 @@ class BOMD(CPA):
                 mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
             self.calculate_force()
-            self.cl_update_velocity(istep)
+            self.cl_update_velocity()
 
             if (self.thermo != None):
                 self.thermo.run(self)

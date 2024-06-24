@@ -30,7 +30,7 @@ class Trajectory (object):
             :param integer nsteps: Total step of nuclear propagation
         """
         for istep in range(self.cpa_index, self.cpa_index + nsteps):
-            RV_path = os.path.join(self.samp_dir, f"RP.{istep}.bin")
+            RV_path = os.path.join(self.samp_dir, f"RV.{istep}.bin")
             with open(RV_path, "rb") as f:
                 Data = pickle.load(f)
 
@@ -38,7 +38,7 @@ class Trajectory (object):
             self.pos[save_step] = Data["pos"]
             self.vel[save_step] = Data["vel"]
 
-        RV_path = os.path.join(self.samp_dir, f"RP.{self.cpa_index-1}.bin")
+        RV_path = os.path.join(self.samp_dir, f"RV.{self.cpa_index-1}.bin")
         with open(RV_path, "rb") as f:
             Data = pickle.load(f)
 
