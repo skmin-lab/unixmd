@@ -94,11 +94,12 @@ class MQC(object):
         # Initialize coefficients and densities
         self.mol.get_coefficient(init_coef, self.istate)
 
-    def run_init(self, qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart):
+    def run_init(self, qm, mm, traj, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart):
         """ Initialize MQC dynamics
 
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
+            :param object traj: Trajectory object for CPA dynamics
             :param string output_dir: Location of input directory
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
@@ -113,6 +114,15 @@ class MQC(object):
             error_message = "Invalid restart option!"
             error_vars = f"restart = {restart}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        # Check whether CPA dynamics or not
+        if (traj != None):
+            self.l_cpa = True
+
+        if (self.md_type != "SH" and self.l_cpa = True):
+            error_message = "CPA dynamics is only implemented in Fewest Switch Surface Hopping now!"
+            error_vars = f"md_type = {self.md_type}"
+            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check if NACVs are calculated for Ehrenfest dynamics
         if (self.md_type in ["Eh", "EhXF"]):

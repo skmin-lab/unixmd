@@ -105,16 +105,12 @@ class SH(MQC):
         """
         # Initialize PyUNIxMD
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir = \
-            self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
+            self.run_init(qm, mm, traj, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
         bo_list = [self.rstate]
         qm.calc_coupling = True
         qm.calc_tdp = False
         qm.calc_tdp_grad = False
         self.print_init(qm, mm, restart)
-
-        # For CPA dynamics
-        if (traj != None):
-            self.l_cpa = True
 
         if (self.l_cpa):
             bo_list = [0]
