@@ -121,6 +121,8 @@ class SH(MQC):
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
             self.mol.reset_bo(qm.calc_coupling)
+            if (self.l_cpa):
+                cl_update_position(self.istep, traj)
             qm.get_data(self.mol, traj, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
@@ -166,8 +168,8 @@ class SH(MQC):
 
         # Main MD loop
         for istep in range(self.istep, self.nsteps):
-
-            self.calculate_force()
+            if (not self.l_cpa):
+                self.calculate_force()
 
             self.cl_update_position(istep, traj)
 
@@ -177,10 +179,11 @@ class SH(MQC):
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
-            if (not self.mol.l_nacme and self.l_adj_nac):
+            if (not self.mol.l_nacme and self.l_adj_nac and not self.l_cpa):
                 self.mol.adjust_nac()
 
-            self.calculate_force()
+            if (not self.l_cpa):
+                self.calculate_force()
             self.cl_update_velocity(istep, traj)
 
             if (not self.mol.l_nacme and not self.l_cpa):
