@@ -116,6 +116,7 @@ class SH(MQC):
             self.l_cpa = True
 
         if (self.l_cpa):
+            bo_list = [0]
             traj.read_QM_from_file(self.nsteps)
             traj.read_RV_from_file(self.nsteps)
 
@@ -126,7 +127,9 @@ class SH(MQC):
             qm.get_data(self.mol, traj, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
-            if (not self.mol.l_nacme):
+            if (self.l_cpa):
+                cl_update_velocity(self.istep)
+            if (not self.mol.l_nacme and not self.l_cpa):
                 self.mol.get_nacme()
 
             self.hop_prob()
@@ -183,7 +186,7 @@ class SH(MQC):
             self.calculate_force()
             self.cl_update_velocity(istep)
 
-            if (not self.mol.l_nacme):
+            if (not self.mol.l_nacme and not self.l_cpa):
                 self.mol.get_nacme()
 
             el_run(self)
@@ -276,7 +279,8 @@ class SH(MQC):
             if (self.rand > self.acc_prob[ist] and self.rand <= self.acc_prob[ist + 1]):
                 self.l_hop = True
                 self.rstate = ist
-                bo_list[0] = self.rstate
+                if (not self.l_cpa):
+                    bo_list[0] = self.rstate
 
     def evaluate_hop(self, bo_list):
         """ Routine to evaluate hopping and velocity rescaling
