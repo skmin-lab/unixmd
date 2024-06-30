@@ -1,6 +1,6 @@
 from __future__ import division
 from cpa.cpa import CPA
-from misc import eps, au_to_K, call_name, typewriter
+from misc import au_to_K, call_name
 import os, shutil, textwrap
 import numpy as np
 import pickle
@@ -21,7 +21,7 @@ class BOMD(CPA):
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, \
         unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
-        super().__init__(molecule, thermostat, istate, dt, nsteps, False, \
+        super().__init__(molecule, thermostat, istate, dt, nsteps, \
             unit_dt, out_freq, verbosity)
 
     def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
@@ -118,7 +118,7 @@ class BOMD(CPA):
         """
         filename = os.path.join(samp_dir, f"QM.{istep}.bin")
         with open(filename, "wb") as f:
-            pickle.dump({"energy":np.array([x.energy for x in self.mol.states]), "force":self.rforce, "nacme":self.mol.nacme}, f)
+            pickle.dump({"energy":np.array([states.energy for states in self.mol.states]), "force":self.rforce, "nacme":self.mol.nacme}, f)
 
         filename = os.path.join(samp_dir, f"RV.{istep}.bin")
         with open(filename, "wb") as f:

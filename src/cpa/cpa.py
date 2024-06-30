@@ -12,11 +12,12 @@ class CPA(object):
         :param integer istate: Initial adiabatic state
         :param double dt: Time interval
         :param integer nsteps: Nuclear step
-        :param boolean l_print_dm: Logical to print BO population and coherence
-
+        :param string unit_dt: Unit of time step
+        :param integer out_freq: Frequency of printing output
+        :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat, istate, dt, nsteps, \
-        l_print_dm, unit_dt, out_freq, verbosity):
+        unit_dt, out_freq, verbosity):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -45,8 +46,6 @@ class CPA(object):
             error_vars = f"unit_dt = {unit_dt}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        self.l_print_dm = l_print_dm
-
         self.rforce = np.zeros((self.mol.nat, self.mol.ndim))
 
         self.out_freq = out_freq
@@ -71,6 +70,12 @@ class CPA(object):
             error_message = "Invalid restart option!"
             error_vars = f"restart = {restart}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        # Run sampling with MM isn't implemented yet!
+        if (mm != None):
+            error_message = "Run sampling with MM isn't implemented yet!"
+            error_vars = f"mm = {mm}"
+            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check compatibility of variables for QM and MM calculation
         if ((self.mol.l_qmmm and mm == None) or (not self.mol.l_qmmm and mm != None)):
