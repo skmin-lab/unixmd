@@ -3,26 +3,31 @@ import numpy as np
 import os
 import pickle
 
-class Trajectory (object):
+class Trajectory(object):
     """ Class to save BOMD trajectory data for CPA dynamics
 
         :param object molecule: Molecule object
         :param integer nsteps: Total step of nuclear propagation
-        :param integer cpa_index: Initial index for running MQC dynamics with sampled data
-        :param string samp_dir: Path of sampling data folder
+        :param integer cpa_index: Initial index for running MQC dynamics with sampling data
+        :param string samp_dir: Path of sampling data directory
     """
-    def __init__(self, molecule, nsteps, cpa_index, samp_dir):
+    def __init__(self, molecule, nsteps, cpa_index=None, samp_dir="./"):
 
         #Initialize trajectory variables
         self.cpa_index = cpa_index
+
+        if (cpa_index == None):
+            error_message = "cpa_index isn't defined!"
+            error_vars = f"cpa_index = {self.cpa_index}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         
         self.samp_dir = samp_dir
         
-        self.pos = np.zeros((nsteps + 1, molecule.nat, molecule.ndim))
-        self.vel = np.zeros((nsteps + 1, molecule.nat, molecule.ndim))
-        self.energy = np.zeros((nsteps + 1, molecule.nst))
-        self.force = np.zeros((nsteps + 1, molecule.nat, molecule.ndim))
-        self.nacme = np.zeros((nsteps + 1, molecule.nst, molecule.nst))
+        self.pos = []
+        self.vel = []
+        self.energy = []
+        self.force = []
+        self.nacme = []
 
     def read_RV_from_file(self, nsteps):
         """ Routine to save precomputed atomic position, velocities for CPA dynamics
@@ -34,16 +39,15 @@ class Trajectory (object):
             with open(RV_path, "rb") as f:
                 Data = pickle.load(f)
 
-            save_step = istep - self.cpa_index
-            self.pos[save_step] = Data["pos"]
-            self.vel[save_step] = Data["vel"]
+            self.pos.append(Data["pos"])
+            self.vel.append(Data["vel"])
 
         RV_path = os.path.join(self.samp_dir, f"RV.{self.cpa_index-1}.bin")
         with open(RV_path, "rb") as f:
             Data = pickle.load(f)
 
-        self.pos[nsteps] = Data["pos"]
-        self.vel[nsteps] = Data["vel"]
+        self.pos.append(Data["pos"])
+        self.vel.append(Data["vel"])
         
 
     def read_QM_from_file(self, nsteps):
@@ -56,16 +60,15 @@ class Trajectory (object):
             with open(QM_path, "rb") as f:
                 Data = pickle.load(f)
 
-            save_step = istep - self.cpa_index
-            self.energy[save_step] = Data["energy"]
-            self.force[save_step] = Data["force"]
-            self.nacme[save_step] = Data["nacme"]
+            self.energy.append(Data["energy"])
+            self.force.append(Data["force"])
+            self.nacme.append(Data["nacme"])
 
         QM_path = os.path.join(self.samp_dir, f"QM.{self.cpa_index-1}.bin")
         with open(QM_path, "rb") as f:
             Data = pickle.load(f)
 
-        self.energy[nsteps] = Data["energy"]
-        self.force[nsteps] = Data["force"]
-        self.nacme[nsteps] = Data["nacme"]
+        self.energy.append(Data["energy"])
+        self.force.append(Data["force"])
+        self.nacme.append(Data["nacme"])
 

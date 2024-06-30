@@ -29,7 +29,7 @@ class File_IO(Model):
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
         for ist in range(molecule.nst):
-            molecule.states[ist].energy = np.copy(trajectory.energy[istep, ist])
-        molecule.states[bo_list].force = np.copy(trajectory.force[istep])
-        molecule.nacme = np.copy(trajectory.nacme[istep])
+            molecule.states[ist].energy = np.array(trajectory.energy[istep][ist])
+        molecule.states[bo_list].force = np.array(trajectory.force[istep])
+        molecule.nacme = np.array(trajectory.nacme[istep])
 
