@@ -113,16 +113,15 @@ class SH(MQC):
         self.print_init(qm, mm, restart)
 
         if (self.l_cpa):
-            bo_list = [0]
             traj.read_QM_from_file(self.nsteps)
             traj.read_RV_from_file(self.nsteps)
 
         if (restart == None):
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
-            self.mol.reset_bo(qm.calc_coupling)
             if (self.l_cpa):
                 cl_update_position(self.istep, traj)
+            self.mol.reset_bo(qm.calc_coupling)
             qm.get_data(self.mol, traj, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
@@ -281,8 +280,7 @@ class SH(MQC):
             if (self.rand > self.acc_prob[ist] and self.rand <= self.acc_prob[ist + 1]):
                 self.l_hop = True
                 self.rstate = ist
-                if (not self.l_cpa):
-                    bo_list[0] = self.rstate
+                bo_list[0] = self.rstate
 
     def evaluate_hop(self, bo_list):
         """ Routine to evaluate hopping and velocity rescaling

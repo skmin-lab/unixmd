@@ -119,10 +119,11 @@ class MQC(object):
         if (traj != None):
             self.l_cpa = True
 
-        if (self.md_type != "SH" and self.l_cpa = True):
-            error_message = "CPA dynamics is only implemented in Fewest Switch Surface Hopping now!"
-            error_vars = f"md_type = {self.md_type}"
-            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+        if (self.l_cpa):
+            if (self.md_type != "SH"):
+                error_message = "CPA dynamics is only implemented in FSSH now!"
+                error_vars = f"md_type = {self.md_type}"
+                raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check if NACVs are calculated for Ehrenfest dynamics
         if (self.md_type in ["Eh", "EhXF"]):
