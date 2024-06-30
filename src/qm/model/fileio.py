@@ -33,6 +33,6 @@ class File_IO(Model):
         """
         for ist in range(molecule.nst):
             molecule.states[ist].energy = np.copy(trajectory.energy[istep][ist])
-        molecule.force = np.copy(trajectory.force[istep])
+        molecule.states[0].force = np.copy(trajectory.force[istep])
         molecule.nacme = np.copy(trajectory.nacme[istep])
 
