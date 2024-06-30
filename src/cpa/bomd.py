@@ -14,24 +14,15 @@ class BOMD(CPA):
         :param integer istate: Electronic state
         :param double dt: Time interval
         :param integer nsteps: Total step of nuclear propagation
-        :param string samp_dir: Sampling data directory
         :param string unit_dt: Unit of time step
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, \
-            samp_dir="./", unit_dt="fs", out_freq=1, verbosity=0):
+        unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, False, \
             unit_dt, out_freq, verbosity)
-
-        self.samp_dir = samp_dir
-        if (not os.path.exists(self.samp_dir)):
-            os.makedirs(self.samp_dir)
-        else:
-            error_message = "File already exists!"
-            error_vars = f"samp_dir = {self.samp_dir}"
-            raise ValueError (f"( {self.md_type}.{call_name()} ) {error message} ( {error_vars} )")
 
     def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run BOMD to obtain binary for CPA dynamics
@@ -45,7 +36,7 @@ class BOMD(CPA):
             :param string restart: Option for controlling dynamics restarting
         """
         # Initialize PyUNIxMD
-        base_dir, unixmd_dir, qm_log_dir, mm_log_dir = \
+        base_dir, unixmd_dir, samp_dir, qm_log_dir, mm_log_dir = \
             self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
         bo_list = [self.istate]
         qm.calc_coupling = True
@@ -96,7 +87,7 @@ class BOMD(CPA):
 
             self.update_energy()
 
-            self.save_bin(istep)
+            self.save_bin(samp_dir, istep)
 
             if ((istep + 1) % self.out_freq == 0):
                 self.write_md_output(unixmd_dir, istep)
@@ -120,16 +111,16 @@ class BOMD(CPA):
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
 
-    def save_bin(self, istep):
+    def save_bin(self, samp_dir, istep):
         """ Routine to save MD info of each step using pickle
 
             :param integer istep: Current MD step
         """
-        filename = os.path.join(self.samp_dir, f"QM.{istep}.bin")
+        filename = os.path.join(samp_dir, f"QM.{istep}.bin")
         with open(filename, "wb") as f:
             pickle.dump({"energy":np.array([x.energy for x in self.mol.states]), "force":self.rforce, "nacme":self.mol.nacme}, f)
 
-        filename = os.path.join(self.samp_dir, f"RV.{istep}.bin")
+        filename = os.path.join(samp_dir, f"RV.{istep}.bin")
         with open(filename, "wb") as f:
             pickle.dump({"pos":self.mol.pos, "vel":self.mol.vel}, f)
 
