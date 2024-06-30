@@ -8,12 +8,9 @@ class File_IO(Model):
         :param object molecule: molecule object
         :param object trajectory: trajectory object
     """
-    def __init__(self, molecule, trajectory):
+    def __init__(self, molecule):
         # Initialize model common variables
         super(File_IO, self).__init__(None)
-
-        # Initialize trajectory object
-        self.trajectory = trajectory
 
         # NACME is pre-caculated during BOMD sampling, so we do not need to get NACME
         molecule.l_nacme = False
@@ -32,7 +29,7 @@ class File_IO(Model):
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
         for ist in range(molecule.nst):
-            molecule.states[ist].energy = np.copy(trajectory.energy[istep][ist])
-        molecule.states[0].force = np.copy(trajectory.force[istep])
+            molecule.states[ist].energy = np.copy(trajectory.energy[istep, ist])
+        molecule.states[bo_list].force = np.copy(trajectory.force[istep])
         molecule.nacme = np.copy(trajectory.nacme[istep])
 
