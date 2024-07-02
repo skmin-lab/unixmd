@@ -127,6 +127,7 @@ class SH(MQC):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
             if (self.l_cpa):
                 cl_update_velocity(self.istep, traj)
+            else:
                 if (not self.mol.l_nacme):
                     self.mol.get_nacme()
 
