@@ -118,11 +118,9 @@ class CPA(object):
             # For sampling directory
             for samp_idir in samp_dir:
                 if (not os.path.exists(samp_idir)):
-                    os.makedirs(samp_dir)
-                else:
-                    error_message = "File already exists!"
-                    error_vars = f"samp_dir = {samp_dir}"
-                    raise ValueError (f"( {self.md_type}.{call_name()} ) {error message} ( {error_vars} )")
+                    error_message = f"Directory {samp_idir} to be appended for restart not found!"
+                    error_vars = f"restart = {restart}, output_dir = {output_dir}"
+                    raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
             # For QM output directory
             if (l_save_qm_log):
@@ -144,6 +142,14 @@ class CPA(object):
                 os.makedirs(md_idir)
 
                 self.touch_file(md_idir)
+
+            # For sampling directory
+            for samp_idir in samp_dir:
+                if (os.path.exists(samp_idir)):
+                    shutil.move(samp_idir, samp_idir + "_old_" + str(os.getpid()))
+                os.makedirs(samp_idir)
+
+                self.touch_file(samp_idir)
 
             # For QM output directory
             for qm_idir in qm_log_dir:
