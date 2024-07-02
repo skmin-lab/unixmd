@@ -6,7 +6,6 @@ class File_IO(Model):
     """ Class for fetching pre-calculated sampling data used in CPA dynamics
 
         :param object molecule: molecule object
-        :param object trajectory: trajectory object
     """
     def __init__(self, molecule):
         # Initialize model common variables
@@ -29,7 +28,7 @@ class File_IO(Model):
             :param boolean calc_force_only: logical to decide whether calculate force only
         """
         for ist in range(molecule.nst):
-            molecule.states[ist].energy = np.array(trajectory.energy[istep][ist])
-        molecule.states[bo_list].force = np.array(trajectory.force[istep])
-        molecule.nacme = np.array(trajectory.nacme[istep])
+            molecule.states[ist].energy = traj.energy[istep][ist]
+        molecule.states[bo_list[0]].force = np.array(traj.force[istep])
+        molecule.nacme = np.array(traj.nacme[istep])
 
