@@ -149,8 +149,6 @@ class CPA(object):
                     shutil.move(samp_idir, samp_idir + "_old_" + str(os.getpid()))
                 os.makedirs(samp_idir)
 
-                self.touch_file(samp_idir)
-
             # For QM output directory
             for qm_idir in qm_log_dir:
                 if (os.path.exists(qm_idir)):

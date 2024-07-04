@@ -11,6 +11,8 @@ class Trajectory(object):
         :param string samp_dir: Path of sampling data directory
     """
     def __init__(self, molecule, cpa_index=None, samp_dir="./"):
+        # Save name of Trajectory class
+        self.traj_type = self.__class__.__name__
 
         #Initialize trajectory variables
         self.cpa_index = cpa_index
@@ -18,12 +20,12 @@ class Trajectory(object):
         if (cpa_index == None):
             error_message = "cpa_index isn't defined!"
             error_vars = f"cpa_index = {self.cpa_index}"
-            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+            raise ValueError (f"( {self.traj_type}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
             if (cpa_index < 0):
                 error_message = "cpa_index shouldn't be smaller than 0"
                 error_vars = f"cpa_index = {self.cpa_index}"
-                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+                raise ValueError (f"( {self.traj_type}.{call_name()} ) {error_message} ( {error_vars} )")
         
         self.samp_dir = samp_dir
         

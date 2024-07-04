@@ -29,6 +29,6 @@ class File_IO(Model):
         """
         for ist in range(molecule.nst):
             molecule.states[ist].energy = traj.energy[istep][ist]
-        molecule.states[bo_list[0]].force = np.array(traj.force[istep])
-        molecule.nacme = np.array(traj.nacme[istep])
+        molecule.states[bo_list[0]].force = np.copy(traj.force[istep])
+        molecule.nacme = np.copy(traj.nacme[istep])
 

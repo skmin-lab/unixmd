@@ -120,13 +120,14 @@ class SH(MQC):
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
             if (self.l_cpa):
-                cl_update_position(self.istep, traj)
+                self.cl_update_position(self.istep, traj)
             self.mol.reset_bo(qm.calc_coupling)
             qm.get_data(self.mol, traj, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
             if (self.l_cpa):
-                cl_update_velocity(self.istep, traj)
+                self.cl_update_velocity(self.istep, traj)
+            else:
                 if (not self.mol.l_nacme):
                     self.mol.get_nacme()
 

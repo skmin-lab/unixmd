@@ -230,7 +230,7 @@ class MQC(object):
         """
 
         if (self.l_cpa):
-            self.mol.pos = np.array(traj.pos[istep])
+            self.mol.pos = np.copy(traj.pos[istep])
         else:
             self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.ndim)
             self.mol.pos += self.dt * self.mol.vel
@@ -243,7 +243,7 @@ class MQC(object):
         """
 
         if (self.l_cpa):
-            self.mol.vel = np.array(traj.vel[istep])
+            self.mol.vel = np.copy(traj.vel[istep])
         else:
             self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.ndim)
         self.mol.update_kinetic()
