@@ -52,6 +52,7 @@ class BOMD(CPA):
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
             self.update_energy()
+            self.save_bin(samp_dir, self.istep)
             self.write_md_output(unixmd_dir, self.istep)
             self.print_step(self.istep)
 
@@ -116,11 +117,11 @@ class BOMD(CPA):
 
             :param integer istep: Current MD step
         """
-        filename = os.path.join(samp_dir, f"QM.{istep}.bin")
+        filename = os.path.join(samp_dir, f"QM.{istep+1}.bin")
         with open(filename, "wb") as f:
             pickle.dump({"energy":np.array([states.energy for states in self.mol.states]), "force":self.rforce, "nacme":self.mol.nacme}, f)
 
-        filename = os.path.join(samp_dir, f"RV.{istep}.bin")
+        filename = os.path.join(samp_dir, f"RV.{istep+1}.bin")
         with open(filename, "wb") as f:
             pickle.dump({"pos":self.mol.pos, "vel":self.mol.vel}, f)
 

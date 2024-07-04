@@ -38,7 +38,7 @@ class Trajectory(object):
             
             :param integer nsteps: Total step of nuclear propagation
         """
-        for istep in range(self.cpa_index, self.cpa_index + nsteps):
+        for istep in range(self.cpa_index+1, self.cpa_index+nsteps+1):
             RV_path = os.path.join(self.samp_dir, f"RV.{istep}.bin")
             with open(RV_path, "rb") as f:
                 Data = pickle.load(f)
@@ -46,20 +46,19 @@ class Trajectory(object):
             self.pos.append(Data["pos"])
             self.vel.append(Data["vel"])
 
-        RV_path = os.path.join(self.samp_dir, f"RV.{self.cpa_index-1}.bin")
+        RV_path = os.path.join(self.samp_dir, f"RV.{self.cpa_index}.bin")
         with open(RV_path, "rb") as f:
             Data = pickle.load(f)
 
         self.pos.append(Data["pos"])
         self.vel.append(Data["vel"])
-        
 
     def read_QM_from_file(self, nsteps):
         """ Routine to save precomputed energy, force, NACME for CPA dynamics
             
             :param integer nsteps: Total step of nuclear propagation
         """
-        for istep in range(self.cpa_index, self.cpa_index + nsteps):
+        for istep in (self.cpa_index+1, self.cpa_index+nsteps+1):
             QM_path = os.path.join(self.samp_dir, f"QM.{istep}.bin")
             with open(QM_path, "rb") as f:
                 Data = pickle.load(f)
@@ -68,7 +67,7 @@ class Trajectory(object):
             self.force.append(Data["force"])
             self.nacme.append(Data["nacme"])
 
-        QM_path = os.path.join(self.samp_dir, f"QM.{self.cpa_index-1}.bin")
+        QM_path = os.path.join(self.samp_dir, f"QM.{self.cpa_index}.bin")
         with open(QM_path, "rb") as f:
             Data = pickle.load(f)
 
