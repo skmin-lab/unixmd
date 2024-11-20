@@ -135,7 +135,7 @@ class CT(MQC):
                 self.mol = self.mols[itraj]
 
                 self.mol.reset_bo(qm.calc_coupling)
-                qm.get_data(self.mol, base_dirs[itraj], bo_list, self.dt, self.istep, calc_force_only=False)
+                qm.get_data(self.mol, traj, base_dirs[itraj], bo_list, self.dt, self.istep, calc_force_only=False)
 
                 # TODO: QM/MM
                 self.mol.get_nacme()
@@ -179,7 +179,7 @@ class CT(MQC):
                 self.mol.backup_bo()
                 self.mol.reset_bo(qm.calc_coupling)
 
-                qm.get_data(self.mol, base_dirs[itraj], bo_list, self.dt, istep, calc_force_only=False)
+                qm.get_data(self.mol, traj, base_dirs[itraj], bo_list, self.dt, istep, calc_force_only=False)
 
                 if (not self.mol.l_nacme and self.l_adj_nac):
                     self.mol.adjust_nac()

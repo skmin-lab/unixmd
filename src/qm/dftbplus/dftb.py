@@ -163,10 +163,11 @@ class DFTB(DFTBplus):
         self.ci_coef_old = np.zeros((molecule.nst, self.nocc, self.nvirt))
         self.ci_coef_new = np.zeros((molecule.nst, self.nocc, self.nvirt))
 
-    def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
+    def get_data(self, molecule, traj, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from (TD)DFTB method
 
             :param object molecule: Molecule object
+            :param object traj: trajectory object
             :param string base_dir: Base directory
             :param integer,list bo_list: List of BO states for BO calculation
             :param double dt: Time interval

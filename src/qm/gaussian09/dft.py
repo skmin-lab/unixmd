@@ -61,10 +61,11 @@ class DFT(Gaussian09):
         self.ci_coef_old = []
         self.ci_coef_new = []
 
-    def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
+    def get_data(self, molecule, traj, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient from (TD)DFT method
 
             :param object molecule: Molecule object
+            :param object traj: trajectory object
             :param string base_dir: Base directory
             :param integer,list bo_list: List of BO states for BO calculation
             :param double dt: Time interval
