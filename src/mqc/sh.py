@@ -112,6 +112,10 @@ class SH(MQC):
         qm.calc_tdp_grad = False
         self.print_init(qm, mm, restart)
 
+        if (self.l_cpa):
+            traj.read_QM_from_file(self.nsteps)
+            traj.read_RV_from_file(self.nsteps)
+
         if (restart == None):
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
