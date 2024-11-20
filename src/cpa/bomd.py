@@ -1,12 +1,13 @@
 from __future__ import division
-from mqc.mqc import MQC
+from cpa.cpa import CPA
 from misc import au_to_K, call_name
 import os, shutil, textwrap
 import numpy as np
 import pickle
 
-class BOMD(MQC):
+class BOMD(CPA):
     """ Class for born-oppenheimer molecular dynamics (BOMD)
+        to run dynamics with Classical Path Approximation (CPA)
 
         :param object molecule: Molecule object
         :param object thermostat: Thermostat object
