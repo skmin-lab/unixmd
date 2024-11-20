@@ -174,7 +174,7 @@ class CT(MQC):
                 self.mol = self.mols[itraj]
 
                 self.calculate_force(itraj)
-                self.cl_update_position()
+                self.cl_update_position(istep, traj)
 
                 self.mol.backup_bo()
                 self.mol.reset_bo(qm.calc_coupling)
@@ -187,7 +187,7 @@ class CT(MQC):
                 #TODO: QM/MM
 
                 self.calculate_force(itraj)
-                self.cl_update_velocity()
+                self.cl_update_velocity(istep, traj)
 
                 self.mol.get_nacme()
 
