@@ -38,7 +38,7 @@ class BOMD(CPA):
         base_dir, unixmd_dir, samp_dir, qm_log_dir, mm_log_dir = \
             self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
         bo_list = [self.istate]
-        qm.calc_coupling = False
+        qm.calc_coupling = True
         qm.calc_tdp = False
         qm.calc_tdp_grad = False
         self.print_init(qm, mm, restart)
@@ -51,6 +51,7 @@ class BOMD(CPA):
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
             self.update_energy()
+            self.save_bin(samp_dir, self.istep)
             self.write_md_output(unixmd_dir, self.istep)
             self.print_step(self.istep)
 
@@ -85,6 +86,8 @@ class BOMD(CPA):
 
             self.update_energy()
 
+            self.save_bin(samp_dir, istep)
+
             if ((istep + 1) % self.out_freq == 0):
                 self.write_md_output(unixmd_dir, istep)
                 self.print_step(istep)
@@ -106,6 +109,19 @@ class BOMD(CPA):
                 tmp_dir = os.path.join(unixmd_dir, "scr_mm")
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
+
+    def save_bin(self, samp_dir, istep):
+        """ Routine to save MD info of each step using pickle
+
+            :param integer istep: Current MD step
+        """
+        filename = os.path.join(samp_dir, f"QM.{istep+1}.bin")
+        with open(filename, "wb") as f:
+            pickle.dump({"energy":np.array([states.energy for states in self.mol.states]), "force":self.rforce, "nacme":self.mol.nacme}, f)
+
+        filename = os.path.join(samp_dir, f"RV.{istep+1}.bin")
+        with open(filename, "wb") as f:
+            pickle.dump({"pos":self.mol.pos, "vel":self.mol.vel}, f)
 
     def calculate_force(self):
         """ Routine to calculate the forces
