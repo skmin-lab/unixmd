@@ -5,7 +5,7 @@ import numpy as np
 class DAG(Model):
     """ Class for double arch geometry (DAG) model BO calculation
 
-        :param object molecule: molecule object
+        :param object molecule: Molecule object
         :param double A: parameter for double arch geometry
         :param double B: parameter for double arch geometry
         :param double C: parameter for double arch geometry
@@ -31,7 +31,7 @@ class DAG(Model):
     def get_data(self, molecule, traj, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from double arch geometry model BO calculation
 
-            :param object molecule: molecule object
+            :param object molecule: Molecule object
             :param object traj: trajectory object
             :param string base_dir: base directory
             :param integer,list bo_list: list of BO states for BO calculation

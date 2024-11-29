@@ -5,7 +5,7 @@ import numpy as np
 class ECR(Model):
     """ Class for extended coupling region with reflection (ECR) model BO calculation
 
-        :param object molecule: molecule object
+        :param object molecule: Molecule object
         :param double A: parameter for extended coupling region with reflection
         :param double B: parameter for extended coupling region with reflection
         :param double C: parameter for extended coupling region with reflection
@@ -29,7 +29,7 @@ class ECR(Model):
     def get_data(self, molecule, traj, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from simple avoided crossing model BO calculation
 
-            :param object molecule: molecule object
+            :param object molecule: Molecule object
             :param object traj: trajectory object
             :param string base_dir: base directory
             :param integer,list bo_list: list of BO states for BO calculation

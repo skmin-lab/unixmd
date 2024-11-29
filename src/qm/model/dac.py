@@ -5,7 +5,7 @@ import numpy as np
 class DAC(Model):
     """ Class for dual avoided crossing (DAC) model BO calculation
 
-        :param object molecule: molecule object
+        :param object molecule: Molecule object
         :param double E0: parameter for dual avoided crossing model
         :param double A: parameter for dual avoided crossing model
         :param double B: parameter for dual avoided crossing model
@@ -33,7 +33,7 @@ class DAC(Model):
     def get_data(self, molecule, traj, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from dual avoided crossing model BO calculation
 
-            :param object molecule: molecule object
+            :param object molecule: Molecule object
             :param object traj: trajectory object
             :param string base_dir: base directory
             :param integer,list bo_list: list of BO states for BO calculation
