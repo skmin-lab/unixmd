@@ -12,11 +12,12 @@ class CPA(object):
         :param integer istate: Initial adiabatic state
         :param double dt: Time interval
         :param integer nsteps: Nuclear step
+        :param boolean l_adj_nac: Logical to adjust nonadiabatic coupling
         :param string unit_dt: Unit of time step (fs = femtosecond, au = atomic unit)
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
-    def __init__(self, molecule, thermostat, istate, dt, nsteps, \
+    def __init__(self, molecule, thermostat, istate, dt, nsteps, l_adj_nac\
         unit_dt, out_freq, verbosity):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
@@ -45,6 +46,8 @@ class CPA(object):
             error_message = "Invalid unit for time step!"
             error_vars = f"unit_dt = {unit_dt}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        self.l_adj_nac = l_adj_nac
 
         self.rforce = np.zeros((self.mol.nat, self.mol.ndim))
 
