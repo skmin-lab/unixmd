@@ -154,7 +154,7 @@ class SHXF(MQC):
         # Initialize event to print
         self.event = {"HOP": [], "DECO": []}
 
-    def run(self, qm, mm=None, traj, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
+    def run(self, qm, mm=None, traj=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to decoherence-induced surface hopping dynamics
 
             :param object qm: QM object containing on-the-fly calculation information
