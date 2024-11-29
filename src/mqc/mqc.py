@@ -133,6 +133,10 @@ class MQC(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         if (self.mol.l_qmmm and mm != None):
             self.check_qmmm(qm, mm)
+        if (self.l_cpa and mm != None):
+            error_message = "Dynamics with CPA is only available with QM object named File_IO"
+            error_vars = f"l_cpa = {self.l_cpa}, mm = {mm}"
+            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Exception for CTMQC/Ehrenfest with QM/MM
         if ((self.md_type in ["CT", "Eh", "EhXF"]) and (mm != None)):
