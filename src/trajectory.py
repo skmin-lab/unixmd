@@ -22,6 +22,10 @@ class Trajectory(object)
             error_vars = f"cpa_index = {self.cpa_index}"
             raise ValueError (f"( {self.traj_type}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
+            if (isinstance(self.cpa, int)):
+                error_message = "cpa_index isn't integer!"
+                error_vars = f"cpa_index = {self.cpa_index}"
+                raise ValueError (f"( {self.traj_type}.{call_name()} ) {error_message} ( {error_vars} )")
             if (self.cpa_index < 0):
                 error_message = "cpa_index shouldn't be smaller than 0"
                 error_vars = f"cpa_index = {self.cpa_index}"
