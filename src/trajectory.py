@@ -14,7 +14,7 @@ class Trajectory(object)
         # Save name of Trajectory class
         self.traj_type = self.__class__.__name__
 
-        #Initialize trajectory variables
+        # Initialize trajectory variables
         self.cpa_index = cpa_index
 
         if (self.cpa_index == None):
@@ -40,7 +40,7 @@ class Trajectory(object)
             
             :param integer nsteps: Total step of nuclear propagation
         """
-        for istep in range(self.cpa_index+1, self.cpa_index+nsteps+1):
+        for istep in range(self.cpa_index + 1, self.cpa_index + nsteps + 1):
             RV_path = os.path.join(self.samp_dir, f"RV.{istep}.bin")
             with open(RV_path, "rb") as f:
                 Data = pickle.load(f)
@@ -60,7 +60,7 @@ class Trajectory(object)
             
             :param integer nsteps: Total step of nuclear propagation
         """
-        for istep in (self.cpa_index+1, self.cpa_index+nsteps+1):
+        for istep in (self.cpa_index + 1, self.cpa_index + nsteps + 1):
             QM_path = os.path.join(self.samp_dir, f"QM.{istep}.bin")
             with open(QM_path, "rb") as f:
                 Data = pickle.load(f)
@@ -76,4 +76,5 @@ class Trajectory(object)
         self.energy.append(Data["energy"])
         self.force.append(Data["force"])
         self.nacme.append(Data["nacme"])
+
 

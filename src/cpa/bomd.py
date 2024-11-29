@@ -115,15 +115,16 @@ class BOMD(CPA):
                     shutil.rmtree(tmp_dir)
 
     def save_bin(self, samp_dir, istep):
-        """ Routine to save MD info of each step using pickle
+        """ Routine to save MD information of each step using pickle
 
+            :param string samp_dir: Name of directory where sampling data are saved
             :param integer istep: Current MD step
         """
-        filename = os.path.join(samp_dir, f"QM.{istep+1}.bin")
+        filename = os.path.join(samp_dir, f"QM.{istep + 1}.bin")
         with open(filename, "wb") as f:
             pickle.dump({"energy":np.array([states.energy for states in self.mol.states]), "force":self.rforce, "nacme":self.mol.nacme}, f)
 
-        filename = os.path.join(samp_dir, f"RV.{istep+1}.bin")
+        filename = os.path.join(samp_dir, f"RV.{istep + 1}.bin")
         with open(filename, "wb") as f:
             pickle.dump({"pos":self.mol.pos, "vel":self.mol.vel}, f)
 

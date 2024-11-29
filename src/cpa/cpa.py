@@ -5,7 +5,7 @@ import numpy as np
 import os, shutil
 
 class CPA(object):
-    """ Class for nuclear propagator used to BOMD
+    """ Class for nuclear propagator used to sampling for CPA
 
         :param object molecule: Molecule object
         :param object thermostat: Thermostat type
