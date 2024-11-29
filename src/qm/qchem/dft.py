@@ -44,7 +44,7 @@ class DFT(QChem):
         """ Extract energy, gradient and nonadiabatic couplings from (TD)DFT method
 
             :param object molecule: Molecule object
-            :param object traj: trajectory object
+            :param object traj: Trajectory object
             :param string base_dir: Base directory
             :param integer,list bo_list: List of BO states for BO calculation
             :param double dt: Time interval

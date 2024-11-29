@@ -32,7 +32,7 @@ class SAC(Model):
         """ Extract energy, gradient and nonadiabatic couplings from simple avoided crossing model BO calculation
 
             :param object molecule: Molecule object
-            :param object traj: trajectory object
+            :param object traj: Trajectory object
             :param string base_dir: base directory
             :param integer,list bo_list: list of BO states for BO calculation
             :param double dt: time interval
