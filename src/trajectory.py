@@ -17,12 +17,12 @@ class Trajectory(object)
         #Initialize trajectory variables
         self.cpa_index = cpa_index
 
-        if (cpa_index == None):
+        if (self.cpa_index == None):
             error_message = "cpa_index isn't defined!"
             error_vars = f"cpa_index = {self.cpa_index}"
             raise ValueError (f"( {self.traj_type}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
-            if (cpa_index < 0):
+            if (self.cpa_index < 0):
                 error_message = "cpa_index shouldn't be smaller than 0"
                 error_vars = f"cpa_index = {self.cpa_index}"
                 raise ValueError (f"( {self.traj_type}.{call_name()} ) {error_message} ( {error_vars} )")
