@@ -74,11 +74,9 @@ class CPA(object):
             error_vars = f"restart = {restart}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        # Run sampling with MM isn't implemented yet!
+        # Warning for MM
         if (mm != None):
-            error_message = "Run sampling with MM isn't implemented yet!"
-            error_vars = f"mm = {mm}"
-            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+            print("\n\n Warning: Do not use MM when running dynamics with CPA! \n\n", flush=True)
 
         # Check compatibility of variables for QM and MM calculation
         if ((self.mol.l_qmmm and mm == None) or (not self.mol.l_qmmm and mm != None)):
