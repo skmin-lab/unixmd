@@ -220,7 +220,7 @@ class MQC(object):
         """ Routine to update nuclear positions
 
             :param integer istep: Current MD step
-            :param object traj: Trajectory object for CPA dynamics
+            :param object traj: Trajectory object for CPA
         """
 
         if (self.l_cpa):
@@ -233,7 +233,7 @@ class MQC(object):
         """ Routine to update nuclear velocities
         
             :param integer istep: Current MD step
-            :param object traj: Trajectory object for CPA dynamics
+            :param object traj: Trajectory object for CPA
         """
 
         if (self.l_cpa):

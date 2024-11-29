@@ -3,7 +3,7 @@ from qm.model.model import Model
 import numpy as np
 
 class File_IO(Model):
-    """ Class for fetching pre-calculated sampling data used in CPA dynamics
+    """ Class for fetching pre-calculated sampling data used in CPA
 
         :param object molecule: Molecule object
     """

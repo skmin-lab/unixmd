@@ -4,7 +4,7 @@ import os
 import pickle
 
 class Trajectory(object)
-    """ Class to save BOMD trajectory data for CPA dynamics
+    """ Class to save BOMD trajectory data for CPA
 
         :param object molecule: Molecule object
         :param integer cpa_index: Initial index for running MQC dynamics with sampling data
@@ -36,7 +36,7 @@ class Trajectory(object)
         self.nacme = []
 
     def read_RV_from_file(self, nsteps):
-        """ Routine to save precomputed atomic position, velocities for CPA dynamics
+        """ Routine to save precomputed atomic position, velocities for CPA
             
             :param integer nsteps: Total step of nuclear propagation
         """
@@ -56,7 +56,7 @@ class Trajectory(object)
         self.vel.append(Data["vel"])
 
     def read_QM_from_file(self, nsteps):
-        """ Routine to save precomputed energy, force, NACME for CPA dynamics
+        """ Routine to save precomputed energy, force, NACME for CPA
             
             :param integer nsteps: Total step of nuclear propagation
         """
