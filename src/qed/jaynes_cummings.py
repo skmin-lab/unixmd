@@ -366,7 +366,7 @@ class Jaynes_Cummings(QED_calculator):
             polariton.pol_states[rst].force = - np.copy(qed_grad)
 
         # The nonadiabatic coupling vectors between polaritonic states
-        if (not calc_force_only and not polariton.l_pnacme):
+        if (self.calc_coupling and not calc_force_only and not polariton.l_pnacme):
 
             # Loop for adiabatic states
             for ist in range(polariton.pst):

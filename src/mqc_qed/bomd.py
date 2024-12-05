@@ -50,6 +50,7 @@ class BOMD(MQC_QED):
         qm.calc_tdp_grad = False
         if (qed.force_level == "full"):
             qm.calc_tdp_grad = True
+        qed.calc_coupling = False
         self.print_init(qed, qm, mm, restart)
 
         if (restart == None):
@@ -61,6 +62,7 @@ class BOMD(MQC_QED):
             qm.get_data(self.pol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
             if (self.pol.l_qmmm and mm != None):
                 mm.get_data(self.pol, base_dir, bo_list, self.istep, calc_force_only=False)
+            qed.get_data(self.pol, base_dir, pol_list, self.dt, self.istep, calc_force_only=False)
 
             self.update_energy()
             self.write_md_output(unixmd_dir, self.istep)
@@ -92,6 +94,10 @@ class BOMD(MQC_QED):
             qm.get_data(self.pol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
             if (self.pol.l_qmmm and mm != None):
                 mm.get_data(self.pol, base_dir, bo_list, istep, calc_force_only=False)
+
+            if (self.l_adj_tdp):
+                self.pol.adjust_tdp()
+            qed.get_data(self.pol, base_dir, pol_list, self.dt, istep, calc_force_only=False)
 
             self.calculate_force()
             self.cl_update_velocity()

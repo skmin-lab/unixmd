@@ -169,6 +169,7 @@ class SHXF(MQC_QED):
         qm.calc_tdp_grad = False
         if (qed.force_level == "full"):
             qm.calc_tdp_grad = True
+        qed.calc_coupling = True
         self.print_init(qed, qm, mm, restart)
 
         if (restart == None):
