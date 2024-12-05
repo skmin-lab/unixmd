@@ -150,9 +150,9 @@ class MQC_QED(object):
 #            error_vars = f"mm = {mm}"
 #            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        # Exception for CTMQC/Ehrenfest/BOMD
+        # Exception for CTMQC/Ehrenfest
         # TODO : not yet tested
-        if (self.md_type in ["CT", "Eh", "BOMD"]):
+        if (self.md_type in ["CT", "Eh"]):
             error_message = "Current MQC dynamics is not available for QED!"
             error_vars = f"mqc_qed = {self.md_type}"
             raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
