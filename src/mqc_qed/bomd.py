@@ -61,6 +61,7 @@ class BOMD(MQC_QED):
             qm.get_data(self.pol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
             if (self.pol.l_qmmm and mm != None):
                 mm.get_data(self.pol, base_dir, bo_list, self.istep, calc_force_only=False)
+
             self.update_energy()
             self.write_md_output(unixmd_dir, self.istep)
             self.print_step(self.istep)
@@ -83,6 +84,8 @@ class BOMD(MQC_QED):
             self.calculate_force()
             self.cl_update_position()
 
+            self.pol.backup_bo(qm.calc_coupling, qm.calc_tdp)
+            qed.backup_qed()
             self.pol.reset_bo(qm.calc_coupling, qm.calc_tdp, qm.calc_tdp_grad)
             self.pol.reset_qed(qm.calc_coupling)
 
