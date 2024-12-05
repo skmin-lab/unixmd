@@ -13,16 +13,17 @@ class BOMD(MQC_QED):
         :param integer istate: Electronic state
         :param double dt: Time interval
         :param integer nsteps: Total step of nuclear propagation
+        :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
         :param boolean l_adj_tdp: Adjust transition dipole moments to align the phases
         :param string unit_dt: Unit of time step
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
-    def __init__(self, polariton, thermostat=None, istate=0, dt=0.5, nsteps=1000, l_adj_tdp=True, \
-        unit_dt="fs", out_freq=1, verbosity=0):
+    def __init__(self, polariton, thermostat=None, istate=0, dt=0.5, nsteps=1000, l_adj_nac=True, \
+        l_adj_tdp=True, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(polariton, thermostat, istate, dt, nsteps, None, None, None, \
-            False, None, l_adj_tdp, None, unit_dt, out_freq, verbosity)
+            False, l_adj_nac, l_adj_tdp, None, unit_dt, out_freq, verbosity)
 
     def run(self, qed, qm, mm=None, output_dir="./", l_save_qed_log=False, l_save_qm_log=False, \
         l_save_mm_log=False, l_save_scr=True, restart=None):
@@ -95,6 +96,8 @@ class BOMD(MQC_QED):
             if (self.pol.l_qmmm and mm != None):
                 mm.get_data(self.pol, base_dir, bo_list, istep, calc_force_only=False)
 
+            if (qm.calc_coupling and not self.pol.l_nacme and self.l_adj_nac):
+                self.pol.adjust_nac()
             if (self.l_adj_tdp):
                 self.pol.adjust_tdp()
             qed.get_data(self.pol, base_dir, pol_list, self.dt, istep, calc_force_only=False)

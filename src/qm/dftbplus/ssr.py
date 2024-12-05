@@ -391,19 +391,6 @@ class SSR(DFTBplus):
         else:
             memory = "No"
  
-        # NAC calculation options
-        if (molecule.nst == 1 or not self.l_state_interactions):
-            # Single-state REKS or SA-REKS state
-            self.nac = "No"
-        else:
-            # SSR state
-            if (not calc_force_only and self.calc_coupling):
-                # SHXF, SH, Eh need NAC calculations
-                self.nac = "Yes"
-            else:
-                # BOMD do not need NAC calculations
-                self.nac = "No"
-
         # Relaxed density options; It is determined automatically
         if (molecule.l_qmmm and self.embedding == "electrostatic"):
             relaxed_density = "Yes"
@@ -428,15 +415,30 @@ class SSR(DFTBplus):
             SaveMemory = {memory}
           }}
           RelaxedDensity = {relaxed_density}
-          NonAdiabaticCoupling = {self.nac}
         """), "  ")
         input_dftb += input_reks_body
+
+        # NAC calculation options
+        if (molecule.nst == 1 or not self.l_state_interactions):
+            # Single-state REKS or SA-REKS state
+            self.nac = "No"
+        else:
+            # SSR state
+            if (not calc_force_only and self.calc_coupling):
+                # SHXF, SH, Eh need NAC calculations
+                self.nac = "Yes"
+            else:
+                # BOMD do not need NAC calculations
+                self.nac = "No"
 
         # Transition dipole moment options; It is determined automatically
         if (self.calc_tdp):
             transition_dipole = "Yes"
             if (self.calc_tdp_grad):
                 transition_dipole_grad = "Yes"
+                # For TDP gradients between SSR states, the calculation of NACVs is needed
+                if (self.l_state_interactions):
+                    self.nac = "Yes"
             else:
                 transition_dipole_grad = "No"
         else:
@@ -444,6 +446,7 @@ class SSR(DFTBplus):
             transition_dipole_grad = "No"
 
         input_reks_tdp = textwrap.indent(textwrap.dedent(f"""\
+          NonAdiabaticCoupling = {self.nac}
           TransitionDipole = {transition_dipole}
           TransitionDipoleGradient = {transition_dipole_grad}
         """), "  ")
