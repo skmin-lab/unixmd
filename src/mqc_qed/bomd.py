@@ -135,15 +135,15 @@ class BOMD(MQC_QED):
     def calculate_force(self):
         """ Routine to calculate the forces
         """
-        self.rforce = np.copy(self.mol.states[self.istate].force)
+        self.rforce = np.copy(self.pol.pol_states[self.istate].force)
 
     def update_energy(self):
         """ Routine to update the energy of molecules in BOMD
         """
         # Update kinetic energy
-        self.mol.update_kinetic()
-        self.mol.epot = self.mol.states[self.istate].energy
-        self.mol.etot = self.mol.epot + self.mol.ekin
+        self.pol.update_kinetic()
+        self.pol.epot = self.pol.pol_states[self.istate].energy
+        self.pol.etot = self.pol.epot + self.pol.ekin
 
     def print_init(self, qed, qm, mm, restart):
         """ Routine to print the initial information of dynamics
@@ -175,11 +175,11 @@ class BOMD(MQC_QED):
 
             :param integer istep: Current MD step
         """
-        ctemp = self.mol.ekin * 2. / float(self.mol.ndof) * au_to_K
+        ctemp = self.pol.ekin * 2. / float(self.pol.ndof) * au_to_K
 
         # Print INFO for each step
         INFO = f" INFO{istep + 1:>9d}{self.istate:>5d} "
-        INFO += f"{self.mol.ekin:14.8f}{self.mol.epot:15.8f}{self.mol.etot:15.8f}"
+        INFO += f"{self.pol.ekin:16.8f}{self.pol.epot:15.8f}{self.pol.etot:15.8f}"
         INFO += f"{ctemp:13.6f}"
         print (INFO, flush=True)
 
