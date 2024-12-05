@@ -119,10 +119,14 @@ class BOMD(MQC_QED):
             self.fstep = istep
             restart_file = os.path.join(base_dir, "RESTART.bin")
             with open(restart_file, 'wb') as f:
-                pickle.dump({'qm':qm, 'md':self}, f)
+                pickle.dump({'qed':qed, 'qm':qm, 'md':self}, f)
 
         # Delete scratch directory
         if (not l_save_scr):
+            tmp_dir = os.path.join(unixmd_dir, "scr_qed")
+            if (os.path.exists(tmp_dir)):
+                shutil.rmtree(tmp_dir)
+
             tmp_dir = os.path.join(unixmd_dir, "scr_qm")
             if (os.path.exists(tmp_dir)):
                 shutil.rmtree(tmp_dir)
