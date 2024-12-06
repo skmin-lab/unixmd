@@ -45,12 +45,15 @@ class BOMD(MQC_QED):
         bo_list = [ist for ist in range(self.pol.nst)]
         pol_list = [self.istate]
         qm.calc_coupling = False
+        # Hellmann-Feynman force needs NACVs
         if (qed.force_level == "hf"):
             qm.calc_coupling = True
         qm.calc_tdp = True
         qm.calc_tdp_grad = False
+        # Exact force needs transition dipole gradients
         if (qed.force_level == "full"):
             qm.calc_tdp_grad = True
+        # BOMD does not need to calculate pNACVs or pNACMEs
         qed.calc_coupling = False
         self.print_init(qed, qm, mm, restart)
 
@@ -183,7 +186,7 @@ class BOMD(MQC_QED):
 
         # Print INFO for each step
         INFO = f" INFO{istep + 1:>9d}{self.istate:>5d} "
-        INFO += f"{self.pol.ekin:16.8f}{self.pol.epot:15.8f}{self.pol.etot:15.8f}"
+        INFO += f"{self.pol.ekin:14.8f}{self.pol.epot:15.8f}{self.pol.etot:15.8f}"
         INFO += f"{ctemp:13.6f}"
         print (INFO, flush=True)
 

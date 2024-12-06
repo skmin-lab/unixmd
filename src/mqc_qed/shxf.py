@@ -167,8 +167,10 @@ class SHXF(MQC_QED):
         qm.calc_coupling = True
         qm.calc_tdp = True
         qm.calc_tdp_grad = False
+        # Exact force needs transition dipole gradients
         if (qed.force_level == "full"):
             qm.calc_tdp_grad = True
+        # SHXF needs to calculate pNACVs or pNACMEs
         qed.calc_coupling = True
         self.print_init(qed, qm, mm, restart)
 
