@@ -370,33 +370,6 @@ class SSR(DFTBplus):
         else:
             spin_tuning = "{}"
 
-        # CP-REKS algorithm options
-        if (self.cpreks_grad_alg == "pcg"):
-            cpreks_alg = "ConjugateGradient"
-            preconditioner = "Yes"
-        elif (self.cpreks_grad_alg == "cg"):
-            cpreks_alg = "ConjugateGradient"
-            preconditioner = "No"
-        elif (self.cpreks_grad_alg == "direct"):
-            cpreks_alg = "Direct"
-            preconditioner = "No"
-        else:
-            error_message = "Invalid algorithms for CP-REKS problem!"
-            error_vars = f"cpreks_grad_alg = {self.cpreks_grad_alg}"
-            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
-
-        # Save memory in cache to reduce computational cost in CP-REKS
-        if (self.l_save_memory):
-            memory = "Yes"
-        else:
-            memory = "No"
- 
-        # Relaxed density options; It is determined automatically
-        if (molecule.l_qmmm and self.embedding == "electrostatic"):
-            relaxed_density = "Yes"
-        else:
-            relaxed_density = "No"
-
         input_reks_body = textwrap.indent(textwrap.dedent(f"""\
           Energy = {{
             Functional = {energy_functional}
@@ -408,15 +381,56 @@ class SSR(DFTBplus):
           FONmaxIter = 50
           shift = {self.shift}
           SpinTuning = {spin_tuning}
-          Gradient = {cpreks_alg}{{
-            CGmaxIter = 100
-            Tolerance = {self.cpreks_grad_tol}
-            Preconditioner = {preconditioner}
-            SaveMemory = {memory}
-          }}
-          RelaxedDensity = {relaxed_density}
         """), "  ")
         input_dftb += input_reks_body
+
+        # CP-REKS algorithm options
+        if (self.cpreks_grad_alg == "pcg"):
+            cpreks_alg = "ConjugateGradient"
+            preconditioner = "Yes"
+            # Save memory in cache to reduce computational cost in CP-REKS
+            if (self.l_save_memory):
+                memory = "Yes"
+            else:
+                memory = "No"
+        elif (self.cpreks_grad_alg == "cg"):
+            cpreks_alg = "ConjugateGradient"
+            preconditioner = "No"
+            # Save memory in cache to reduce computational cost in CP-REKS
+            if (self.l_save_memory):
+                memory = "Yes"
+            else:
+                memory = "No"
+        elif (self.cpreks_grad_alg == "direct"):
+            cpreks_alg = "Direct"
+        else:
+            error_message = "Invalid algorithms for CP-REKS problem!"
+            error_vars = f"cpreks_grad_alg = {self.cpreks_grad_alg}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        # Relaxed density options; It is determined automatically
+        if (molecule.l_qmmm and self.embedding == "electrostatic"):
+            relaxed_density = "Yes"
+        else:
+            relaxed_density = "No"
+
+        if (self.cpreks_grad_alg != "direct"):
+            input_reks_grad = textwrap.indent(textwrap.dedent(f"""\
+              Gradient = {cpreks_alg}{{
+                CGmaxIter = 100
+                Tolerance = {self.cpreks_grad_tol}
+                Preconditioner = {preconditioner}
+                SaveMemory = {memory}
+              }}
+              RelaxedDensity = {relaxed_density}
+            """), "  ")
+        else:
+            input_reks_grad = textwrap.indent(textwrap.dedent(f"""\
+              Gradient = {cpreks_alg}{{
+              }}
+              RelaxedDensity = {relaxed_density}
+            """), "  ")
+        input_dftb += input_reks_grad
 
         # NAC calculation options
         if (molecule.nst == 1 or not self.l_state_interactions):
