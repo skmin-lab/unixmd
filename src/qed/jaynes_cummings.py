@@ -91,7 +91,7 @@ class Jaynes_Cummings(QED_calculator):
         if (not calc_force_only):
             self.solve_polaritonic_states(polariton, pol_list, dt, istep)
             self.save_output_files(base_dir, pol_list, istep)
-        # Step 3: Calculate properties of polaritonic states; forces, NAC
+        # Step 3: Calculate properties of polaritonic states; forces, NACVs
         self.calculate_properties(polariton, pol_list, calc_force_only)
         self.move_dir(base_dir)
 
@@ -293,8 +293,8 @@ class Jaynes_Cummings(QED_calculator):
         """ Calculate properties of polaritonic states
             The forces for polaritonic states are calculated from the gradients
             of electronic states and transition dipole gradients
-            The NACs between polaritonic states are calculated from the gradients,
-            NACs, and transition dipole gradients
+            The NACVs between polaritonic states are calculated from the gradients,
+            NACVs, and transition dipole gradients
 
             :param object polariton: Polariton object
             :param integer,list pol_list: List of polaritonic states for QED calculation

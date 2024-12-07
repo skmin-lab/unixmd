@@ -39,7 +39,7 @@ class SH(MQC_QED):
             propagator, l_print_dm, l_adj_nac, l_adj_tdp, init_coef, unit_dt, out_freq, verbosity)
 
         # Initialize SH variables
-        self.rstate = istate
+        self.rstate = self.istate
         self.rstate_old = self.rstate
 
         self.rand = 0.

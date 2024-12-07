@@ -25,6 +25,14 @@ class BOMD(MQC_QED):
         super().__init__(polariton, thermostat, istate, dt, nsteps, None, None, None, \
             False, l_adj_nac, l_adj_tdp, None, unit_dt, out_freq, verbosity)
 
+        # Initialize SH variables
+        self.rstate = self.istate
+        self.rstate_old = self.rstate
+        self.l_hop = False
+
+        # Initialize event to print
+        self.event = {"HOP": []}
+
     def run(self, qed, qm, mm=None, output_dir="./", l_save_qed_log=False, l_save_qm_log=False, \
         l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to BOMD
@@ -43,7 +51,7 @@ class BOMD(MQC_QED):
         base_dir, unixmd_dir, qed_log_dir, qm_log_dir, mm_log_dir = \
             self.run_init(qed, qm, mm, output_dir, l_save_qed_log, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
         bo_list = [ist for ist in range(self.pol.nst)]
-        pol_list = [self.istate]
+        pol_list = [self.rstate]
         qm.calc_coupling = False
         # Hellmann-Feynman force needs NACVs
         if (qed.force_level == "hf"):
@@ -108,6 +116,13 @@ class BOMD(MQC_QED):
             self.calculate_force()
             self.cl_update_velocity()
 
+            self.trivial_hop(qed, pol_list)
+
+            if (self.l_hop):
+                if (self.pol.l_qmmm and mm != None):
+                    mm.get_data(self.pol, base_dir, bo_list, istep, calc_force_only=True)
+                qed.get_data(self.pol, base_dir, pol_list, self.dt, istep, calc_force_only=True)
+
             if (self.thermo != None):
                 self.thermo.run(self)
 
@@ -139,17 +154,36 @@ class BOMD(MQC_QED):
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
 
+    def trivial_hop(self, qed, pol_list):
+        """ Routine to check trivial crossing between adjacent adiabatic states
+
+            :param object qed: QED object containing cavity-molecule interaction
+            :param integer,list pol_list: List of polaritonic states for QED calculation
+        """
+        # Reset surface hopping variables
+        self.rstate_old = self.rstate
+        self.l_hop = False
+
+        if (qed.l_trivial):
+            self.l_hop = True
+            self.rstate = qed.trivial_state
+            pol_list[0] = self.rstate
+
+        # Record hopping event
+        if (self.rstate != self.rstate_old):
+            self.event["HOP"].append(f"Trivial crossing hopping: hop {self.rstate_old} -> {self.rstate}")
+
     def calculate_force(self):
         """ Routine to calculate the forces
         """
-        self.rforce = np.copy(self.pol.pol_states[self.istate].force)
+        self.rforce = np.copy(self.pol.pol_states[self.rstate].force)
 
     def update_energy(self):
         """ Routine to update the energy of molecules in BOMD
         """
         # Update kinetic energy
         self.pol.update_kinetic()
-        self.pol.epot = self.pol.pol_states[self.istate].energy
+        self.pol.epot = self.pol.pol_states[self.rstate].energy
         self.pol.etot = self.pol.epot + self.pol.ekin
 
     def print_init(self, qed, qm, mm, restart):
@@ -185,9 +219,16 @@ class BOMD(MQC_QED):
         ctemp = self.pol.ekin * 2. / float(self.pol.ndof) * au_to_K
 
         # Print INFO for each step
-        INFO = f" INFO{istep + 1:>9d}{self.istate:>5d} "
+        INFO = f" INFO{istep + 1:>9d}{self.rstate:>5d} "
         INFO += f"{self.pol.ekin:14.8f}{self.pol.epot:15.8f}{self.pol.etot:15.8f}"
         INFO += f"{ctemp:13.6f}"
         print (INFO, flush=True)
+
+        # Print event in surface hopping
+        for category, events in self.event.items():
+            if (len(events) != 0):
+                for ievent in events:
+                    print (f" {category}{istep + 1:>9d}  {ievent}", flush=True)
+        self.event["HOP"] = []
 
 
