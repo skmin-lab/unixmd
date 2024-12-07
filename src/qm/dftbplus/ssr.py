@@ -439,6 +439,12 @@ class SSR(DFTBplus):
                 # For TDP gradients between SSR states, the calculation of NACVs is needed
                 if (self.l_state_interactions):
                     self.nac = "Yes"
+                else:
+                    # For polariton dynamics, the gradients of all states are needed.
+                    # However, SA-REKS cannot compute the gradients of all states simultaneously
+                    error_message = "State-interaction is necessary for polariton dynamics!"
+                    error_vars = f"l_state_interaction = {self.l_state_interaction}"
+                    raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
             else:
                 transition_dipole_grad = "No"
         else:
