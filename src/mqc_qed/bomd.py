@@ -124,7 +124,7 @@ class BOMD(MQC_QED):
                 qed.get_data(self.pol, base_dir, pol_list, self.dt, istep, calc_force_only=True)
 
             if (self.thermo != None):
-                self.thermo.run(self)
+                self.thermo.run(self, self.pol)
 
             self.update_energy()
 

@@ -254,7 +254,7 @@ class SHXF(MQC):
                     mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
 
             if (self.thermo != None):
-                self.thermo.run(self)
+                self.thermo.run(self, self.mol)
 
             self.update_energy()
 

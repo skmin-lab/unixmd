@@ -194,7 +194,7 @@ class CT(MQC):
 
                 #TODO: thermostat
                 #if (self.thermo != None):
-                #    self.thermo.run(self)
+                #    self.thermo.run(self, self.mol)
 
                 self.update_energy()
 

@@ -104,7 +104,7 @@ class Eh(MQC):
             el_run(self)
 
             if (self.thermo != None):
-                self.thermo.run(self)
+                self.thermo.run(self, self.mol)
 
             self.update_energy()
 
