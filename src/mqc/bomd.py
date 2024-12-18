@@ -80,7 +80,7 @@ class BOMD(MQC):
             self.cl_update_velocity()
 
             if (self.thermo != None):
-                self.thermo.run(self)
+                self.thermo.run(self, self.mol)
 
             self.update_energy()
 

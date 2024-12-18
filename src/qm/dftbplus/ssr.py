@@ -370,27 +370,68 @@ class SSR(DFTBplus):
         else:
             spin_tuning = "{}"
 
+        input_reks_body = textwrap.indent(textwrap.dedent(f"""\
+          Energy = {{
+            Functional = {energy_functional}
+            StateInteractions = {do_ssr}
+            IncludeAllStates = {all_states}
+          }}
+          TargetState = {bo_list[0] + 1}
+          ReadEigenvectors = {restart}
+          FONmaxIter = 50
+          shift = {self.shift}
+          SpinTuning = {spin_tuning}
+        """), "  ")
+        input_dftb += input_reks_body
+
         # CP-REKS algorithm options
         if (self.cpreks_grad_alg == "pcg"):
             cpreks_alg = "ConjugateGradient"
             preconditioner = "Yes"
+            # Save memory in cache to reduce computational cost in CP-REKS
+            if (self.l_save_memory):
+                memory = "Yes"
+            else:
+                memory = "No"
         elif (self.cpreks_grad_alg == "cg"):
             cpreks_alg = "ConjugateGradient"
             preconditioner = "No"
+            # Save memory in cache to reduce computational cost in CP-REKS
+            if (self.l_save_memory):
+                memory = "Yes"
+            else:
+                memory = "No"
         elif (self.cpreks_grad_alg == "direct"):
             cpreks_alg = "Direct"
-            preconditioner = "No"
         else:
             error_message = "Invalid algorithms for CP-REKS problem!"
             error_vars = f"cpreks_grad_alg = {self.cpreks_grad_alg}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        # Save memory in cache to reduce computational cost in CP-REKS
-        if (self.l_save_memory):
-            memory = "Yes"
+        # Relaxed density options; It is determined automatically
+        if (molecule.l_qmmm and self.embedding == "electrostatic"):
+            relaxed_density = "Yes"
         else:
-            memory = "No"
- 
+            relaxed_density = "No"
+
+        if (self.cpreks_grad_alg != "direct"):
+            input_reks_grad = textwrap.indent(textwrap.dedent(f"""\
+              Gradient = {cpreks_alg}{{
+                CGmaxIter = 100
+                Tolerance = {self.cpreks_grad_tol}
+                Preconditioner = {preconditioner}
+                SaveMemory = {memory}
+              }}
+              RelaxedDensity = {relaxed_density}
+            """), "  ")
+        else:
+            input_reks_grad = textwrap.indent(textwrap.dedent(f"""\
+              Gradient = {cpreks_alg}{{
+              }}
+              RelaxedDensity = {relaxed_density}
+            """), "  ")
+        input_dftb += input_reks_grad
+
         # NAC calculation options
         if (molecule.nst == 1 or not self.l_state_interactions):
             # Single-state REKS or SA-REKS state
@@ -404,39 +445,20 @@ class SSR(DFTBplus):
                 # BOMD do not need NAC calculations
                 self.nac = "No"
 
-        # Relaxed density options; It is determined automatically
-        if (molecule.l_qmmm and self.embedding == "electrostatic"):
-            relaxed_density = "Yes"
-        else:
-            relaxed_density = "No"
-
-        input_reks_body = textwrap.indent(textwrap.dedent(f"""\
-          Energy = {{
-            Functional = {energy_functional}
-            StateInteractions = {do_ssr}
-            IncludeAllStates = {all_states}
-          }}
-          TargetState = {bo_list[0] + 1}
-          ReadEigenvectors = {restart}
-          FONmaxIter = 50
-          shift = {self.shift}
-          SpinTuning = {spin_tuning}
-          Gradient = {cpreks_alg}{{
-            CGmaxIter = 100
-            Tolerance = {self.cpreks_grad_tol}
-            Preconditioner = {preconditioner}
-            SaveMemory = {memory}
-          }}
-          RelaxedDensity = {relaxed_density}
-          NonAdiabaticCoupling = {self.nac}
-        """), "  ")
-        input_dftb += input_reks_body
-
         # Transition dipole moment options; It is determined automatically
         if (self.calc_tdp):
             transition_dipole = "Yes"
             if (self.calc_tdp_grad):
                 transition_dipole_grad = "Yes"
+                # For TDP gradients between SSR states, the calculation of NACVs is needed
+                if (self.l_state_interactions):
+                    self.nac = "Yes"
+                else:
+                    # For polariton dynamics, the gradients of all states are needed.
+                    # However, SA-REKS cannot compute the gradients of all states simultaneously
+                    error_message = "State-interaction is necessary for polariton dynamics!"
+                    error_vars = f"l_state_interaction = {self.l_state_interaction}"
+                    raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
             else:
                 transition_dipole_grad = "No"
         else:
@@ -444,6 +466,7 @@ class SSR(DFTBplus):
             transition_dipole_grad = "No"
 
         input_reks_tdp = textwrap.indent(textwrap.dedent(f"""\
+          NonAdiabaticCoupling = {self.nac}
           TransitionDipole = {transition_dipole}
           TransitionDipoleGradient = {transition_dipole_grad}
         """), "  ")

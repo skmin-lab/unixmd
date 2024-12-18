@@ -60,7 +60,7 @@ class SHXF(MQC):
             elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
 
         # Initialize SH variables
-        self.rstate = istate
+        self.rstate = self.istate
         self.rstate_old = self.rstate
 
         self.rand = 0.
@@ -254,7 +254,7 @@ class SHXF(MQC):
                     mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
 
             if (self.thermo != None):
-                self.thermo.run(self)
+                self.thermo.run(self, self.mol)
 
             self.update_energy()
 

@@ -39,7 +39,7 @@ class SH(MQC_QED):
             propagator, l_print_dm, l_adj_nac, l_adj_tdp, init_coef, unit_dt, out_freq, verbosity)
 
         # Initialize SH variables
-        self.rstate = istate
+        self.rstate = self.istate
         self.rstate_old = self.rstate
 
         self.rand = 0.
@@ -113,8 +113,11 @@ class SH(MQC_QED):
         qm.calc_coupling = True
         qm.calc_tdp = True
         qm.calc_tdp_grad = False
+        # Exact force needs transition dipole gradients
         if (qed.force_level == "full"):
             qm.calc_tdp_grad = True
+        # FSSH needs to calculate pNACVs or pNACMEs
+        qed.calc_coupling = True
         self.print_init(qed, qm, mm, restart)
 
         if (restart == None):
@@ -224,7 +227,7 @@ class SH(MQC_QED):
                 qed.get_data(self.pol, base_dir, pol_list, self.dt, istep, calc_force_only=True)
 
             if (self.thermo != None):
-                self.thermo.run(self)
+                self.thermo.run(self, self.pol)
 
             self.update_energy()
 
