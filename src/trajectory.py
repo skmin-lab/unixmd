@@ -1,7 +1,9 @@
 from __future__ import division
 import numpy as np
 import os
+from misc import call_name
 import pickle
+
 
 class Trajectory(object)
     """ Class to save BOMD trajectory data for CPA
@@ -22,7 +24,7 @@ class Trajectory(object)
             error_vars = f"cpa_index = {self.cpa_index}"
             raise ValueError (f"( {self.traj_type}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
-            if (isinstance(self.cpa, int)):
+            if not (isinstance(self.cpa, int)):
                 error_message = "cpa_index isn't integer!"
                 error_vars = f"cpa_index = {self.cpa_index}"
                 raise ValueError (f"( {self.traj_type}.{call_name()} ) {error_message} ( {error_vars} )")
