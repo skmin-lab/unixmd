@@ -198,8 +198,6 @@ class SHXF(MQC_QED):
             self.hop_check(pol_list)
             self.evaluate_hop(qed, pol_list)
             if (self.l_hop):
-                if (self.pol.l_qmmm and mm != None):
-                    mm.get_data(self.pol, base_dir, bo_list, self.istep, calc_force_only=True)
                 qed.get_data(self.pol, base_dir, pol_list, self.dt, self.istep, calc_force_only=True)
 
             self.update_energy()
@@ -266,8 +264,6 @@ class SHXF(MQC_QED):
             self.hop_check(pol_list)
             self.evaluate_hop(qed, pol_list)
             if (self.l_hop):
-                if (self.pol.l_qmmm and mm != None):
-                    mm.get_data(self.pol, base_dir, bo_list, istep, calc_force_only=True)
                 qed.get_data(self.pol, base_dir, pol_list, self.dt, istep, calc_force_only=True)
 
             if (self.thermo != None):
