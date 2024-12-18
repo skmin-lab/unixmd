@@ -122,13 +122,6 @@ class MQC_QED(object):
             error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        # Exception for QED with QM/MM dynamics
-        # TODO : not yet tested
-        if (mm != None):
-            error_message = "QED using polariton object is not compatible with QM/MM now!"
-            error_vars = f"mm = {mm}"
-            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-
         # Check compatibility of variables for QM and MM calculation
         if ((self.pol.l_qmmm and mm == None) or (not self.pol.l_qmmm and mm != None)):
             error_message = "Both logical for QM/MM and MM object is necessary!"
@@ -138,10 +131,11 @@ class MQC_QED(object):
             self.check_qmmm(qm, mm)
 
         # Exception for CTMQC/Ehrenfest with QM/MM
-#        if ((self.md_type in ["CT", "Eh"]) and (mm != None)):
-#            error_message = "QM/MM calculation is not compatible with CTMQC or Ehrenfest now!"
-#            error_vars = f"mm = {mm}"
-#            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+        # TODO : not yet tested
+        if ((self.md_type in ["CT", "Eh"]) and (mm != None)):
+            error_message = "QM/MM calculation is not compatible with CTMQC or Ehrenfest now!"
+            error_vars = f"mm = {mm}"
+            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Exception for CTMQC/Ehrenfest
         # TODO : not yet tested
