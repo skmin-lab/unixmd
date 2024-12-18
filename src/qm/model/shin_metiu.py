@@ -7,7 +7,7 @@ from misc import eps
 class Shin_Metiu(Model):
     """ Class for 1D Shin-Metiu model BO calculation in a real-space grid
 
-        :param object molecule: molecule object
+        :param object molecule: Molecule object
         :param integer nx: the number of grid points
         :param double xmin: lower bound of the 1D space
         :param double xmax: upper bound of the 1D space
@@ -41,10 +41,11 @@ class Shin_Metiu(Model):
         # Shin-Metiu model can compute the gradient of several states simultaneously
         self.re_calc = False
 
-    def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
+    def get_data(self, molecule, traj, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from Shin-Metiu BO calculation
 
-            :param object molecule: molecule object
+            :param object molecule: Molecule object
+            :param object traj: Trajectory object
             :param string base_dir: base directory
             :param integer,list bo_list: list of BO states for BO calculation
             :param double dt: time interval

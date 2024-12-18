@@ -5,7 +5,7 @@ import numpy as np
 class SAC(Model):
     """ Class for simple avoided crossing (SAC) model BO calculation
 
-        :param object molecule: molecule object
+        :param object molecule: Molecule object
         :param double A: parameter for simple avoided crossing model
         :param double B: parameter for simple avoided crossing model
         :param double C: parameter for simple avoided crossing model
@@ -28,10 +28,11 @@ class SAC(Model):
         # SAC model can compute the gradient of several states simultaneously
         self.re_calc = False
 
-    def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
+    def get_data(self, molecule, traj, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from simple avoided crossing model BO calculation
 
-            :param object molecule: molecule object
+            :param object molecule: Molecule object
+            :param object traj: Trajectory object
             :param string base_dir: base directory
             :param integer,list bo_list: list of BO states for BO calculation
             :param double dt: time interval
