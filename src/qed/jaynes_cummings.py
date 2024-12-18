@@ -329,7 +329,7 @@ class Jaynes_Cummings(QED_calculator):
                         ind_mol2 = self.get_d_ind[jst, 0]
                         ind_photon2 = self.get_d_ind[jst, 1]
                         if (ist != jst):
-                            qed_grad += polariton.nac[ind_mol2, ind_mol1] * self.unitary[ist, rst_new] \
+                            qed_grad[0:polariton.nat_qm] += polariton.nac[ind_mol2, ind_mol1] * self.unitary[ist, rst_new] \
                                 * (self.ham_d[ist, ist] - self.ham_d[jst, jst]) * self.unitary[jst, rst_new]
 
             elif (self.force_level == "full"):
@@ -424,8 +424,8 @@ class Jaynes_Cummings(QED_calculator):
                                 ind_mol2 = self.get_d_ind[bst, 0]
                                 ind_photon2 = self.get_d_ind[bst, 1]
                                 if (ind_mol1 != ind_mol2 and ind_photon1 == ind_photon2):
-                                    qed_nac += polariton.nac[ind_mol1, ind_mol2] * self.unitary[ast, ist] \
-                                        * self.unitary[bst, jst]
+                                    qed_nac[0:polariton.nat_qm] += polariton.nac[ind_mol1, ind_mol2] \
+                                        * self.unitary[ast, ist] * self.unitary[bst, jst]
 
                         polariton.pnac[ist, jst] = qed_nac
                         polariton.pnac[jst, ist] = - qed_nac
