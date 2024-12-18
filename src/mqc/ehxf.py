@@ -503,8 +503,8 @@ class EhXF(MQC):
         elif (isinstance(self.sigma, list)):
             sigma = []
             for sgm in self.sigma:
-                sigma.append(self.aux.nat * [sgm])
-            self.sigma = sigma[:]
+                sigma.append(self.aux.ndim * [sgm])
+            self.sigma = np.array(sigma[:])
         else:
             if (self.l_td_sigma):
                 self.sigma = np.array(self.aux.nat * [self.aux.ndim * [0.0]])
