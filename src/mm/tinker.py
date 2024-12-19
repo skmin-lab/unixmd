@@ -556,6 +556,7 @@ class Tinker(MM_calculator):
                 mm_force[iat] += grad[iat]
 
         # Add force of MM part to total force; kcal/(mol*A) to hartree/bohr
-        molecule.states[bo_list[0]].force += np.copy(mm_force) * kcalmol_to_au * au_to_A
+        for ist in bo_list:
+            molecule.states[ist].force += np.copy(mm_force) * kcalmol_to_au * au_to_A
 
 

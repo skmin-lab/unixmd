@@ -399,6 +399,12 @@ class Polariton(object):
         if (calc_tdp):
             self.tdp_old = np.copy(self.tdp)
 
+    def backup_qed(self):
+        """ Backup polaritonic state energies for propagation of auxiliary trajectories
+        """
+        for states in self.pol_states:
+            states.energy_old = states.energy
+
     def get_nr_electrons(self):
         """ Get the number of electrons
         """
