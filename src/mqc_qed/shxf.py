@@ -233,6 +233,7 @@ class SHXF(MQC_QED):
             self.cl_update_position()
 
             self.pol.backup_bo(qm.calc_coupling, qm.calc_tdp)
+            self.pol.backup_qed()
             qed.backup_qed()
             self.pol.reset_bo(qm.calc_coupling, qm.calc_tdp, qm.calc_tdp_grad)
             self.pol.reset_qed(qm.calc_coupling)
