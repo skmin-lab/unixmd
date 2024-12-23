@@ -211,8 +211,9 @@ class SH(MQC):
                 if (self.mol.l_qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
 
-            if (self.thermo != None):
-                self.thermo.run(self)
+            if (not self.l_cpa):
+                if (self.thermo != None):
+                    self.thermo.run(self)
 
             self.update_energy()
 
@@ -447,7 +448,10 @@ class SH(MQC):
         """
         # Update kinetic energy
         self.mol.update_kinetic()
-        self.mol.epot = self.mol.states[self.rstate].energy
+        if (self.l_cpa):
+            self.mol.epot = self.mol.states[0].energy
+        else:
+            self.mol.epot = self.mol.states[self.rstate].energy
         self.mol.etot = self.mol.epot + self.mol.ekin
 
     def write_md_output(self, unixmd_dir, istep):
