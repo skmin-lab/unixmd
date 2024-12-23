@@ -1,9 +1,11 @@
 from __future__ import division
 import numpy as np
 import os
+from misc import call_name
 import pickle
 
-class Trajectory(object)
+
+class Trajectory(object):
     """ Class to save BOMD trajectory data for CPA
 
         :param object molecule: Molecule object
@@ -22,7 +24,7 @@ class Trajectory(object)
             error_vars = f"cpa_index = {self.cpa_index}"
             raise ValueError (f"( {self.traj_type}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
-            if (isinstance(self.cpa, int)):
+            if (not isinstance(self.cpa_index, int)):
                 error_message = "cpa_index isn't integer!"
                 error_vars = f"cpa_index = {self.cpa_index}"
                 raise ValueError (f"( {self.traj_type}.{call_name()} ) {error_message} ( {error_vars} )")
@@ -64,7 +66,7 @@ class Trajectory(object)
             
             :param integer nsteps: Total step of nuclear propagation
         """
-        for istep in (self.cpa_index + 1, self.cpa_index + nsteps + 1):
+        for istep in range(self.cpa_index + 1, self.cpa_index + nsteps + 1):
             QM_path = os.path.join(self.samp_dir, f"QM.{istep}.bin")
             with open(QM_path, "rb") as f:
                 Data = pickle.load(f)
