@@ -17,7 +17,7 @@ class CPA(object):
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
-    def __init__(self, molecule, thermostat, istate, dt, nsteps, l_adj_nac\
+    def __init__(self, molecule, thermostat, istate, dt, nsteps, l_adj_nac, \
         unit_dt, out_freq, verbosity):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
@@ -298,9 +298,9 @@ class CPA(object):
             "".join([f'E({ist})(H){"":8s}' for ist in range(self.mol.nst)])
         typewriter(tmp, unixmd_dir, "MDENERGY", "w")
 
-            # NACME file header
-            tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
-            typewriter(tmp, unixmd_dir, "NACME", "w")
+        # NACME file header
+        tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
+        typewriter(tmp, unixmd_dir, "NACME", "w")
 
     def write_md_output(self, unixmd_dir, istep):
         """ Write output files
@@ -320,19 +320,19 @@ class CPA(object):
             + "".join([f'{states.energy:15.8f}' for states in self.mol.states])
         typewriter(tmp, unixmd_dir, "MDENERGY", "a")
 
-            # Write NACME file
-            tmp = f'{istep + 1:10d}' + "".join([f'{self.mol.nacme[ist, jst]:15.8f}' \
-                for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
-            typewriter(tmp, unixmd_dir, "NACME", "a")
+        # Write NACME file
+        tmp = f'{istep + 1:10d}' + "".join([f'{self.mol.nacme[ist, jst]:15.8f}' \
+            for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
+        typewriter(tmp, unixmd_dir, "NACME", "a")
 
-            # Write NACV file
-            if (not self.mol.l_nacme and self.verbosity >= 2):
-                for ist in range(self.mol.nst):
-                    for jst in range(ist + 1, self.mol.nst):
-                        tmp = f'{self.mol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV' + \
-                            "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
-                            "".join([f'{self.mol.nac[ist, jst, iat, isp]:15.8f}' for isp in range(self.mol.ndim)]) for iat in range(self.mol.nat_qm)])
-                        typewriter(tmp, unixmd_dir, f"NACV_{ist}_{jst}", "a")
+        # Write NACV file
+        if (not self.mol.l_nacme and self.verbosity >= 2):
+            for ist in range(self.mol.nst):
+                for jst in range(ist + 1, self.mol.nst):
+                    tmp = f'{self.mol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV' + \
+                        "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
+                        "".join([f'{self.mol.nac[ist, jst, iat, isp]:15.8f}' for isp in range(self.mol.ndim)]) for iat in range(self.mol.nat_qm)])
+                    typewriter(tmp, unixmd_dir, f"NACV_{ist}_{jst}", "a")
 
     def write_final_xyz(self, unixmd_dir, istep):
         """ Write final positions and velocities
