@@ -12,19 +12,13 @@ class CPA(object):
         :param integer istate: Initial adiabatic state
         :param double dt: Time interval
         :param integer nsteps: Nuclear step
-        :param integer nesteps: Electronic step
-        :param string elec_object: Electronic equation of motions
-        :param string propagator: Electronic propagator
-        :param boolean l_print_dm: Logical to print BO population and coherence
         :param boolean l_adj_nac: Logical to adjust nonadiabatic coupling
-        :param init_coef: Initial BO coefficient
-        :type init_coef: Double, list or complex, list
         :param string unit_dt: Unit of time step (fs = femtosecond, au = atomic unit)
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
-    def __init__(self, molecule, thermostat, istate, dt, nsteps, nesteps, \
-        elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity):
+    def __init__(self, molecule, thermostat, istate, dt, nsteps, \
+        l_adj_nac, unit_dt, out_freq, verbosity):
         # Save name of MQC dynamics
         self.md_type = self.__class__.__name__
 
@@ -37,7 +31,6 @@ class CPA(object):
         # Initialize input values
         self.istate = istate
         self.nsteps = nsteps
-        self.nesteps = nesteps
 
         # Initialize time step
         self.istep = -1
@@ -54,41 +47,12 @@ class CPA(object):
             error_vars = f"unit_dt = {unit_dt}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        # None for BOMD case
-        self.elec_object = elec_object
-        if (self.elec_object != None):
-            self.elec_object = self.elec_object.lower()
-
-        if not (self.elec_object in [None, "coefficient", "density"]):
-            error_message = "Invalid electronic object!"
-            error_vars = f"elec_object = {self.elec_object}"
-            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-
-        self.propagator = propagator
-        if (self.propagator != None):
-            self.propagator = self.propagator.lower()
-
-        if not (self.propagator in [None, "rk4", "exponential"]):
-            error_message = "Invalid electronic propagator!"
-            error_vars = f"propagator = {self.propagator}"
-            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-
-        if (self.propagator == "exponential" and self.elec_object != "coefficient"):
-            error_message = "exponential propagator is incompatible with objects other than coefficient"
-            error_vars = f"elec_object = {self.elec_object}, propagator = {self.propagator}"
-            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-
-        self.l_print_dm = l_print_dm
-
         self.l_adj_nac = l_adj_nac
 
         self.rforce = np.zeros((self.mol.nat, self.mol.ndim))
 
         self.out_freq = out_freq
         self.verbosity = verbosity
-
-        # Initialize coefficients and densities
-        self.mol.get_coefficient(init_coef, self.istate)
 
     def run_init(self, qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart):
         """ Initialize MQC dynamics
@@ -110,13 +74,6 @@ class CPA(object):
             error_vars = f"restart = {restart}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        # Check if NACVs are calculated for Ehrenfest dynamics
-        if (self.md_type in ["Eh", "EhXF"]):
-            if (self.mol.l_nacme):
-                error_message = "Ehrenfest dynamics needs evaluation of NACVs, check your QM object!"
-                error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}"
-                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-
         # Check compatibility of variables for QM and MM calculation
         if ((self.mol.l_qmmm and mm == None) or (not self.mol.l_qmmm and mm != None)):
             error_message = "Both logical for QM/MM and MM object is necessary!"
@@ -124,12 +81,6 @@ class CPA(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         if (self.mol.l_qmmm and mm != None):
             self.check_qmmm(qm, mm)
-
-        # Exception for CTMQC/Ehrenfest with QM/MM
-        if ((self.md_type in ["CT", "Eh", "EhXF"]) and (mm != None)):
-            error_message = "QM/MM calculation is not compatible with CTMQC or Ehrenfest now!"
-            error_vars = f"mm = {mm}"
-            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Set directory information
         output_dir = os.path.expanduser(output_dir)
@@ -142,12 +93,7 @@ class CPA(object):
             mm_log_dir = []
 
         dir_tmp = os.path.join(os.getcwd(), output_dir)
-        if (self.md_type != "CT"):
-            base_dir.append(dir_tmp)
-        else:
-            for itraj in range(self.ntrajs):
-                itraj_dir = os.path.join(dir_tmp, f"TRAJ_{itraj + 1:0{self.digit}d}")
-                base_dir.append(itraj_dir)
+        base_dir.append(dir_tmp)
 
         for idir in base_dir:
             unixmd_dir.append(os.path.join(idir, "md"))
@@ -202,10 +148,7 @@ class CPA(object):
 
         os.chdir(base_dir[0])
 
-        if (self.md_type != "CT"):
-            return base_dir[0], unixmd_dir[0], qm_log_dir[0], mm_log_dir[0]
-        else:
-            return base_dir, unixmd_dir, qm_log_dir, mm_log_dir
+        return base_dir[0], unixmd_dir[0], qm_log_dir[0], mm_log_dir[0]
 
     def cl_update_position(self):
         """ Routine to update nuclear positions
@@ -279,11 +222,7 @@ class CPA(object):
             print (restart_info, flush=True)
 
         # Print self.mol information: coordinate, velocity
-        if (self.md_type != "CT"):
-            self.mol.print_init(mm)
-        else:
-            for itraj, mol in enumerate(self.mols):
-                mol.print_init(mm)
+        self.mol.print_init(mm)
 
         # Print dynamics information
         dynamics_info = textwrap.dedent(f"""\
@@ -317,52 +256,6 @@ class CPA(object):
           Nuclear Step             = {self.nsteps:>16d}
         """), "  ")
 
-        if (self.md_type != "BOMD"):
-            dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
-            dynamics_info += f"  Electronic Propagator    = {self.propagator:>16s}\n"
-            dynamics_info += f"  Propagation Scheme       = {self.elec_object:>16s}\n"
-
-        # Print surface hopping variables
-        if (self.md_type in ["SH", "SHXF"]):
-            dynamics_info += f"\n  Rescaling after Hop      = {self.hop_rescale:>16s}\n"
-            dynamics_info += f"  Rescaling after Reject   = {self.hop_reject:>16s}\n"
-
-        # Print ad-hoc decoherence variables
-        if (self.md_type == "SH"):
-            if (self.dec_correction != None):
-                dynamics_info += f"\n  Decoherence Scheme       = {self.dec_correction:>16s}\n"
-                if (self.dec_correction == "edc"):
-                    dynamics_info += f"  Energy Constant          = {self.edc_parameter:>16.6f}\n"
-
-        # Print XF variables
-        if (self.md_type == "SHXF"):
-            # Print density threshold used in decoherence term
-            dynamics_info += f"\n  Density Threshold        = {self.rho_threshold:>16.6f}"
-            # Print sigma values
-            if (isinstance(self.sigma, float)):
-                dynamics_info += f"\n  Sigma                    = {self.sigma:16.3f}\n"
-            elif (isinstance(self.sigma, list)):
-                dynamics_info += f"\n  Sigma (1:N)              =\n"
-                nlines = int(self.aux.nat / 6)
-                if (self.aux.nat % 6 != 0):
-                    nlines += 1
-                sigma_info = ""
-                for iline in range(nlines):
-                    iline1 = iline * 6
-                    iline2 = (iline + 1) * 6
-                    if (iline2 > self.aux.nat):
-                        iline2 = self.aux.nat
-                    sigma_info += f"  {iline1 + 1:>3d}:{iline2:<3d};"
-                    sigma_info += "".join([f'{sigma:7.3f}' for sigma in self.sigma[iline1:iline2]])
-                    sigma_info += "\n"
-                dynamics_info += sigma_info
-            # Print auxiliary trajectory setting
-            if (self.l_econs_state):
-                dynamics_info += f"\n  Aux. Total E             = {'Real Total E':>16s}\n"
-            else:
-                dynamics_info += f"\n  Aux. Total E             = {'Real Total E':>16s}" \
-                    + f"\n                             {'+ Pot. E Diff.':>16s}\n"
-
         # Print system information
         dynamics_info += f"\n  Output Frequency         = {self.out_freq:>16d}\n"
         dynamics_info += f"  Verbosity Level          = {self.verbosity:>16d}\n"
@@ -386,44 +279,9 @@ class CPA(object):
             "".join([f'E({ist})(H){"":8s}' for ist in range(self.mol.nst)])
         typewriter(tmp, unixmd_dir, "MDENERGY", "w")
 
-        if (self.md_type != "BOMD"):
-            # BO coefficents, densities file header
-            if (self.elec_object == "density"):
-                tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
-                typewriter(tmp, unixmd_dir, "BOPOP", "w")
-                tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
-                typewriter(tmp, unixmd_dir, "BOCOH", "w")
-            elif (self.elec_object == "coefficient"):
-                tmp = f'{"#":5s} BO State Coefficients: state Re-Im; see the manual for detail orders'
-                typewriter(tmp, unixmd_dir, "BOCOEF", "w")
-                if (self.l_print_dm):
-                    tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
-                    typewriter(tmp, unixmd_dir, "BOPOP", "w")
-                    tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
-                    typewriter(tmp, unixmd_dir, "BOCOH", "w")
-
-            # NACME file header
-            tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
-            typewriter(tmp, unixmd_dir, "NACME", "w")
-
-            # DOTPOPNAC file header
-            if (self.verbosity >= 1):
-                tmp = f'{"#":5s} Time-derivative Density Matrix by NAC: population; see the manual for detail orders'
-                typewriter(tmp, unixmd_dir, "DOTPOPNAC", "w")
-
-        # file header for SH-based methods
-        if (self.md_type in ["SH", "SHXF"]):
-            tmp = f'{"#":5s}{"Step":8s}{"Running State":10s}'
-            typewriter(tmp, unixmd_dir, "SHSTATE", "w")
-
-            tmp = f'{"#":5s}{"Step":12s}' + "".join([f'Prob({ist}){"":8s}' for ist in range(self.mol.nst)])
-            typewriter(tmp, unixmd_dir, "SHPROB", "w")
-
-        # file header for XF-based methods
-        if (self.md_type in ["SHXF", "CT"]):
-            if (self.verbosity >= 1):
-                tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
-                typewriter(tmp, unixmd_dir, "DOTPOPDEC", "w")
+        # NACME file header
+        tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
+        typewriter(tmp, unixmd_dir, "NACME", "w")
 
     def write_md_output(self, unixmd_dir, istep):
         """ Write output files
@@ -443,38 +301,19 @@ class CPA(object):
             + "".join([f'{states.energy:15.8f}' for states in self.mol.states])
         typewriter(tmp, unixmd_dir, "MDENERGY", "a")
 
-        if (self.md_type != "BOMD"):
-            # Write BOCOEF, BOPOP, BOCOH files
-            if (self.elec_object == "density"):
-                tmp = f'{istep + 1:9d}' + "".join([f'{self.mol.rho.real[ist, ist]:15.8f}' for ist in range(self.mol.nst)])
-                typewriter(tmp, unixmd_dir, "BOPOP", "a")
-                tmp = f'{istep + 1:9d}' + "".join([f"{self.mol.rho.real[ist, jst]:15.8f}{self.mol.rho.imag[ist, jst]:15.8f}" \
-                    for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
-                typewriter(tmp, unixmd_dir, "BOCOH", "a")
-            elif (self.elec_object == "coefficient"):
-                tmp = f'{istep + 1:9d}' + "".join([f'{states.coef.real:15.8f}{states.coef.imag:15.8f}' \
-                    for states in self.mol.states])
-                typewriter(tmp, unixmd_dir, "BOCOEF", "a")
-                if (self.l_print_dm):
-                    tmp = f'{istep + 1:9d}' + "".join([f'{self.mol.rho.real[ist, ist]:15.8f}' for ist in range(self.mol.nst)])
-                    typewriter(tmp, unixmd_dir, "BOPOP", "a")
-                    tmp = f'{istep + 1:9d}' + "".join([f"{self.mol.rho.real[ist, jst]:15.8f}{self.mol.rho.imag[ist, jst]:15.8f}" \
-                        for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
-                    typewriter(tmp, unixmd_dir, "BOCOH", "a")
+        # Write NACME file
+        tmp = f'{istep + 1:10d}' + "".join([f'{self.mol.nacme[ist, jst]:15.8f}' \
+            for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
+        typewriter(tmp, unixmd_dir, "NACME", "a")
 
-            # Write NACME file
-            tmp = f'{istep + 1:10d}' + "".join([f'{self.mol.nacme[ist, jst]:15.8f}' \
-                for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
-            typewriter(tmp, unixmd_dir, "NACME", "a")
-
-            # Write NACV file
-            if (not self.mol.l_nacme and self.verbosity >= 2):
-                for ist in range(self.mol.nst):
-                    for jst in range(ist + 1, self.mol.nst):
-                        tmp = f'{self.mol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV' + \
-                            "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
-                            "".join([f'{self.mol.nac[ist, jst, iat, isp]:15.8f}' for isp in range(self.mol.ndim)]) for iat in range(self.mol.nat_qm)])
-                        typewriter(tmp, unixmd_dir, f"NACV_{ist}_{jst}", "a")
+        # Write NACV file
+        if (not self.mol.l_nacme and self.verbosity >= 2):
+            for ist in range(self.mol.nst):
+                for jst in range(ist + 1, self.mol.nst):
+                    tmp = f'{self.mol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV' + \
+                        "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
+                        "".join([f'{self.mol.nac[ist, jst, iat, isp]:15.8f}' for isp in range(self.mol.ndim)]) for iat in range(self.mol.nat_qm)])
+                    typewriter(tmp, unixmd_dir, f"NACV_{ist}_{jst}", "a")
 
     def write_final_xyz(self, unixmd_dir, istep):
         """ Write final positions and velocities

@@ -14,14 +14,15 @@ class BOMD(CPA):
         :param integer istate: Electronic state
         :param double dt: Time interval
         :param integer nsteps: Total step of nuclear propagation
+        :param boolean l_adj_nac: Logical to adjust nonadiabatic coupling
         :param string unit_dt: Unit of time step
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
-        super().__init__(molecule, thermostat, istate, dt, nsteps, None, None, None, \
-            False, None, None, unit_dt, out_freq, verbosity)
+        super().__init__(molecule, thermostat, istate, dt, nsteps, \
+            l_adj_nac, unit_dt, out_freq, verbosity)
 
     def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to BOMD
