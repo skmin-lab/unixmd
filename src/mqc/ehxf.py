@@ -187,7 +187,7 @@ class EhXF(MQC):
         for istep in range(self.istep, self.nsteps):
             
             self.calculate_force()
-            self.cl_update_position()
+            self.cl_update_position(istep, traj)
 
             self.mol.backup_bo(qm.calc_coupling)
             self.mol.reset_bo(qm.calc_coupling)
@@ -199,7 +199,7 @@ class EhXF(MQC):
                 self.mol.adjust_nac()
 
             self.calculate_force()
-            self.cl_update_velocity()
+            self.cl_update_velocity(istep, traj)
 
             self.mol.get_nacme()
 

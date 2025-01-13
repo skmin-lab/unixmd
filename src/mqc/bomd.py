@@ -70,7 +70,7 @@ class BOMD(MQC):
         for istep in range(self.istep, self.nsteps):
 
             self.calculate_force()
-            self.cl_update_position()
+            self.cl_update_position(istep, traj)
 
             self.mol.reset_bo(qm.calc_coupling)
             qm.get_data(self.mol, traj, base_dir, bo_list, self.dt, istep, calc_force_only=False)
@@ -78,7 +78,7 @@ class BOMD(MQC):
                 mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
             self.calculate_force()
-            self.cl_update_velocity()
+            self.cl_update_velocity(istep, traj)
 
             if (self.thermo != None):
                 self.thermo.run(self, self.mol)
