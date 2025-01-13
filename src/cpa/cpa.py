@@ -74,6 +74,12 @@ class CPA(object):
             error_vars = f"restart = {restart}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
+        # Sampling with MM isn't implemented yet!
+        if (mm != None):
+            error_message = "QM/MM calculation is not compatible with BOMD sampling now!"
+            error_vars = f"mm = {mm}"
+            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
         # Check compatibility of variables for QM and MM calculation
         if ((self.mol.l_qmmm and mm == None) or (not self.mol.l_qmmm and mm != None)):
             error_message = "Both logical for QM/MM and MM object is necessary!"
