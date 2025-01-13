@@ -92,6 +92,7 @@ class CPA(object):
         output_dir = os.path.expanduser(output_dir)
         base_dir = []
         unixmd_dir = []
+        samp_dir = []
         qm_log_dir = []
         mm_log_dir = [None]
 
@@ -103,6 +104,7 @@ class CPA(object):
 
         for idir in base_dir:
             unixmd_dir.append(os.path.join(idir, "md"))
+            samp_dir.append(os.path.join(idir, "samp"))
             qm_log_dir.append(os.path.join(idir, "qm_log"))
             if (self.mol.l_qmmm and mm != None):
                 mm_log_dir.append(os.path.join(idir, "mm_log"))
@@ -113,6 +115,13 @@ class CPA(object):
             for md_idir in unixmd_dir:
                 if (not os.path.exists(md_idir)):
                     error_message = f"Directory {md_idir} to be appended for restart not found!"
+                    error_vars = f"restart = {restart}, output_dir = {output_dir}"
+                    raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+            # For sampling directory
+            for samp_idir in samp_dir:
+                if (not os.path.exists(samp_idir)):
+                    error_message = f"Directory {samp_idir} to be appended for restart not found!"
                     error_vars = f"restart = {restart}, output_dir = {output_dir}"
                     raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
@@ -137,6 +146,12 @@ class CPA(object):
 
                 self.touch_file(md_idir)
 
+            # For sampling directory
+            for samp_idir in samp_dir:
+                if (os.path.exists(samp_idir)):
+                    shutil.move(samp_idir, samp_idir + "_old_" + str(os.getpid()))
+                os.makedirs(samp_idir)
+
             # For QM output directory
             for qm_idir in qm_log_dir:
                 if (os.path.exists(qm_idir)):
@@ -154,7 +169,7 @@ class CPA(object):
 
         os.chdir(base_dir[0])
 
-        return base_dir[0], unixmd_dir[0], qm_log_dir[0], mm_log_dir[0]
+        return base_dir[0], unixmd_dir[0], samp_dir[0], qm_log_dir[0], mm_log_dir[0]
 
     def cl_update_position(self):
         """ Routine to update nuclear positions
