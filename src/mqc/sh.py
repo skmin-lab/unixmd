@@ -91,11 +91,12 @@ class SH(MQC):
         # Initialize event to print
         self.event = {"HOP": []}
 
-    def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
+    def run(self, qm, mm=None, traj=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to surface hopping dynamics
 
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
+            :param object traj: Trajectory object for CPA
             :param string output_dir: Name of directory where outputs to be saved.
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
@@ -104,12 +105,16 @@ class SH(MQC):
         """
         # Initialize PyUNIxMD
         base_dir, unixmd_dir, qm_log_dir, mm_log_dir = \
-            self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
+            self.run_init(qm, mm, traj, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
         bo_list = [self.rstate]
         qm.calc_coupling = True
         qm.calc_tdp = False
         qm.calc_tdp_grad = False
         self.print_init(qm, mm, restart)
+
+        if (self.l_cpa):
+            traj.read_QM_from_file(self.nsteps)
+            traj.read_RV_from_file(self.nsteps)
 
         if (restart == None):
             # Calculate initial input geometry at t = 0.0 s
