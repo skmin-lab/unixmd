@@ -4,9 +4,8 @@ import textwrap, datetime
 import numpy as np
 import os, shutil
 
-
-class MQC(object):
-    """ Class for nuclear/electronic propagator used in MQC dynamics
+class CPA(object):
+    """ Class for nuclear propagator used in BOMD
 
         :param object molecule: Molecule object
         :param object thermostat: Thermostat type
