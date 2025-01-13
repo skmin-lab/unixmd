@@ -19,7 +19,7 @@ class BOMD(CPA):
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
-    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, unit_dt="fs", out_freq=1, verbosity=0):
+    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, l_adj_nac=True, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, \
             l_adj_nac, unit_dt, out_freq, verbosity)
@@ -79,8 +79,14 @@ class BOMD(CPA):
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
+            if (not self.mol.l_nacme and self.l_adj_nac):
+                self.mol.adjust_nac()
+
             self.calculate_force()
             self.cl_update_velocity()
+
+            if (not self.mol.l_nacme):
+                self.mol.get_nacme()
 
             if (self.thermo != None):
                 self.thermo.run(self, self.mol)
