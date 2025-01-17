@@ -250,7 +250,7 @@ class SHXF(MQC):
             self.evaluate_hop(bo_list)
             if (self.l_hop):
                 if (qm.re_calc):
-                    qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
+                    qm.get_data(self.mol, traj, base_dir, bo_list, self.dt, istep, calc_force_only=True)
                 if (self.mol.l_qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
 
