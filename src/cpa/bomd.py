@@ -51,6 +51,9 @@ class BOMD(CPA):
             qm.get_data(self.mol, None, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
+            if (not self.mol.l_nacme):
+                self.mol.get_nacme()
+
             self.update_energy()
             self.save_bin(samp_dir, self.istep)
             self.write_md_output(unixmd_dir, self.istep)
