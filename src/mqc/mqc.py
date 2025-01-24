@@ -140,6 +140,12 @@ class MQC(object):
             error_vars = f"mm = {mm}"
             raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
+        # Exception for MQC methods except SH with CPA
+        if ((self.md_type != "SH") and (self.l_cpa)):
+            error_message = "CPA is not compatible with MQC methods except SH now!"
+            error_vars = f"l_cpa = {self.l_cpa}"
+            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
         # Set directory information
         output_dir = os.path.expanduser(output_dir)
         base_dir = []
