@@ -1,3 +1,5 @@
+.. _Objects MM_calculator:
+
 MM_calculator
 -------------------------------------------
 
@@ -15,6 +17,14 @@ Only one MM program is supported in the current version of PyUNIxMD.
 If you want to add an interface of other programs such as Gromacs, you can refer to the Tinker interface.
 The key method of the MM interface is ``get_data`` method which makes input files, executes calculations and extracts information at every MD step. 
 Detailed description of the ``get_data`` method is given in :ref:`Modules <Module MM>`.
+
+In current version of PyUNIxMD, the compatibility of MM methods with QM methods is tabulated below.
+
++-------------------+-----------------+----------------+
+| MM programs       | QM programs     | QM methods     |
++===================+=================+================+
+| Tinker            | DFTB+           | SI-SA-REKS     |
++-------------------+-----------------+----------------+
 
 **Ex.** Making an MM object with Tinker
 
