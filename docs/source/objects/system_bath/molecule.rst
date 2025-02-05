@@ -3,8 +3,8 @@
 Molecule
 -------------------------------------------
 
-At the very first stage of dynamics calculations, you need to make
-a molecule object to be investigated. 
+At the very first stage of molecular dynamics, you need to make
+a molecule object to be investigated.
 
 **Ex.** Making a water molecule object
 
@@ -33,10 +33,10 @@ The parameters to specify a molecule are below.
 | **ndim**      | Dimension of space                                   | *3*       |
 | *(integer)*   |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **nstates**   | Number of BO states                                  | *3*       |
+| **nstates**   | Number of BO states                                  | *1*       |
 | *(integer)*   |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
-| **l_qmmm**    | Use the QM/MM scheme for the calculation             | *False*   |
+| **l_qmmm**    | Use the QM/MM scheme                                 | *False*   |
 | *(boolean)*   |                                                      |           |
 +---------------+------------------------------------------------------+-----------+
 | **natoms_mm** | Number of atoms in the MM region                     | *None*    |
@@ -83,7 +83,7 @@ Detailed description of the parameters
 
 \
 
-- **nstates** *(integer)* - Default: *3*
+- **nstates** *(integer)* - Default: *1*
 
   This parameter specifies the number of BO states treated in the dynamics.
   **nstates** is stored as ``molecule.nst`` in the PyUNIxMD, thus ``molecule.nst`` will be used throughout the code and manual.
