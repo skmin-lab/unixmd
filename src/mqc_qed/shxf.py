@@ -83,7 +83,7 @@ class SHXF(MQC_QED):
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check error for incompatible cases
-        if (self.pol.l_nacme):
+        if (self.pol.l_pnacme):
             # No analytical nonadiabatic couplings exist
             if (self.hop_rescale in ["velocity", "momentum", "augment"]):
                 error_message = "pNACVs are not available with current QED object, only isotropic rescaling is possible!"
@@ -198,8 +198,6 @@ class SHXF(MQC_QED):
             self.hop_check(pol_list)
             self.evaluate_hop(qed, pol_list)
             if (self.l_hop):
-                if (self.pol.l_qmmm and mm != None):
-                    mm.get_data(self.pol, base_dir, bo_list, self.istep, calc_force_only=True)
                 qed.get_data(self.pol, base_dir, pol_list, self.dt, self.istep, calc_force_only=True)
 
             self.update_energy()
@@ -235,6 +233,7 @@ class SHXF(MQC_QED):
             self.cl_update_position()
 
             self.pol.backup_bo(qm.calc_coupling, qm.calc_tdp)
+            self.pol.backup_qed()
             qed.backup_qed()
             self.pol.reset_bo(qm.calc_coupling, qm.calc_tdp, qm.calc_tdp_grad)
             self.pol.reset_qed(qm.calc_coupling)
@@ -266,8 +265,6 @@ class SHXF(MQC_QED):
             self.hop_check(pol_list)
             self.evaluate_hop(qed, pol_list)
             if (self.l_hop):
-                if (self.pol.l_qmmm and mm != None):
-                    mm.get_data(self.pol, base_dir, bo_list, istep, calc_force_only=True)
                 qed.get_data(self.pol, base_dir, pol_list, self.dt, istep, calc_force_only=True)
 
             if (self.thermo != None):

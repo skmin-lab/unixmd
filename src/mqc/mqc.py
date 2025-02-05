@@ -119,10 +119,10 @@ class MQC(object):
         if (traj != None):
             self.l_cpa = True
 
-        # Check if NACVs are calculated for Ehrenfest dynamics
-        if (self.md_type in ["Eh", "EhXF"]):
+        # Check whether NACVs are needed for Ehrenfest dynamics or not
+        if (self.md_type in ["CT", "Eh", "EhXF"]):
             if (self.mol.l_nacme):
-                error_message = "Ehrenfest dynamics needs evaluation of NACVs, check your QM object!"
+                error_message = "CTMQC or Ehrenfest dynamics needs evaluation of NACVs, check your QM object!"
                 error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}"
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
