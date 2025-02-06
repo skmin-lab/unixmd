@@ -26,7 +26,7 @@ In current version of PyUNIxMD, the compatibility of MM methods with QM methods 
 | Tinker            | DFTB+           | SI-SA-REKS     |
 +-------------------+-----------------+----------------+
 
-**Ex.** Making an MM object with Tinker
+**Ex.** Making a MM object with Tinker
 
 .. code-block:: python
 
