@@ -15,4 +15,5 @@ PyUNIxMD Objects
    qed/main
    mm/main
    mqc/main
+   mqc_qed/main
 
