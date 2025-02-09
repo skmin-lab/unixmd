@@ -1,9 +1,9 @@
 
-DISH-XF
+SHXF
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Decoherence induced surface hopping based on exact factorization (DISH-XF) :cite:`Ha2018,Lee2024` method is included in PyUNIxMD package.
-Electronic equation of motion in DISH-XF contains "decoherence term" which is derived from exact factorization,
+Surface hopping based on exact factorization (SHXF) :cite:`Ha2018,Lee2024` method is included in PyUNIxMD package.
+Electronic equation of motion in SHXF contains "decoherence term" which is derived from exact factorization,
 in addition to Eherenfest term, i.e.
 
 .. math::
@@ -13,7 +13,7 @@ in addition to Eherenfest term, i.e.
 
 where :math:`\dot{D}^{\text{Eh}}_{\beta}(t)` is time derivative of the coefficient originating from Ehrenfest term
 and :math:`F^{\text{deco}}_{JK}` is the decoherence term originating from the electron-nuclear correlation in exact-factorization.
-Detailed description of DISH-XF method with polaritonic states is in :cite:`Lee2024`
+Detailed description of SHXF method with polaritonic states is in :cite:`Lee2024`
 
 +----------------------------+------------------------------------------------------+------------------+
 | Parameters                 | Work                                                 | Default          |

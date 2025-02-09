@@ -154,7 +154,9 @@ Detailed description of the parameters
 - **propagator** *(string)* - Default: *'rk4'*
 
   This parameter determines the numerical integration method for the electronic equation of motion.
-  Currently, only the RK4 algorithm (*'rk4'*) is available.
+
+  + *'rk4'*: Integrates the coefficients using Runge-Kutta 4th order method.
+  + *'exponential'*: Integrates the coefficients using exponential operator.
 
 \
 

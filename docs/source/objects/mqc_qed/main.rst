@@ -34,7 +34,7 @@ The class names are tabulated below.
 +-------------------+----------------+
 | FSSH              | SH             |
 +-------------------+----------------+
-| DISH-XF           | SHXF           |
+| SHXF              | SHXF           |
 +-------------------+----------------+
 
 For example, a MD object of the FSSH method can be created as follows.

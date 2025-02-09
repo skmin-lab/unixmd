@@ -1,9 +1,9 @@
 
-DISH-XF
+SHXF
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Decoherence induced surface hopping based on exact factorization (DISH-XF) :cite:`Ha2018` method is included in PyUNIxMD package.
-Electronic equation of motion in DISH-XF contains "decoherence term" which is derived from exact factorization,
+Surface hopping based on exact factorization (SHXF) :cite:`Ha2018` method is included in PyUNIxMD package.
+Electronic equation of motion in SHXF contains "decoherence term" which is derived from exact factorization,
 in addition to Eherenfest term, i.e.
 
 .. math::
@@ -13,7 +13,7 @@ in addition to Eherenfest term, i.e.
     &+\sum_j\sum_\nu\frac{1}{M_\nu}\frac{\nabla_\nu|\chi|}{|\chi|}\Bigg|_{\underline{\underline{\bf R}}^{(I)}(t)}
     \cdot\left\{{\bf f}^{(I)}_{j\nu}(t)-{\bf f}^{(I)}_{k\nu}(t)\right\}|C^{(I)}_j(t)|^2 C^{(I)}_k(t)
 
-Detailed description of DISH-XF method is in :cite:`Ha2018`
+Detailed description of SHXF method is in :cite:`Ha2018`
 
 +----------------------------+------------------------------------------------------+--------------+
 | Parameters                 | Work                                                 | Default      |

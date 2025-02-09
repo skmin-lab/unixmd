@@ -16,7 +16,7 @@ The features of PyUNIxMD are as follows.
 
 - Decoherence based on exact factorization
 
-  -  Decoherence induced surface hopping based on exact factorization (DISH-XF) :cite:`Ha2018`
+  -  Surface hopping based on exact factorization (SHXF) method :cite:`Ha2018`
   -  Coupled-trajectory mixed quantum-classical (CTMQC) method :cite:`Agostini2016`
 
 .. Padding
