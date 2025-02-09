@@ -8,6 +8,12 @@ molecule.py
    :members:
    :show-inheritance:
 
+polariton.py
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. automodule:: polariton
+   :members:
+   :show-inheritance:
+
 thermostat.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. automodule:: thermostat
@@ -210,6 +216,25 @@ tinker.py
    :members:
    :show-inheritance:
 
+.. _Module QED:
+
+qed
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+qed_calculator.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: qed.qed_calculator
+   :members:
+   :show-inheritance:
+
+jaynes_cummings.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: qed.jaynes_cummings
+   :members:
+   :show-inheritance:
+
+.. _Module MQC:
+
 mqc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -246,6 +271,35 @@ sh.py
 shxf.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. automodule:: mqc.shxf
+   :members:
+   :show-inheritance:
+
+.. _Module MQC_QED:
+
+mqc_qed
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+mqc.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: mqc_qed.mqc
+   :members:
+   :show-inheritance:
+
+bomd.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: mqc_qed.bomd
+   :members:
+   :show-inheritance:
+
+sh.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: mqc_qed.sh
+   :members:
+   :show-inheritance:
+
+shxf.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: mqc_qed.shxf
    :members:
    :show-inheritance:
 

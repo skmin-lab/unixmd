@@ -21,12 +21,6 @@ The features of PyUNIxMD are as follows.
 
 .. Padding
 
-- Accessible interface to deal with strong light-matter interaction within cavity quantum electrodynamics (cQED)
-
-  -  Jaynes-Cummings model :cite:`Jaynes1963`
-
-.. Padding
-
 - Accessible interface to external QM programs and built-in model Hamiltonians
 
   -  COLUMBUS :cite:`Lischka2011`: SA-CASSCF
@@ -37,6 +31,12 @@ The features of PyUNIxMD are as follows.
   -  TeraChem :cite:`Ufimtsev2008_1,Ufimtsev2009_1,Ufimtsev2009_2`: SI-SA-REKS (SSR)
   -  DFTB+ :cite:`Hourahine2020`: TDDFTB, DFTB/SSR
   -  Model Hamiltonians: Tully :cite:`Tully1990`, Shin-Metiu :cite:`Shin1995`
+
+.. Padding
+
+- Accessible interface to deal with strong light-matter interaction within cavity quantum electrodynamics (cQED)
+
+  -  Jaynes-Cummings model :cite:`Jaynes1963`
 
 .. Padding
 
@@ -74,16 +74,16 @@ PyUNIxMD is an object-oriented program consisting of
 several key classes closely connected with each other:
 
 - :class:`Molecule` defines a target system. A molecule object contains information of the electronic states as well as the geometry.
-  To run cQED, :class:`Polariton` must be defined instead of :class:`Molecule`.
+  To run cQED, :class:`Polariton` must be defined instead of :class:`Molecule`, which deals with the polaritonic states.
 
 - :class:`MQC` has information about molecular dynamics. Each nonadiabatic dynamics method (Ehrenfest, surface hopping, etc.) comprises its subclasses. 
   To run cQED, :class:`MQC_QED` must be defined instead of :class:`MQC`.
 
 - :class:`QM_calculator` interfaces several QM programs (Molpro, Gaussian 09, DFTB+, etc.) and methodologies to perform electronic structure calculations.
 
-- :class:`QED_calculator` deals with strong light-matter interaction using built-in model Hamiltonians (Jaynes-Cummings model).
-
 - :class:`MM_calculator` enables QM/MM calculations using external softwares such as Tinker.
+
+- :class:`QED_calculator` deals with strong light-matter interaction using built-in model Hamiltonians (Jaynes-Cummings model).
 
 - :class:`Thermostat` controls temperature of a target system.
 
