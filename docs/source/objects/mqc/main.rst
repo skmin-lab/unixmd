@@ -8,10 +8,10 @@ Mixed quantum-classical (MQC) dynamics is one of theoretical tools to simulate n
 PyUNIxMD provides a variety of MQC methods:
 
 .. toctree::
-    :glob:
-    :maxdepth: 1
+   :glob:
+   :maxdepth: 1
 
-    *
+   *
 
 In your running script, you need to specify the MQC method you want to use by making an object of it.
 In PyUNIxMD, MQC methods are provided in the form of Python classes under :class:`MQC` class.

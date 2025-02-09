@@ -66,7 +66,7 @@ Running MD calculations with PyUNIxMD, you will obtain output files under the fo
 The blue and light green boxes represent directories and files, respectively. The purple shades distinguish output files that vary according to the MQC methods.
 
 'md/' collects MD outputs, and 'qm_log/' and 'mm_log/' have logs of QM and MM calculations, respectively
-(The latter two directories are optional). 'RESTART.bin' is a binary used to restart a dynamics calculation. See :ref:`MQC<Objects MQC>` for the details.
+(The latter two directories are optional). 'RESTART.bin' is a binary used to restart a dynamics calculation. See :ref:`MQC <Objects MQC>` for the details.
 
 .. note:: Since default of **l_print_dm** is *True*, thus PyUNIxMD provides 'BOCOH' and 'BOPOP' regardless of **elec_object**.
    If **elec_object** is *"coefficient"* and you set **l_print_dm** to *False*, then the outputs 'BOCOH' and 'BOPOP' are not written anymore.
@@ -164,5 +164,5 @@ This file shows the running state at each MD step.
    <MD step> <running>
    ... 
 
-For a quick test of PyUNIxMD, see :ref:`Quick Start<Quick Start>` . Also, you can refer to scripts and log files in '$PYUNIXMDHOME/examples/' directory for practical calculations.
+For a quick test of PyUNIxMD, see :ref:`Quick Start <Quick Start>` . Also, you can refer to scripts and log files in '$PYUNIXMDHOME/examples/' directory for practical calculations.
 

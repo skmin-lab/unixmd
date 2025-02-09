@@ -18,10 +18,10 @@ and uncoupled states is given by
 PyUNIxMD provides a variety of MQC_QED methods:
 
 .. toctree::
-    :glob:
-    :maxdepth: 1
+   :glob:
+   :maxdepth: 1
 
-    *
+   *
 
 In your running script, you need to specify the MQC_QED method you want to use by making an object of it.
 In PyUNIxMD, MQC_QED methods are provided in the form of Python classes under :class:`MQC_QED` class.
@@ -48,7 +48,7 @@ For example, a MD object of the FSSH method can be created as follows.
 The parameters for the initialization are different for each MQC_QED method. For the detailed list of these parameters, see the subsections.
 
 .. note:: In initialization of MQC_QED class, you must define a Polariton object including information about cavity photons
-          instead of a Molecule object.
+   instead of a Molecule object.
 
 All classes specifying a MQC_QED method have their own ``run`` method. The ``run`` method is used to perform the dynamics at the end of your running script.
 Parameters for the run method are listed below.

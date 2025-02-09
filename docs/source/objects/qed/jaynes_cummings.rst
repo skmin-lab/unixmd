@@ -13,11 +13,11 @@ frequency :math:`\omega_c` under rotating-wave approximation as
 
 .. math::
 
-    \hat{H}_\text{JC} = \hat{H}_\text{mol} + \hbar \omega_c \left(\hat{a}^\dagger_c \hat{a}_c + 1/2\right)
-    + g \vec{\lambda} \cdot \vec{\mu} \left(\hat{a}^\dagger_c + \hat{a}_c\right)
+   \hat{H}_\text{JC} = \hat{H}_\text{mol} + \hbar \omega_c \left(\hat{a}^\dagger_c \hat{a}_c + 1/2\right)
+   + g \vec{\lambda} \cdot \vec{\mu} \left(\hat{a}^\dagger_c + \hat{a}_c\right)
 
 .. note:: For accurate propagation of the nuclei, the gradients of transition dipole moments are required.
-          Detailed description of forces and nonadiabatic coupling vectors with polaritonic states is in :cite:`Lee2024`
+   Detailed description of forces and nonadiabatic coupling vectors with polaritonic states is in :cite:`Lee2024`
 
 +------------------------+--------------------------------------------------+---------------------+
 | Parameters             | Work                                             | Default             |

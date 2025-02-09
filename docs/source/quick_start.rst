@@ -17,24 +17,24 @@ The running script is the following.
    from molecule import Molecule
    import qm, mqc
    from misc import data
-   
+
    data[f"X1"] = 1836 # au
    import random
    random.seed(10)  
- 
+
    geom = """
    1
    Shin-Metiu model
    X1       -4.0     0.0
    """
-   
+
    mol = Molecule(geometry=geom, ndim=1, nstates=2, ndof=1, unit_pos='au', l_model=True)
-   
+
    qm = qm.model.Shin_Metiu(molecule=mol)
-   
+
    md = mqc.SHXF(molecule=mol, nsteps=2890, nesteps=1, dt=0.5, unit_dt='au', \
         sigma=0.1, istate=1, elec_object="density")
-   
+
    md.run(qm=qm)
 
 **Line 1-3** import the PyUNIxMD packages.
@@ -337,7 +337,7 @@ You can check the running state from 'SHSTATE' file.
 This file shows the running state at each MD step.
 
 .. code-block:: bash
-   
+
    #    Step    Running State
            0              1
            1              1

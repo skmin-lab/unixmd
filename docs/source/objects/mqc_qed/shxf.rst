@@ -8,8 +8,8 @@ in addition to Eherenfest term, i.e.
 
 .. math::
 
-    \dot{D}^{(I)}_{\beta}(t) = \dot{D}^{\text{Eh}}_{\beta}(t)
-    - \sum_{\alpha} \left[ \sum_{JK} U^K_{\beta} \left( F^{\text{deco}}_{JK} \rho_{JK} \right) U^J_{\alpha} \right] D_{\alpha}(t)
+   \dot{D}^{(I)}_{\beta}(t) = \dot{D}^{\text{Eh}}_{\beta}(t)
+   - \sum_{\alpha} \left[ \sum_{JK} U^K_{\beta} \left( F^{\text{deco}}_{JK} \rho_{JK} \right) U^J_{\alpha} \right] D_{\alpha}(t)
 
 where :math:`\dot{D}^{\text{Eh}}_{\beta}(t)` is time derivative of the coefficient originating from Ehrenfest term
 and :math:`F^{\text{deco}}_{JK}` is the decoherence term originating from the electron-nuclear correlation in exact-factorization.
@@ -186,7 +186,7 @@ Detailed description of the parameters
 
   .. math::
      |\chi|^2 = \sum_{K}|\chi_{K}|^2 = \sum_{K}N_{K}\prod^{N_{atom}}_\nu 
-              \exp\left(-\dfrac{|\textbf{R}^{(I)}_\nu-\textbf{R}_{K,\nu}|^2}{2\sigma^2_{\nu}}\right).
+     \exp\left(-\dfrac{|\textbf{R}^{(I)}_\nu-\textbf{R}_{K,\nu}|^2}{2\sigma^2_{\nu}}\right).
 
   If a scalar value is given, all nuclei share the same width.
   Or, if a list of values with the length of the number of the atoms is given, an atom-wise width is used.
@@ -218,7 +218,7 @@ Detailed description of the parameters
   
   .. math::
      \underline{\underline{\dot{\textbf{R}}}}_{K} = \underline{\underline{\dot{\textbf{R}}}}^{(I)}
-       \sqrt{\dfrac{E^K_{tot}-E_K^{(I)}}{\sum_{\nu}\frac{1}{2}M_{\nu}|\dot{\textbf{R}}^{(I)}_{\nu}|^2}}
+     \sqrt{\dfrac{E^K_{tot}-E_K^{(I)}}{\sum_{\nu}\frac{1}{2}M_{\nu}|\dot{\textbf{R}}^{(I)}_{\nu}|^2}}
 
   When :math:`E_{tot}^K-E^{(I)}_K < 0`, the auxiliary trajectory is either fixed or destroyed, depending on the given value of this parameter.
 

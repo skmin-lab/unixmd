@@ -8,35 +8,35 @@ The features of PyUNIxMD are as follows.
 
 - Conventional (non)adiabatic dynamics
 
-  -  Born-Oppenheimer molecular dynamics (BOMD)
-  -  Ehrenfest dynamics :cite:`Ehrenfest1927`
-  -  Fewest switches surface hopping (FSSH) dynamics :cite:`Tully1990` with ad hoc decoherence corrections :cite:`Granucci2010`
+  - Born-Oppenheimer molecular dynamics (BOMD)
+  - Ehrenfest dynamics :cite:`Ehrenfest1927`
+  - Fewest switches surface hopping (FSSH) dynamics :cite:`Tully1990` with ad hoc decoherence corrections :cite:`Granucci2010`
 
 .. Padding
 
 - Decoherence based on exact factorization
 
-  -  Surface hopping based on exact factorization (SHXF) method :cite:`Ha2018`
-  -  Coupled-trajectory mixed quantum-classical (CTMQC) method :cite:`Agostini2016`
+  - Surface hopping based on exact factorization (SHXF) method :cite:`Ha2018`
+  - Coupled-trajectory mixed quantum-classical (CTMQC) method :cite:`Agostini2016`
 
 .. Padding
 
 - Accessible interface to external QM programs and built-in model Hamiltonians
 
-  -  COLUMBUS :cite:`Lischka2011`: SA-CASSCF
-  -  Molpro :cite:`Werner2012`: SA-CASSCF
-  -  Gaussian 09 :cite:`Frisch2009`: TDDFT
-  -  Q-Chem :cite:`qchem2015`: TDDFT
-  -  TURBOMOLE :cite:`Ahlrichs1989`: TDDFT
-  -  TeraChem :cite:`Ufimtsev2008_1,Ufimtsev2009_1,Ufimtsev2009_2`: SI-SA-REKS (SSR)
-  -  DFTB+ :cite:`Hourahine2020`: TDDFTB, DFTB/SSR
-  -  Model Hamiltonians: Tully :cite:`Tully1990`, Shin-Metiu :cite:`Shin1995`
+  - COLUMBUS :cite:`Lischka2011`: SA-CASSCF
+  - Molpro :cite:`Werner2012`: SA-CASSCF
+  - Gaussian 09 :cite:`Frisch2009`: TDDFT
+  - Q-Chem :cite:`qchem2015`: TDDFT
+  - TURBOMOLE :cite:`Ahlrichs1989`: TDDFT
+  - TeraChem :cite:`Ufimtsev2008_1,Ufimtsev2009_1,Ufimtsev2009_2`: SI-SA-REKS (SSR)
+  - DFTB+ :cite:`Hourahine2020`: TDDFTB, DFTB/SSR
+  - Model Hamiltonians: Tully :cite:`Tully1990`, Shin-Metiu :cite:`Shin1995`
 
 .. Padding
 
 - Accessible interface to deal with strong light-matter interaction within cavity quantum electrodynamics (cQED)
 
-  -  Jaynes-Cummings model :cite:`Jaynes1963`
+  - Jaynes-Cummings model :cite:`Jaynes1963`
 
 .. Padding
 
