@@ -1,6 +1,10 @@
 ==========================
 Workflow
 ==========================
+
+Molecular Dynamics
+---------------------------
+
 Here, we explain how to run MD calculations with PyUNIxMD.
 
 You will make a running script for the MD calculation you want to perform. In your running script, you will create PyUNIxMD objects successively.
@@ -24,7 +28,7 @@ A typical template of the running script is the following:
 
    mol = Molecule(geometry=geom, nstates=NSTATES)
 
-   qm = qm.QM_PROG.QM_METHOD(ARGUMENTS)
+   qm = qm.QM_PROG.QM_METHOD(molecule=mol, ARGUMENTS)
 
    bathT = thermostat.THERMO_TYPE(ARGUMENTS)
 
@@ -46,11 +50,11 @@ such as energies, forces, and nonadiabatic coupling vectors. QM_PROG is the dire
 package is. QM_METHOD is a name of Python class specifying one of QM methods provided with that interface package.
 See :ref:`QM_calculator <Objects QM_calculator>` for the list.
 
-**Line 18** sets a thermostat. THERMO_TYPE is a name of Python class specifying how to control temperature. See :ref:`Thermostat <Objects Thermostat>` for the list. 
+**Line 18** sets a thermostat. THERMO_TYPE is a name of Python class specifying how to control temperature. See :ref:`Thermostat <Objects Thermostat>` for the list.
 
 **Line 20** determines a dynamics method you want to use. MD_TYPE is a name of Python class specifying one of MQC methods (BOMD, Eh, SH, SHXF). See :ref:`MQC <Objects MQC>` for the details.
 
-**Line 22** runs the dynamics calculation. 
+**Line 22** runs the dynamics calculation.
 
 Finally, you will execute your running script.
 
@@ -165,4 +169,111 @@ This file shows the running state at each MD step.
    ... 
 
 For a quick test of PyUNIxMD, see :ref:`Quick Start <Quick Start>` . Also, you can refer to scripts and log files in '$PYUNIXMDHOME/examples/' directory for practical calculations.
+
+
+Polariton Dynamics
+---------------------------
+
+Similarly, you will make a running script for polariton dynamics. In your running script, you will create PyUNIxMD objects successively.
+A typical template of the running script is the following:
+
+.. code-block:: python
+   :linenos:
+
+   from polariton import Polariton
+   import qm, qed, mqc_qed
+   import thermostat
+
+   geom = """
+   <number of atoms>
+   <comment>
+   <symbol> <X> <Y> <Z> <V_X> <V_Y> <V_Z>
+   <symbol> <X> <Y> <Z> <V_X> <V_Y> <V_Z>
+   ...
+   <symbol> <X> <Y> <Z> <V_X> <V_Y> <V_Z>
+   """
+
+   pol = Polariton(geometry=geom, nstates=NSTATES)
+
+   qm = qm.QM_PROG.QM_METHOD(molecule=pol, ARGUMENTS)
+
+   qed = qed.QED_METHOD(polariton=pol, ARGUMENTS)
+
+   bathT = thermostat.THERMO_TYPE(ARGUMENTS)
+
+   md = mqc_qed.MD_TYPE(polariton=pol, thermostat=bathT, ARGUMENTS)
+
+   md.run(qed=qed, qm=qm, ARGUMENTS)
+
+**Line 1-3** import the PyUNIxMD packages for the below jobs.
+
+**Line 5-14** set a target system you are interested in.
+You need to prepare a string as an argument to specify initial geometry and velocities in extended XYZ format.
+NSTATES means the number of polaritonic states considered in the dynamics calculations.
+See :ref:`Polariton <Objects Polariton>` for the list of parameters.
+
+.. note:: The ``pol`` object must be created first because it will be used for making other objects.
+
+**Line 16** determines an electronic structure calculation program and its method to obtain QM information
+such as energies, forces, and nonadiabatic coupling vectors. QM_PROG is the directory name where the QM interface
+package is. QM_METHOD is a name of Python class specifying one of QM methods provided with that interface package.
+See :ref:`QM_calculator <Objects QM_calculator>` for the list.
+
+**Line 18** determines a method for quantum electrodynamics calculation. QED_METHOD is a name of Python class
+specifying one of QED methods privoded with that interface.
+See :ref:`QED_calculator <Objects QED_calculator>` for the list.
+
+**Line 20** sets a thermostat. THERMO_TYPE is a name of Python class specifying how to control temperature. See :ref:`Thermostat <Objects Thermostat>` for the list.
+
+**Line 22** determines a dynamics method you want to use. MD_TYPE is a name of Python class specifying one of MQC_QED methods (BOMD, SH, SHXF). See :ref:`MQC_QED <Objects MQC_QED>` for the details.
+
+**Line 24** runs the dynamics calculation.
+
+Finally, you will execute your running script.
+
+.. code-block:: bash
+
+   $ python3 running_script.py
+
+After the polariton dynamics is finished, you will obtain similar file trees as above.
+'md/' collects MD outputs, and 'qm_log/', 'mm_log/', and 'qed_log/' have logs of QM, MM, and QED calculations, respectively
+(The latter three directories are optional). 'RESTART.bin' is a binary used to restart a dynamics calculation.
+See :ref:`MQC_QED <Objects MQC_QED>` for the details.
+
+Instead of BO-related output files (BOPOP, BOCOH, NACME), several QED-related output files (QEDPOPA, QEDCOHA, QEDPOPD, QEDCOHD, PNACME) will be generated.
+The same output files (MDENERGY, MOVIE.xyz, FINAL.xyz, SHPROB, SHSTATE) will be skipped for polariton dynamics.
+
+- QEDPOPA, QEDPOPD
+
+This files show the polaritonic (with suffix 'A') and uncoupled (with suffix 'D') populations
+(diagonal elements of the density matrix) at each MD step.
+
+.. code-block:: bash
+
+   <MD step> <population of state 0> <population of state 1> ... <population of last state> 
+   <MD step> <population of state 0> <population of state 1> ... <population of last state> 
+   ... 
+
+- QEDCOHA, QEDCOHD 
+
+This files show off-diagonal elements of the correponding density matrix at each MD step. Only the upper triangular portions are given because of hermiticity. The real and imaginary part of each element are written alternately.
+
+.. code-block:: bash
+
+   <MD step> <Re. element 0, 1> <Im. element 0, 1> <Re. element 0, 2> <Im. element 0, 2> ... <Re. element last-1, last> <Im. element last-1, last> 
+   <MD step> <Re. element 0, 1> <Im. element 0, 1> <Re. element 0, 2> <Im. element 0, 2> ... <Re. element last-1, last> <Im. element last-1, last> 
+   ... 
+
+- PNACME
+
+This file shows nonadiabatic coupling matrix elements between the polaritonic states at each MD step. Only the upper triangular portions are given because of antihermiticity.
+
+.. code-block:: bash
+
+   <MD step> <element 0, 1> <element 0, 2> ... <element last-1, last> 
+   <MD step> <element 0, 1> <element 0, 2> ... <element last-1, last> 
+   ... 
+
+For a quick test for polariton dynamics, it will be added later.
+
 
