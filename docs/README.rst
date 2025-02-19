@@ -4,9 +4,9 @@ Compile the PyUNIxMD Manual with Sphinx
 
 Requirements
 ============
-* Sphinx 5.0.0
+* Sphinx >= 5.0.0
 * sphinx_rtd_theme
-* sphinxcontrib-bibtex 2.0.0
+* sphinxcontrib-bibtex >= 2.0.0
 
 if you don't have Sphinx,
 

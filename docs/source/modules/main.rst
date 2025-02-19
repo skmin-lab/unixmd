@@ -274,32 +274,3 @@ shxf.py
    :members:
    :show-inheritance:
 
-.. _Module MQC_QED:
-
-mqc_qed
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-mqc.py
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: mqc_qed.mqc
-   :members:
-   :show-inheritance:
-
-bomd.py
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: mqc_qed.bomd
-   :members:
-   :show-inheritance:
-
-sh.py
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: mqc_qed.sh
-   :members:
-   :show-inheritance:
-
-shxf.py
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: mqc_qed.shxf
-   :members:
-   :show-inheritance:
-

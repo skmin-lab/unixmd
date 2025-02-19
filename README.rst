@@ -21,7 +21,7 @@ When you publish a work using any part of PyUNIxMD code, please cite the followi
 Requirements
 ============
 * Python 3.6 or later
-* Numpy 1.20.0
+* Numpy >= 1.20.0
 * Cython https://cython.org
 * BLAS/LAPACK libraries or Math Kernel Library
 
