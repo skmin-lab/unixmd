@@ -1,33 +1,34 @@
 from __future__ import division
-from mqc.mqc import MQC
+from cpa.cpa import CPA
 from misc import au_to_K, call_name
 import os, shutil, textwrap
 import numpy as np
 import pickle
 
-class BOMD(MQC):
+class BOMD(CPA):
     """ Class for born-oppenheimer molecular dynamics (BOMD)
+        to get sampling data for Classical Path Approximation (CPA)
 
         :param object molecule: Molecule object
         :param object thermostat: Thermostat object
         :param integer istate: Electronic state
         :param double dt: Time interval
         :param integer nsteps: Total step of nuclear propagation
+        :param boolean l_adj_nac: Logical to adjust nonadiabatic coupling
         :param string unit_dt: Unit of time step
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
-    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, unit_dt="fs", out_freq=1, verbosity=0):
+    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, l_adj_nac=True, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
-        super().__init__(molecule, thermostat, istate, dt, nsteps, None, None, None, \
-            False, None, None, unit_dt, out_freq, verbosity)
+        super().__init__(molecule, thermostat, istate, dt, nsteps, \
+            l_adj_nac, unit_dt, out_freq, verbosity)
 
-    def run(self, qm, mm=None, traj=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
+    def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to BOMD
 
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
-            :param object traj: Trajectory object for CPA
             :param string output_dir: Name of directory where outputs to be saved.
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
@@ -35,10 +36,10 @@ class BOMD(MQC):
             :param string restart: Option for controlling dynamics restarting
         """
         # Initialize PyUNIxMD
-        base_dir, unixmd_dir, qm_log_dir, mm_log_dir = \
-            self.run_init(qm, mm, traj, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
+        base_dir, unixmd_dir, samp_dir, qm_log_dir, mm_log_dir = \
+            self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
         bo_list = [self.istate]
-        qm.calc_coupling = False
+        qm.calc_coupling = True
         qm.calc_tdp = False
         qm.calc_tdp_grad = False
         self.print_init(qm, mm, restart)
@@ -47,10 +48,14 @@ class BOMD(MQC):
             # Calculate initial input geometry at t = 0.0 s
             self.istep = -1
             self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, traj, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
+            qm.get_data(self.mol, None, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
+            if (not self.mol.l_nacme):
+                self.mol.get_nacme()
+
             self.update_energy()
+            self.save_bin(samp_dir, self.istep)
             self.write_md_output(unixmd_dir, self.istep)
             self.print_step(self.istep)
 
@@ -70,20 +75,28 @@ class BOMD(MQC):
         for istep in range(self.istep, self.nsteps):
 
             self.calculate_force()
-            self.cl_update_position(istep, traj)
+            self.cl_update_position()
 
             self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, traj, base_dir, bo_list, self.dt, istep, calc_force_only=False)
+            qm.get_data(self.mol, None, base_dir, bo_list, self.dt, istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
+            if (not self.mol.l_nacme and self.l_adj_nac):
+                self.mol.adjust_nac()
+
             self.calculate_force()
-            self.cl_update_velocity(istep, traj)
+            self.cl_update_velocity()
+
+            if (not self.mol.l_nacme):
+                self.mol.get_nacme()
 
             if (self.thermo != None):
                 self.thermo.run(self, self.mol)
 
             self.update_energy()
+
+            self.save_bin(samp_dir, istep)
 
             if ((istep + 1) % self.out_freq == 0):
                 self.write_md_output(unixmd_dir, istep)
@@ -106,6 +119,20 @@ class BOMD(MQC):
                 tmp_dir = os.path.join(unixmd_dir, "scr_mm")
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
+
+    def save_bin(self, samp_dir, istep):
+        """ Routine to save MD info of each step using pickle
+
+            :param string samp_dir: Name of directory where sampling data are saved
+            :param integer istep: Current MD step
+        """
+        filename = os.path.join(samp_dir, f"QM.{istep + 1}.bin")
+        with open(filename, "wb") as f:
+            pickle.dump({"energy":np.array([states.energy for states in self.mol.states]), "force":self.rforce, "nacme":self.mol.nacme}, f)
+
+        filename = os.path.join(samp_dir, f"RV.{istep + 1}.bin")
+        with open(filename, "wb") as f:
+            pickle.dump({"pos":self.mol.pos, "vel":self.mol.vel}, f)
 
     def calculate_force(self):
         """ Routine to calculate the forces

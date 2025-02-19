@@ -106,10 +106,11 @@ class SSR(DFTBplus):
         molecule.l_nacme = False
         self.re_calc = True
 
-    def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
+    def get_data(self, molecule, traj, base_dir, bo_list, dt, istep, calc_force_only):
         """ Extract energy, gradient and nonadiabatic couplings from SSR method
 
             :param object molecule: Molecule object
+            :param object traj: Trajectory object
             :param string base_dir: Base directory
             :param integer,list bo_list: List of BO states for BO calculation
             :param double dt: Time interval
