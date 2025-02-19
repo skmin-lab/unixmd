@@ -11,7 +11,7 @@ It was introduced by Tully, J. C. in 1990 :cite:`Tully1990`, and has been augmen
 
 .. math::
 
-   \dot{C}^{(I)}_{k}(t) = -{{i}\over{\hbar}}E^{(I)}_k(t)C^{(I)}_{k}(t)-\sum_{k}\sum_{\nu}\mathbf{d}^{(I)}_{kj\nu}\cdot\dot{\bf R}^{(I)}
+   \dot{C}^{(I)}_{k}(t) = -{{i}\over{\hbar}}E^{(I)}_k(t)C^{(I)}_{k}(t)-\sum_{k}\sum_{\nu}\mathbf{d}^{(I)}_{kj,\nu}\cdot\dot{\bf R}^{(I)}
    _{\nu}(t)C^{(I)}_j(t)
 
 The electronic propagation is still an Ehrenfest-type evolution, but the nuclei follow a *fixed* BO potential energy surface denoted by :math:`E^{(I)}_{r}(t)`. The corresponding BO state is called a running state (force state).
@@ -19,7 +19,7 @@ The running state is chosen probabilistically at every MD step. The probabilitie
 
 .. math::
 
-   P^{(I)}_{j{\rightarrow}k}[t,t+{\Delta}t] = {{2\Re[\rho^{(I)}_{jk}(t)\sum_\nu \mathbf{d}^{(I)}_{jk\nu}(t)\cdot\dot{\bf R}^{(I)}_\nu(t)]
+   P^{(I)}_{j{\rightarrow}k}[t,t+{\Delta}t] = {{2\Re[\rho^{(I)}_{jk}(t)\sum_\nu \mathbf{d}^{(I)}_{jk,\nu}(t)\cdot\dot{\bf R}^{(I)}_\nu(t)]
    {\Delta}t}\over{\rho^{(I)}_{jj}(t)}}, \rho^{(I)}_{jk}(t)=C^{(I)\ast}_j(t) C^{(I)}_k(t)
 
 :math:`{\rho}(t)` represents the electronic density matrix. In this algorithm, the hopping probabilities
@@ -154,7 +154,9 @@ Detailed description of the parameters
 - **propagator** *(string)* - Default: *'rk4'*
 
   This parameter determines the numerical integration method for the electronic equation of motion.
-  Currently, only the RK4 algorithm (*'rk4'*) is available.
+
+  + *'rk4'*: Integrates the coefficients using Runge-Kutta 4th order method.
+  + *'exponential'*: Integrates the coefficients using exponential operator.
 
 \
 

@@ -17,12 +17,12 @@ class SH(MQC_QED):
         :param integer nesteps: Total step of electronic propagation
         :param string elec_object: Electronic equation of motions
         :param string propagator: Electronic propagator
-        :param boolean l_print_dm: Logical to print BO population and coherence
+        :param boolean l_print_dm: Logical to print population and coherence
         :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
         :param boolean l_adj_tdp: Adjust transition dipole moments to align the phases
         :param string hop_rescale: Velocity rescaling method after successful hop
         :param string hop_reject: Velocity rescaling method after frustrated hop
-        :param init_coef: Initial BO coefficient
+        :param init_coef: Initial coefficient
         :type init_coef: double, list or complex, list
         :param string dec_correction: Simple decoherence correction schemes
         :param double edc_parameter: Energy constant (H) for rescaling coefficients in edc
@@ -31,7 +31,7 @@ class SH(MQC_QED):
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, polariton, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
-        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, l_adj_tdp=True, \
+        elec_object="coefficient", propagator="rk4", l_print_dm=True, l_adj_nac=True, l_adj_tdp=True, \
         hop_rescale="augment", hop_reject="reverse", init_coef=None, dec_correction=None, \
         edc_parameter=0.1, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
@@ -499,7 +499,7 @@ class SH(MQC_QED):
         # Write hopping-related quantities
         self.write_sh(unixmd_dir, istep)
 
-        # Write time-derivative BO population
+        # Write time-derivative population
         self.write_dotpop(unixmd_dir, istep)
 
     def write_sh(self, unixmd_dir, istep):
@@ -517,7 +517,7 @@ class SH(MQC_QED):
         typewriter(tmp, unixmd_dir, "SHPROB", "a")
 
     def write_dotpop(self, unixmd_dir, istep):
-        """ Write time-derivative BO population
+        """ Write time-derivative population
 
             :param string unixmd_dir: PyUNIxMD directory
             :param integer istep: Current MD step

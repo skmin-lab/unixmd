@@ -10,7 +10,7 @@ class BOMD(MQC_QED):
 
         :param object polariton: Polariton object
         :param object thermostat: Thermostat object
-        :param integer istate: Electronic state
+        :param integer istate: Initial state
         :param double dt: Time interval
         :param integer nsteps: Total step of nuclear propagation
         :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases

@@ -12,8 +12,8 @@ where :math:`C_{i}^{(I)}(t)` and :math:`E_{i}^{(I)}(t)` is the :math:`i`-th BO c
 
 .. math::
 
-    \dot C^{(I)}_k(t) = -\frac{i}{\hbar}E^{(I)}_k(t)C^{(I)}_k(t)
-    - \sum_j\sum_{\nu}{\bf d}^{(I)}_{kj\nu}(t)\cdot\dot{\bf R}^{(I)}_\nu(t)C^{(I)}_j(t).
+   \dot C^{(I)}_k(t) = -\frac{i}{\hbar}E^{(I)}_k(t)C^{(I)}_k(t)
+   - \sum_j\sum_{\nu}{\bf d}^{(I)}_{kj\nu}(t)\cdot\dot{\bf R}^{(I)}_\nu(t)C^{(I)}_j(t).
 
 Thus, the driving force is given by
 

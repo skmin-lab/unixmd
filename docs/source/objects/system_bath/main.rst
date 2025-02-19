@@ -6,4 +6,5 @@ System & Bath
    :maxdepth: 1
    
    molecule
+   polariton
    thermostat

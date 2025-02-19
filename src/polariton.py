@@ -42,11 +42,11 @@ class Polariton(object):
         :param integer natoms_mm: Number of atoms in the MM region
         :param integer ndof: Degrees of freedom (if model is False, the molecular DoF is given.)
         :param integer nphotons: Number of quantized photons inside the cavity
-        :param double photon_freq: Resonant frequency of the photon inside the cavity
+        :param double photon_freq: Frequency of the photon inside the cavity
         :param double,list field_pol_vec: Field polarization vector
         :param string unit_pos: Unit of atomic positions
         :param string unit_vel: Unit of atomic velocities
-        :param string unit_freq: Unit of resonant photon frequency
+        :param string unit_freq: Unit of photon frequency
         :param double charge: Total charge of the system
         :param boolean l_model: Is the system a model system?
     """

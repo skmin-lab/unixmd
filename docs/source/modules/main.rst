@@ -8,6 +8,12 @@ molecule.py
    :members:
    :show-inheritance:
 
+polariton.py
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. automodule:: polariton
+   :members:
+   :show-inheritance:
+
 thermostat.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. automodule:: thermostat
@@ -209,6 +215,25 @@ tinker.py
 .. automodule:: mm.tinker
    :members:
    :show-inheritance:
+
+.. _Module QED:
+
+qed
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+qed_calculator.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: qed.qed_calculator
+   :members:
+   :show-inheritance:
+
+jaynes_cummings.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: qed.jaynes_cummings
+   :members:
+   :show-inheritance:
+
+.. _Module MQC:
 
 mqc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

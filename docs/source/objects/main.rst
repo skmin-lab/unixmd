@@ -13,5 +13,7 @@ PyUNIxMD Objects
    system_bath/main
    qm/main
    mm/main
+   qed/main
    mqc/main
+   mqc_qed/main
 

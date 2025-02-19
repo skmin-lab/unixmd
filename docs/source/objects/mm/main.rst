@@ -1,3 +1,5 @@
+.. _Objects MM_calculator:
+
 MM_calculator
 -------------------------------------------
 
@@ -6,17 +8,25 @@ The object for MM calculator should be constructed in PyUNIxMD to evaluate the e
 and the forces in QM/MM calculation. PyUNIxMD interfaces with the following in the current version.
 
 .. toctree::
-    :glob:
-    :maxdepth: 1
+   :glob:
+   :maxdepth: 1
 
-    prog_tinker
+   prog_tinker
 
 Only one MM program is supported in the current version of PyUNIxMD.
 If you want to add an interface of other programs such as Gromacs, you can refer to the Tinker interface.
 The key method of the MM interface is ``get_data`` method which makes input files, executes calculations and extracts information at every MD step. 
-Detailed description of the ``get_data`` method is given in :ref:`Modules <Module MM>`.
+Detailed description of the ``get_data`` method is given in :ref:`MM <Module MM>`.
 
-**Ex.** Making an MM object with Tinker
+In current version of PyUNIxMD, the compatibility of MM methods with QM methods is tabulated below.
+
++-------------------+-----------------+----------------+
+| MM programs       | QM programs     | QM methods     |
++===================+=================+================+
+| Tinker            | DFTB+           | SI-SA-REKS     |
++-------------------+-----------------+----------------+
+
+**Ex.** Making a MM object with Tinker
 
 .. code-block:: python
 

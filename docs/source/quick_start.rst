@@ -6,7 +6,7 @@ Quick Start
 
 This section gives a simple MD example using PyUNIxMD.
 
-We will perform DISH-XF (decoherence induced surface hopping based on exact factorization) dynamics
+We will perform SHXF (Surface hopping based on exact factorization) dynamics
 on Shin-Metiu model :cite:`Shin1995`, which is a standard model for nonadiabatic charge transfer.
 
 The running script is the following.
@@ -17,24 +17,24 @@ The running script is the following.
    from molecule import Molecule
    import qm, mqc
    from misc import data
-   
+
    data[f"X1"] = 1836 # au
    import random
    random.seed(10)  
- 
+
    geom = """
    1
    Shin-Metiu model
    X1       -4.0     0.0
    """
-   
+
    mol = Molecule(geometry=geom, ndim=1, nstates=2, ndof=1, unit_pos='au', l_model=True)
-   
+
    qm = qm.model.Shin_Metiu(molecule=mol)
-   
+
    md = mqc.SHXF(molecule=mol, nsteps=2890, nesteps=1, dt=0.5, unit_dt='au', \
         sigma=0.1, istate=1, elec_object="density")
-   
+
    md.run(qm=qm)
 
 **Line 1-3** import the PyUNIxMD packages.
@@ -42,14 +42,14 @@ The running script is the following.
 **Line 5** sets the mass of a fictitious particle of the model.
 
 **Line 6-7** set the random seed. This is for you to reproduce the same results here.
-DISH-XF is based on FSSH, so the results of a single trajectory are probabilistic. You can also comment out this part to check if the sequence of the random numbers vary.
+SHXF is based on FSSH, so the results of a single trajectory are probabilistic. You can also comment out this part to check if the sequence of the random numbers vary.
 
 **Line 9-15** set the system. The position and velocity of the X1 particle is given as -4.0 au and 0.0 au respectively.
 The dynamics propagates on 1D space, and two adiabatic states (the ground and the 1st excited states) are considered.
 
 **Line 17** sets the QM method. We chose the Shin-Metiu model among model systems.
 
-**Line 19-20** determine the MD method. DISH-XF method is selected. Initially the particle is on the 1st excited state denoted by **istate** = *1*.
+**Line 19-20** determine the MD method. SHXF method is selected. Initially the particle is on the 1st excited state denoted by **istate** = *1*.
 
 **Line 22** runs the dynamics calculation.
 
@@ -337,7 +337,7 @@ You can check the running state from 'SHSTATE' file.
 This file shows the running state at each MD step.
 
 .. code-block:: bash
-   
+
    #    Step    Running State
            0              1
            1              1

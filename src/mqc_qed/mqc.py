@@ -16,10 +16,10 @@ class MQC_QED(object):
         :param integer nesteps: Electronic step
         :param string elec_object: Electronic equation of motions
         :param string propagator: Electronic propagator
-        :param boolean l_print_dm: Logical to print BO population and coherence
+        :param boolean l_print_dm: Logical to print population and coherence
         :param boolean l_adj_nac: Logical to adjust nonadiabatic coupling
         :param boolean l_adj_tdp: Adjust transition dipole moments to align the phases
-        :param init_coef: Initial BO coefficient
+        :param init_coef: Initial coefficient
         :type init_coef: Double, list or complex, list
         :param string unit_dt: Unit of time step (fs = femtosecond, au = atomic unit)
         :param integer out_freq: Frequency of printing output

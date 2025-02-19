@@ -14,9 +14,9 @@ in addition to Eherenfest term. The propagation of nuclei and electrons is done 
 
 .. math::
 
-    \dot C^{(I)}_k(t) = -\frac{i}{\hbar}E^{(I)}_k(t)C^{(I)}_k(t)
-    - \sum_j\sum_{\nu}{\bf d}^{(I)}_{kj\nu}(t)\cdot\dot{\bf R}^{(I)}_\nu(t)C^{(I)}_j(t)
-    - \sum_{\nu}^{N_n}\frac{\mathbf{Q}^{(I)}_{\nu}(t)}{\hbar M_{\nu}}\cdot\left[\sum_{j}|C^{(I)}_{j}(t)|^2\mathbf{f}^{(I)}_{j,\nu}(t)-\mathbf{f}^{(I)}_{k,\nu}(t)\right]C^{(I)}_{k}.
+   \dot C^{(I)}_k(t) = -\frac{i}{\hbar}E^{(I)}_k(t)C^{(I)}_k(t)
+   - \sum_j\sum_{\nu}{\bf d}^{(I)}_{kj\nu}(t)\cdot\dot{\bf R}^{(I)}_\nu(t)C^{(I)}_j(t)
+   - \sum_{\nu}^{N_n}\frac{\mathbf{Q}^{(I)}_{\nu}(t)}{\hbar M_{\nu}}\cdot\left[\sum_{j}|C^{(I)}_{j}(t)|^2\mathbf{f}^{(I)}_{j,\nu}(t)-\mathbf{f}^{(I)}_{k,\nu}(t)\right]C^{(I)}_{k}.
 
 Detailed description of CTMQC method is in the :cite:`Agostini2016`.
 

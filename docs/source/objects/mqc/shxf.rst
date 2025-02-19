@@ -1,19 +1,19 @@
 
-DISH-XF
+SHXF
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Decoherence induced surface hopping based on exact factorization (DISH-XF) :cite:`Ha2018` method is included in PyUNIxMD package.
-Electronic equation of motion in DISH-XF contains "decoherence term" which is derived from exact factorization,
+Surface hopping based on exact factorization (SHXF) :cite:`Ha2018` method is included in PyUNIxMD package.
+Electronic equation of motion in SHXF contains "decoherence term" which is derived from exact factorization,
 in addition to Eherenfest term, i.e.
 
 .. math::
 
-    \dot C^{(I)}_k(t) =& -\frac{i}{\hbar}E^{(I)}_k(t)C^{(I)}_k(t)
-    - \sum_j\sum_\nu{\bf d}^{(I)}_{kj\nu}(t)\cdot\dot{\bf R}^{(I)}_\nu(t)C^{(I)}_j(t) \nonumber\\
-    &+\sum_j\sum_\nu\frac{1}{M_\nu}\frac{\nabla_\nu|\chi|}{|\chi|}\Bigg|_{\underline{\underline{\bf R}}^{(I)}(t)}
-    \cdot\left\{{\bf f}^{(I)}_{j\nu}(t)-{\bf f}^{(I)}_{k\nu}(t)\right\}|C^{(I)}_j(t)|^2 C^{(I)}_k(t)
+   \dot C^{(I)}_k(t) =& -\frac{i}{\hbar}E^{(I)}_k(t)C^{(I)}_k(t)
+   - \sum_j\sum_\nu{\bf d}^{(I)}_{kj\nu}(t)\cdot\dot{\bf R}^{(I)}_\nu(t)C^{(I)}_j(t) \nonumber\\
+   &+\sum_j\sum_\nu\frac{1}{M_\nu}\frac{\nabla_\nu|\chi|}{|\chi|}\Bigg|_{\underline{\underline{\bf R}}^{(I)}(t)}
+   \cdot\left\{{\bf f}^{(I)}_{j\nu}(t)-{\bf f}^{(I)}_{k\nu}(t)\right\}|C^{(I)}_j(t)|^2 C^{(I)}_k(t)
 
-Detailed description of DISH-XF method is in :cite:`Ha2018`
+Detailed description of SHXF method is in :cite:`Ha2018`
 
 +----------------------------+------------------------------------------------------+--------------+
 | Parameters                 | Work                                                 | Default      |
@@ -207,7 +207,7 @@ Detailed description of the parameters
   
   .. math::
      \underline{\underline{\dot{\textbf{R}}}}_{k} = \underline{\underline{\dot{\textbf{R}}}}^{(I)}
-       \sqrt{\dfrac{E^k_{tot}-E_k^{(I)}}{\sum_{\nu}\frac{1}{2}M_{\nu}|\dot{\textbf{R}}^{(I)}_{\nu}|^2}}
+     \sqrt{\dfrac{E^k_{tot}-E_k^{(I)}}{\sum_{\nu}\frac{1}{2}M_{\nu}|\dot{\textbf{R}}^{(I)}_{\nu}|^2}}
 
   When :math:`E_{tot}^k-E^{(I)}_k < 0`, the auxiliary trajectory is either fixed or destroyed, depending on the given value of this parameter.
 
