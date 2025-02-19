@@ -4,7 +4,6 @@ import textwrap, datetime
 import numpy as np
 import os, shutil
 
-
 class MQC_QED(object):
     """ Class for nuclear/electronic propagator used in MQC dynamics coupled to confined cavity mode
 

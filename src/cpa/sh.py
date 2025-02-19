@@ -1,13 +1,13 @@
 from __future__ import division
 from build.el_propagator import el_run
-from mqc.mqc import MQC
+from cpa.cpa import CPA
 from misc import eps, au_to_K, call_name, typewriter
 import random, os, shutil, textwrap
 import numpy as np
 import pickle
 
-class SH(MQC):
-    """ Class for surface hopping dynamics
+class SH(CPA):
+    """ Class for surface hopping dynamics with classical path approximation (CPA)
 
         :param object molecule: Molecule object
         :param object thermostat: Thermostat object

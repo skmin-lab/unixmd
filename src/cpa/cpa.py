@@ -4,9 +4,8 @@ import textwrap, datetime
 import numpy as np
 import os, shutil
 
-
-class MQC(object):
-    """ Class for nuclear/electronic propagator used in MQC dynamics
+class CPA(object):
+    """ Class for electronic propagator used in classical path approximation (CPA)
 
         :param object molecule: Molecule object
         :param object thermostat: Thermostat type
@@ -26,7 +25,7 @@ class MQC(object):
     """
     def __init__(self, molecule, thermostat, istate, dt, nsteps, nesteps, \
         elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity):
-        # Save name of MQC dynamics
+        # Save name of CPA dynamics
         self.md_type = self.__class__.__name__
 
         # Initialize Molecule object
@@ -92,7 +91,7 @@ class MQC(object):
         self.mol.get_coefficient(init_coef, self.istate)
 
     def run_init(self, qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart):
-        """ Initialize MQC dynamics
+        """ Initialize CPA dynamics
 
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
@@ -313,6 +312,7 @@ class MQC(object):
         dynamics_info += textwrap.indent(textwrap.dedent(f"""\
 
           MQC Method               = {self.md_type:>16s}
+          Classical Path Approx.   = {'Yes':>16s}
           Time Interval (fs)       = {self.dt / fs_to_au:16.6f}
           Initial State (0:GS)     = {self.istate:>16d}
           Nuclear Step             = {self.nsteps:>16d}
