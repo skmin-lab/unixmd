@@ -10,34 +10,40 @@ class BOMD(MQC):
 
         :param object molecule: Molecule object
         :param object thermostat: Thermostat object
-        :param integer istate: Electronic state
+        :param integer istate: Initial state
         :param double dt: Time interval
         :param integer nsteps: Total step of nuclear propagation
+        :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
         :param string unit_dt: Unit of time step
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
-    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, unit_dt="fs", out_freq=1, verbosity=0):
+    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, \
+        l_adj_nac=True ,unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, None, None, None, \
-            False, None, None, unit_dt, out_freq, verbosity)
+            False, l_adj_nac, None, unit_dt, out_freq, verbosity)
 
-    def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
+    def run(self, qm, mm=None, output_dir="./", l_coupling=False, l_save_bin=False, \
+        l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
         """ Run MQC dynamics according to BOMD
 
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
             :param string output_dir: Name of directory where outputs to be saved.
+            :param boolean l_coupling: Logical for calculation of nonadiabatic couplings
+            :param boolean l_save_bin: Logical for saving QM and trajectory data
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
             :param boolean l_save_scr: Logical for saving scratch directory
             :param string restart: Option for controlling dynamics restarting
         """
         # Initialize PyUNIxMD
-        base_dir, unixmd_dir, qm_log_dir, mm_log_dir = \
-            self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
+        base_dir, unixmd_dir, traj_bin_dir, qm_log_dir, mm_log_dir = \
+            self.run_init(qm, mm, output_dir, l_save_bin, l_save_qm_log, l_save_mm_log, \
+            l_save_scr, restart)
         bo_list = [self.istate]
-        qm.calc_coupling = False
+        qm.calc_coupling = l_coupling
         qm.calc_tdp = False
         qm.calc_tdp_grad = False
         self.print_init(qm, mm, restart)

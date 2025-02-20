@@ -45,7 +45,7 @@ or customized Hamiltonians, and the nuclear propagation is done by the Velocity-
 | **thermostat**         | Thermostat object                              | *None*     |
 | (:class:`Thermostat`)  |                                                |            |
 +------------------------+------------------------------------------------+------------+
-| **istate**             | Electronic state                               | *0*        |
+| **istate**             | Initial state                                  | *0*        |
 | *(integer)*            |                                                |            |
 +------------------------+------------------------------------------------+------------+
 | **dt**                 | Time interval                                  | *0.5*      |

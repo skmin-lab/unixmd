@@ -90,12 +90,14 @@ class MQC(object):
         # Initialize coefficients and densities
         self.mol.get_coefficient(init_coef, self.istate)
 
-    def run_init(self, qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart):
+    def run_init(self, qm, mm, output_dir, l_save_bin, l_save_qm_log, l_save_mm_log, \
+        l_save_scr, restart):
         """ Initialize MQC dynamics
 
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
             :param string output_dir: Location of input directory
+            :param boolean l_save_bin: Logical for saving QM and trajectory data
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
             :param boolean l_save_scr: Logical for saving scratch directory
@@ -135,6 +137,7 @@ class MQC(object):
         output_dir = os.path.expanduser(output_dir)
         base_dir = []
         unixmd_dir = []
+        traj_bin_dir = []
         qm_log_dir = []
         mm_log_dir = [None]
 
@@ -151,6 +154,7 @@ class MQC(object):
 
         for idir in base_dir:
             unixmd_dir.append(os.path.join(idir, "md"))
+            traj_bin_dir.append(os.path.join(idir, "traj_bin"))
             qm_log_dir.append(os.path.join(idir, "qm_log"))
             if (self.mol.l_qmmm and mm != None):
                 mm_log_dir.append(os.path.join(idir, "mm_log"))
@@ -163,6 +167,12 @@ class MQC(object):
                     error_message = f"Directory {md_idir} to be appended for restart not found!"
                     error_vars = f"restart = {restart}, output_dir = {output_dir}"
                     raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+            # For trajectory binary directory
+            if (l_save_bin):
+                for bin_idir in traj_bin_dir:
+                    if (not os.path.exists(bin_idir)):
+                        os.makedirs(bin_idir)
 
             # For QM output directory
             if (l_save_qm_log):
@@ -185,6 +195,13 @@ class MQC(object):
 
                 self.touch_file(md_idir)
 
+            # For trajectory binary directory
+            for bin_idir in traj_bin_dir:
+                if (os.path.exists(bin_idir)):
+                    shutil.move(bin_idir, bin_idir + "_old_" + str(os.getpid()))
+                if (l_save_bin):
+                    os.makedirs(bin_idir)
+
             # For QM output directory
             for qm_idir in qm_log_dir:
                 if (os.path.exists(qm_idir)):
@@ -203,9 +220,9 @@ class MQC(object):
         os.chdir(base_dir[0])
 
         if (self.md_type != "CT"):
-            return base_dir[0], unixmd_dir[0], qm_log_dir[0], mm_log_dir[0]
+            return base_dir[0], unixmd_dir[0], traj_bin_dir[0], qm_log_dir[0], mm_log_dir[0]
         else:
-            return base_dir, unixmd_dir, qm_log_dir, mm_log_dir
+            return base_dir, unixmd_dir, traj_bin_dir, qm_log_dir, mm_log_dir
 
     def cl_update_position(self):
         """ Routine to update nuclear positions

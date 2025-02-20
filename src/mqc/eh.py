@@ -47,8 +47,9 @@ class Eh(MQC):
             :param string restart: Option for controlling dynamics restarting
         """
         # Initialize PyUNIxMD
-        base_dir, unixmd_dir, qm_log_dir, mm_log_dir = \
-            self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
+        base_dir, unixmd_dir, traj_bin_dir, qm_log_dir, mm_log_dir = \
+            self.run_init(qm, mm, output_dir, False, l_save_qm_log, l_save_mm_log, \
+            l_save_scr, restart)
         bo_list = [ist for ist in range(self.mol.nst)]
         qm.calc_coupling = True
         qm.calc_tdp = False
