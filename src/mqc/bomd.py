@@ -55,7 +55,14 @@ class BOMD(MQC):
             qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
+            if (qm.calc_coupling):
+                if (not self.mol.l_nacme):
+                    self.mol.get_nacme()
+
             self.update_energy()
+            if (l_save_bin):
+                self.save_bin(traj_bin_dir, self.istep)
+
             self.write_md_output(unixmd_dir, self.istep)
             self.print_step(self.istep)
 
@@ -82,13 +89,23 @@ class BOMD(MQC):
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
+            if (qm.calc_coupling):
+                if (not self.mol.l_nacme and self.l_adj_nac):
+                    self.mol.adjust_nac()
+
             self.calculate_force()
             self.cl_update_velocity()
+
+            if (qm.calc_coupling):
+                if (not self.mol.l_nacme):
+                    self.mol.get_nacme()
 
             if (self.thermo != None):
                 self.thermo.run(self, self.mol)
 
             self.update_energy()
+            if (l_save_bin):
+                self.save_bin(traj_bin_dir, istep)
 
             if ((istep + 1) % self.out_freq == 0):
                 self.write_md_output(unixmd_dir, istep)
@@ -111,6 +128,21 @@ class BOMD(MQC):
                 tmp_dir = os.path.join(unixmd_dir, "scr_mm")
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
+
+    def save_bin(self, traj_bin_dir, istep):
+        """ Routine to save QM and trajectory data for each time step
+
+            :param string traj_bin_dir: Name of directory where QM and trajectory data are saved
+            :param integer istep: Current MD step
+        """
+        filename = os.path.join(traj_bin_dir, f"QM.{istep + 1}.bin")
+        with open(filename, "wb") as f:
+            pickle.dump({"energy":np.array([states.energy for states in self.mol.states]), \
+                "force":self.rforce, "nacme":self.mol.nacme}, f)
+
+        filename = os.path.join(traj_bin_dir, f"RV.{istep + 1}.bin")
+        with open(filename, "wb") as f:
+            pickle.dump({"pos":self.mol.pos, "vel":self.mol.vel}, f)
 
     def calculate_force(self):
         """ Routine to calculate the forces
