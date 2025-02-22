@@ -97,7 +97,7 @@ class MQC(object):
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
             :param string output_dir: Location of input directory
-            :param boolean l_save_bin: Logical for saving QM and trajectory data
+            :param boolean l_save_bin: Logical for saving the calculator and trajectory
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
             :param boolean l_save_scr: Logical for saving scratch directory
@@ -437,7 +437,7 @@ class MQC(object):
             typewriter(tmp, unixmd_dir, "SHPROB", "w")
 
         # file header for XF-based methods
-        if (self.md_type in ["SHXF", "CT"]):
+        if (self.md_type in ["SHXF", "EhXF", "CT"]):
             if (self.verbosity >= 1):
                 tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "DOTPOPDEC", "w")

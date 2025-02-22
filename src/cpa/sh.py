@@ -91,68 +91,53 @@ class SH(CPA):
         # Initialize event to print
         self.event = {"HOP": []}
 
-    def run(self, qm, mm=None, output_dir="./", l_save_qm_log=False, l_save_mm_log=False, l_save_scr=True, restart=None):
-        """ Run MQC dynamics according to surface hopping dynamics
+    def run(self, traj, qm, mm=None, output_dir="./"):
+        """ Run MQC dynamics according to surface hopping dynamics with classical path approximation
 
+            :param object traj: Trajectory object containing the calculator and trajectory
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
             :param string output_dir: Name of directory where outputs to be saved.
-            :param boolean l_save_qm_log: Logical for saving QM calculation log
-            :param boolean l_save_mm_log: Logical for saving MM calculation log
-            :param boolean l_save_scr: Logical for saving scratch directory
-            :param string restart: Option for controlling dynamics restarting
         """
         # Initialize PyUNIxMD
-        base_dir, unixmd_dir, qm_log_dir, mm_log_dir = \
-            self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
+        base_dir, unixmd_dir = self.run_init(qm, mm, output_dir)
         bo_list = [self.rstate]
         qm.calc_coupling = True
         qm.calc_tdp = False
         qm.calc_tdp_grad = False
-        self.print_init(qm, mm, restart)
+        self.print_init(qm, mm)
 
-        if (restart == None):
-            # Calculate initial input geometry at t = 0.0 s
-            self.istep = -1
-            self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
+        # Calculate initial input geometry at t = 0.0 s
+        self.istep = -1
+        self.mol.reset_bo(qm.calc_coupling)
+        qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
+        if (self.mol.l_qmmm and mm != None):
+            mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
+        if (not self.mol.l_nacme):
+            self.mol.get_nacme()
+
+        self.hop_prob()
+        self.hop_check(bo_list)
+        self.evaluate_hop(bo_list)
+
+        if (self.dec_correction == "idc"):
+            if (self.l_hop or self.l_reject):
+                self.correct_dec_idc()
+        elif (self.dec_correction == "edc"):
+            # If kinetic is 0, coefficient/density matrix are update into itself
+            if (self.mol.ekin_qm > eps):
+                self.correct_dec_edc()
+
+        if (self.l_hop):
+            if (qm.re_calc):
+                qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
             if (self.mol.l_qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
-            if (not self.mol.l_nacme):
-                self.mol.get_nacme()
+                mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=True)
 
-            self.hop_prob()
-            self.hop_check(bo_list)
-            self.evaluate_hop(bo_list)
+        self.update_energy()
 
-            if (self.dec_correction == "idc"):
-                if (self.l_hop or self.l_reject):
-                    self.correct_dec_idc()
-            elif (self.dec_correction == "edc"):
-                # If kinetic is 0, coefficient/density matrix are update into itself
-                if (self.mol.ekin_qm > eps):
-                    self.correct_dec_edc()
-
-            if (self.l_hop):
-                if (qm.re_calc):
-                    qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
-                if (self.mol.l_qmmm and mm != None):
-                    mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=True)
-
-            self.update_energy()
-
-            self.write_md_output(unixmd_dir, self.istep)
-            self.print_step(self.istep)
-
-        elif (restart == "write"):
-            # Reset initial time step to t = 0.0 s
-            self.istep = -1
-            self.write_md_output(unixmd_dir, self.istep)
-            self.print_step(self.istep)
-
-        elif (restart == "append"):
-            # Set initial time step to last successful step of previous dynamics
-            self.istep = self.fstep
+        self.write_md_output(unixmd_dir, self.istep)
+        self.print_step(self.istep)
 
         self.istep += 1
 
@@ -207,20 +192,6 @@ class SH(CPA):
                 self.write_final_xyz(unixmd_dir, istep)
 
             self.fstep = istep
-            restart_file = os.path.join(base_dir, "RESTART.bin")
-            with open(restart_file, 'wb') as f:
-                pickle.dump({'qm':qm, 'md':self}, f)
-
-        # Delete scratch directory
-        if (not l_save_scr):
-            tmp_dir = os.path.join(unixmd_dir, "scr_qm")
-            if (os.path.exists(tmp_dir)):
-                shutil.rmtree(tmp_dir)
-
-            if (self.mol.l_qmmm and mm != None):
-                tmp_dir = os.path.join(unixmd_dir, "scr_mm")
-                if (os.path.exists(tmp_dir)):
-                    shutil.rmtree(tmp_dir)
 
     def hop_prob(self):
         """ Routine to calculate hopping probabilities
@@ -472,15 +443,14 @@ class SH(CPA):
             tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopnac])
             typewriter(tmp, unixmd_dir, "DOTPOPNAC", "a")
 
-    def print_init(self, qm, mm, restart):
+    def print_init(self, qm, mm):
         """ Routine to print the initial information of dynamics
 
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
-            :param string restart: Option for controlling dynamics restarting
         """
-        # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm, restart)
+        # Print initial information about molecule, qm, and mm
+        super().print_init(qm, mm)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\

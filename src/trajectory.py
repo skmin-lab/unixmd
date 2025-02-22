@@ -1,7 +1,7 @@
 from __future__ import division
 
 class Trajectory(object):
-    """ Class for a trajectory object including the information obtained from BOMD
+    """ Class for a trajectory object including the calculator and trajectory
 
     """
     def __init__(self):

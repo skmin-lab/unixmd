@@ -5,7 +5,7 @@ import numpy as np
 import os, shutil
 
 class CPA(object):
-    """ Class for electronic propagator used in classical path approximation (CPA)
+    """ Class for electronic propagator with classical path approximation (CPA)
 
         :param object molecule: Molecule object
         :param integer istate: Initial state
@@ -77,30 +77,17 @@ class CPA(object):
         # Initialize coefficients and densities
         self.mol.get_coefficient(init_coef, self.istate)
 
-    def run_init(self, qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart):
-        """ Initialize CPA dynamics
+    def run_init(self, qm, mm, output_dir):
+        """ Initialize molecular dynamics with classical path approximation
 
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
             :param string output_dir: Location of input directory
-            :param boolean l_save_qm_log: Logical for saving QM calculation log
-            :param boolean l_save_mm_log: Logical for saving MM calculation log
-            :param boolean l_save_scr: Logical for saving scratch directory
-            :param string restart: Option for controlling dynamics restarting
         """
-        # Check whether the restart option is right
-        if (restart != None):
-            restart = restart.lower()
-
-        if not (restart in [None, "write", "append"]):
-            error_message = "Invalid restart option!"
-            error_vars = f"restart = {restart}"
-            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-
         # Check whether NACVs are needed for Ehrenfest dynamics or not
-        if (self.md_type in ["CT", "Eh", "EhXF"]):
+        if (self.md_type in ["Eh", "EhXF"]):
             if (self.mol.l_nacme):
-                error_message = "CTMQC or Ehrenfest dynamics needs evaluation of NACVs, check your QM object!"
+                error_message = "Ehrenfest dynamics needs evaluation of NACVs, check your QM object!"
                 error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}"
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
@@ -112,8 +99,8 @@ class CPA(object):
         if (self.mol.l_qmmm and mm != None):
             self.check_qmmm(qm, mm)
 
-        # Exception for CTMQC/Ehrenfest with QM/MM
-        if ((self.md_type in ["CT", "Eh", "EhXF"]) and (mm != None)):
+        # Exception for Ehrenfest with QM/MM
+        if ((self.md_type in ["Eh", "EhXF"]) and (mm != None)):
             error_message = "QM/MM calculation is not compatible with CTMQC or Ehrenfest now!"
             error_vars = f"mm = {mm}"
             raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
@@ -122,77 +109,25 @@ class CPA(object):
         output_dir = os.path.expanduser(output_dir)
         base_dir = []
         unixmd_dir = []
-        qm_log_dir = []
-        mm_log_dir = [None]
-
-        if (self.mol.l_qmmm and mm != None):
-            mm_log_dir = []
 
         dir_tmp = os.path.join(os.getcwd(), output_dir)
-        if (self.md_type != "CT"):
-            base_dir.append(dir_tmp)
-        else:
-            for itraj in range(self.ntrajs):
-                itraj_dir = os.path.join(dir_tmp, f"TRAJ_{itraj + 1:0{self.digit}d}")
-                base_dir.append(itraj_dir)
+        base_dir.append(dir_tmp)
 
         for idir in base_dir:
             unixmd_dir.append(os.path.join(idir, "md"))
-            qm_log_dir.append(os.path.join(idir, "qm_log"))
-            if (self.mol.l_qmmm and mm != None):
-                mm_log_dir.append(os.path.join(idir, "mm_log"))
 
         # Check and make directories
-        if (restart == "append"):
-            # For MD output directory
-            for md_idir in unixmd_dir:
-                if (not os.path.exists(md_idir)):
-                    error_message = f"Directory {md_idir} to be appended for restart not found!"
-                    error_vars = f"restart = {restart}, output_dir = {output_dir}"
-                    raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+        # For MD output directory
+        for md_idir in unixmd_dir:
+            if (os.path.exists(md_idir)):
+                shutil.move(md_idir, md_idir + "_old_" + str(os.getpid()))
+            os.makedirs(md_idir)
 
-            # For QM output directory
-            if (l_save_qm_log):
-                for qm_idir in qm_log_dir:
-                    if (not os.path.exists(qm_idir)):
-                        os.makedirs(qm_idir)
-
-            # For MM output directory
-            if (self.mol.l_qmmm and mm != None):
-                if (l_save_mm_log):
-                    for mm_idir in mm_log_dir:
-                        if (not os.path.exists(mm_idir)):
-                            os.makedirs(mm_idir)
-        else:
-            # For MD output directory
-            for md_idir in unixmd_dir:
-                if (os.path.exists(md_idir)):
-                    shutil.move(md_idir, md_idir + "_old_" + str(os.getpid()))
-                os.makedirs(md_idir)
-
-                self.touch_file(md_idir)
-
-            # For QM output directory
-            for qm_idir in qm_log_dir:
-                if (os.path.exists(qm_idir)):
-                    shutil.move(qm_idir, qm_idir + "_old_" + str(os.getpid()))
-                if (l_save_qm_log):
-                    os.makedirs(qm_idir)
-
-            # For MM output directory
-            for mm_idir in mm_log_dir:
-                if (self.mol.l_qmmm and mm != None):
-                    if (os.path.exists(mm_idir)):
-                        shutil.move(mm_idir, mm_idir + "_old_" + str(os.getpid()))
-                    if (l_save_mm_log):
-                        os.makedirs(mm_idir)
+            self.touch_file(md_idir)
 
         os.chdir(base_dir[0])
 
-        if (self.md_type != "CT"):
-            return base_dir[0], unixmd_dir[0], qm_log_dir[0], mm_log_dir[0]
-        else:
-            return base_dir, unixmd_dir, qm_log_dir, mm_log_dir
+        return base_dir[0], unixmd_dir[0]
 
     def cl_update_position(self):
         """ Routine to update nuclear positions
@@ -222,12 +157,11 @@ class CPA(object):
         """
         pass
 
-    def print_init(self, qm, mm, restart):
+    def print_init(self, qm, mm):
         """ Routine to print the initial information of dynamics
 
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
-            :param string restart: Option for controlling dynamics restarting
         """
         # Print PyUNIxMD version
         cur_time = datetime.datetime.now()
@@ -257,20 +191,8 @@ class CPA(object):
         """)
         print (prog_info, flush=True)
 
-        # Print restart info
-        if (restart != None):
-            restart_info = textwrap.indent(textwrap.dedent(f"""\
-            Dynamics is restarted from the last step of a previous dynamics.
-            Restart Mode: {restart}
-            """), "    ")
-            print (restart_info, flush=True)
-
         # Print self.mol information: coordinate, velocity
-        if (self.md_type != "CT"):
-            self.mol.print_init(mm)
-        else:
-            for itraj, mol in enumerate(self.mols):
-                mol.print_init(mm)
+        self.mol.print_init(mm)
 
         # Print dynamics information
         dynamics_info = textwrap.dedent(f"""\
@@ -303,12 +225,10 @@ class CPA(object):
           Time Interval (fs)       = {self.dt / fs_to_au:16.6f}
           Initial State (0:GS)     = {self.istate:>16d}
           Nuclear Step             = {self.nsteps:>16d}
+          Electronic Step          = {self.nesteps:>16d}
+          Electronic Propagator    = {self.propagator:>16s}
+          Propagation Scheme       = {self.elec_object:>16s}
         """), "  ")
-
-        if (self.md_type != "BOMD"):
-            dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
-            dynamics_info += f"  Electronic Propagator    = {self.propagator:>16s}\n"
-            dynamics_info += f"  Propagation Scheme       = {self.elec_object:>16s}\n"
 
         # Print surface hopping variables
         if (self.md_type in ["SH", "SHXF"]):
@@ -357,13 +277,6 @@ class CPA(object):
 
         print (dynamics_info, flush=True)
 
-        # Print thermostat information
-        if (self.thermo != None):
-            self.thermo.print_init()
-        else:
-            thermostat_info = "  No Thermostat: Total energy is conserved!\n"
-            print (thermostat_info, flush=True)
-
     def touch_file(self, unixmd_dir):
         """ Routine to write PyUNIxMD output files
 
@@ -374,30 +287,29 @@ class CPA(object):
             "".join([f'E({ist})(H){"":8s}' for ist in range(self.mol.nst)])
         typewriter(tmp, unixmd_dir, "MDENERGY", "w")
 
-        if (self.md_type != "BOMD"):
-            # BO coefficents, densities file header
-            if (self.elec_object == "density"):
+        # BO coefficents, densities file header
+        if (self.elec_object == "density"):
+            tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
+            typewriter(tmp, unixmd_dir, "BOPOP", "w")
+            tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
+            typewriter(tmp, unixmd_dir, "BOCOH", "w")
+        elif (self.elec_object == "coefficient"):
+            tmp = f'{"#":5s} BO State Coefficients: state Re-Im; see the manual for detail orders'
+            typewriter(tmp, unixmd_dir, "BOCOEF", "w")
+            if (self.l_print_dm):
                 tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "BOPOP", "w")
                 tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "BOCOH", "w")
-            elif (self.elec_object == "coefficient"):
-                tmp = f'{"#":5s} BO State Coefficients: state Re-Im; see the manual for detail orders'
-                typewriter(tmp, unixmd_dir, "BOCOEF", "w")
-                if (self.l_print_dm):
-                    tmp = f'{"#":5s} Density Matrix: population Re; see the manual for detail orders'
-                    typewriter(tmp, unixmd_dir, "BOPOP", "w")
-                    tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
-                    typewriter(tmp, unixmd_dir, "BOCOH", "w")
 
-            # NACME file header
-            tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
-            typewriter(tmp, unixmd_dir, "NACME", "w")
+        # NACME file header
+        tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
+        typewriter(tmp, unixmd_dir, "NACME", "w")
 
-            # DOTPOPNAC file header
-            if (self.verbosity >= 1):
-                tmp = f'{"#":5s} Time-derivative Density Matrix by NAC: population; see the manual for detail orders'
-                typewriter(tmp, unixmd_dir, "DOTPOPNAC", "w")
+        # DOTPOPNAC file header
+        if (self.verbosity >= 1):
+            tmp = f'{"#":5s} Time-derivative Density Matrix by NAC: population; see the manual for detail orders'
+            typewriter(tmp, unixmd_dir, "DOTPOPNAC", "w")
 
         # file header for SH-based methods
         if (self.md_type in ["SH", "SHXF"]):
@@ -408,7 +320,7 @@ class CPA(object):
             typewriter(tmp, unixmd_dir, "SHPROB", "w")
 
         # file header for XF-based methods
-        if (self.md_type in ["SHXF", "CT"]):
+        if (self.md_type in ["SHXF"]):
             if (self.verbosity >= 1):
                 tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "DOTPOPDEC", "w")

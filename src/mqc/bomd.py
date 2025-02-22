@@ -32,7 +32,7 @@ class BOMD(MQC):
             :param object mm: MM object containing MM calculation information
             :param string output_dir: Name of directory where outputs to be saved.
             :param boolean l_coupling: Logical for calculation of nonadiabatic couplings
-            :param boolean l_save_bin: Logical for saving QM and trajectory data
+            :param boolean l_save_bin: Logical for saving the calculator and trajectory
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
             :param boolean l_save_scr: Logical for saving scratch directory
