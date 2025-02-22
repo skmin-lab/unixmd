@@ -88,3 +88,4 @@ class DAG(Model):
         molecule.nac[0, 1, 0, 0] = np.dot(unitary[:, 0], np.matmul(dH, unitary[:, 1])) / sqa
         molecule.nac[1, 0, 0, 0] = - molecule.nac[0, 1, 0, 0]
 
+
