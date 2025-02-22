@@ -10,7 +10,6 @@ class SH(CPA):
     """ Class for surface hopping dynamics with classical path approximation (CPA)
 
         :param object molecule: Molecule object
-        :param object thermostat: Thermostat object
         :param integer istate: Initial state
         :param double dt: Time interval
         :param integer nsteps: Total step of nuclear propagation
@@ -18,7 +17,6 @@ class SH(CPA):
         :param string elec_object: Electronic equation of motions
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
-        :param boolean l_adj_nac: Adjust nonadiabatic coupling to align the phases
         :param string hop_rescale: Velocity rescaling method after successful hop
         :param string hop_reject: Velocity rescaling method after frustrated hop
         :param init_coef: Initial BO coefficient
@@ -29,13 +27,13 @@ class SH(CPA):
         :param integer out_freq: Frequency of printing output
         :param integer verbosity: Verbosity of output
     """
-    def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
-        elec_object="density", propagator="rk4", l_print_dm=True, l_adj_nac=True, hop_rescale="augment", \
+    def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
+        elec_object="density", propagator="rk4", l_print_dm=True, hop_rescale="augment", \
         hop_reject="reverse", init_coef=None, dec_correction=None, edc_parameter=0.1, \
         unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
-        super().__init__(molecule, thermostat, istate, dt, nsteps, nesteps, \
-            elec_object, propagator, l_print_dm, l_adj_nac, init_coef, unit_dt, out_freq, verbosity)
+        super().__init__(molecule, istate, dt, nsteps, nesteps, elec_object, \
+            propagator, l_print_dm, init_coef, unit_dt, out_freq, verbosity)
 
         # Initialize SH variables
         self.rstate = self.istate
@@ -48,6 +46,7 @@ class SH(CPA):
         self.l_hop = False
         self.l_reject = False
 
+        # TODO : self.hop_rescale and self.hop_reject may not be needed
         self.hop_rescale = hop_rescale.lower()
         if not (self.hop_rescale in ["energy", "velocity", "momentum", "augment"]):
             error_message = "Invalid rescaling method for accepted hop!"
@@ -73,6 +72,7 @@ class SH(CPA):
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check error for incompatible cases
+        # TODO : self.hop_rescale and self.hop_reject may not be needed
         if (self.mol.l_nacme):
             # No analytical nonadiabatic couplings exist
             if (self.hop_rescale in ["velocity", "momentum", "augment"]):
@@ -196,9 +196,6 @@ class SH(CPA):
                     qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
                 if (self.mol.l_qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
-
-            if (self.thermo != None):
-                self.thermo.run(self, self.mol)
 
             self.update_energy()
 

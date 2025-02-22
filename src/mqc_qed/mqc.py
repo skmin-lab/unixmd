@@ -9,7 +9,7 @@ class MQC_QED(object):
 
         :param object polariton: Polariton object
         :param object thermostat: Thermostat type
-        :param integer istate: Initial adiabatic state
+        :param integer istate: Initial state
         :param double dt: Time interval
         :param integer nsteps: Nuclear step
         :param integer nesteps: Electronic step
