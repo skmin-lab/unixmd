@@ -107,6 +107,10 @@ class SH(CPA):
         qm.calc_tdp_grad = False
         self.print_init(qm, mm)
 
+        # Read binary files to obtain the calculator and trajectory
+        traj.read_QM_from_file(self.nsteps)
+        traj.read_RV_from_file(self.nsteps)
+
         # Calculate initial input geometry at t = 0.0 s
         self.istep = -1
         self.mol.reset_bo(qm.calc_coupling)
