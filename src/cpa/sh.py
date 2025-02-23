@@ -114,11 +114,9 @@ class SH(CPA):
         # Calculate initial input geometry at t = 0.0 s
         self.istep = -1
         self.mol.reset_bo(qm.calc_coupling)
-        qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
+        qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False, traj=traj)
         if (self.mol.l_qmmm and mm != None):
             mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
-        if (not self.mol.l_nacme):
-            self.mol.get_nacme()
 
         self.hop_prob()
         self.hop_check(bo_list)
@@ -134,7 +132,7 @@ class SH(CPA):
 
         if (self.l_hop):
             if (qm.re_calc):
-                qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True)
+                qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True, traj=traj)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=True)
 
@@ -153,18 +151,12 @@ class SH(CPA):
 
             self.mol.backup_bo(qm.calc_coupling)
             self.mol.reset_bo(qm.calc_coupling)
-            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
+            qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False, traj=traj)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
-            if (not self.mol.l_nacme and self.l_adj_nac):
-                self.mol.adjust_nac()
-
             self.calculate_force()
             self.cl_update_velocity()
-
-            if (not self.mol.l_nacme):
-                self.mol.get_nacme()
 
             el_run(self)
 
@@ -182,7 +174,7 @@ class SH(CPA):
 
             if (self.l_hop):
                 if (qm.re_calc):
-                    qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True)
+                    qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True, traj=traj)
                 if (self.mol.l_qmmm and mm != None):
                     mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
 

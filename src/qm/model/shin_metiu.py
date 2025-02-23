@@ -41,7 +41,7 @@ class Shin_Metiu(Model):
         # Shin-Metiu model can compute the gradient of several states simultaneously
         self.re_calc = False
 
-    def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
+    def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only, traj=None):
         """ Extract energy, gradient and nonadiabatic couplings from Shin-Metiu BO calculation
 
             :param object molecule: molecule object
@@ -50,6 +50,7 @@ class Shin_Metiu(Model):
             :param double dt: time interval
             :param integer istep: current MD step
             :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object traj: Trajectory object containing the calculator and trajectory
         """
         # Initialize Hamiltonian
         self.H = 0.
