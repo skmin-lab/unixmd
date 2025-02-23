@@ -81,26 +81,17 @@ class CPA(object):
             :param object mm: MM object containing MM calculation information
             :param string output_dir: Location of input directory
         """
-        # Check whether NACVs are needed for Ehrenfest dynamics or not
-        if (self.md_type in ["Eh", "EhXF"]):
-            if (self.mol.l_nacme):
-                error_message = "Ehrenfest dynamics needs evaluation of NACVs, check your QM object!"
-                error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}"
-                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+        # Exception for molecular dynamics with CPA
+        if not (self.md_type in ["SH"]):
+            error_message = "Only FSSH dynamics is available with CPA!"
+            error_vars = f"cpa = {self.md_type}"
+            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check compatibility of variables for QM and MM calculation
         if ((self.mol.l_qmmm and mm == None) or (not self.mol.l_qmmm and mm != None)):
             error_message = "Both logical for QM/MM and MM object is necessary!"
             error_vars = f"Molecule.l_qmmm = {self.mol.l_qmmm}, mm = {mm}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-        if (self.mol.l_qmmm and mm != None):
-            self.check_qmmm(qm, mm)
-
-        # Exception for Ehrenfest with QM/MM
-        if ((self.md_type in ["Eh", "EhXF"]) and (mm != None)):
-            error_message = "QM/MM calculation is not compatible with CTMQC or Ehrenfest now!"
-            error_vars = f"mm = {mm}"
-            raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Set directory information
         output_dir = os.path.expanduser(output_dir)
@@ -203,24 +194,6 @@ class CPA(object):
         {"-" * 68}
           QM Program               = {qm.qm_prog:>16s}
           QM Method                = {qm.qm_method:>16s}
-        """)
-        if (self.mol.l_qmmm and mm != None):
-            dynamics_info += textwrap.indent(textwrap.dedent(f"""\
-              MM Program               = {mm.mm_prog:>16s}
-              QMMM Scheme              = {mm.scheme:>16s}
-            """), "  ")
-            # Print charge embedding in MM program
-            if (mm.embedding != None):
-                dynamics_info += f"  Charge Embedding         = {mm.embedding:>16s}\n"
-            else:
-                dynamics_info += f"  Charge Embedding         = {'No':>16s}\n"
-            # Print vdw interaction in MM program
-            if (mm.vdw != None):
-                dynamics_info += f"  VDW Interaction          = {mm.vdw:>16s}\n"
-            else:
-                dynamics_info += f"  VDW Interaction          = {'No':>16s}\n"
-
-        dynamics_info += textwrap.indent(textwrap.dedent(f"""\
 
           MQC Method               = {self.md_type:>16s}
           Classical Path Approx.   = {'Yes':>16s}
@@ -377,34 +350,5 @@ class CPA(object):
                 + "".join([f"{self.mol.vel[iat, isp]:15.8f}" for isp in range(self.mol.ndim)])
 
         typewriter(tmp, unixmd_dir, "FINAL.xyz", "w")
-
-    def check_qmmm(self, qm, mm):
-        """ Routine to check compatibility between QM and MM objects
-
-            :param object qm: QM object containing on-the-fly calculation information
-            :param object mm: MM object containing MM calculation information
-        """
-        # Now check MM object
-        if (mm.mm_prog == "Tinker"):
-            # Now check QM object
-            if (qm.qm_prog == "dftbplus"):
-                if (qm.qm_method == "SSR"):
-                    do_qmmm = True
-                else:
-                    do_qmmm = False
-            else:
-                do_qmmm = False
-        else:
-            do_qmmm = False
-
-        if (do_qmmm):
-            if (qm.embedding != mm.embedding):
-                error_message = "Inconsistent charge embedding between QM and MM objects!"
-                error_vars = f"(QM) embedding = {qm.embedding}, (MM) embedding = {mm.embedding}"
-                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-        else:
-            error_message = "Incompatible QM and MM objects for QM/MM calculation!"
-            error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}, (MM) mm_prog = {mm.mm_prog}"
-            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
 

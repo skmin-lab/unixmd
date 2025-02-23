@@ -88,9 +88,9 @@ class SH(CPA):
         self.cl_update_velocity(traj, self.istep)
 
         self.mol.reset_bo(qm.calc_coupling)
+        # Although a MM object is provided for QM/MM dynamics with CPA in running script,
+        # QM object already has the information obtained from QM/MM dynamics, so mm.get_data is not needed
         qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False, traj=traj)
-        if (self.mol.l_qmmm and mm != None):
-            mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
 
         self.hop_prob()
         self.hop_check(bo_list)
@@ -118,8 +118,6 @@ class SH(CPA):
             self.mol.backup_bo(qm.calc_coupling)
             self.mol.reset_bo(qm.calc_coupling)
             qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False, traj=traj)
-            if (self.mol.l_qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
             self.cl_update_velocity(traj, istep)
 
