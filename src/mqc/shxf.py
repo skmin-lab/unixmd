@@ -292,8 +292,6 @@ class SHXF(MQC):
 
     def hop_prob(self):
         """ Routine to calculate hopping probabilities
-
-            :param integer istep: Current MD step
         """
         # Reset surface hopping variables
         self.rstate_old = self.rstate
@@ -345,7 +343,6 @@ class SHXF(MQC):
         """ Routine to evaluate hopping and velocity rescaling
 
             :param integer,list bo_list: List of BO states for BO calculation
-            :param integer istep: Current MD step
         """
         if (self.l_hop):
             # Calculate potential difference between hopping states

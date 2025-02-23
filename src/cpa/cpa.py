@@ -232,11 +232,6 @@ class CPA(object):
           Propagation Scheme       = {self.elec_object:>16s}
         """), "  ")
 
-        # Print surface hopping variables
-        if (self.md_type in ["SH", "SHXF"]):
-            dynamics_info += f"\n  Rescaling after Hop      = {self.hop_rescale:>16s}\n"
-            dynamics_info += f"  Rescaling after Reject   = {self.hop_reject:>16s}\n"
-
         # Print ad-hoc decoherence variables
         if (self.md_type == "SH"):
             if (self.dec_correction != None):

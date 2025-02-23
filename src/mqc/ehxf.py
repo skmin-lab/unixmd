@@ -251,8 +251,6 @@ class EhXF(MQC):
 
     def hop_prob(self):
         """ Routine to calculate hopping probabilities
-
-            :param integer istep: Current MD step
         """
         # Reset surface hopping variables
         self.rstate_old = self.rstate

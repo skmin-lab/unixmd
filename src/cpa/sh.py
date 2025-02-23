@@ -17,8 +17,6 @@ class SH(CPA):
         :param string elec_object: Electronic equation of motions
         :param string propagator: Electronic propagator
         :param boolean l_print_dm: Logical to print BO population and coherence
-        :param string hop_rescale: Velocity rescaling method after successful hop
-        :param string hop_reject: Velocity rescaling method after frustrated hop
         :param init_coef: Initial BO coefficient
         :type init_coef: double, list or complex, list
         :param string dec_correction: Simple decoherence correction schemes
@@ -28,9 +26,8 @@ class SH(CPA):
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=20, \
-        elec_object="density", propagator="rk4", l_print_dm=True, hop_rescale="augment", \
-        hop_reject="reverse", init_coef=None, dec_correction=None, edc_parameter=0.1, \
-        unit_dt="fs", out_freq=1, verbosity=0):
+        elec_object="density", propagator="rk4", l_print_dm=True, init_coef=None, \
+        dec_correction=None, edc_parameter=0.1, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, elec_object, \
             propagator, l_print_dm, init_coef, unit_dt, out_freq, verbosity)
@@ -46,19 +43,6 @@ class SH(CPA):
         self.l_hop = False
         self.l_reject = False
 
-        # TODO : self.hop_rescale and self.hop_reject may not be needed
-        self.hop_rescale = hop_rescale.lower()
-        if not (self.hop_rescale in ["energy", "velocity", "momentum", "augment"]):
-            error_message = "Invalid rescaling method for accepted hop!"
-            error_vars = f"hop_rescale = {self.hop_rescale}"
-            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-
-        self.hop_reject = hop_reject.lower()
-        if not (self.hop_reject in ["keep", "reverse"]):
-            error_message = "Invalid rescaling method for frustrated hop!"
-            error_vars = f"hop_reject = {self.hop_reject}"
-            raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-
         # Initialize decoherence variables
         self.dec_correction = dec_correction
         self.edc_parameter = edc_parameter
@@ -70,20 +54,6 @@ class SH(CPA):
             error_message = "Invalid decoherence corrections in FSSH method!"
             error_vars = f"dec_correction = {self.dec_correction}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-
-        # Check error for incompatible cases
-        # TODO : self.hop_rescale and self.hop_reject may not be needed
-        if (self.mol.l_nacme):
-            # No analytical nonadiabatic couplings exist
-            if (self.hop_rescale in ["velocity", "momentum", "augment"]):
-                error_message = "NACVs are not available with current QM object, only isotropic rescaling is possible!"
-                error_vars = f"hop_rescale = {self.hop_rescale}"
-                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
-            # TODO : This error will be used after adding the 'flip' option for hop_reject
-#            if (self.hop_reject == "reverse"):
-#                error_message = "NACVs are not available with current QM object, only keep rescaling is possible!"
-#                error_vars = f"hop_reject = {self.hop_reject}"
-#                raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Debug variables
         self.dotpopnac = np.zeros(self.mol.nst)
@@ -124,10 +94,9 @@ class SH(CPA):
 
         self.hop_prob()
         self.hop_check(bo_list)
-        self.evaluate_hop(bo_list)
 
         if (self.dec_correction == "idc"):
-            if (self.l_hop or self.l_reject):
+            if (self.l_hop):
                 self.correct_dec_idc()
         elif (self.dec_correction == "edc"):
             # If kinetic is 0, coefficient/density matrix are update into itself
@@ -164,10 +133,9 @@ class SH(CPA):
 
             self.hop_prob()
             self.hop_check(bo_list)
-            self.evaluate_hop(bo_list)
 
             if (self.dec_correction == "idc"):
-                if (self.l_hop or self.l_reject):
+                if (self.l_hop):
                     self.correct_dec_idc()
             elif (self.dec_correction == "edc"):
                 # If kinetic is 0, coefficient/density matrix are update into itself
@@ -193,8 +161,6 @@ class SH(CPA):
 
     def hop_prob(self):
         """ Routine to calculate hopping probabilities
-
-            :param integer istep: Current MD step
         """
         # Reset surface hopping variables
         self.rstate_old = self.rstate
@@ -234,101 +200,6 @@ class SH(CPA):
                 self.l_hop = True
                 self.rstate = ist
                 bo_list[0] = self.rstate
-
-    def evaluate_hop(self, bo_list):
-        """ Routine to evaluate hopping and velocity rescaling
-
-            :param integer,list bo_list: List of BO states for BO calculation
-            :param integer istep: Current MD step
-        """
-        if (self.l_hop):
-            # Calculate potential difference between hopping states
-            pot_diff = self.mol.states[self.rstate].energy - self.mol.states[self.rstate_old].energy
-
-            # Solve quadratic equation for scaling factor of velocities
-            a = 1.
-            b = 1.
-            det = 1.
-            if (self.hop_rescale == "velocity"):
-                a = np.sum(self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
-                b = 2. * np.sum(self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] \
-                    * self.mol.vel[0:self.mol.nat_qm], axis=1))
-                c = 2. * pot_diff
-                det = b ** 2. - 4. * a * c
-            elif (self.hop_rescale == "momentum"):
-                a = np.sum(1. / self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
-                b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel[0:self.mol.nat_qm], axis=1))
-                c = 2. * pot_diff
-                det = b ** 2. - 4. * a * c
-            elif (self.hop_rescale == "augment"):
-                a = np.sum(1. / self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
-                b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel[0:self.mol.nat_qm], axis=1))
-                c = 2. * pot_diff
-                det = b ** 2. - 4. * a * c
-
-            # Default: hopping is allowed
-            self.l_reject = False
-
-            # Velocities cannot be adjusted when zero kinetic energy is given
-            if (self.hop_rescale == "energy" and self.mol.ekin_qm < eps):
-                self.l_reject = True
-            # Clasically forbidden hop due to lack of kinetic energy
-            if (self.mol.ekin_qm < pot_diff):
-                self.l_reject = True
-            # Kinetic energy is enough, but there is no solution for scaling factor
-            if (det < 0.):
-                self.l_reject = True
-            # When kinetic energy is enough, velocities are always rescaled in 'augment' case
-            if (self.hop_rescale == "augment" and self.mol.ekin_qm > pot_diff):
-                self.l_reject = False
-
-            if (self.l_reject):
-                # Record event for frustrated hop
-                if (self.mol.ekin_qm < pot_diff):
-                    self.event["HOP"].append(f"Reject hopping: smaller kinetic energy than potential energy difference between {self.rstate} and {self.rstate_old}")
-                # Set scaling constant with respect to 'hop_reject'
-                if (self.hop_reject == "keep"):
-                    self.event["HOP"].append("Reject hopping: no solution to find rescale factor, velocity is not changed")
-                elif (self.hop_reject == "reverse"):
-                    # x = - 1 when 'hop_rescale' is 'energy', otherwise x = - b / a
-                    self.event["HOP"].append("Reject hopping: no solution to find rescale factor, velocity is reversed along coupling direction")
-                    x = - b / a
-                # Recover old running state
-                self.l_hop = False
-                self.rstate = self.rstate_old
-                bo_list[0] = self.rstate
-            else:
-                if (self.hop_rescale == "energy" or (det < 0. and self.hop_rescale == "augment")):
-                    if (det < 0.):
-                        self.event["HOP"].append("Accept hopping: no solution to find rescale factor, but velocity is simply rescaled")
-                    x = np.sqrt(1. - pot_diff / self.mol.ekin_qm)
-                else:
-                    if (b < 0.):
-                        x = 0.5 * (- b - np.sqrt(det)) / a
-                    else:
-                        x = 0.5 * (- b + np.sqrt(det)) / a
-
-            # Rescale velocities for QM atoms
-            if (not (self.hop_reject == "keep" and self.l_reject)):
-                if (self.hop_rescale == "energy"):
-                    self.mol.vel[0:self.mol.nat_qm] *= x
-
-                elif (self.hop_rescale == "velocity"):
-                    self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate]
-
-                elif (self.hop_rescale == "momentum"):
-                    self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate] / \
-                        self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
-
-                elif (self.hop_rescale == "augment"):
-                    if (det > 0. or self.mol.ekin_qm < pot_diff):
-                        self.mol.vel[0:self.mol.nat_qm] += x * self.mol.nac[self.rstate_old, self.rstate] / \
-                            self.mol.mass[0:self.mol.nat_qm].reshape((-1, 1))
-                    else:
-                        self.mol.vel[0:self.mol.nat_qm] *= x
-
-            # Update kinetic energy
-            self.mol.update_kinetic()
 
         # Record hopping event
         if (self.rstate != self.rstate_old):
