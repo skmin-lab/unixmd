@@ -340,38 +340,28 @@ class CPA(object):
             + "".join([f'{states.energy:15.8f}' for states in self.mol.states])
         typewriter(tmp, unixmd_dir, "MDENERGY", "a")
 
-        if (self.md_type != "BOMD"):
-            # Write BOCOEF, BOPOP, BOCOH files
-            if (self.elec_object == "density"):
+        # Write BOCOEF, BOPOP, BOCOH files
+        if (self.elec_object == "density"):
+            tmp = f'{istep + 1:9d}' + "".join([f'{self.mol.rho.real[ist, ist]:15.8f}' for ist in range(self.mol.nst)])
+            typewriter(tmp, unixmd_dir, "BOPOP", "a")
+            tmp = f'{istep + 1:9d}' + "".join([f"{self.mol.rho.real[ist, jst]:15.8f}{self.mol.rho.imag[ist, jst]:15.8f}" \
+                for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
+            typewriter(tmp, unixmd_dir, "BOCOH", "a")
+        elif (self.elec_object == "coefficient"):
+            tmp = f'{istep + 1:9d}' + "".join([f'{states.coef.real:15.8f}{states.coef.imag:15.8f}' \
+                for states in self.mol.states])
+            typewriter(tmp, unixmd_dir, "BOCOEF", "a")
+            if (self.l_print_dm):
                 tmp = f'{istep + 1:9d}' + "".join([f'{self.mol.rho.real[ist, ist]:15.8f}' for ist in range(self.mol.nst)])
                 typewriter(tmp, unixmd_dir, "BOPOP", "a")
                 tmp = f'{istep + 1:9d}' + "".join([f"{self.mol.rho.real[ist, jst]:15.8f}{self.mol.rho.imag[ist, jst]:15.8f}" \
                     for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
                 typewriter(tmp, unixmd_dir, "BOCOH", "a")
-            elif (self.elec_object == "coefficient"):
-                tmp = f'{istep + 1:9d}' + "".join([f'{states.coef.real:15.8f}{states.coef.imag:15.8f}' \
-                    for states in self.mol.states])
-                typewriter(tmp, unixmd_dir, "BOCOEF", "a")
-                if (self.l_print_dm):
-                    tmp = f'{istep + 1:9d}' + "".join([f'{self.mol.rho.real[ist, ist]:15.8f}' for ist in range(self.mol.nst)])
-                    typewriter(tmp, unixmd_dir, "BOPOP", "a")
-                    tmp = f'{istep + 1:9d}' + "".join([f"{self.mol.rho.real[ist, jst]:15.8f}{self.mol.rho.imag[ist, jst]:15.8f}" \
-                        for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
-                    typewriter(tmp, unixmd_dir, "BOCOH", "a")
 
-            # Write NACME file
-            tmp = f'{istep + 1:10d}' + "".join([f'{self.mol.nacme[ist, jst]:15.8f}' \
-                for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
-            typewriter(tmp, unixmd_dir, "NACME", "a")
-
-            # Write NACV file
-            if (not self.mol.l_nacme and self.verbosity >= 2):
-                for ist in range(self.mol.nst):
-                    for jst in range(ist + 1, self.mol.nst):
-                        tmp = f'{self.mol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}NACV' + \
-                            "".join(["\n" + f'{self.mol.symbols[iat]:5s}' + \
-                            "".join([f'{self.mol.nac[ist, jst, iat, isp]:15.8f}' for isp in range(self.mol.ndim)]) for iat in range(self.mol.nat_qm)])
-                        typewriter(tmp, unixmd_dir, f"NACV_{ist}_{jst}", "a")
+        # Write NACME file
+        tmp = f'{istep + 1:10d}' + "".join([f'{self.mol.nacme[ist, jst]:15.8f}' \
+            for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
+        typewriter(tmp, unixmd_dir, "NACME", "a")
 
     def write_final_xyz(self, unixmd_dir, istep):
         """ Write final positions and velocities

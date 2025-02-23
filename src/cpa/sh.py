@@ -255,9 +255,9 @@ class SH(CPA):
     def update_energy(self):
         """ Routine to update the energy of molecules in surface hopping dynamics
         """
-        # Update kinetic energy
-        self.mol.update_kinetic()
-        self.mol.epot = self.mol.states[self.rstate].energy
+        # The kinetic energy is already updated in cl_update_velocity method
+        # In CPA, the nuclei follows the ground state of the system
+        self.mol.epot = self.mol.states[0].energy
         self.mol.etot = self.mol.epot + self.mol.ekin
 
     def write_md_output(self, unixmd_dir, istep):
