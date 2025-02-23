@@ -68,9 +68,6 @@ class CPA(object):
 
         self.l_print_dm = l_print_dm
 
-        # TODO : self.rforce may not be needed
-        self.rforce = np.zeros((self.mol.nat, self.mol.ndim))
-
         self.out_freq = out_freq
         self.verbosity = verbosity
 
@@ -129,16 +126,21 @@ class CPA(object):
 
         return base_dir[0], unixmd_dir[0]
 
-    def cl_update_position(self):
+    def cl_update_position(self, traj, istep):
         """ Routine to update nuclear positions
-        """
-        self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.ndim)
-        self.mol.pos += self.dt * self.mol.vel
 
-    def cl_update_velocity(self):
-        """ Routine to update nuclear velocities
+            :param object traj: Trajectory object containing the calculator and trajectory
+            :param integer istep: Current MD step
         """
-        self.mol.vel += 0.5 * self.dt * self.rforce / np.column_stack([self.mol.mass] * self.mol.ndim)
+        self.mol.pos = np.copy(traj.pos[istep])
+
+    def cl_update_velocity(self, traj, istep):
+        """ Routine to update nuclear velocities
+
+            :param object traj: Trajectory object containing the calculator and trajectory
+            :param integer istep: Current MD step
+        """
+        self.mol.vel = np.copy(traj.vel[istep])
         self.mol.update_kinetic()
 
 #    def calculate_temperature(self):

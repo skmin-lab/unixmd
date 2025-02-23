@@ -113,6 +113,10 @@ class SH(CPA):
 
         # Calculate initial input geometry at t = 0.0 s
         self.istep = -1
+
+        self.cl_update_position(traj, self.istep)
+        self.cl_update_velocity(traj, self.istep)
+
         self.mol.reset_bo(qm.calc_coupling)
         qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False, traj=traj)
         if (self.mol.l_qmmm and mm != None):
@@ -146,8 +150,7 @@ class SH(CPA):
         # Main MD loop
         for istep in range(self.istep, self.nsteps):
 
-            self.calculate_force()
-            self.cl_update_position()
+            self.cl_update_position(traj, istep)
 
             self.mol.backup_bo(qm.calc_coupling)
             self.mol.reset_bo(qm.calc_coupling)
@@ -155,8 +158,7 @@ class SH(CPA):
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
-            self.calculate_force()
-            self.cl_update_velocity()
+            self.cl_update_velocity(traj, istep)
 
             el_run(self)
 
@@ -389,7 +391,7 @@ class SH(CPA):
     def calculate_force(self):
         """ Routine to calculate the forces
         """
-        self.rforce = np.copy(self.mol.states[self.rstate].force)
+        pass
 
     def update_energy(self):
         """ Routine to update the energy of molecules in surface hopping dynamics
