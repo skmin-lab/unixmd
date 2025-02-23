@@ -103,12 +103,6 @@ class SH(CPA):
             if (self.mol.ekin_qm > eps):
                 self.correct_dec_edc()
 
-        if (self.l_hop):
-            if (qm.re_calc):
-                qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=True, traj=traj)
-            if (self.mol.l_qmmm and mm != None):
-                mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=True)
-
         self.update_energy()
 
         self.write_md_output(unixmd_dir, self.istep)
@@ -141,12 +135,6 @@ class SH(CPA):
                 # If kinetic is 0, coefficient/density matrix are update into itself
                 if (self.mol.ekin_qm > eps):
                     self.correct_dec_edc()
-
-            if (self.l_hop):
-                if (qm.re_calc):
-                    qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=True, traj=traj)
-                if (self.mol.l_qmmm and mm != None):
-                    mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=True)
 
             self.update_energy()
 
