@@ -1,5 +1,5 @@
 from __future__ import division
-from build.el_propagator_ct import el_run
+from lib.libctmqc import el_run
 from mqc_qed.mqc import MQC_QED
 from misc import eps, au_to_K, au_to_A, call_name, typewriter, gaussian1d
 import os, shutil, textwrap

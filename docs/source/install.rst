@@ -38,14 +38,7 @@ command in the top-level directory of the program which contains setup.py file.
 .. code-block:: bash
 
    $ cd unixmd/
-   $ python3 setup.py build_ext -b ./src/build
-
-If you want to run polariton dynamics, first build PyUNIxMD as above
-and then set 'do_qed = True' in setup.py and compile using the following command:
-
-.. code-block:: bash
-
-   $ python3 setup.py build_qed_ext -b ./src/build_qed
+   $ python3 setup.py build_ext -b ./src/lib
 
 You can select the type of math libraries and the path of math libraries by modifying **math_lib_type** and **math_lib_dir**
 defined in the setup.py file as follows:

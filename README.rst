@@ -37,14 +37,7 @@ You can build PyUNIxMD by the following command.
 
 :: 
 
-  $ python3 setup.py build_ext -b ./src/build
-
-If you want to run polariton dynamics, first build PyUNIxMD as above
-and then set 'do_qed = True' in setup.py and compile using the following command:
-
-:: 
-
-  $ python3 setup.py build_qed_ext -b ./src/build_qed
+  $ python3 setup.py build_ext -b ./src/lib/
 
 Test
 ====

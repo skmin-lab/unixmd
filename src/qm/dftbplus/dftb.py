@@ -1,5 +1,5 @@
 from __future__ import division
-from build.cioverlap import *
+from lib.libcioverlap import wf_overlap
 from qm.dftbplus.dftbplus import DFTBplus
 from qm.dftbplus.dftbpar import spin_w, spin_w_lc, onsite_uu, onsite_ud, max_l
 from misc import data, eps, eV_to_au, call_name

@@ -11,16 +11,13 @@ math_lib_type = "mkl"
 math_lib_dir = "${MKLROOT}/lib/intel64/"
 #math_lib_dir = "/my_disk/my_name/lapack/"
 
-# Selects whether binaries for QED is built separately; True, False
-do_qed = False
+sourcefile1 = ["./src/lib/mqc/el_propagator.pyx", "./src/lib/mqc/rk4.c", "./src/lib/mqc/exponential.c"]
+sourcefile2 = ["./src/lib/mqc/el_propagator_xf.pyx", "./src/lib/mqc/rk4_xf.c"]
+sourcefile3 = ["./src/lib/mqc/el_propagator_ct.pyx", "./src/lib/mqc/rk4_ct.c"]
+sourcefile4 = ["./src/lib/cioverlap/cioverlap.pyx", "./src/lib/cioverlap/tdnac.c"]
 
-sourcefile1 = ["./src/mqc/el_prop/el_propagator.pyx", "./src/mqc/el_prop/rk4.c", "./src/mqc/el_prop/exponential.c"]
-sourcefile2 = ["./src/mqc/el_prop/el_propagator_xf.pyx", "./src/mqc/el_prop/rk4_xf.c"]
-sourcefile3 = ["./src/mqc/el_prop/el_propagator_ct.pyx", "./src/mqc/el_prop/rk4_ct.c"]
-sourcefile4 = ["./src/qm/cioverlap/cioverlap.pyx", "./src/qm/cioverlap/tdnac.c"]
-
-sourcefile1_qed = ["./src/mqc_qed/el_prop/el_propagator.pyx", "./src/mqc_qed/el_prop/rk4.c", "./src/mqc_qed/el_prop/exponential.c"]
-sourcefile2_qed = ["./src/mqc_qed/el_prop/el_propagator_xf.pyx", "./src/mqc_qed/el_prop/rk4_xf.c", "./src/mqc_qed/el_prop/exponential_xf.c"]
+sourcefile1_qed = ["./src/lib/mqc_qed/el_propagator.pyx", "./src/lib/mqc_qed/rk4.c", "./src/lib/mqc_qed/exponential.c"]
+sourcefile2_qed = ["./src/lib/mqc_qed/el_propagator_xf.pyx", "./src/lib/mqc_qed/rk4_xf.c", "./src/lib/mqc_qed/exponential_xf.c"]
 
 # External libraries to be linked
 libs = []
@@ -43,26 +40,19 @@ else:
     raise ValueError (f"( setup.py ) {error_message} ( {error_vars} )")
 
 extensions = [
-    Extension("el_propagator", sources=sourcefile1,  include_dirs=[np.get_include()], \
+    # Electronic propagation in MQC dynamics
+    Extension("libmqc", sources=sourcefile1,  include_dirs=[np.get_include()], \
         libraries=libs, library_dirs=lib_dirs),
-    Extension("el_propagator_xf", sources=sourcefile2, include_dirs=[np.get_include()]),
-    Extension("el_propagator_ct", sources=sourcefile3, include_dirs=[np.get_include()]),
-    Extension("cioverlap", sources=sourcefile4, include_dirs=[np.get_include()], \
-        libraries=libs, library_dirs=lib_dirs, extra_compile_args=extra_flags)
+    Extension("libmqcxf", sources=sourcefile2, include_dirs=[np.get_include()]),
+    Extension("libctmqc", sources=sourcefile3, include_dirs=[np.get_include()]),
+    Extension("libcioverlap", sources=sourcefile4, include_dirs=[np.get_include()], \
+        libraries=libs, library_dirs=lib_dirs, extra_compile_args=extra_flags),
+    # Electronic propagation in MQC_QED dynamics
+    Extension("libmqc_qed", sources=sourcefile1_qed, include_dirs=[np.get_include()]),
+    Extension("libmqcxf_qed", sources=sourcefile2_qed, include_dirs=[np.get_include()])
 ]
 
-extensions_qed = [
-    Extension("el_propagator", sources=sourcefile1_qed, include_dirs=[np.get_include()]),
-    Extension("el_propagator_xf", sources=sourcefile2_qed, include_dirs=[np.get_include()])
-]
-
-if (not do_qed):
-    setup(
-        cmdclass = {"build_ext": build_ext},
-        ext_modules = extensions
-    )
-else:
-    setup(
-        cmdclass = {"build_qed_ext": build_ext},
-        ext_modules = extensions_qed
-    )
+setup(
+    cmdclass = {"build_ext": build_ext},
+    ext_modules = extensions
+)

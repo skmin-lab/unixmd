@@ -1,5 +1,5 @@
 from __future__ import division
-from build.cioverlap import wf_overlap 
+from lib.libcioverlap import wf_overlap
 from qm.gaussian09.gaussian09 import Gaussian09
 from misc import au_to_A, eV_to_au, call_name
 import os, shutil, re, textwrap, subprocess
