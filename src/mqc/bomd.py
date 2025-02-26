@@ -129,16 +129,22 @@ class BOMD(MQC):
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
 
-    def save_bin(self, samp_bin_dir, istep):
+    def save_bin(self, samp_bin_dir, l_coupling, istep):
         """ Routine to save the calculator and trajectory for each time step
 
             :param string samp_bin_dir: Name of directory where the calculator and trajectory are saved
+            :param boolean l_coupling: Logical for calculation of nonadiabatic couplings
             :param integer istep: Current MD step
         """
         filename = os.path.join(samp_bin_dir, f"QM.{istep + 1}.bin")
-        with open(filename, "wb") as f:
-            pickle.dump({"energy":np.array([states.energy for states in self.mol.states]), \
-                "force":self.rforce, "nacme":self.mol.nacme}, f)
+        if (l_coupling):
+            with open(filename, "wb") as f:
+                pickle.dump({"energy":np.array([states.energy for states in self.mol.states]), \
+                    "force":self.rforce, "nacme":self.mol.nacme}, f)
+        else:
+            with open(filename, "wb") as f:
+                pickle.dump({"energy":np.array([states.energy for states in self.mol.states]), \
+                    "force":self.rforce, f)
 
         filename = os.path.join(samp_bin_dir, f"RV.{istep + 1}.bin")
         with open(filename, "wb") as f:
