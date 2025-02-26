@@ -70,11 +70,11 @@ class SH(CPA):
             :param string output_dir: Name of directory where outputs to be saved.
         """
         # Initialize PyUNIxMD
-        base_dir, unixmd_dir = self.run_init(qm, mm, output_dir)
-        bo_list = [self.rstate]
         qm.calc_coupling = True
         qm.calc_tdp = False
         qm.calc_tdp_grad = False
+        base_dir, unixmd_dir = self.run_init(qm, mm, output_dir)
+        bo_list = [self.rstate]
         self.print_init(traj, qm, mm)
 
         # Read binary files to obtain the calculator and trajectory
