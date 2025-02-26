@@ -90,13 +90,14 @@ class MQC(object):
         # Initialize coefficients and densities
         self.mol.get_coefficient(init_coef, self.istate)
 
-    def run_init(self, qm, mm, output_dir, l_save_bin, l_save_qm_log, l_save_mm_log, \
+    def run_init(self, qm, mm, output_dir, l_coupling, l_save_bin, l_save_qm_log, l_save_mm_log, \
         l_save_scr, restart):
         """ Initialize MQC dynamics
 
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
             :param string output_dir: Location of input directory
+            :param boolean l_coupling: Logical for calculation of nonadiabatic couplings
             :param boolean l_save_bin: Logical for saving the calculator and trajectory
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
@@ -118,6 +119,14 @@ class MQC(object):
                 error_message = "CTMQC or Ehrenfest dynamics needs evaluation of NACVs, check your QM object!"
                 error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}"
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        # Check compatibility for nonadiabatic coupling calculation in BOMD
+        if (self.md_type == "BOMD"):
+            if (l_coupling and not self.mol.l_nacme):
+                if (not self.l_adj_nac):
+                    error_message = "The phase of nonadiabatic couplings must be aligned!"
+                    error_vars = f"l_adj_nac = {self.l_adj_nac}"
+                    raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check compatibility of variables for QM and MM calculation
         if ((self.mol.l_qmmm and mm == None) or (not self.mol.l_qmmm and mm != None)):
@@ -252,11 +261,12 @@ class MQC(object):
         """
         pass
 
-    def print_init(self, qm, mm, restart):
+    def print_init(self, qm, mm, l_coupling, restart):
         """ Routine to print the initial information of dynamics
 
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
+            :param boolean l_coupling: Logical for calculation of nonadiabatic couplings
             :param string restart: Option for controlling dynamics restarting
         """
         # Print PyUNIxMD version
@@ -338,6 +348,9 @@ class MQC(object):
             dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
             dynamics_info += f"  Electronic Propagator    = {self.propagator:>16s}\n"
             dynamics_info += f"  Propagation Scheme       = {self.elec_object:>16s}\n"
+        else:
+            if (l_coupling):
+                dynamics_info += f"  Nonadiabatic Couplings   = {'Yes':>16s}\n"
 
         # Print surface hopping variables
         if (self.md_type in ["SH", "SHXF"]):

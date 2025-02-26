@@ -664,7 +664,7 @@ class CT(MQC):
             :param string restart: Option for controlling dynamics restarting
         """
         # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm, restart)
+        super().print_init(qm, mm, False, restart)
 
         # Print CTMQC info.
         ct_info = textwrap.dedent(f"""\

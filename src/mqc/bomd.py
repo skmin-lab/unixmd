@@ -19,7 +19,7 @@ class BOMD(MQC):
         :param integer verbosity: Verbosity of output
     """
     def __init__(self, molecule, thermostat=None, istate=0, dt=0.5, nsteps=1000, \
-        l_adj_nac=True ,unit_dt="fs", out_freq=1, verbosity=0):
+        l_adj_nac=False, unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, thermostat, istate, dt, nsteps, None, None, None, \
             False, l_adj_nac, None, unit_dt, out_freq, verbosity)
@@ -40,13 +40,13 @@ class BOMD(MQC):
         """
         # Initialize PyUNIxMD
         base_dir, unixmd_dir, samp_bin_dir, qm_log_dir, mm_log_dir = \
-            self.run_init(qm, mm, output_dir, l_save_bin, l_save_qm_log, l_save_mm_log, \
-            l_save_scr, restart)
+            self.run_init(qm, mm, output_dir, l_coupling, l_save_bin, l_save_qm_log, \
+            l_save_mm_log, l_save_scr, restart)
         bo_list = [self.istate]
         qm.calc_coupling = l_coupling
         qm.calc_tdp = False
         qm.calc_tdp_grad = False
-        self.print_init(qm, mm, restart)
+        self.print_init(qm, mm, l_coupling, restart)
 
         if (restart == None):
             # Calculate initial input geometry at t = 0.0 s
@@ -157,15 +157,16 @@ class BOMD(MQC):
         self.mol.epot = self.mol.states[self.istate].energy
         self.mol.etot = self.mol.epot + self.mol.ekin
 
-    def print_init(self, qm, mm, restart):
+    def print_init(self, qm, mm, l_coupling, restart):
         """ Routine to print the initial information of dynamics
 
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
+            :param boolean l_coupling: Logical for calculation of nonadiabatic couplings
             :param string restart: Option for controlling dynamics restarting
         """
         # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm, restart)
+        super().print_init(qm, mm, l_coupling, restart)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
