@@ -137,7 +137,7 @@ class MQC(object):
         output_dir = os.path.expanduser(output_dir)
         base_dir = []
         unixmd_dir = []
-        traj_bin_dir = []
+        samp_bin_dir = []
         qm_log_dir = []
         mm_log_dir = [None]
 
@@ -154,7 +154,7 @@ class MQC(object):
 
         for idir in base_dir:
             unixmd_dir.append(os.path.join(idir, "md"))
-            traj_bin_dir.append(os.path.join(idir, "traj_bin"))
+            samp_bin_dir.append(os.path.join(idir, "samp_bin"))
             qm_log_dir.append(os.path.join(idir, "qm_log"))
             if (self.mol.l_qmmm and mm != None):
                 mm_log_dir.append(os.path.join(idir, "mm_log"))
@@ -170,9 +170,9 @@ class MQC(object):
 
             # For trajectory binary directory
             if (l_save_bin):
-                for bin_idir in traj_bin_dir:
-                    if (not os.path.exists(bin_idir)):
-                        os.makedirs(bin_idir)
+                for samp_idir in samp_bin_dir:
+                    if (not os.path.exists(samp_idir)):
+                        os.makedirs(samp_idir)
 
             # For QM output directory
             if (l_save_qm_log):
@@ -196,11 +196,11 @@ class MQC(object):
                 self.touch_file(md_idir)
 
             # For trajectory binary directory
-            for bin_idir in traj_bin_dir:
-                if (os.path.exists(bin_idir)):
-                    shutil.move(bin_idir, bin_idir + "_old_" + str(os.getpid()))
+            for samp_idir in samp_bin_dir:
+                if (os.path.exists(samp_idir)):
+                    shutil.move(samp_idir, samp_idir + "_old_" + str(os.getpid()))
                 if (l_save_bin):
-                    os.makedirs(bin_idir)
+                    os.makedirs(samp_idir)
 
             # For QM output directory
             for qm_idir in qm_log_dir:
@@ -220,9 +220,9 @@ class MQC(object):
         os.chdir(base_dir[0])
 
         if (self.md_type != "CT"):
-            return base_dir[0], unixmd_dir[0], traj_bin_dir[0], qm_log_dir[0], mm_log_dir[0]
+            return base_dir[0], unixmd_dir[0], samp_bin_dir[0], qm_log_dir[0], mm_log_dir[0]
         else:
-            return base_dir, unixmd_dir, traj_bin_dir, qm_log_dir, mm_log_dir
+            return base_dir, unixmd_dir, samp_bin_dir, qm_log_dir, mm_log_dir
 
     def cl_update_position(self):
         """ Routine to update nuclear positions

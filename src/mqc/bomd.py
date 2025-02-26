@@ -39,7 +39,7 @@ class BOMD(MQC):
             :param string restart: Option for controlling dynamics restarting
         """
         # Initialize PyUNIxMD
-        base_dir, unixmd_dir, traj_bin_dir, qm_log_dir, mm_log_dir = \
+        base_dir, unixmd_dir, samp_bin_dir, qm_log_dir, mm_log_dir = \
             self.run_init(qm, mm, output_dir, l_save_bin, l_save_qm_log, l_save_mm_log, \
             l_save_scr, restart)
         bo_list = [self.istate]
@@ -61,7 +61,7 @@ class BOMD(MQC):
 
             self.update_energy()
             if (l_save_bin):
-                self.save_bin(traj_bin_dir, self.istep)
+                self.save_bin(samp_bin_dir, self.istep)
 
             self.write_md_output(unixmd_dir, self.istep)
             self.print_step(self.istep)
@@ -105,7 +105,7 @@ class BOMD(MQC):
 
             self.update_energy()
             if (l_save_bin):
-                self.save_bin(traj_bin_dir, istep)
+                self.save_bin(samp_bin_dir, istep)
 
             if ((istep + 1) % self.out_freq == 0):
                 self.write_md_output(unixmd_dir, istep)
@@ -129,18 +129,18 @@ class BOMD(MQC):
                 if (os.path.exists(tmp_dir)):
                     shutil.rmtree(tmp_dir)
 
-    def save_bin(self, traj_bin_dir, istep):
-        """ Routine to save QM and trajectory data for each time step
+    def save_bin(self, samp_bin_dir, istep):
+        """ Routine to save the calculator and trajectory for each time step
 
-            :param string traj_bin_dir: Name of directory where QM and trajectory data are saved
+            :param string samp_bin_dir: Name of directory where the calculator and trajectory are saved
             :param integer istep: Current MD step
         """
-        filename = os.path.join(traj_bin_dir, f"QM.{istep + 1}.bin")
+        filename = os.path.join(samp_bin_dir, f"QM.{istep + 1}.bin")
         with open(filename, "wb") as f:
             pickle.dump({"energy":np.array([states.energy for states in self.mol.states]), \
                 "force":self.rforce, "nacme":self.mol.nacme}, f)
 
-        filename = os.path.join(traj_bin_dir, f"RV.{istep + 1}.bin")
+        filename = os.path.join(samp_bin_dir, f"RV.{istep + 1}.bin")
         with open(filename, "wb") as f:
             pickle.dump({"pos":self.mol.pos, "vel":self.mol.vel}, f)
 

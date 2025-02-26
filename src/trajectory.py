@@ -6,29 +6,31 @@ import pickle
 class Trajectory(object):
     """ Class for a trajectory object including the calculator and trajectory
 
+        :param integer samp_index: Initial index set from sampling data for the dynamics with CPA
+        :param string samp_bin_dir: Name of directory where the calculator and trajectory are saved
     """
-    def __init__(self, index=None, traj_bin_dir="./"):
+    def __init__(self, samp_index=None, samp_bin_dir="./"):
         # Save name of Trajectory class
         self.traj_type = self.__class__.__name__
 
         # Initialize input variables
-        self.index = index
+        self.samp_index = samp_index
 
-        if (self.index == None):
-            error_message = "index must be given in running script!"
-            error_vars = f"index = {self.index}"
+        if (self.samp_index == None):
+            error_message = "samp_index must be given in running script!"
+            error_vars = f"samp_index = {self.samp_index}"
             raise ValueError (f"( {self.traj_type}.{call_name()} ) {error_message} ( {error_vars} )")
         else:
-            if (not isinstance(self.index, int)):
-                error_message = "index must be integer!"
-                error_vars = f"index = {self.index}"
+            if (not isinstance(self.samp_index, int)):
+                error_message = "samp_index must be integer!"
+                error_vars = f"samp_index = {self.samp_index}"
                 raise TypeError (f"( {self.traj_type}.{call_name()} ) {error_message} ( {error_vars} )")
-                if (self.index < 0):
-                    error_message = "index must not be smaller than 0"
-                    error_vars = f"index = {self.index}"
+                if (self.samp_index < 0):
+                    error_message = "samp_index must not be smaller than 0"
+                    error_vars = f"samp_index = {self.samp_index}"
                     raise ValueError (f"( {self.traj_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        self.traj_bin_dir = traj_bin_dir
+        self.samp_bin_dir = samp_bin_dir
 
         # Initialize the calculator and trajectory variables
         self.energy = []
@@ -43,8 +45,8 @@ class Trajectory(object):
 
             :param integer nsteps: Total step of nuclear propagation
         """
-        for istep in range(self.index + 1, self.index + nsteps + 1):
-            QM_path = os.path.join(self.traj_bin_dir, f"QM.{istep}.bin")
+        for istep in range(self.samp_index + 1, self.samp_index + nsteps + 1):
+            QM_path = os.path.join(self.samp_bin_dir, f"QM.{istep}.bin")
             with open(QM_path, "rb") as f:
                 data = pickle.load(f)
 
@@ -52,7 +54,7 @@ class Trajectory(object):
             self.force.append(data["force"])
             self.nacme.append(data["nacme"])
 
-        QM_path = os.path.join(self.traj_bin_dir, f"QM.{self.index}.bin")
+        QM_path = os.path.join(self.samp_bin_dir, f"QM.{self.samp_index}.bin")
         with open(QM_path, "rb") as f:
             data = pickle.load(f)
 
@@ -65,15 +67,15 @@ class Trajectory(object):
 
             :param integer nsteps: Total step of nuclear propagation
         """
-        for istep in range(self.index + 1, self.index + nsteps + 1):
-            RV_path = os.path.join(self.traj_bin_dir, f"RV.{istep}.bin")
+        for istep in range(self.samp_index + 1, self.samp_index + nsteps + 1):
+            RV_path = os.path.join(self.samp_bin_dir, f"RV.{istep}.bin")
             with open(RV_path, "rb") as f:
                 data = pickle.load(f)
 
             self.pos.append(data["pos"])
             self.vel.append(data["vel"])
 
-        RV_path = os.path.join(self.traj_bin_dir, f"RV.{self.index}.bin")
+        RV_path = os.path.join(self.samp_bin_dir, f"RV.{self.samp_index}.bin")
         with open(RV_path, "rb") as f:
             data = pickle.load(f)
 
