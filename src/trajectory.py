@@ -82,4 +82,23 @@ class Trajectory(object):
         self.pos.append(data["pos"])
         self.vel.append(data["vel"])
 
+    def print_init(self):
+        """ Print initial information about Trajectory class
+        """
+        traj_info = textwrap.dedent(f"""\
+        {"-" * 68}
+        {"Trajectory Information":>45s}
+        {"-" * 68}
+          Sampling Index           = {self.samp_index:>16d}
+          Sampling Bin. Directory  = {self.samp_bin_dir}
+          Force Computation Method = {self.force_level:>16s}
+        """)
+
+        # Print RWA information
+        if (not self.l_crt):
+            qed_info += f"  Rotating Wave Approx.    = {'Yes':>16s}\n"
+        else:
+            qed_info += f"  Rotating Wave Approx.    = {'No':>16s}\n"
+        print (qed_info, flush=True)
+
 

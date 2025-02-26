@@ -39,13 +39,13 @@ class BOMD(MQC):
             :param string restart: Option for controlling dynamics restarting
         """
         # Initialize PyUNIxMD
+        qm.calc_coupling = l_coupling
+        qm.calc_tdp = False
+        qm.calc_tdp_grad = False
         base_dir, unixmd_dir, samp_bin_dir, qm_log_dir, mm_log_dir = \
             self.run_init(qm, mm, output_dir, l_coupling, l_save_bin, l_save_qm_log, \
             l_save_mm_log, l_save_scr, restart)
         bo_list = [self.istate]
-        qm.calc_coupling = l_coupling
-        qm.calc_tdp = False
-        qm.calc_tdp_grad = False
         self.print_init(qm, mm, l_coupling, restart)
 
         if (restart == None):
@@ -144,7 +144,7 @@ class BOMD(MQC):
         else:
             with open(filename, "wb") as f:
                 pickle.dump({"energy":np.array([states.energy for states in self.mol.states]), \
-                    "force":self.rforce, f)
+                    "force":self.rforce}, f)
 
         filename = os.path.join(samp_bin_dir, f"RV.{istep + 1}.bin")
         with open(filename, "wb") as f:

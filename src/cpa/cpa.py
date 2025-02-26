@@ -203,7 +203,7 @@ class CPA(object):
           Electronic Step          = {self.nesteps:>16d}
           Electronic Propagator    = {self.propagator:>16s}
           Propagation Scheme       = {self.elec_object:>16s}
-        """), "  ")
+        """)
 
         # Print ad-hoc decoherence variables
         if (self.md_type == "SH"):

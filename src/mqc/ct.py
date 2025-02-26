@@ -116,16 +116,14 @@ class CT(MQC):
             :param string restart: Option for controlling dynamics restarting
         """
         # Initialize PyUNIxMD
+        qm.calc_coupling = True
+        qm.calc_tdp = False
+        qm.calc_tdp_grad = False
         abs_path_output_dir = os.path.join(os.getcwd(), output_dir)
         base_dirs, unixmd_dirs, traj_bin_dirs, qm_log_dirs, mm_log_dirs = \
             self.run_init(qm, mm, output_dir, False, l_save_qm_log, l_save_mm_log, \
             l_save_scr, restart)
-
         bo_list = [ist for ist in range(self.nst)]
-        qm.calc_coupling = True
-        qm.calc_tdp = False
-        qm.calc_tdp_grad = False
-
         self.print_init(qm, mm, restart)
 
         if (restart == None):
