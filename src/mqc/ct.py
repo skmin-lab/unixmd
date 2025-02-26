@@ -150,7 +150,7 @@ class CT(MQC):
 
                 self.mol = self.mols[itraj]
 
-                self.write_md_output(itraj, unixmd_dirs[itraj], self.istep)
+                self.write_md_output(itraj, unixmd_dirs[itraj], qm.calc_coupling, self.istep)
 
                 self.print_step(self.istep, itraj)
 
@@ -159,7 +159,7 @@ class CT(MQC):
             # Reset initial time step to t = 0.0 s
             self.istep = -1
             for itraj in range(self.ntrajs):
-                self.write_md_output(itraj, unixmd_dirs[itraj], self.istep)
+                self.write_md_output(itraj, unixmd_dirs[itraj], qm.calc_coupling, self.istep)
                 self.print_step(self.istep, itraj)
 
         elif (restart == "append"):
@@ -209,7 +209,7 @@ class CT(MQC):
                 self.mol = self.mols[itraj]
 
                 if ((istep + 1) % self.out_freq == 0):
-                    self.write_md_output(itraj, unixmd_dirs[itraj], istep)
+                    self.write_md_output(itraj, unixmd_dirs[itraj], qm.calc_coupling, istep)
                     self.print_step(istep, itraj)
                 if (istep == self.nsteps - 1):
                     self.write_final_xyz(unixmd_dirs[itraj], istep)
@@ -574,15 +574,16 @@ class CT(MQC):
                     error_vars = f"init_coefs = {self.init_coefs}"
                     raise TypeError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
-    def write_md_output(self, itrajectory, unixmd_dir, istep):
+    def write_md_output(self, itrajectory, unixmd_dir, calc_coupling, istep):
         """ Write output files
 
             :param integer itrajectory: Index for trajectories
             :param string unixmd_dir: PyUNIxMD directory
+            :param boolean calc_coupling: Check whether the dynamics includes coupling calculation
             :param integer istep: Current MD step
         """
         # Write the common part
-        super().write_md_output(unixmd_dir, istep)
+        super().write_md_output(unixmd_dir, calc_coupling, istep)
 
         # Write time-derivative BO population
         self.write_dotpop(itrajectory, unixmd_dir, istep)

@@ -202,7 +202,7 @@ class MQC(object):
                     shutil.move(md_idir, md_idir + "_old_" + str(os.getpid()))
                 os.makedirs(md_idir)
 
-                self.touch_file(md_idir)
+                self.touch_file(md_idir, qm.calc_coupling)
 
             # For trajectory binary directory
             for samp_idir in samp_bin_dir:
@@ -406,10 +406,11 @@ class MQC(object):
             thermostat_info = "  No Thermostat: Total energy is conserved!\n"
             print (thermostat_info, flush=True)
 
-    def touch_file(self, unixmd_dir):
+    def touch_file(self, unixmd_dir, calc_coupling):
         """ Routine to write PyUNIxMD output files
 
             :param string unixmd_dir: Directory where MD output files are written
+            :param boolean calc_coupling: Check whether the dynamics includes coupling calculation
         """
         # Energy information file header
         tmp = f'{"#":5s}{"Step":9s}{"Kinetic(H)":15s}{"Potential(H)":15s}{"Total(H)":15s}' + \
@@ -432,14 +433,15 @@ class MQC(object):
                     tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
                     typewriter(tmp, unixmd_dir, "BOCOH", "w")
 
-            # NACME file header
-            tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
-            typewriter(tmp, unixmd_dir, "NACME", "w")
-
             # DOTPOPNAC file header
             if (self.verbosity >= 1):
                 tmp = f'{"#":5s} Time-derivative Density Matrix by NAC: population; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "DOTPOPNAC", "w")
+
+        if (calc_coupling):
+            # NACME file header
+            tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
+            typewriter(tmp, unixmd_dir, "NACME", "w")
 
         # file header for SH-based methods
         if (self.md_type in ["SH", "SHXF"]):
@@ -455,10 +457,11 @@ class MQC(object):
                 tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "DOTPOPDEC", "w")
 
-    def write_md_output(self, unixmd_dir, istep):
+    def write_md_output(self, unixmd_dir, calc_coupling, istep):
         """ Write output files
 
             :param string unixmd_dir: Directory where MD output files are written
+            :param boolean calc_coupling: Check whether the dynamics includes coupling calculation
             :param integer istep: Current MD step
         """
         # Write MOVIE.xyz file including positions and velocities
@@ -492,6 +495,7 @@ class MQC(object):
                         for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
                     typewriter(tmp, unixmd_dir, "BOCOH", "a")
 
+        if (calc_coupling):
             # Write NACME file
             tmp = f'{istep + 1:10d}' + "".join([f'{self.mol.nacme[ist, jst]:15.8f}' \
                 for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])

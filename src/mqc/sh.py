@@ -142,13 +142,13 @@ class SH(MQC):
 
             self.update_energy()
 
-            self.write_md_output(unixmd_dir, self.istep)
+            self.write_md_output(unixmd_dir, qm.calc_coupling, self.istep)
             self.print_step(self.istep)
 
         elif (restart == "write"):
             # Reset initial time step to t = 0.0 s
             self.istep = -1
-            self.write_md_output(unixmd_dir, self.istep)
+            self.write_md_output(unixmd_dir, qm.calc_coupling, self.istep)
             self.print_step(self.istep)
 
         elif (restart == "append"):
@@ -204,7 +204,7 @@ class SH(MQC):
             self.update_energy()
 
             if ((istep + 1) % self.out_freq == 0):
-                self.write_md_output(unixmd_dir, istep)
+                self.write_md_output(unixmd_dir, qm.calc_coupling, istep)
             if ((istep + 1) % self.out_freq == 0 or len(self.event["HOP"]) > 0):
                 self.print_step(istep)
             if (istep == self.nsteps - 1):
@@ -433,14 +433,15 @@ class SH(MQC):
         self.mol.epot = self.mol.states[self.rstate].energy
         self.mol.etot = self.mol.epot + self.mol.ekin
 
-    def write_md_output(self, unixmd_dir, istep):
+    def write_md_output(self, unixmd_dir, calc_coupling, istep):
         """ Write output files
 
             :param string unixmd_dir: PyUNIxMD directory
+            :param boolean calc_coupling: Check whether the dynamics includes coupling calculation
             :param integer istep: Current MD step
         """
         # Write the common part
-        super().write_md_output(unixmd_dir, istep)
+        super().write_md_output(unixmd_dir, calc_coupling, istep)
 
         # Write hopping-related quantities
         self.write_sh(unixmd_dir, istep)

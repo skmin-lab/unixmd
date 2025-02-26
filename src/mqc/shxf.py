@@ -207,13 +207,13 @@ class SHXF(MQC):
                 self.check_decoherence()
                 self.check_coherence()
 
-            self.write_md_output(unixmd_dir, self.istep)
+            self.write_md_output(unixmd_dir, qm.calc_coupling, self.istep)
             self.print_step(self.istep)
 
         elif (restart == "write"):
             # Reset initial time step to t = 0.0 s
             self.istep = -1
-            self.write_md_output(unixmd_dir, self.istep)
+            self.write_md_output(unixmd_dir, qm.calc_coupling, self.istep)
             self.print_step(self.istep)
 
         elif (restart == "append"):
@@ -268,7 +268,7 @@ class SHXF(MQC):
                 self.check_coherence()
 
             if ((istep + 1) % self.out_freq == 0):
-                self.write_md_output(unixmd_dir, istep)
+                self.write_md_output(unixmd_dir, qm.calc_coupling, istep)
             if ((istep + 1) % self.out_freq == 0 or len(self.event["HOP"]) > 0 or len(self.event["DECO"]) > 0):
                 self.print_step(istep)
             if (istep == self.nsteps - 1):
@@ -638,14 +638,15 @@ class SHXF(MQC):
             if (self.l_td_sigma):
                 self.sigma = np.array(self.aux.nat * [self.aux.ndim * [0.0]])
 
-    def write_md_output(self, unixmd_dir, istep):
+    def write_md_output(self, unixmd_dir, calc_coupling, istep):
         """ Write output files
 
             :param string unixmd_dir: PyUNIxMD directory
+            :param boolean calc_coupling: Check whether the dynamics includes coupling calculation
             :param integer istep: Current MD step
         """
         # Write the common part
-        super().write_md_output(unixmd_dir, istep)
+        super().write_md_output(unixmd_dir, calc_coupling, istep)
 
         # Write hopping-related quantities
         self.write_sh(unixmd_dir, istep)

@@ -63,13 +63,13 @@ class BOMD(MQC):
             if (l_save_bin):
                 self.save_bin(samp_bin_dir, self.istep)
 
-            self.write_md_output(unixmd_dir, self.istep)
+            self.write_md_output(unixmd_dir, qm.calc_coupling, self.istep)
             self.print_step(self.istep)
 
         elif (restart == "write"):
             # Reset initial time step to t = 0.0 s
             self.istep = -1
-            self.write_md_output(unixmd_dir, self.istep)
+            self.write_md_output(unixmd_dir, qm.calc_coupling, self.istep)
             self.print_step(self.istep)
 
         elif (restart == "append"):
@@ -108,7 +108,7 @@ class BOMD(MQC):
                 self.save_bin(samp_bin_dir, istep)
 
             if ((istep + 1) % self.out_freq == 0):
-                self.write_md_output(unixmd_dir, istep)
+                self.write_md_output(unixmd_dir, qm.calc_coupling, istep)
                 self.print_step(istep)
             if (istep == self.nsteps - 1):
                 self.write_final_xyz(unixmd_dir, istep)
