@@ -1,5 +1,6 @@
 from __future__ import division
 from misc import call_name
+import textwrap
 import os
 import pickle
 
@@ -87,18 +88,13 @@ class Trajectory(object):
         """
         traj_info = textwrap.dedent(f"""\
         {"-" * 68}
-        {"Trajectory Information":>45s}
+        {"Trajectory Information":>44s}
         {"-" * 68}
           Sampling Index           = {self.samp_index:>16d}
-          Sampling Bin. Directory  = {self.samp_bin_dir}
-          Force Computation Method = {self.force_level:>16s}
+          Sampling Bin. Directory  =
+            {self.samp_bin_dir}
         """)
 
-        # Print RWA information
-        if (not self.l_crt):
-            qed_info += f"  Rotating Wave Approx.    = {'Yes':>16s}\n"
-        else:
-            qed_info += f"  Rotating Wave Approx.    = {'No':>16s}\n"
-        print (qed_info, flush=True)
+        print (traj_info, flush=True)
 
 

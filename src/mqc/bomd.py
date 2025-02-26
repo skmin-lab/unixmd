@@ -55,13 +55,13 @@ class BOMD(MQC):
             qm.get_data(self.mol, base_dir, bo_list, self.dt, self.istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, self.istep, calc_force_only=False)
-            if (qm.calc_coupling):
+            if (l_coupling):
                 if (not self.mol.l_nacme):
                     self.mol.get_nacme()
 
             self.update_energy()
             if (l_save_bin):
-                self.save_bin(samp_bin_dir, self.istep)
+                self.save_bin(samp_bin_dir, l_coupling, self.istep)
 
             self.write_md_output(unixmd_dir, qm.calc_coupling, self.istep)
             self.print_step(self.istep)
@@ -84,19 +84,20 @@ class BOMD(MQC):
             self.calculate_force()
             self.cl_update_position()
 
+            self.mol.backup_bo(qm.calc_coupling)
             self.mol.reset_bo(qm.calc_coupling)
             qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False)
             if (self.mol.l_qmmm and mm != None):
                 mm.get_data(self.mol, base_dir, bo_list, istep, calc_force_only=False)
 
-            if (qm.calc_coupling):
+            if (l_coupling):
                 if (not self.mol.l_nacme and self.l_adj_nac):
                     self.mol.adjust_nac()
 
             self.calculate_force()
             self.cl_update_velocity()
 
-            if (qm.calc_coupling):
+            if (l_coupling):
                 if (not self.mol.l_nacme):
                     self.mol.get_nacme()
 
@@ -105,7 +106,7 @@ class BOMD(MQC):
 
             self.update_energy()
             if (l_save_bin):
-                self.save_bin(samp_bin_dir, istep)
+                self.save_bin(samp_bin_dir, l_coupling, istep)
 
             if ((istep + 1) % self.out_freq == 0):
                 self.write_md_output(unixmd_dir, qm.calc_coupling, istep)

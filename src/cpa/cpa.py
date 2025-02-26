@@ -150,9 +150,10 @@ class CPA(object):
         """
         pass
 
-    def print_init(self, qm, mm):
+    def print_init(self, traj, qm, mm):
         """ Routine to print the initial information of dynamics
 
+            :param object traj: Trajectory object containing the calculator and trajectory
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
         """
@@ -186,6 +187,9 @@ class CPA(object):
 
         # Print self.mol information: coordinate, velocity
         self.mol.print_init(mm)
+
+        # Print trajectory information
+        traj.print_init()
 
         # Print dynamics information
         dynamics_info = textwrap.dedent(f"""\

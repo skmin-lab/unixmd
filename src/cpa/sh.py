@@ -75,7 +75,7 @@ class SH(CPA):
         qm.calc_coupling = True
         qm.calc_tdp = False
         qm.calc_tdp_grad = False
-        self.print_init(qm, mm)
+        self.print_init(traj, qm, mm)
 
         # Read binary files to obtain the calculator and trajectory
         traj.read_QM_from_file(self.nsteps)
@@ -298,14 +298,15 @@ class SH(CPA):
             tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopnac])
             typewriter(tmp, unixmd_dir, "DOTPOPNAC", "a")
 
-    def print_init(self, qm, mm):
+    def print_init(self, traj, qm, mm):
         """ Routine to print the initial information of dynamics
 
+            :param object traj: Trajectory object containing the calculator and trajectory
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
         """
-        # Print initial information about molecule, qm, and mm
-        super().print_init(qm, mm)
+        # Print initial information about molecule, traj, qm, and mm
+        super().print_init(traj, qm, mm)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\
