@@ -41,7 +41,6 @@ class SHXF(CPA):
         :param boolean l_td_sigma: Logical to use time dependent sigma
         :param init_coef: Initial BO coefficient
         :type init_coef: double, list or complex, list
-        :param boolean l_econs_state: Logical to use identical total energies for all auxiliary trajectories
         :param string aux_econs_viol: How to treat trajectories violating the total energy conservation
         :param string unit_dt: Unit of time interval
         :param integer out_freq: Frequency of printing output
@@ -49,7 +48,7 @@ class SHXF(CPA):
     """
     def __init__(self, molecule, istate=0, dt=0.5, nsteps=1000, nesteps=20, elec_object="density", \
         propagator="rk4", l_print_dm=True, rho_threshold=0.01, sigma=None, init_coef=None, \
-        l_td_sigma=False, l_econs_state=True, aux_econs_viol="fix", unit_dt="fs", out_freq=1, verbosity=0):
+        l_td_sigma=False, aux_econs_viol="fix", unit_dt="fs", out_freq=1, verbosity=0):
         # Initialize input values
         super().__init__(molecule, istate, dt, nsteps, nesteps, elec_object, \
             propagator, l_print_dm, init_coef, unit_dt, out_freq, verbosity)
@@ -67,7 +66,6 @@ class SHXF(CPA):
 
         # Initialize XF related variables
         self.force_hop = False
-        self.l_econs_state = l_econs_state
         self.l_coh = [False] * self.mol.nst
         self.l_first = [False] * self.mol.nst
         self.l_fix = [False] * self.mol.nst
@@ -413,8 +411,6 @@ class SHXF(CPA):
                     else:
                         if (self.l_first[ist]):
                             alpha = self.mol.ekin_qm
-                            if (self.l_econs_state):
-                                alpha += self.mol.states[self.rstate].energy - self.mol.states[ist].energy
                         else:
                             ekin_old = np.sum(0.5 * self.aux.mass * np.sum(self.aux.vel_old[ist] ** 2, axis=1))
                             alpha = ekin_old + self.mol.states[ist].energy_old - self.mol.states[ist].energy
@@ -442,9 +438,9 @@ class SHXF(CPA):
                 for iat in range(self.aux.nat):
                     for isp in range(self.aux.ndim):
                         if ((np.abs(self.aux.vel[0, iat, isp] - self.aux.vel[1, iat, isp])) * self.aux.mass[iat] > eps):
-                            self.sigma[iat, isp] = np.sqrt(0.5 * np.abs(\
-                               (self.aux.pos[0, iat, isp] - self.aux.pos[1, iat, isp])/\
-                               (self.aux.vel[0, iat, isp] - self.aux.vel[1, iat, isp]))\
+                            self.sigma[iat, isp] = np.sqrt(0.5 * np.abs( \
+                                (self.aux.pos[0, iat, isp] - self.aux.pos[1, iat, isp]) \
+                                / (self.aux.vel[0, iat, isp] - self.aux.vel[1, iat, isp])) \
                                 / self.aux.mass[iat])
                         else:
                             for iat in range(self.aux.nat):

@@ -450,9 +450,9 @@ class EhXF(MQC):
                 for iat in range(self.aux.nat):
                     for isp in range(self.aux.ndim):
                         if ((np.abs(self.aux.vel[0, iat, isp] - self.aux.vel[1, iat, isp])) * self.aux.mass[iat] > eps):
-                            self.sigma[iat, isp] = np.sqrt(0.5 * np.abs(\
-                               (self.aux.pos[0, iat, isp] - self.aux.pos[1, iat, isp])/\
-                               (self.aux.vel[0, iat, isp] - self.aux.vel[1, iat, isp]))\
+                            self.sigma[iat, isp] = np.sqrt(0.5 * np.abs( \
+                                (self.aux.pos[0, iat, isp] - self.aux.pos[1, iat, isp]) \
+                                / (self.aux.vel[0, iat, isp] - self.aux.vel[1, iat, isp])) \
                                 / self.aux.mass[iat])
                         else:
                             for iat in range(self.aux.nat):
