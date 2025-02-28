@@ -12,8 +12,8 @@ class File_IO(Model):
         super(File_IO, self).__init__(None)
 
         # Set 'l_nacme' with respect to the computational method
-        # File_IO can provide NACMEs, so we do not need to get NACME
-        molecule.l_nacme = False
+        # File_IO can provide NACMEs, so we do not need to get NACVs
+        molecule.l_nacme = True
 
         # File_IO can provide the gradient of several states simultaneously
         self.re_calc = False
@@ -32,7 +32,7 @@ class File_IO(Model):
         # Assign the calculator information from trajectory to molecule object
         for ist in range(molecule.nst):
             molecule.states[ist].energy = traj.energy[istep][ist]
-        molecule.states[bo_list[0]].force = np.copy(traj.force[istep])
+        molecule.states[0].force = np.copy(traj.force[istep])
         molecule.nacme = np.copy(traj.nacme[istep])
 
 

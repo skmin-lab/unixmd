@@ -94,6 +94,7 @@ class SH(CPA):
 
         self.hop_prob()
         self.hop_check(bo_list)
+        self.evaluate_hop(bo_list)
 
         if (self.dec_correction == "idc"):
             if (self.l_hop):
@@ -125,6 +126,7 @@ class SH(CPA):
 
             self.hop_prob()
             self.hop_check(bo_list)
+            self.evaluate_hop(bo_list)
 
             if (self.dec_correction == "idc"):
                 if (self.l_hop):
@@ -185,6 +187,34 @@ class SH(CPA):
             if (self.rand > self.acc_prob[ist] and self.rand <= self.acc_prob[ist + 1]):
                 self.l_hop = True
                 self.rstate = ist
+                bo_list[0] = self.rstate
+
+    def evaluate_hop(self, bo_list):
+        """ Routine to evaluate hopping and velocity rescaling
+
+            :param integer,list bo_list: List of BO states for BO calculation
+        """
+        if (self.l_hop):
+            # Calculate potential difference between hopping states
+            pot_diff = self.mol.states[self.rstate].energy - self.mol.states[self.rstate_old].energy
+
+            # Default: hopping is allowed
+            self.l_reject = False
+
+            # Velocities cannot be adjusted when zero kinetic energy is given
+            if (self.mol.ekin_qm < eps):
+                self.l_reject = True
+            # Clasically forbidden hop due to lack of kinetic energy
+            if (self.mol.ekin_qm < pot_diff):
+                self.l_reject = True
+
+            if (self.l_reject):
+                # Record event for frustrated hop
+                if (self.mol.ekin_qm < pot_diff):
+                    self.event["HOP"].append(f"Reject hopping: smaller kinetic energy than potential energy difference between {self.rstate} and {self.rstate_old}")
+                # Recover old running state
+                self.l_hop = False
+                self.rstate = self.rstate_old
                 bo_list[0] = self.rstate
 
         # Record hopping event
