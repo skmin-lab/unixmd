@@ -521,6 +521,22 @@ class DFTB(DFTBplus):
             """)
             input_dftb += input_geom
             input_dftb += input_ham_init
+            input_ham_basic = textwrap.dedent(f"""\
+              Charge = {2.0 * molecule.charge}
+              Filling = Fermi{{
+                Temperature[K] = {self.elec_temp}
+              }}
+              MaxAngularMomentum = {{
+              {angular_momentum}
+              }}
+              SlaterKosterFiles = Type2FileNames{{
+                Prefix = '{self.sk_path}'
+                Separator = '-'
+                Suffix = '.skf'
+                LowerCaseTypeName = No
+              }}
+            }}
+            """)
             input_dftb += input_ham_basic
 
             # Options Block

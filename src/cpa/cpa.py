@@ -82,8 +82,8 @@ class CPA(object):
             :param string output_dir: Location of input directory
         """
         # Exception for molecular dynamics with CPA
-        if not (self.md_type in ["SH"]):
-            error_message = "Only FSSH dynamics is available with CPA!"
+        if not (self.md_type in ["SH", "SHXF"]):
+            error_message = "FSSH and SHXF dynamics are available with CPA!"
             error_vars = f"cpa = {self.md_type}"
             raise NotImplementedError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
@@ -239,11 +239,8 @@ class CPA(object):
                     sigma_info += "\n"
                 dynamics_info += sigma_info
             # Print auxiliary trajectory setting
-            if (self.l_econs_state):
-                dynamics_info += f"\n  Aux. Total E             = {'Real Total E':>16s}\n"
-            else:
-                dynamics_info += f"\n  Aux. Total E             = {'Real Total E':>16s}" \
-                    + f"\n                             {'+ Pot. E Diff.':>16s}\n"
+            dynamics_info += f"\n  Aux. Total E             = {'Real Total E':>16s}" \
+                + f"\n                             {'+ Pot. E Diff.':>16s}\n"
 
         # Print system information
         dynamics_info += f"\n  Output Frequency         = {self.out_freq:>16d}\n"

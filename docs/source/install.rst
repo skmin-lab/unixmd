@@ -10,7 +10,7 @@ Requirements
 
 -  Python 3.6 (or later)
 
--  Numpy 1.20.0
+-  Numpy >= 1.20.0
 
 -  Cython https://cython.org
 
