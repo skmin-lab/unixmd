@@ -4,13 +4,12 @@ import textwrap, datetime
 import numpy as np
 import os, shutil
 
-
 class MQC(object):
     """ Class for nuclear/electronic propagator used in MQC dynamics
 
         :param object molecule: Molecule object
         :param object thermostat: Thermostat type
-        :param integer istate: Initial adiabatic state
+        :param integer istate: Initial state
         :param double dt: Time interval
         :param integer nsteps: Nuclear step
         :param integer nesteps: Electronic step
@@ -91,12 +90,15 @@ class MQC(object):
         # Initialize coefficients and densities
         self.mol.get_coefficient(init_coef, self.istate)
 
-    def run_init(self, qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart):
+    def run_init(self, qm, mm, output_dir, l_coupling, l_save_bin, l_save_qm_log, l_save_mm_log, \
+        l_save_scr, restart):
         """ Initialize MQC dynamics
 
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
             :param string output_dir: Location of input directory
+            :param boolean l_coupling: Logical for calculation of nonadiabatic couplings
+            :param boolean l_save_bin: Logical for saving the calculator and trajectory
             :param boolean l_save_qm_log: Logical for saving QM calculation log
             :param boolean l_save_mm_log: Logical for saving MM calculation log
             :param boolean l_save_scr: Logical for saving scratch directory
@@ -118,6 +120,14 @@ class MQC(object):
                 error_vars = f"(QM) qm_prog.qm_method = {qm.qm_prog}.{qm.qm_method}"
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
+        # Check compatibility for nonadiabatic coupling calculation in BOMD
+        if (self.md_type == "BOMD"):
+            if (l_coupling and not self.mol.l_nacme):
+                if (not self.l_adj_nac):
+                    error_message = "The phase of nonadiabatic couplings must be aligned!"
+                    error_vars = f"l_adj_nac = {self.l_adj_nac}"
+                    raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
         # Check compatibility of variables for QM and MM calculation
         if ((self.mol.l_qmmm and mm == None) or (not self.mol.l_qmmm and mm != None)):
             error_message = "Both logical for QM/MM and MM object is necessary!"
@@ -136,6 +146,7 @@ class MQC(object):
         output_dir = os.path.expanduser(output_dir)
         base_dir = []
         unixmd_dir = []
+        samp_bin_dir = []
         qm_log_dir = []
         mm_log_dir = [None]
 
@@ -152,6 +163,7 @@ class MQC(object):
 
         for idir in base_dir:
             unixmd_dir.append(os.path.join(idir, "md"))
+            samp_bin_dir.append(os.path.join(idir, "samp_bin"))
             qm_log_dir.append(os.path.join(idir, "qm_log"))
             if (self.mol.l_qmmm and mm != None):
                 mm_log_dir.append(os.path.join(idir, "mm_log"))
@@ -164,6 +176,12 @@ class MQC(object):
                     error_message = f"Directory {md_idir} to be appended for restart not found!"
                     error_vars = f"restart = {restart}, output_dir = {output_dir}"
                     raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
+
+            # For trajectory binary directory
+            if (l_save_bin):
+                for samp_idir in samp_bin_dir:
+                    if (not os.path.exists(samp_idir)):
+                        os.makedirs(samp_idir)
 
             # For QM output directory
             if (l_save_qm_log):
@@ -184,7 +202,14 @@ class MQC(object):
                     shutil.move(md_idir, md_idir + "_old_" + str(os.getpid()))
                 os.makedirs(md_idir)
 
-                self.touch_file(md_idir)
+                self.touch_file(md_idir, qm.calc_coupling)
+
+            # For trajectory binary directory
+            for samp_idir in samp_bin_dir:
+                if (os.path.exists(samp_idir)):
+                    shutil.move(samp_idir, samp_idir + "_old_" + str(os.getpid()))
+                if (l_save_bin):
+                    os.makedirs(samp_idir)
 
             # For QM output directory
             for qm_idir in qm_log_dir:
@@ -204,9 +229,9 @@ class MQC(object):
         os.chdir(base_dir[0])
 
         if (self.md_type != "CT"):
-            return base_dir[0], unixmd_dir[0], qm_log_dir[0], mm_log_dir[0]
+            return base_dir[0], unixmd_dir[0], samp_bin_dir[0], qm_log_dir[0], mm_log_dir[0]
         else:
-            return base_dir, unixmd_dir, qm_log_dir, mm_log_dir
+            return base_dir, unixmd_dir, samp_bin_dir, qm_log_dir, mm_log_dir
 
     def cl_update_position(self):
         """ Routine to update nuclear positions
@@ -236,11 +261,12 @@ class MQC(object):
         """
         pass
 
-    def print_init(self, qm, mm, restart):
+    def print_init(self, qm, mm, l_coupling, restart):
         """ Routine to print the initial information of dynamics
 
             :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
+            :param boolean l_coupling: Logical for calculation of nonadiabatic couplings
             :param string restart: Option for controlling dynamics restarting
         """
         # Print PyUNIxMD version
@@ -322,6 +348,9 @@ class MQC(object):
             dynamics_info += f"  Electronic Step          = {self.nesteps:>16d}\n"
             dynamics_info += f"  Electronic Propagator    = {self.propagator:>16s}\n"
             dynamics_info += f"  Propagation Scheme       = {self.elec_object:>16s}\n"
+        else:
+            if (l_coupling):
+                dynamics_info += f"  Nonadiabatic Couplings   = {'Yes':>16s}\n"
 
         # Print surface hopping variables
         if (self.md_type in ["SH", "SHXF"]):
@@ -377,10 +406,11 @@ class MQC(object):
             thermostat_info = "  No Thermostat: Total energy is conserved!\n"
             print (thermostat_info, flush=True)
 
-    def touch_file(self, unixmd_dir):
+    def touch_file(self, unixmd_dir, calc_coupling):
         """ Routine to write PyUNIxMD output files
 
             :param string unixmd_dir: Directory where MD output files are written
+            :param boolean calc_coupling: Check whether the dynamics includes coupling calculation
         """
         # Energy information file header
         tmp = f'{"#":5s}{"Step":9s}{"Kinetic(H)":15s}{"Potential(H)":15s}{"Total(H)":15s}' + \
@@ -403,14 +433,15 @@ class MQC(object):
                     tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
                     typewriter(tmp, unixmd_dir, "BOCOH", "w")
 
-            # NACME file header
-            tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
-            typewriter(tmp, unixmd_dir, "NACME", "w")
-
             # DOTPOPNAC file header
             if (self.verbosity >= 1):
                 tmp = f'{"#":5s} Time-derivative Density Matrix by NAC: population; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "DOTPOPNAC", "w")
+
+        if (calc_coupling):
+            # NACME file header
+            tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
+            typewriter(tmp, unixmd_dir, "NACME", "w")
 
         # file header for SH-based methods
         if (self.md_type in ["SH", "SHXF"]):
@@ -421,15 +452,16 @@ class MQC(object):
             typewriter(tmp, unixmd_dir, "SHPROB", "w")
 
         # file header for XF-based methods
-        if (self.md_type in ["SHXF", "CT"]):
+        if (self.md_type in ["SHXF", "EhXF", "CT"]):
             if (self.verbosity >= 1):
                 tmp = f'{"#":5s} Time-derivative Density Matrix by decoherence: population; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "DOTPOPDEC", "w")
 
-    def write_md_output(self, unixmd_dir, istep):
+    def write_md_output(self, unixmd_dir, calc_coupling, istep):
         """ Write output files
 
             :param string unixmd_dir: Directory where MD output files are written
+            :param boolean calc_coupling: Check whether the dynamics includes coupling calculation
             :param integer istep: Current MD step
         """
         # Write MOVIE.xyz file including positions and velocities
@@ -463,6 +495,7 @@ class MQC(object):
                         for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])
                     typewriter(tmp, unixmd_dir, "BOCOH", "a")
 
+        if (calc_coupling):
             # Write NACME file
             tmp = f'{istep + 1:10d}' + "".join([f'{self.mol.nacme[ist, jst]:15.8f}' \
                 for ist in range(self.mol.nst) for jst in range(ist + 1, self.mol.nst)])

@@ -1,5 +1,5 @@
 from __future__ import division
-from build.el_propagator import el_run
+from lib.libmqc import el_run
 from mqc.mqc import MQC
 from misc import au_to_K, call_name, typewriter
 import os, shutil, textwrap
@@ -47,12 +47,13 @@ class Eh(MQC):
             :param string restart: Option for controlling dynamics restarting
         """
         # Initialize PyUNIxMD
-        base_dir, unixmd_dir, qm_log_dir, mm_log_dir = \
-            self.run_init(qm, mm, output_dir, l_save_qm_log, l_save_mm_log, l_save_scr, restart)
-        bo_list = [ist for ist in range(self.mol.nst)]
         qm.calc_coupling = True
         qm.calc_tdp = False
         qm.calc_tdp_grad = False
+        base_dir, unixmd_dir, traj_bin_dir, qm_log_dir, mm_log_dir = \
+            self.run_init(qm, mm, output_dir, False, False, l_save_qm_log, l_save_mm_log, \
+            l_save_scr, restart)
+        bo_list = [ist for ist in range(self.mol.nst)]
         self.print_init(qm, mm, restart)
 
         if (restart == None):
@@ -66,13 +67,13 @@ class Eh(MQC):
 
             self.update_energy()
 
-            self.write_md_output(unixmd_dir, self.istep)
+            self.write_md_output(unixmd_dir, qm.calc_coupling, self.istep)
             self.print_step(self.istep)
 
         elif (restart == "write"):
             # Reset initial time step to t = 0.0 s
             self.istep = -1
-            self.write_md_output(unixmd_dir, self.istep)
+            self.write_md_output(unixmd_dir, qm.calc_coupling, self.istep)
             self.print_step(self.istep)
 
         elif (restart == "append"):
@@ -109,7 +110,7 @@ class Eh(MQC):
             self.update_energy()
 
             if ((istep + 1) % self.out_freq == 0):
-                self.write_md_output(unixmd_dir, istep)
+                self.write_md_output(unixmd_dir, qm.calc_coupling, istep)
                 self.print_step(istep)
             if (istep == self.nsteps - 1):
                 self.write_final_xyz(unixmd_dir, istep)
@@ -153,14 +154,15 @@ class Eh(MQC):
             self.mol.epot += self.mol.rho.real[ist, ist] * self.mol.states[ist].energy
         self.mol.etot = self.mol.epot + self.mol.ekin
 
-    def write_md_output(self, unixmd_dir, istep):
+    def write_md_output(self, unixmd_dir, calc_coupling, istep):
         """ Write output files
 
             :param string unixmd_dir: PyUNIxMD directory
+            :param boolean calc_coupling: Check whether the dynamics includes coupling calculation
             :param integer istep: Current MD step
         """
         # Write the common part
-        super().write_md_output(unixmd_dir, istep)
+        super().write_md_output(unixmd_dir, calc_coupling, istep)
 
         # Write time-derivative BO population
         self.write_dotpop(unixmd_dir, istep)
@@ -184,7 +186,7 @@ class Eh(MQC):
             :param string restart: Option for controlling dynamics restarting
         """
         # Print initial information about molecule, qm, mm and thermostat
-        super().print_init(qm, mm, restart)
+        super().print_init(qm, mm, False, restart)
 
         # Print dynamics information for start line
         dynamics_step_info = textwrap.dedent(f"""\

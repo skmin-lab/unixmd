@@ -39,7 +39,7 @@ class DFT(Turbomole):
         # Re-calculation of excited state forces is not needed for ground state dynamics
         self.re_calc = False
 
-    def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
+    def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only, traj=None):
         """ Extract energy, gradient and nonadiabatic couplings from (TD)DFT method
 
             :param object molecule: Molecule object
@@ -48,6 +48,7 @@ class DFT(Turbomole):
             :param double dt: Time interval
             :param integer istep: Current MD step
             :param boolean calc_force_only: Logical to decide whether calculate force only
+            :param object traj: Trajectory object containing the calculator and trajectory
         """
         super().get_data(base_dir, calc_force_only)
         self.write_xyz(molecule)

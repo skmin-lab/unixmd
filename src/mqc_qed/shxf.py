@@ -1,5 +1,5 @@
 from __future__ import division
-from build_qed.el_propagator_xf import el_run
+from lib.libmqcxf_qed import el_run
 from mqc_qed.mqc import MQC_QED
 from misc import eps, au_to_K, au_to_A, call_name, typewriter
 import random, os, shutil, textwrap

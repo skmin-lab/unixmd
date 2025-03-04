@@ -1,5 +1,5 @@
 from __future__ import division
-from build.cioverlap import *
+from lib.libcioverlap import wf_overlap
 from qm.dftbplus.dftbplus import DFTBplus
 from qm.dftbplus.dftbpar import spin_w, spin_w_lc, onsite_uu, onsite_ud, max_l
 from misc import data, eps, eV_to_au, call_name
@@ -163,7 +163,7 @@ class DFTB(DFTBplus):
         self.ci_coef_old = np.zeros((molecule.nst, self.nocc, self.nvirt))
         self.ci_coef_new = np.zeros((molecule.nst, self.nocc, self.nvirt))
 
-    def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
+    def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only, traj=None):
         """ Extract energy, gradient and nonadiabatic couplings from (TD)DFTB method
 
             :param object molecule: Molecule object
@@ -172,6 +172,7 @@ class DFTB(DFTBplus):
             :param double dt: Time interval
             :param integer istep: Current MD step
             :param boolean calc_force_only: Logical to decide whether calculate force only
+            :param object traj: Trajectory object containing the calculator and trajectory
         """
         self.copy_files(molecule, istep, calc_force_only)
         super().get_data(base_dir, calc_force_only)
@@ -520,6 +521,22 @@ class DFTB(DFTBplus):
             """)
             input_dftb += input_geom
             input_dftb += input_ham_init
+            input_ham_basic = textwrap.dedent(f"""\
+              Charge = {2.0 * molecule.charge}
+              Filling = Fermi{{
+                Temperature[K] = {self.elec_temp}
+              }}
+              MaxAngularMomentum = {{
+              {angular_momentum}
+              }}
+              SlaterKosterFiles = Type2FileNames{{
+                Prefix = '{self.sk_path}'
+                Separator = '-'
+                Suffix = '.skf'
+                LowerCaseTypeName = No
+              }}
+            }}
+            """)
             input_dftb += input_ham_basic
 
             # Options Block

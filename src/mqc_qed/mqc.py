@@ -4,13 +4,12 @@ import textwrap, datetime
 import numpy as np
 import os, shutil
 
-
 class MQC_QED(object):
     """ Class for nuclear/electronic propagator used in MQC dynamics coupled to confined cavity mode
 
         :param object polariton: Polariton object
         :param object thermostat: Thermostat type
-        :param integer istate: Initial adiabatic state
+        :param integer istate: Initial state
         :param double dt: Time interval
         :param integer nsteps: Nuclear step
         :param integer nesteps: Electronic step

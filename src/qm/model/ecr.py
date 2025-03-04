@@ -26,7 +26,7 @@ class ECR(Model):
         # ECR model can compute the gradient of several states simultaneously
         self.re_calc = False
 
-    def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only):
+    def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only, traj=None):
         """ Extract energy, gradient and nonadiabatic couplings from simple avoided crossing model BO calculation
 
             :param object molecule: molecule object
@@ -35,6 +35,7 @@ class ECR(Model):
             :param double dt: time interval
             :param integer istep: current MD step
             :param boolean calc_force_only: logical to decide whether calculate force only
+            :param object traj: Trajectory object containing the calculator and trajectory
         """
         # Initialize diabatic Hamiltonian
         H = np.zeros((2, 2))
@@ -78,4 +79,5 @@ class ECR(Model):
 
         molecule.nac[0, 1, 0, 0] = np.dot(unitary[:, 0], np.matmul(dH, unitary[:, 1])) / sqa
         molecule.nac[1, 0, 0, 0] = - molecule.nac[0, 1, 0, 0]
+
 
