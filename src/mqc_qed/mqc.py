@@ -455,13 +455,17 @@ class MQC_QED(object):
                     typewriter(tmp, unixmd_dir, "QEDCOHD", "w")
 
             # PNACME file header
-            tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
+            tmp = f'{"#":5s}Polaritonic Non-Adiabatic Coupling Matrix Elements: off-diagonal'
             typewriter(tmp, unixmd_dir, "PNACME", "w")
 
-            # DOTPOPNACD file header
             if (self.verbosity >= 1):
+                # DOTPOPNACD file header
                 tmp = f'{"#":5s} Time-derivative Density Matrix by NAC: population; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "DOTPOPNACD", "w")
+
+                # NACME file header
+                tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
+                typewriter(tmp, unixmd_dir, "NACME", "w")
 
         # file header for SH-based methods
         if (self.md_type in ["SH", "SHXF"]):
@@ -524,8 +528,14 @@ class MQC_QED(object):
                 for ist in range(self.pol.pst) for jst in range(ist + 1, self.pol.pst)])
             typewriter(tmp, unixmd_dir, "PNACME", "a")
 
-            # Write PNACV file
+            if (self.verbosity >= 1):
+                # Write NACME file
+                tmp = f'{istep + 1:10d}' + "".join([f'{self.pol.nacme[ist, jst]:15.8f}' \
+                    for ist in range(self.pol.nst) for jst in range(ist + 1, self.pol.nst)])
+                typewriter(tmp, unixmd_dir, "NACME", "a")
+
             if (not self.pol.l_pnacme and self.verbosity >= 2):
+                # Write PNACV file
                 for ist in range(self.pol.pst):
                     for jst in range(ist + 1, self.pol.pst):
                         tmp = f'{self.pol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}PNACV' + \

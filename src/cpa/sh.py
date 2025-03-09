@@ -324,8 +324,8 @@ class SH(CPA):
             :param string unixmd_dir: PyUNIxMD directory
             :param integer istep: Current MD step
         """
-        # Write NAC term in DOTPOPNAC
         if (self.verbosity >= 1):
+            # Write NAC term in DOTPOPNAC
             tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopnac])
             typewriter(tmp, unixmd_dir, "DOTPOPNAC", "a")
 

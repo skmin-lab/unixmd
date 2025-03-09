@@ -276,8 +276,8 @@ class CPA(object):
         tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
         typewriter(tmp, unixmd_dir, "NACME", "w")
 
-        # DOTPOPNAC file header
         if (self.verbosity >= 1):
+            # DOTPOPNAC file header
             tmp = f'{"#":5s} Time-derivative Density Matrix by NAC: population; see the manual for detail orders'
             typewriter(tmp, unixmd_dir, "DOTPOPNAC", "w")
 
