@@ -197,6 +197,7 @@ class SHXF(MQC_QED):
             self.hop_prob(qed)
             self.hop_check(pol_list)
             self.evaluate_hop(qed, pol_list)
+
             if (self.l_hop):
                 qed.get_data(self.pol, base_dir, pol_list, self.dt, self.istep, calc_force_only=True)
 
@@ -264,6 +265,7 @@ class SHXF(MQC_QED):
             self.hop_prob(qed)
             self.hop_check(pol_list)
             self.evaluate_hop(qed, pol_list)
+
             if (self.l_hop):
                 qed.get_data(self.pol, base_dir, pol_list, self.dt, istep, calc_force_only=True)
 

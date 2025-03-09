@@ -130,7 +130,7 @@ class MQC(object):
 
         # Check compatibility of variables for QM and MM calculation
         if ((self.mol.l_qmmm and mm == None) or (not self.mol.l_qmmm and mm != None)):
-            error_message = "Both logical for QM/MM and MM object is necessary!"
+            error_message = "Both logicals for QM/MM and MM object are necessary!"
             error_vars = f"Molecule.l_qmmm = {self.mol.l_qmmm}, mm = {mm}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         if (self.mol.l_qmmm and mm != None):

@@ -66,7 +66,7 @@ class MQC_QED(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         if not (self.elec_object in [None, "coefficient"]):
-            error_message = "Only coefficient object is available for QED calculation!"
+            error_message = "Only coefficient object is available for MQC_QED!"
             error_vars = f"elec_object = {self.elec_object}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
@@ -135,7 +135,7 @@ class MQC_QED(object):
 
         # Check compatibility of variables for QM and MM calculation
         if ((self.pol.l_qmmm and mm == None) or (not self.pol.l_qmmm and mm != None)):
-            error_message = "Both logical for QM/MM and MM object is necessary!"
+            error_message = "Both logicals for QM/MM and MM object are necessary!"
             error_vars = f"Polariton.l_qmmm = {self.pol.l_qmmm}, mm = {mm}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         if (self.pol.l_qmmm and mm != None):

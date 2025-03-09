@@ -74,10 +74,9 @@ class CPA(object):
         # Initialize coefficients and densities
         self.mol.get_coefficient(init_coef, self.istate)
 
-    def run_init(self, qm, mm, output_dir):
+    def run_init(self, mm, output_dir):
         """ Initialize molecular dynamics with classical path approximation
 
-            :param object qm: QM object containing on-the-fly calculation information
             :param object mm: MM object containing MM calculation information
             :param string output_dir: Location of input directory
         """
@@ -89,7 +88,7 @@ class CPA(object):
 
         # Check compatibility of variables for QM and MM calculation
         if ((self.mol.l_qmmm and mm == None) or (not self.mol.l_qmmm and mm != None)):
-            error_message = "Both logical for QM/MM and MM object is necessary!"
+            error_message = "Both logicals for QM/MM and MM object are necessary!"
             error_vars = f"Molecule.l_qmmm = {self.mol.l_qmmm}, mm = {mm}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 

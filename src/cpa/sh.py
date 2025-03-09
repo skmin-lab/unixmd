@@ -2,9 +2,8 @@ from __future__ import division
 from lib.libmqc import el_run
 from cpa.cpa import CPA
 from misc import eps, au_to_K, call_name, typewriter
-import random, os, shutil, textwrap
+import random, textwrap
 import numpy as np
-import pickle
 
 class SH(CPA):
     """ Class for surface hopping dynamics with classical path approximation (CPA)
@@ -73,7 +72,7 @@ class SH(CPA):
         qm.calc_coupling = True
         qm.calc_tdp = False
         qm.calc_tdp_grad = False
-        base_dir, unixmd_dir = self.run_init(qm, mm, output_dir)
+        base_dir, unixmd_dir = self.run_init(mm, output_dir)
         bo_list = [self.rstate]
         self.print_init(traj, qm, mm)
 
@@ -97,7 +96,7 @@ class SH(CPA):
         self.evaluate_hop(bo_list)
 
         if (self.dec_correction == "idc"):
-            if (self.l_hop):
+            if (self.l_hop or self.l_reject):
                 self.correct_dec_idc()
         elif (self.dec_correction == "edc"):
             # If kinetic is 0, coefficient/density matrix are update into itself
@@ -118,6 +117,8 @@ class SH(CPA):
 
             self.mol.backup_bo(qm.calc_coupling)
             self.mol.reset_bo(qm.calc_coupling)
+            # Although a MM object is provided for QM/MM dynamics with CPA in running script,
+            # QM object already has the information obtained from QM/MM dynamics, so mm.get_data is not needed
             qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False, traj=traj)
 
             self.cl_update_velocity(traj, istep)
@@ -129,7 +130,7 @@ class SH(CPA):
             self.evaluate_hop(bo_list)
 
             if (self.dec_correction == "idc"):
-                if (self.l_hop):
+                if (self.l_hop or self.l_reject):
                     self.correct_dec_idc()
             elif (self.dec_correction == "edc"):
                 # If kinetic is 0, coefficient/density matrix are update into itself

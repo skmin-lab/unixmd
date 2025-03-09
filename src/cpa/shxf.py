@@ -2,9 +2,8 @@ from __future__ import division
 from lib.libmqcxf import el_run
 from cpa.cpa import CPA
 from misc import eps, au_to_K, au_to_A, call_name, typewriter
-import random, os, shutil, textwrap
+import random, textwrap
 import numpy as np
-import pickle
 
 class Auxiliary_Molecule(object):
     """ Class for auxiliary molecule that is used for the calculation of decoherence term
@@ -134,7 +133,7 @@ class SHXF(CPA):
         qm.calc_coupling = True
         qm.calc_tdp = False
         qm.calc_tdp_grad = False
-        base_dir, unixmd_dir = self.run_init(qm, mm, output_dir)
+        base_dir, unixmd_dir = self.run_init(mm, output_dir)
         bo_list = [self.rstate]
         self.print_init(traj, qm, mm)
 
@@ -182,6 +181,8 @@ class SHXF(CPA):
 
             self.mol.backup_bo(qm.calc_coupling)
             self.mol.reset_bo(qm.calc_coupling)
+            # Although a MM object is provided for QM/MM dynamics with CPA in running script,
+            # QM object already has the information obtained from QM/MM dynamics, so mm.get_data is not needed
             qm.get_data(self.mol, base_dir, bo_list, self.dt, istep, calc_force_only=False, traj=traj)
 
             self.cl_update_velocity(traj, istep)
