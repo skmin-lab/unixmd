@@ -454,7 +454,7 @@ class MQC_QED(object):
                     tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
                     typewriter(tmp, unixmd_dir, "QEDCOHD", "w")
 
-            # NACME file header
+            # PNACME file header
             tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
             typewriter(tmp, unixmd_dir, "PNACME", "w")
 
