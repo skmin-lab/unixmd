@@ -121,8 +121,8 @@ class MQC(object):
                 raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Check compatibility for nonadiabatic coupling calculation in BOMD
-        if (self.md_type == "BOMD"):
-            if (l_coupling and not self.mol.l_nacme):
+        if (self.md_type == "BOMD" and l_coupling):
+            if (not self.mol.l_nacme):
                 if (not self.l_adj_nac):
                     error_message = "The phase of nonadiabatic couplings must be aligned!"
                     error_vars = f"l_adj_nac = {self.l_adj_nac}"
@@ -130,7 +130,7 @@ class MQC(object):
 
         # Check compatibility of variables for QM and MM calculation
         if ((self.mol.l_qmmm and mm == None) or (not self.mol.l_qmmm and mm != None)):
-            error_message = "Both logical for QM/MM and MM object is necessary!"
+            error_message = "Both logicals for QM/MM and MM object are necessary!"
             error_vars = f"Molecule.l_qmmm = {self.mol.l_qmmm}, mm = {mm}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         if (self.mol.l_qmmm and mm != None):

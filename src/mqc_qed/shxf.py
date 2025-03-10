@@ -25,7 +25,7 @@ class Auxiliary_Molecule(object):
 
 
 class SHXF(MQC_QED):
-    """ Class for DISH-XF dynamics coupled to confined cavity mode
+    """ Class for SHXF dynamics coupled to confined cavity mode
 
         :param object polariton: Polariton object
         :param object thermostat: Thermostat object
@@ -147,7 +147,7 @@ class SHXF(MQC_QED):
 
     def run(self, qed, qm, mm=None, output_dir="./", l_save_qed_log=False, l_save_qm_log=False, \
         l_save_mm_log=False, l_save_scr=True, restart=None):
-        """ Run MQC dynamics according to decoherence-induced surface hopping dynamics
+        """ Run MQC dynamics according to SHXF dynamics
 
             :param object qed: QED object containing cavity-molecule interaction
             :param object qm: QM object containing on-the-fly calculation information
@@ -197,6 +197,7 @@ class SHXF(MQC_QED):
             self.hop_prob(qed)
             self.hop_check(pol_list)
             self.evaluate_hop(qed, pol_list)
+
             if (self.l_hop):
                 qed.get_data(self.pol, base_dir, pol_list, self.dt, self.istep, calc_force_only=True)
 
@@ -264,6 +265,7 @@ class SHXF(MQC_QED):
             self.hop_prob(qed)
             self.hop_check(pol_list)
             self.evaluate_hop(qed, pol_list)
+
             if (self.l_hop):
                 qed.get_data(self.pol, base_dir, pol_list, self.dt, istep, calc_force_only=True)
 

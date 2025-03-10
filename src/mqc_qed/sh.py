@@ -522,8 +522,8 @@ class SH(MQC_QED):
             :param string unixmd_dir: PyUNIxMD directory
             :param integer istep: Current MD step
         """
-        # Write NAC term in DOTPOPNACD
         if (self.verbosity >= 1):
+            # Write NAC term in DOTPOPNACD
             tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopnac_d])
             typewriter(tmp, unixmd_dir, "DOTPOPNACD", "a")
 

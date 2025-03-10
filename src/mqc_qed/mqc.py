@@ -66,7 +66,7 @@ class MQC_QED(object):
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
         if not (self.elec_object in [None, "coefficient"]):
-            error_message = "Only coefficient object is available for QED calculation!"
+            error_message = "Only coefficient object is available for MQC_QED!"
             error_vars = f"elec_object = {self.elec_object}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
 
@@ -135,7 +135,7 @@ class MQC_QED(object):
 
         # Check compatibility of variables for QM and MM calculation
         if ((self.pol.l_qmmm and mm == None) or (not self.pol.l_qmmm and mm != None)):
-            error_message = "Both logical for QM/MM and MM object is necessary!"
+            error_message = "Both logicals for QM/MM and MM object are necessary!"
             error_vars = f"Polariton.l_qmmm = {self.pol.l_qmmm}, mm = {mm}"
             raise ValueError (f"( {self.md_type}.{call_name()} ) {error_message} ( {error_vars} )")
         if (self.pol.l_qmmm and mm != None):
@@ -454,14 +454,18 @@ class MQC_QED(object):
                     tmp = f'{"#":5s} Density Matrix: coherence Re-Im; see the manual for detail orders'
                     typewriter(tmp, unixmd_dir, "QEDCOHD", "w")
 
-            # NACME file header
-            tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
+            # PNACME file header
+            tmp = f'{"#":5s}Polaritonic Non-Adiabatic Coupling Matrix Elements: off-diagonal'
             typewriter(tmp, unixmd_dir, "PNACME", "w")
 
-            # DOTPOPNACD file header
             if (self.verbosity >= 1):
+                # DOTPOPNACD file header
                 tmp = f'{"#":5s} Time-derivative Density Matrix by NAC: population; see the manual for detail orders'
                 typewriter(tmp, unixmd_dir, "DOTPOPNACD", "w")
+
+                # NACME file header
+                tmp = f'{"#":5s}Non-Adiabatic Coupling Matrix Elements: off-diagonal'
+                typewriter(tmp, unixmd_dir, "NACME", "w")
 
         # file header for SH-based methods
         if (self.md_type in ["SH", "SHXF"]):
@@ -524,8 +528,14 @@ class MQC_QED(object):
                 for ist in range(self.pol.pst) for jst in range(ist + 1, self.pol.pst)])
             typewriter(tmp, unixmd_dir, "PNACME", "a")
 
-            # Write PNACV file
+            if (self.verbosity >= 1):
+                # Write NACME file
+                tmp = f'{istep + 1:10d}' + "".join([f'{self.pol.nacme[ist, jst]:15.8f}' \
+                    for ist in range(self.pol.nst) for jst in range(ist + 1, self.pol.nst)])
+                typewriter(tmp, unixmd_dir, "NACME", "a")
+
             if (not self.pol.l_pnacme and self.verbosity >= 2):
+                # Write PNACV file
                 for ist in range(self.pol.pst):
                     for jst in range(ist + 1, self.pol.pst):
                         tmp = f'{self.pol.nat_qm:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}PNACV' + \

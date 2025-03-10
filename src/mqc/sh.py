@@ -106,7 +106,7 @@ class SH(MQC):
         qm.calc_coupling = True
         qm.calc_tdp = False
         qm.calc_tdp_grad = False
-        base_dir, unixmd_dir, traj_bin_dir, qm_log_dir, mm_log_dir = \
+        base_dir, unixmd_dir, samp_bin_dir, qm_log_dir, mm_log_dir = \
             self.run_init(qm, mm, output_dir, False, False, l_save_qm_log, l_save_mm_log, \
             l_save_scr, restart)
         bo_list = [self.rstate]
@@ -469,8 +469,8 @@ class SH(MQC):
             :param string unixmd_dir: PyUNIxMD directory
             :param integer istep: Current MD step
         """
-        # Write NAC term in DOTPOPNAC
         if (self.verbosity >= 1):
+            # Write NAC term in DOTPOPNAC
             tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopnac])
             typewriter(tmp, unixmd_dir, "DOTPOPNAC", "a")
 
