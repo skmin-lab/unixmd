@@ -4,8 +4,8 @@ from misc import call_name
 import os, shutil, re, textwrap
 import numpy as np
 
-class SSR(TeraChem):
-    """ Class for SSR method of TeraChem
+class DFT(TeraChem):
+    """ Class for (TD)DFT method of TeraChem
 
         :param object molecule: Molecule object
         :param string basis_set: Basis set information
@@ -33,10 +33,10 @@ class SSR(TeraChem):
         reks_diis_tol=1E-6, reks_max_iter=1000, shift=0.3, l_state_interactions=False, \
         cpreks_grad_tol=1E-6, cpreks_max_iter=1000, root_path="./"):
         # Initialize TeraChem common variables
-        super(SSR, self).__init__(functional, basis_set, root_path, ngpus, \
+        super(DFT, self).__init__(functional, basis_set, root_path, ngpus, \
             gpu_id, precision, version)
 
-        # Initialize TeraChem SSR variables
+        # Initialize TeraChem DFT variables
         self.scf_wf_tol = scf_wf_tol
         self.scf_max_iter = scf_max_iter
 
@@ -52,11 +52,11 @@ class SSR(TeraChem):
                 error_vars = f"Molecule.nstates = {molecule.nst}"
                 raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
-        # Set initial guess for REKS SCF iterations
+        # Set initial guess for SCF iterations
         self.guess = guess.lower()
         self.guess_file = guess_file
         if not (self.guess in ["dft", "read"]):
-            error_message = "Invalid initial guess for SSR!"
+            error_message = "Invalid initial guess for DFT!"
             error_vars = f"guess = {self.guess}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
@@ -69,13 +69,13 @@ class SSR(TeraChem):
         self.cpreks_max_iter = cpreks_max_iter
 
         # Set 'l_nacme' with respect to the computational method
-        # SSR can produce NACs, so we do not need to get NACME from CIoverlap
-        # SSR can compute the gradient of several states simultaneously.
         molecule.l_nacme = False
+
+        # Re-calculation of excited state forces is not needed for ground state dynamics
         self.re_calc = False
 
     def get_data(self, molecule, base_dir, bo_list, dt, istep, calc_force_only, traj=None):
-        """ Extract energy, gradient and nonadiabatic couplings from SSR method
+        """ Extract energy, gradient and nonadiabatic couplings from DFT method
 
             :param object molecule: Molecule object
             :param string base_dir: Base directory
@@ -230,7 +230,7 @@ class SSR(TeraChem):
             f.write(input_terachem)
 
     def run_QM(self, base_dir, istep, bo_list):
-        """ Run SSR calculation and save the output files to qm_log directory
+        """ Run DFT calculation and save the output files to qm_log directory
 
             :param string base_dir: Base directory
             :param integer istep: Current MD step
