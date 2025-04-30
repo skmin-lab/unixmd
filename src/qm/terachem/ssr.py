@@ -116,12 +116,10 @@ class SSR(TeraChem):
 
         # Guess Block
         if (self.guess == "read"):
-            c0_dir = os.path.join(self.scr_qm_dir, "scr")
-            os.makedirs(c0_dir)
             if (istep == -1):
                 if (os.path.isfile(self.guess_file)):
                     # Copy guess file to currect directory
-                    shutil.copy(self.guess_file, os.path.join(c0_dir, "c0"))
+                    shutil.copy(self.guess_file, os.path.join(self.scr_qm_dir, "c0"))
                     restart = 1
                     dft = False
                 else:
@@ -129,7 +127,7 @@ class SSR(TeraChem):
                     dft = True
             elif (istep >= 0):
                 # Move previous file to currect directory
-                os.rename("../c0", os.path.join(c0_dir, "c0"))
+                os.rename("../c0", os.path.join(self.scr_qm_dir, "c0"))
                 restart = 1
                 dft = False
         elif (self.guess == "dft"):
@@ -137,7 +135,6 @@ class SSR(TeraChem):
             dft = True
 
         # Control Block
-        input_control = \
         input_control = textwrap.dedent(f"""\
 
         run gradient
@@ -153,6 +150,7 @@ class SSR(TeraChem):
             gpu_ids += f" {gpu_cur_id} "
 
         input_system = textwrap.dedent(f"""\
+        scrdir ./scr/
         precision {self.precision}
         gpus {self.ngpus}   {gpu_ids}
 
@@ -216,7 +214,7 @@ class SSR(TeraChem):
         if (restart == 1):
             input_reks_guess = textwrap.dedent(f"""\
             reks_guess {restart}
-            guess ./scr/c0
+            guess ./c0
             """)
             input_terachem += input_reks_guess
 
@@ -290,20 +288,20 @@ class SSR(TeraChem):
         if (self.nac == "Yes"):
             # SHXF, SH, Eh : SSR state
             for ist in range(molecule.nst):
-                tmp_f = f'Eigen state {ist + 1} gradient\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
+                tmp_g = f'Eigen state {ist + 1} gradient\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
                     '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-                force = re.findall(tmp_f, log_out)
-                force = np.array(force[0], dtype=np.float64)
-                force = force.reshape(molecule.nat_qm, 3, order='C')
-                molecule.states[ist].force = - np.copy(force)
+                grad = re.findall(tmp_g, log_out)
+                grad = np.array(grad[0], dtype=np.float64)
+                grad = grad.reshape(molecule.nat_qm, 3, order='C')
+                molecule.states[ist].force = - np.copy(grad)
         else:
             # BOMD : SSR state, SA-REKS state or single-state REKS
-            tmp_f = 'Gradient units are Hartree/Bohr\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
+            tmp_g = 'Gradient units are Hartree/Bohr\n[-]+\n\s+dE/dX\s+dE/dY\s+dE/dZ' + \
 	              '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-            force = re.findall(tmp_f, log_out)
-            force = np.array(force[0], dtype=np.float64)
-            force = force.reshape(molecule.nat_qm, 3, order='C')
-            molecule.states[bo_list[0]].force = - np.copy(force)
+            grad = re.findall(tmp_g, log_out)
+            grad = np.array(grad[0], dtype=np.float64)
+            grad = grad.reshape(molecule.nat_qm, 3, order='C')
+            molecule.states[bo_list[0]].force = - np.copy(grad)
 
         # NAC
         if (self.nac == "Yes"):
