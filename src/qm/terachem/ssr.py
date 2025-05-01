@@ -8,9 +8,8 @@ class SSR(TeraChem):
     """ Class for SSR method of TeraChem
 
         :param object molecule: Molecule object
-        :param string basis_set: Basis set information
         :param string functional: Exchange-correlation functional information
-        :param string precision: Precision in the calculations
+        :param string basis_set: Basis set information
         :param double scf_wf_tol: Wavefunction convergence for SCF iterations
         :param integer scf_max_iter: Maximum number of SCF iterations
         :param integer active_space: Active space for SSR calculation
@@ -22,19 +21,20 @@ class SSR(TeraChem):
         :param boolean l_state_interactions: Include state-interaction terms to SA-REKS
         :param double cpreks_grad_tol: Gradient tolerance for CP-REKS equations
         :param integer cpreks_max_iter: Maximum number of CP-REKS iterations
+        :param string precision: Precision in the calculations
         :param string root_path: Path for TeraChem root directory
         :param integer ngpus: Number of GPUs
         :param integer,list gpu_id: ID of used GPUs
         :param string version: Version of TeraChem
     """
-    def __init__(self, molecule, ngpus=1, gpu_id=None, precision="dynamic", \
-        version="1.93", functional="hf", basis_set="sto-3g", scf_wf_tol=1E-2, \
+    def __init__(self, molecule, functional="hf", basis_set="sto-3g", scf_wf_tol=1E-2, \
         scf_max_iter=300, active_space=2, guess="dft", guess_file="./c0", \
         reks_diis_tol=1E-6, reks_max_iter=1000, shift=0.3, l_state_interactions=False, \
-        cpreks_grad_tol=1E-6, cpreks_max_iter=1000, root_path="./"):
+        cpreks_grad_tol=1E-6, cpreks_max_iter=1000, precision="dynamic", root_path="./", \
+        ngpus=1, gpu_id=None, version="1.93"):
         # Initialize TeraChem common variables
-        super(SSR, self).__init__(functional, basis_set, root_path, ngpus, \
-            gpu_id, precision, version)
+        super(SSR, self).__init__(functional, basis_set, precision, root_path, ngpus, \
+            gpu_id, version)
 
         # Initialize TeraChem SSR variables
         self.scf_wf_tol = scf_wf_tol

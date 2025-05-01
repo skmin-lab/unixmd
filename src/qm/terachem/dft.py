@@ -8,9 +8,8 @@ class DFT(TeraChem):
     """ Class for (TD)DFT method of TeraChem
 
         :param object molecule: Molecule object
-        :param string basis_set: Basis set information
         :param string functional: Exchange-correlation functional information
-        :param string precision: Precision in the calculations
+        :param string basis_set: Basis set information
         :param double scf_wf_tol: Wavefunction convergence for SCF iterations
         :param integer scf_max_iter: Maximum number of SCF iterations
         :param boolean l_spin_pol: Include spin-polarisation scheme
@@ -19,18 +18,19 @@ class DFT(TeraChem):
         :param string guess_file: Initial guess file
         :param string embedding: Charge-charge embedding options
         :param string dispersion: Dispersion corrections
+        :param string precision: Precision in the calculations
         :param string root_path: Path for TeraChem root directory
         :param integer ngpus: Number of GPUs
         :param integer,list gpu_id: ID of used GPUs
         :param string version: Version of TeraChem
     """
-    def __init__(self, molecule, ngpus=1, gpu_id=None, precision="dynamic", \
-        version="1.93", functional="hf", basis_set="sto-3g", scf_wf_tol=3E-5, \
-        scf_max_iter=100, l_spin_pol=False, spin_mult=1, guess="dft", \
-        guess_file="./c0", embedding=None, dispersion=None, root_path="./"):
+    def __init__(self, molecule, functional="hf", basis_set="sto-3g", scf_wf_tol=3E-5, \
+        scf_max_iter=100, l_spin_pol=False, spin_mult=1, guess="dft", guess_file="./c0", \
+        embedding=None, dispersion=None, precision="dynamic", root_path="./", ngpus=1, \
+        gpu_id=None, version="1.93"):
         # Initialize TeraChem common variables
-        super(DFT, self).__init__(functional, basis_set, root_path, ngpus, \
-            gpu_id, precision, version)
+        super(DFT, self).__init__(functional, basis_set, precision, root_path, ngpus, \
+            gpu_id, version)
 
         # Initialize TeraChem DFT variables
         self.scf_wf_tol = scf_wf_tol
