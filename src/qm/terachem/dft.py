@@ -1,6 +1,6 @@
 from __future__ import division
 from qm.terachem.terachem import TeraChem
-from misc import call_name
+from misc import au_to_A, call_name
 import os, shutil, re, textwrap
 import numpy as np
 
@@ -17,6 +17,8 @@ class DFT(TeraChem):
         :param integer spin_mult: Spin multiplicity of wavefunction
         :param string guess: Initial guess for SCF iterations
         :param string guess_file: Initial guess file
+        :param string embedding: Charge-charge embedding options
+        :param string dispersion: Dispersion corrections
         :param string root_path: Path for TeraChem root directory
         :param integer ngpus: Number of GPUs
         :param integer,list gpu_id: ID of used GPUs
@@ -25,7 +27,7 @@ class DFT(TeraChem):
     def __init__(self, molecule, ngpus=1, gpu_id=None, precision="dynamic", \
         version="1.93", functional="hf", basis_set="sto-3g", scf_wf_tol=3E-5, \
         scf_max_iter=100, l_spin_pol=False, spin_mult=1, guess="dft", \
-        guess_file="./c0", root_path="./"):
+        guess_file="./c0", embedding=None, dispersion=None, root_path="./"):
         # Initialize TeraChem common variables
         super(DFT, self).__init__(functional, basis_set, root_path, ngpus, \
             gpu_id, precision, version)
@@ -54,7 +56,7 @@ class DFT(TeraChem):
         # Set initial guess for SCF iterations
         self.guess = guess.lower()
         self.guess_file = guess_file
-        if not (self.guess in ["read"]):
+        if not (self.guess in ["dft", "read"]):
             error_message = "Invalid initial guess for DFT!"
             error_vars = f"guess = {self.guess}"
             raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
@@ -64,6 +66,29 @@ class DFT(TeraChem):
             error_message = "Excited state dynamics using TDDFT not implemented!"
             error_vars = f"Molecule.nstates = {molecule.nst}"
             raise NotImplementedError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        self.embedding = embedding
+        if (self.embedding != None):
+            self.embedding = self.embedding.lower()
+
+        if not (self.embedding in [None, "mechanical", "electrostatic"]):
+            error_message = "Invalid charge embedding for QM/MM calculation!"
+            error_vars = f"embedding = {self.embedding}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        if (not molecule.l_qmmm and self.embedding in ["mechanical", "electrostatic"]):
+            error_message = "Set logical for QM/MM to True for QM/MM calculation!"
+            error_vars = f"Molecule.l_qmmm = {molecule.l_qmmm}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+
+        self.dispersion = dispersion
+        if (self.dispersion != None):
+            self.dispersion = self.dispersion.lower()
+
+        if not (self.dispersion in [None, "d2", "d3"]):
+            error_message = "Invalid dispersion correction!"
+            error_vars = f"dispersion = {self.dispersion}"
+            raise ValueError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Set 'l_nacme' with respect to the computational method
         molecule.l_nacme = False
@@ -136,14 +161,38 @@ class DFT(TeraChem):
         elif (self.guess == "dft"):
             restart = False
 
+        # Make 'point_charges.xyz' file used in electrostatic charge embedding of QM/MM
+        if (self.embedding == "electrostatic"):
+            # Make 'point_charges.xyz' file
+            input_geom_pc = ""
+            input_geom_pc += f"{molecule.nat_mm}\n\n"
+            for iat in range(molecule.nat_qm, molecule.nat):
+                input_geom_pc += f"  {molecule.mm_charge[iat - molecule.nat_qm]:8.4f}"
+                input_geom_pc += "".join([f"{i:15.8f}" for i in molecule.pos[iat] * au_to_A]) + "\n"
+
+            # Write 'point_charges.xyz' file
+            file_name = "point_charges.xyz"
+            with open(file_name, "w") as f:
+                f.write(input_geom_pc)
+
         # Control Block
-        input_control = textwrap.dedent(f"""\
+        if (self.embedding == "electrostatic"):
+            input_control = textwrap.dedent(f"""\
 
-        run gradient
+            run gradient
 
-        coordinates geometry.xyz
+            coordinates geometry.xyz
+            pointcharges point_charges.xyz
 
-        """)
+            """)
+        else:
+            input_control = textwrap.dedent(f"""\
+
+            run gradient
+
+            coordinates geometry.xyz
+
+            """)
         input_terachem += input_control
 
         # System Block
@@ -192,7 +241,12 @@ class DFT(TeraChem):
                 """)
             input_terachem += input_guess
 
-        # TODO: pointcharges? in qmmm?
+        if (self.dispersion != None):
+            input_disp = textwrap.dedent(f"""\
+
+            dispersion {self.dispersion}
+            """)
+            input_terachem += input_disp
 
         # Write 'input.tcin' file
         file_name = "input.tcin"
@@ -241,5 +295,12 @@ class DFT(TeraChem):
         grad = np.array(grad[0], dtype=np.float64)
         grad = grad.reshape(molecule.nat_qm, 3, order='C')
         molecule.states[0].force[0:molecule.nat_qm] = - np.copy(grad)
+        if (molecule.l_qmmm and self.embedding == "electrostatic"):
+            tmp_g = 'Point charge part -------' + \
+	              '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_mm
+            grad = re.findall(tmp_g, log_out)
+            grad = np.array(grad[0], dtype=np.float64)
+            grad = grad.reshape(molecule.nat_mm, 3, order='C')
+            molecule.states[0].force[molecule.nat_qm:molecule.nat] = - np.copy(grad)
 
 
