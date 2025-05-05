@@ -6,16 +6,16 @@ import os
 class TeraChem(QM_calculator):
     """ Class for common parts of TeraChem
 
-        :param string basis_set: Basis set information
         :param string functional: Exchange-correlation functional information
+        :param string basis_set: Basis set information
         :param string precision: Precision in the calculations
         :param string root_path: Path for TeraChem root directory
         :param integer ngpus: Number of GPUs
         :param integer,list gpu_id: ID of used GPUs
         :param string version: Version of TeraChem
     """
-    def __init__(self, functional, basis_set, root_path, ngpus, \
-        gpu_id, precision, version):
+    def __init__(self, functional, basis_set, precision, root_path, ngpus, \
+        gpu_id, version):
         # Save name of QM calculator and its method
         super().__init__()
 
