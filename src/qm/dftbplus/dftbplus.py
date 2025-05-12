@@ -2,6 +2,7 @@ from __future__ import division
 from qm.qm_calculator import QM_calculator
 from misc import call_name
 import os
+import glob
 
 class DFTBplus(QM_calculator):
     """ Class for common parts of DFTB+
@@ -9,10 +10,11 @@ class DFTBplus(QM_calculator):
         :param object molecule: Molecule object
         :param string sk_path: Path for Slater-Koster files
         :param string install_path: Path for DFTB+ install directory
+        :param string odin_path: Path to the ODIN executable [github.com/thomas-niehaus/odin]
         :param integer nthreads: Number of threads in the calculations
         :param string version: Version of DFTB+
     """
-    def __init__(self, molecule, sk_path, install_path, nthreads, version):
+    def __init__(self, molecule, sk_path, install_path, odin_path, nthreads, version):
         # Save name of QM calculator and its method
         super().__init__()
 
@@ -23,6 +25,11 @@ class DFTBplus(QM_calculator):
             error_message = "Install directory for DFTB+ not found!"
             error_vars = f"install_path = {self.install_path}"
             raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+        self.odin_path = odin_path
+        if (not os.path.isdir(self.odin_path)):
+            error_message = "Install directory for ODIN executable not found!"
+            error_vars = f"install_path = {self.odin_path}"
+            raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")       
 
         self.nthreads = nthreads
         self.version = version
@@ -31,12 +38,17 @@ class DFTBplus(QM_calculator):
         if (isinstance(self.version, str)):
             if (self.version in ["19.1", "20.1", "21.1"]):
                 self.qm_path = os.path.join(self.install_path, "bin")
-                # Note that the Python version can be changed according to the users setting
-                lib_dir = os.path.join(self.install_path, "lib/python3.6/site-packages")
-                if (not os.path.exists(lib_dir)):
-                    error_message = "Please use proper Python version number in '$PYUNIXMDHOME/src/qm/dftbplus/dftbplus.py'!"
+                
+                # Attempt to locate dptools lib path 
+                pattern = self.install_path + "lib/python*/site-packages/dptools-*-py3.12.egg"
+                matches = glob.glob(pattern)
+                if len(matches) == 1:
+                    full_path = matches[0]  
+                    lib_dir = os.path.dirname(full_path)
+                else:
+                    error_message = "Please set proper Python version number manually in '$PYUNIXMDHOME/src/qm/dftbplus/dftbplus.py'!"
                     error_vars = f"library directory = {lib_dir}"
-                    raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+                    raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )") 
             else:
                 error_message = "Other versions not implemented!"
                 error_vars = f"version = {self.version}"

@@ -255,4 +255,44 @@ Format of output files are following. Ouput file of bond angle and dihedral angl
      <MD_step>  <Averaged_bond_length>
      <MD_step>  <Averaged_bond_length>
      ...
- 
+
+extractInitialConditionsFromMD.py
+---------------------------
+Python utility script to create initial conditions (positions, momenta) from a previous DFTB molecular dynamics simulation.
+DFTB+ molecular dynamics runs produce a trajectory file in xyz-format that carry an index n in the form 'MD iter: n'. The
+script can extract one or more of these xyz files and store the result in an xyz-format that can be directly read by PyUnixMD.
+No unit conversion is performed. Units can be set in the DFTB+ input.  
+
++------------------------+-------------------------------------------------------------------+
+| Option                 | Description                                                       |
++========================+===================================================================+
+| **--start**            | Start index of files to extract.                                  |
+|                        |                                                                   |
++------------------------+-------------------------------------------------------------------+
+| **--end**              | End index of files to extract.                                    |
+|                        |                                                                   |
++------------------------+-------------------------------------------------------------------+
+| **--step**             | Skip **step** geometries.                                         |
+|                        |                                                                   |
++------------------------+-------------------------------------------------------------------+
+| **--renumber**         | Label output files not by index but by user defined number.       |
+|                        |                                                                   |
++------------------------+-------------------------------------------------------------------+
+| **--width**            | Width of integer field in 'sample_i.xyz'.                         |
+|                        |                                                                   |
++------------------------+-------------------------------------------------------------------+
+| **-h**                 | Call out help message.                                            |
+|                        |                                                                   |
++------------------------+-------------------------------------------------------------------+
+
+**Ex.** Create initial conditions from indices 2000 to 3000 every 100 steps and start with
+file sample_01.xyz. 
+
+.. code-block:: bash
+
+   $ ls
+   geo_end.xyz
+
+   $ python3 extractInitialConditionsFromMD.py geo_end.xyz --start 2000 --end 3000 --step 100 --width 2 --renumber 1
+
+After running the script, files sample_01.xyz to sample_11.xyz are created.
