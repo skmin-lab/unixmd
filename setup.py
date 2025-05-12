@@ -31,7 +31,7 @@ if (math_lib_type == "lapack"):
     lib_dirs += [math_lib_dir]
     extra_flags += ["-D HAVE_LAPACK"]
 elif (math_lib_type == "mkl"):
-    libs += ["mkl_intel_lp64", "mkl_sequential", "mkl_core", ":libmkl_avx512.so.2"]
+    libs += ["mkl_intel_lp64", "mkl_sequential", "mkl_core", ":libmkl_avx512.so.1"]
     lib_dirs += [math_lib_dir]
     extra_flags += ["-D HAVE_MKL"]
 else:
