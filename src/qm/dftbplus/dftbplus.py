@@ -40,7 +40,7 @@ class DFTBplus(QM_calculator):
                 self.qm_path = os.path.join(self.install_path, "bin")
                 
                 # Attempt to locate dptools lib path 
-                pattern = self.install_path + "lib/python*/site-packages/dptools-*-py3.12.egg"
+                pattern = self.install_path + "lib/python*/site-packages"
                 matches = glob.glob(pattern)
                 if len(matches) == 1:
                     full_path = matches[0]  
