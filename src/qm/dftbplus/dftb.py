@@ -29,7 +29,7 @@ class DFTB(DFTBplus):
         :param double,list cell_length: The lattice vectors of periodic unit cell
         :param string sk_path: Path for Slater-Koster files
         :param string install_path: Path for DFTB+ install directory
-        :param string odin_path: Path to the ODIN executable [github.com/thomas-niehaus/odin]
+        :param string odin_path: Path to the ODIN executable
         :param boolean mpi: Use MPI parallelization
         :param string mpi_path: Path for MPI binary
         :param integer nthreads: Number of threads in the calculations
@@ -39,9 +39,9 @@ class DFTB(DFTBplus):
         l_range_sep=False, lc_method="MatrixBased", l_spin_pol=False, unpaired_elec=0., guess="h0", \
         guess_file="./charges.bin", elec_temp=0., mixer="Broyden", ex_symmetry="singlet", e_window=0., \
         k_point=[1, 1, 1], l_periodic=False, cell_length=[0., 0., 0., 0., 0., 0., 0., 0., 0.,], \
-                 sk_path="./", install_path="./", odin_path="./", mpi=False, mpi_path="./", nthreads=1, version="20.1"):
+        sk_path="./", install_path="./", odin_path="./", mpi=False, mpi_path="./", nthreads=1, version="20.1"):
         # Initialize DFTB+ common variables
-        super(DFTB, self).__init__(molecule, sk_path, install_path, odin_path, nthreads, version)
+        super(DFTB, self).__init__(molecule, sk_path, install_path, nthreads, version)
 
         # Initialize DFTB+ DFTB variables
         self.l_scc = l_scc
@@ -92,6 +92,28 @@ class DFTB(DFTBplus):
         # TDDFTB cannot compute the gradient of several states simultaneously.
         molecule.l_nacme = True
         self.re_calc = True
+
+        # Define ODIN path to calculate NACME in TDDFTB
+        self.odin_path = odin_path
+        if (not os.path.isdir(self.odin_path)):
+            error_message = "Install directory for ODIN executable not found!"
+            error_vars = f"install_path = {self.odin_path}"
+            raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")       
+
+        # ODIN: Get maximum l for each element (order as in geometry file)
+        elements = self.atom_type
+        self.max_ang_string = ""
+        for element in elements:
+            if (max_l[element] == 's'):
+                self.max_ang_string += "1 "
+            elif (max_l[element] == 'p'):
+                self.max_ang_string += "2 "
+            elif (max_l[element] == 'd'):
+                self.max_ang_string += "3 "
+            else:
+                error_message = "Number of basis for f orbital not implemented, see '$PYUNIXMDHOME/src/qm/dftbplus/dftb.py'!"
+                error_vars = f"maximum angular momentum = {max_l[element]}"
+                raise NotImplementedError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Calculate number of basis for current system
         # Set new variable to decide the position of basis functions in terms of atoms
@@ -517,28 +539,11 @@ class DFTB(DFTBplus):
               '-'
               '.skf'
             """)
-            # Get maximum l for each element (order as in geometry file)
-            with open('double.gen', 'r') as f:
-                lines = f.readlines()
-                elements = lines[1].strip().split()
-            maxAngString = ""
-            for element in elements:
-                if (max_l[element] == 's'):
-                    maxAngString += '1 '
-                elif (max_l[element] == 'p'):
-                    maxAngString += '2 '
-                elif (max_l[element] == 'd'):
-                    maxAngString += '3 '
-                else:
-                    error_message = "Number of basis for f orbital not implemented, see '$PYUNIXMDHOME/src/qm/dftbplus/dftb.py'!"
-                    error_vars = f"maximum angular momentum = {max_l[element]}"
-                    raise NotImplementedError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
-            input_odin += maxAngString
+            input_odin += self.max_ang_string
             input_odin += '\n'
             file_name = "odin.in"
             with open(file_name, "w") as f:
                 f.write(input_odin)
-            
             
             # New input for dftb
             input_dftb = ""
@@ -606,8 +611,8 @@ class DFTB(DFTBplus):
             command = f"{qm_command} > log"
 
         # Run ODIN code for calculation of overlap matrix
-        ovr_command = os.path.join(self.odin_path, "odin")
-        ovr_command = f"{ovr_command} < odin.in > odin.log"
+        ovr_path = os.path.join(self.odin_path, "odin")
+        ovr_command = f"{ovr_path} < odin.in > odin.log"
         if (self.calc_coupling and not calc_force_only and istep >= 0 and molecule.nst > 1):
             os.system(ovr_command)
 
