@@ -40,7 +40,7 @@ def parse_md_file(file_path):
     for line in lines:
         iter_match = re.match(r'^\s*Step:\s*(\d+)', line)
         if (iter_match):
-            if ((current_iter != None) and (current_geom)):
+            if ((current_iter != None) and current_geom):
                 geometries[current_iter] = current_geom
             current_iter = int(iter_match.group(1))
             current_geom = []
@@ -51,7 +51,7 @@ def parse_md_file(file_path):
             extras = list(map(float, tokens[-3:]))
             current_geom.append((atom, x, y, z, extras))
 
-    if ((current_iter !=  None) and (current_geom)):
+    if ((current_iter !=  None) and current_geom):
         geometries[current_iter] = current_geom
 
     return geometries
@@ -67,5 +67,5 @@ def save_as_xyz(geometry, filename, step):
             f.write(f"{atom} {x:15.8f} {y:15.8f} {z:15.8f} {extra_str}\n")
     print (f"Saved {filename}", flush=True)
 
-if __name__ == "__main__":
+if (__name__ == "__main__"):
     extract_initial_conditions_from_MD()

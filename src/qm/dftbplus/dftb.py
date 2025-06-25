@@ -29,7 +29,7 @@ class DFTB(DFTBplus):
         :param double,list cell_length: The lattice vectors of periodic unit cell
         :param string sk_path: Path for Slater-Koster files
         :param string install_path: Path for DFTB+ install directory
-        :param string odin_path: Path to the ODIN executable
+        :param string odin_path: Path for ODIN install directory
         :param boolean mpi: Use MPI parallelization
         :param string mpi_path: Path for MPI binary
         :param integer nthreads: Number of threads in the calculations
@@ -97,11 +97,12 @@ class DFTB(DFTBplus):
         self.odin_path = odin_path
         if (not os.path.isdir(self.odin_path)):
             error_message = "Install directory for ODIN executable not found!"
-            error_vars = f"install_path = {self.odin_path}"
-            raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")       
+            error_vars = f"odin_path = {self.odin_path}"
+            raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # ODIN: Get maximum l for each element (order as in geometry file)
-        elements = self.atom_type
+        #elements = self.atom_type
+        elements = np.copy(self.atom_type)
         self.max_ang_string = ""
         for element in elements:
             if (max_l[element] == 's'):
@@ -112,7 +113,7 @@ class DFTB(DFTBplus):
                 self.max_ang_string += "3 "
             else:
                 error_message = "Number of basis for f orbital not implemented, see '$PYUNIXMDHOME/src/qm/dftbplus/dftb.py'!"
-                error_vars = f"maximum angular momentum = {max_l[element]}"
+                error_vars = f"max_l[element] = {max_l[element]}"
                 raise NotImplementedError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Calculate number of basis for current system

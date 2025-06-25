@@ -32,12 +32,12 @@ class DFTBplus(QM_calculator):
         if (isinstance(self.version, str)):
             if (self.version in ["19.1", "20.1", "21.1"]):
                 self.qm_path = os.path.join(self.install_path, "bin")
-                
+ 
                 # Attempt to locate dptools lib path 
-                pattern = self.install_path + "lib/python*/site-packages/"
+                pattern = self.install_path + "/lib/python*/site-packages/"
                 matches = glob.glob(pattern)
                 if (len(matches) == 1):
-                    full_path = matches[0]  
+                    full_path = matches[0]
                     lib_dir = os.path.dirname(full_path)
                 else:
                     error_message = "Please set proper Python version number manually in '$PYUNIXMDHOME/src/qm/dftbplus/dftbplus.py'!"
