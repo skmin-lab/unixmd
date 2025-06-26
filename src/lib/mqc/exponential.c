@@ -35,28 +35,35 @@ static void exponential_coef(int nst, int nesteps, double dt, double *energy, do
 
     double *eenergy = malloc(nst * sizeof(double));
     double **dv = malloc(nst * sizeof(double*));
-    // Eigenvalues of (energy - i * NACME) * dt, D
-    double *eigenvalues = malloc(nst * sizeof(double));
-    double *rwork = malloc((3 * nst - 2) * sizeof(double));
+    double complex *coef_new = malloc(nst * sizeof(double complex));
+
     // (energy - i * NACME) * dt
     double complex **exponent = malloc(nst * sizeof(double complex*));
-    double complex *coef_new = malloc(nst * sizeof(double complex));
-    // Final expression of exp(- i * exponent)
-    double complex **propagator = malloc(nst * sizeof(double complex*));
-    // Diagonal matrix using eigenvalues, exp(- i * D)
-    dcomplex *exp_idiag = malloc((nst * nst) * sizeof(dcomplex));
-    // Eigenvectors of (energy - i * NACME) * dt, P
+    // eigenvectors of (energy - i * NACME) * dt, P
     dcomplex *eigenvectors = malloc((nst * nst) * sizeof(dcomplex));
-    dcomplex *tmp_mat = malloc((nst * nst) * sizeof(dcomplex));
+    // eigenvalues of (energy - i * NACME) * dt, D
+    double *eigenvalues = malloc(nst * sizeof(double));
+
+    // diagonal matrix using eigenvalues, exp(- i * D)
+    dcomplex *exp_idiag = malloc((nst * nst) * sizeof(dcomplex));
     // exp(- i * exponent) = P * exp(- i * D) * P^-1
     dcomplex *exp_iexponent = malloc((nst * nst) * sizeof(dcomplex));
-    // Product of P * exp(- i * D) * P^-1 until previous step
+    // product of (P * exp(- i * D) * P^-1) until previous step
     dcomplex *product_old = malloc((nst * nst) * sizeof(dcomplex));
-    // Product of P * exp(- i * D) * P^-1 until current step
+    // product of (P * exp(- i * D) * P^-1) until current step
     dcomplex *product_new = malloc((nst * nst) * sizeof(dcomplex));
+    // final product of exp(- i * exponent)
+    double complex **propagator = malloc(nst * sizeof(double complex*));
+
+    dcomplex *tmp_mat = malloc((nst * nst) * sizeof(dcomplex));
     dcomplex *identity = malloc((nst * nst) * sizeof(dcomplex));
 
-    int ist, jst, iestep, lwork, info;
+    dcomplex wkopt;
+    dcomplex *work;
+    double *rwork = malloc((3 * nst - 2) * sizeof(double));
+    int lwork, info;
+
+    int ist, jst, iestep;
     double frac, edt;
     double complex tmp_coef;
 
@@ -68,8 +75,6 @@ static void exponential_coef(int nst, int nesteps, double dt, double *energy, do
 
     dcomplex dcone = {1.0, 0.0};
     dcomplex dczero = {0.0, 0.0};
-    dcomplex wkopt;
-    dcomplex *work;
 
     for(ist = 0; ist < nst; ist++){
         // Diagonal element
@@ -179,7 +184,7 @@ static void exponential_coef(int nst, int nesteps, double dt, double *energy, do
 //    zgemv_("N", &nst, &nst, &dcone, product_old, &nst, coef, 1, &dczero, tmp_coef, 1)
     for(ist = 0; ist < nst; ist++){
         tmp_coef = 0.0 + 0.0 * I;
-        for (jst = 0; jst < nst; jst++){
+        for(jst = 0; jst < nst; jst++){
             tmp_coef += propagator[ist][jst] * coef[jst];
         }
         coef_new[ist] = tmp_coef;
@@ -190,26 +195,27 @@ static void exponential_coef(int nst, int nesteps, double dt, double *energy, do
     }
 
     for(ist = 0; ist < nst; ist++){
-        free(propagator[ist]);
-        free(exponent[ist]);
         free(dv[ist]);
+        free(exponent[ist]);
+        free(propagator[ist]);
     }
 
-    free(coef_new);
-    free(propagator);
-    free(exp_iexponent);
-    free(identity);
-    free(product_new);
-    free(product_old);
-    free(eigenvectors);
-    free(exp_idiag);
-    free(tmp_mat);
-    free(eigenvalues);
-    free(rwork);
-    free(exponent);
     free(eenergy);
     free(dv);
+    free(coef_new);
+
+    free(exponent);
+    free(eigenvectors);
+    free(eigenvalues);
+
+    free(exp_idiag);
+    free(exp_iexponent);
+    free(product_old);
+    free(product_new);
+    free(propagator);
+
+    free(tmp_mat);
+    free(identity);
+    free(rwork);
 
 }
-
-
