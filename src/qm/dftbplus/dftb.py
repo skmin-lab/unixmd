@@ -101,7 +101,6 @@ class DFTB(DFTBplus):
             raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # ODIN: Get maximum l for each element (order as in geometry file)
-        #elements = self.atom_type
         elements = np.copy(self.atom_type)
         self.max_ang_string = ""
         for element in elements:

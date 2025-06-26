@@ -121,7 +121,7 @@ speed. (TD)DFTB and SSR methods are interfaced with the current version of PyUNI
 | **install_path**       | Path for DFTB+ install directory               | *'./'*             |
 | *(string)*             |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
-| **odin_path**          | Path for ODIN install directory                | *'./'*             | 
+| **odin_path**          | Path for ODIN install directory                | *'./'*             |
 | *(string)*             |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
 | **l_mpi**              | Use MPI parallelization                        | *False*            |
@@ -320,7 +320,7 @@ Detailed description of parameters
   This parameter determines the path for ODIN install directory. If the odin executable
   is located at '/path/to/binary/odin', **odin_path** must be *'/path/to/binary/'*.
  
-\ 
+\
 
 - **mpi** *(boolean)* - Default: *False*
 
