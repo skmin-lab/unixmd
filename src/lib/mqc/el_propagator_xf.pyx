@@ -11,6 +11,12 @@ cdef extern from "rk4_xf.c":
         double ***phase, double complex *coef, double complex **rho, int verbosity, \
         double *dotpopdec)
 
+cdef extern from "exponential_xf.c":
+    void exponential(int nat, int ndim, int nst, int nesteps, double dt, char *elec_object, \
+        bint *l_coh, double *mass, double *energy, double *energy_old, double **sigma, \
+        double **nacme, double **nacme_old, double **pos, double **qmom, double ***aux_pos, \
+        double ***phase, double complex *coef, int verbosity, double *dotpopdec)
+
 def el_run(md):
     cdef:
         char *elec_object_c
@@ -124,6 +130,10 @@ def el_run(md):
     if (md.propagator == "rk4"):
         rk4(aux_nat, aux_ndim, nst, nesteps, dt, elec_object_c, l_coh, mass, energy, \
             energy_old, sigma, nacme, nacme_old, pos, qmom, aux_pos, phase, coef, rho, verbosity, dotpopdec)
+
+    elif (md.propagator == "exponential"):
+        exponential(aux_nat, aux_ndim, nst, nesteps, dt, elec_object_c, l_coh, mass, energy, \
+            energy_old, sigma, nacme, nacme_old, pos, qmom, aux_pos, phase, coef, verbosity, dotpopdec)
 
     # Assign variables from C to python
     if (md.elec_object == "coefficient"):
