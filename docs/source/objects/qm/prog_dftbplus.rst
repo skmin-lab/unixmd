@@ -121,7 +121,7 @@ speed. (TD)DFTB and SSR methods are interfaced with the current version of PyUNI
 | **install_path**       | Path for DFTB+ install directory               | *'./'*             |
 | *(string)*             |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
-| **odin_path**          | Path for ODIN install directory                | *'./'*             |                                                                                             
+| **odin_path**          | Path for ODIN install directory                | *'./'*             |
 | *(string)*             |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
 | **l_mpi**              | Use MPI parallelization                        | *False*            |
@@ -158,7 +158,7 @@ Example input for (TD)DFTB
 
    qm = qm.dftbplus.DFTB(molecule=mol, l_scc=True, unpaired_elec=0, guess='h0', \
        ex_symmetry='singlet', sk_path='./', \
-       install_path='/opt/dftbplus-20.1/install-openmp/', odin_path='opt/odin/bin/')
+       install_path='/opt/dftbplus-20.1/install-openmp/', odin_path='/opt/odin/bin/')
 
    md = mqc.SHXF(molecule=mol, nsteps=100, nesteps=20, dt=0.5, unit_dt='au', \
        sigma=0.1, istate=1, hop_rescale='energy', hop_reject='keep', elec_object='density')
@@ -315,12 +315,12 @@ Detailed description of parameters
 
 \
 
-- **odin_path** *(string)* - Default: *'./'*                                                                                                                                              
-                                                                                                                                                                                             
+- **odin_path** *(string)* - Default: *'./'*
+  
   This parameter determines the path for ODIN install directory. If the odin executable
   is located at '/path/to/binary/odin', **odin_path** must be *'/path/to/binary/'*.
-                                                                                         
-\    
+ 
+\
 
 - **mpi** *(boolean)* - Default: *False*
 
