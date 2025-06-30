@@ -14,6 +14,15 @@ speed. (TD)DFTB and SSR methods are interfaced with the current version of PyUNI
   For Ehrenfest dynamics, it shows no energy conservation since it cannot calculate
   nonadiabatic couplings directly which is used for nuclear propagation.
 
+- In addition to the DFTB+ executable, simulations employing the (TD)DFTB method require the ODIN software
+  package :cite:`odin_github`. ODIN is responsible for computing the DFTB overlap matrix and, unlike DFTB+,
+  is capable of handling very short interatomic distances. This capability is particularly important in
+  the evaluation of nonadiabatic couplings, where such distances can occur. For accurate simulations,
+  special Slater-Koster parameter sets are necessary. Specifically, the tabulation of homo-nuclear
+  interactions should begin at interatomic distances no greater than 0.02 atomic units. Many widely used
+  Slater-Koster sets (e.g., mio-0-1) do not meet this criterion, as they often contain placeholder entries
+  (dummy lines) for short-range interactions.
+
 - In general, spin-restricted ensemble-referenced Kohn-Sham (REKS) method can be classified
   as single-state REKS, state-averaged REKS (SA-REKS) and state-interaction SA-REKS (SSR).
   In single-state REKS, only ground state is calculated and it can treat the multireference
@@ -112,6 +121,9 @@ speed. (TD)DFTB and SSR methods are interfaced with the current version of PyUNI
 | **install_path**       | Path for DFTB+ install directory               | *'./'*             |
 | *(string)*             |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
+| **odin_path**          | Path for ODIN install directory                | *'./'*             |
+| *(string)*             |                                                |                    |
++------------------------+------------------------------------------------+--------------------+
 | **l_mpi**              | Use MPI parallelization                        | *False*            |
 | *(boolean)*            |                                                |                    |
 +------------------------+------------------------------------------------+--------------------+
@@ -146,7 +158,7 @@ Example input for (TD)DFTB
 
    qm = qm.dftbplus.DFTB(molecule=mol, l_scc=True, unpaired_elec=0, guess='h0', \
        ex_symmetry='singlet', sk_path='./', \
-       install_path='/opt/dftbplus-20.1/install-openmp/')
+       install_path='/opt/dftbplus-20.1/install-openmp/', odin_path='/opt/odin/bin/')
 
    md = mqc.SHXF(molecule=mol, nsteps=100, nesteps=20, dt=0.5, unit_dt='au', \
        sigma=0.1, istate=1, hop_rescale='energy', hop_reject='keep', elec_object='density')
@@ -301,6 +313,13 @@ Detailed description of parameters
   (For example, `$DFTB` is '/my_disk/my_name/dftbplus-**version**/').
   Thus, **install_path** must be *'`$DFTB`/install/'*, not *'`$DFTB`/install/bin/'*.
 
+\
+
+- **odin_path** *(string)* - Default: *'./'*
+  
+  This parameter determines the path for ODIN install directory. If the odin executable
+  is located at '/path/to/binary/odin', **odin_path** must be *'/path/to/binary/'*.
+ 
 \
 
 - **mpi** *(boolean)* - Default: *False*

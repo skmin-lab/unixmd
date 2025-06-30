@@ -2,6 +2,7 @@ from __future__ import division
 from qm.qm_calculator import QM_calculator
 from misc import call_name
 import os
+import glob
 
 class DFTBplus(QM_calculator):
     """ Class for common parts of DFTB+
@@ -31,12 +32,17 @@ class DFTBplus(QM_calculator):
         if (isinstance(self.version, str)):
             if (self.version in ["19.1", "20.1", "21.1"]):
                 self.qm_path = os.path.join(self.install_path, "bin")
-                # Note that the Python version can be changed according to the users setting
-                lib_dir = os.path.join(self.install_path, "lib/python3.6/site-packages")
-                if (not os.path.exists(lib_dir)):
-                    error_message = "Please use proper Python version number in '$PYUNIXMDHOME/src/qm/dftbplus/dftbplus.py'!"
+ 
+                # Attempt to locate dptools lib path 
+                pattern = self.install_path + "/lib/python*/site-packages/"
+                matches = glob.glob(pattern)
+                if (len(matches) == 1):
+                    full_path = matches[0]
+                    lib_dir = os.path.dirname(full_path)
+                else:
+                    error_message = "Please set proper Python version number manually in '$PYUNIXMDHOME/src/qm/dftbplus/dftbplus.py'!"
                     error_vars = f"library directory = {lib_dir}"
-                    raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
+                    raise FileNotFoundError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )") 
             else:
                 error_message = "Other versions not implemented!"
                 error_vars = f"version = {self.version}"
@@ -51,6 +57,6 @@ class DFTBplus(QM_calculator):
         os.environ["PYTHONPATH"] += os.pathsep + os.path.join(lib_dir)
 
         # Check the atomic species
-        self.atom_type = set(molecule.symbols[0:molecule.nat_qm])
+        self.atom_type = list(dict.fromkeys(molecule.symbols[0:molecule.nat_qm]))
 
 
