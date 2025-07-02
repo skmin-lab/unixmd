@@ -777,5 +777,3 @@ class SHXF(MQC):
                     print (f" {category}{istep + 1:>9d}  {ievent}", flush=True)
         self.event["HOP"] = []
         self.event["DECO"] = []
-
-

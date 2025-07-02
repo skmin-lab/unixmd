@@ -716,7 +716,7 @@ class CT(MQC):
         """)
 
         # Print INIT for each trajectory at each step
-        INIT = f" #INFO_TRAJ{'STEP':>8s}{'Kinetic(H)':>15s}{'Potential(H)':>15s}{'Total(H)':>13s}{'Temperature(K)':>17s}{'norm':>8s}"
+        INIT = f" #INFO_TRAJ{'STEP':>8s}{'Kinetic(H)':>15s}{'Potential(H)':>15s}{'Total(H)':>13s}{'Temperature(K)':>17s}{'Norm.':>8s}"
         dynamics_step_info += INIT
 
         print (dynamics_step_info, flush=True)
