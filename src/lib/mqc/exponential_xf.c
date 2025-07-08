@@ -37,6 +37,7 @@ static void exponential(int nat, int ndim, int nst, int nesteps, double dt, char
 
 }
 
+// Routine for coefficient propagation scheme in exponential propagator
 static void exponential_coef(int nat, int ndim, int nst, int nesteps, double dt, int *l_coh,
     double *mass, double *energy, double *energy_old, double **sigma, double **nacme,
     double **nacme_old, double **pos, double **qmom, double ***aux_pos, double ***phase, double complex *coef,
@@ -75,6 +76,9 @@ static void exponential_coef(int nat, int ndim, int nst, int nesteps, double dt,
     double *rwork = malloc((3 * nst - 2) * sizeof(double));
     int lwork, info;
 
+    dcomplex dcone = {1.0, 0.0};
+    dcomplex dczero = {0.0, 0.0};
+
     int ist, jst, isp, iat, iestep;
     double frac, edt;
     double complex tmp_coef;
@@ -87,9 +91,6 @@ static void exponential_coef(int nat, int ndim, int nst, int nesteps, double dt,
         exponent[ist] = malloc(nst * sizeof(double complex));
         propagator[ist] = malloc(nst * sizeof(double complex));
     }
-
-    dcomplex dcone = {1.0, 0.0};
-    dcomplex dczero = {0.0, 0.0};
 
     for(ist = 0; ist < nst; ist++){
         // Diagonal element
@@ -116,18 +117,6 @@ static void exponential_coef(int nat, int ndim, int nst, int nesteps, double dt,
         exp_idiag[ist].real = 0.0;
         exp_idiag[ist].imag = 0.0;
     }
-
-    /*
-    // TODO : Use memset
-    memset(identity, 0, (nst * nst)*sizeof(identity[0]));
-    memset(product_old, 0, (nst * nst)*sizeof(product_old[0]));
-    memset(exp_idiag, 0, (nst * nst)*sizeof(exp_idiag[0]));
-
-    for(ist = 0; ist < nst; ist++){
-        identity[nst * ist + ist].real = 1.0;
-        product_old[nst * ist + ist].real = 1.0;
-    }
-    */
 
     frac = 1.0 / (double)nesteps;
     edt = dt * frac;
