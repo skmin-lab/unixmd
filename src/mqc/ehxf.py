@@ -622,21 +622,14 @@ class EhXF(MQC):
 
             :param integer istep: Current MD step
         """
-        if (istep == -1):
-            max_prob = 0.
-            hstate = self.rstate
-        else:
-            max_prob = max(self.prob)
-            hstate = np.where(self.prob == max_prob)[0][0]
-
         ctemp = self.mol.ekin * 2. / float(self.mol.ndof) * au_to_K
         norm = 0.
         for ist in range(self.mol.nst):
             norm += self.mol.rho.real[ist, ist]
 
         # Print INFO for each step
-        INFO = f" INFO{istep + 1:>9d}{self.rstate:>5d}{max_prob:11.5f} ({self.rstate}->{hstate}){self.rand:11.5f}"
-        INFO += f"{self.mol.ekin:14.8f}{self.mol.epot:15.8f}{self.mol.etot:15.8f}"
+        INFO = f" INFO{istep + 1:>9d}{self.rstate:>5d}"
+        INFO += f"{self.mol.ekin:16.8f}{self.mol.epot:15.8f}{self.mol.etot:15.8f}"
         INFO += f"{ctemp:13.6f}"
         INFO += f"{norm:11.5f}"
         print (INFO, flush=True)
@@ -644,8 +637,9 @@ class EhXF(MQC):
         # Print DEBUG1 for each step
         if (self.verbosity >= 1):
             DEBUG1 = f" DEBUG1{istep + 1:>7d}"
+            DEBUG1 += f"{self.rand:11.5f}"
             for ist in range(self.mol.nst):
-                DEBUG1 += f"{self.mol.states[ist].energy:17.8f} "
+                DEBUG1 += f"{self.acc_prob[ist]:12.5f} ({self.rstate}->{ist})"
             print (DEBUG1, flush=True)
 
         # Print event in EhXF
@@ -655,3 +649,5 @@ class EhXF(MQC):
                     print (f" {category}{istep + 1:>9d}  {ievent}", flush=True)
         self.event["HOP"] = []
         self.event["DECO"] = []
+
+
