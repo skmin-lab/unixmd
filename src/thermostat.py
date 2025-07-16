@@ -49,7 +49,7 @@ class Rescale1(Thermostat):
         molecule.vel *= alpha
 
         # Rescale the auxiliary velocities
-        if (md.md_type in ["SHXF"]):
+        if (md.md_type in ["SHXF", "EhXF"]):
             md.aux.vel *= alpha
             md.aux.vel_old *= alpha
 
@@ -95,7 +95,7 @@ class Rescale2(Thermostat):
             molecule.vel *= alpha
 
             # Rescale the auxiliary velocities
-            if (md.md_type in ["SHXF"]):
+            if (md.md_type in ["SHXF", "EhXF"]):
                 md.aux.vel *= alpha
                 md.aux.vel_old *= alpha
 
@@ -151,7 +151,7 @@ class Berendsen(Thermostat):
         molecule.vel *= alpha
 
         # Rescale the auxiliary velocities
-        if (md.md_type in ["SHXF"]):
+        if (md.md_type in ["SHXF", "EhXF"]):
             md.aux.vel *= alpha
             md.aux.vel_old *= alpha
 
@@ -308,7 +308,7 @@ class NHC(Thermostat):
         molecule.vel *= alpha
 
         # Rescale the auxiliary velocities
-        if (md.md_type in ["SHXF"]):
+        if (md.md_type in ["SHXF", "EhXF"]):
             md.aux.vel *= alpha
             md.aux.vel_old *= alpha
 

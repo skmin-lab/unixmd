@@ -520,8 +520,14 @@ class EhXF(MQC):
         # Write the common part
         super().write_md_output(unixmd_dir, calc_coupling, istep)
 
+        # Write hopping-related quantities
+        self.write_sh(unixmd_dir, istep)
+
         # Write time-derivative BO population
         self.write_dotpop(unixmd_dir, istep)
+
+        # Write decoherence information
+        self.write_dec(unixmd_dir, istep)
 
     def write_sh(self, unixmd_dir, istep):
         """ Write hopping-related quantities into files
@@ -552,6 +558,36 @@ class EhXF(MQC):
             tmp = f'{istep + 1:9d}' + "".join([f'{pop:15.8f}' for pop in self.dotpopdec])
             typewriter(tmp, unixmd_dir, "DOTPOPDEC", "a")
 
+    def write_dec(self, unixmd_dir, istep):
+        """ Write XF-based decoherence information
+
+            :param string unixmd_dir: PyUNIxMD directory
+            :param integer istep: Current MD step
+        """
+        # Write auxiliary trajectories
+        if (self.verbosity >= 2 and True in self.l_coh):
+            # Write quantum momenta
+            tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Momentum (au)' + \
+                "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
+                "".join([f'{self.qmom[iat, isp]:15.8f}' for isp in range(self.aux.ndim)]) for iat in range(self.aux.nat)])
+            typewriter(tmp, unixmd_dir, f"QMOM", "a")
+
+            # Write auxiliary variables
+            for ist in range(self.mol.nst):
+                if (self.l_coh[ist]):
+                    # Write auxiliary phase
+                    tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Phase (au)' + \
+                        "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
+                        "".join([f'{self.phase[ist, iat, isp]:15.8f}' for isp in range(self.aux.ndim)]) for iat in range(self.aux.nat)])
+                    typewriter(tmp, unixmd_dir, f"AUX_PHASE_{ist}", "a")
+
+                    # Write auxiliary trajectory movie files
+                    tmp = f'{self.aux.nat:6d}\n{"":2s}Step:{istep + 1:6d}{"":12s}Position(A){"":34s}Velocity(au)' + \
+                        "".join(["\n" + f'{self.aux.symbols[iat]:5s}' + \
+                        "".join([f'{self.aux.pos[ist, iat, isp] * au_to_A:15.8f}' for isp in range(self.aux.ndim)]) + \
+                        "".join([f"{self.aux.vel[ist, iat, isp]:15.8f}" for isp in range(self.aux.ndim)]) for iat in range(self.aux.nat)])
+                    typewriter(tmp, unixmd_dir, f"AUX_MOVIE_{ist}.xyz", "a")
+
     def print_init(self, qm, mm, restart):
         """ Routine to print the initial information of dynamics
 
@@ -571,8 +607,13 @@ class EhXF(MQC):
         """)
 
         # Print INIT for each step
-        INIT = f" #INFO{'STEP':>8s}{'Kinetic(H)':>15s}{'Potential(H)':>15s}{'Total(H)':>13s}{'Temperature(K)':>17s}{'norm':>8s}"
+        INIT = f" #INFO{'STEP':>8s}{'State':>7s}{'Kinetic(H)':>14s}{'Potential(H)':>15s}{'Total(H)':>13s}{'Temperature(K)':>17s}{'Norm.':>8s}"
         dynamics_step_info += INIT
+
+        # Print DEBUG1 for each step
+        if (self.verbosity >= 1):
+            DEBUG1 = f" #DEBUG1{'STEP':>6s}{'Rand.':>11s}{'Acc. Hopping Prob.':>28s}"
+            dynamics_step_info += "\n" + DEBUG1
 
         print (dynamics_step_info, flush=True)
 
@@ -581,21 +622,14 @@ class EhXF(MQC):
 
             :param integer istep: Current MD step
         """
-        if (istep == -1):
-            max_prob = 0.
-            hstate = self.rstate
-        else:
-            max_prob = max(self.prob)
-            hstate = np.where(self.prob == max_prob)[0][0]
-
         ctemp = self.mol.ekin * 2. / float(self.mol.ndof) * au_to_K
         norm = 0.
         for ist in range(self.mol.nst):
             norm += self.mol.rho.real[ist, ist]
 
         # Print INFO for each step
-        INFO = f" INFO{istep + 1:>9d}{self.rstate:>5d}{max_prob:11.5f} ({self.rstate}->{hstate}){self.rand:11.5f}"
-        INFO += f"{self.mol.ekin:14.8f}{self.mol.epot:15.8f}{self.mol.etot:15.8f}"
+        INFO = f" INFO{istep + 1:>9d}{self.rstate:>5d}"
+        INFO += f"{self.mol.ekin:16.8f}{self.mol.epot:15.8f}{self.mol.etot:15.8f}"
         INFO += f"{ctemp:13.6f}"
         INFO += f"{norm:11.5f}"
         print (INFO, flush=True)
@@ -603,8 +637,9 @@ class EhXF(MQC):
         # Print DEBUG1 for each step
         if (self.verbosity >= 1):
             DEBUG1 = f" DEBUG1{istep + 1:>7d}"
+            DEBUG1 += f"{self.rand:11.5f}"
             for ist in range(self.mol.nst):
-                DEBUG1 += f"{self.mol.states[ist].energy:17.8f} "
+                DEBUG1 += f"{self.acc_prob[ist]:12.5f} ({self.rstate}->{ist})"
             print (DEBUG1, flush=True)
 
         # Print event in EhXF
@@ -614,3 +649,5 @@ class EhXF(MQC):
                     print (f" {category}{istep + 1:>9d}  {ievent}", flush=True)
         self.event["HOP"] = []
         self.event["DECO"] = []
+
+
