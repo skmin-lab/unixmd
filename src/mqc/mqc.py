@@ -539,6 +539,11 @@ class MQC(object):
                     do_qmmm = True
                 else:
                     do_qmmm = False
+            elif (qm.qm_prog == "terachem"):
+                if (qm.qm_method == "DFT"):
+                    do_qmmm = True
+                else:
+                    do_qmmm = False
             else:
                 do_qmmm = False
         else:
