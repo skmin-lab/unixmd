@@ -125,7 +125,7 @@ static void rk4_coef(int nat, int ndim, int nst, int nesteps, double dt, int *l_
     }
 
     if(verbosity >= 1){
-        xf_print_coef(nst, coef, xf_c_dot, dotpopdec);
+        xf_print_coef(nat, ndim, nst, l_coh, mass, sigma, pos, qmom, aux_pos, phase, coef, dotpopdec);
     }
 
     for(ist = 0; ist < nst; ist++){
@@ -247,7 +247,7 @@ static void rk4_rho(int nat, int ndim, int nst, int nesteps, double dt, int *l_c
     }
 
     if(verbosity >= 1){
-        xf_print_rho(nst, xf_rho_dot, dotpopdec); 
+        xf_print_rho(nat, ndim, nst, l_coh, mass, sigma, pos, qmom, aux_pos, phase, rho, dotpopdec); 
     }
 
     for(ist = 0; ist < nst; ist++){
