@@ -22,14 +22,15 @@ Requirements
 ============
 * Python 3.6 or later
 * Numpy >= 1.20.0
+* Scipy >= 1.6.0
 * Cython https://cython.org
 * BLAS/LAPACK libraries or Math Kernel Library
 
-You can easily install the latest Numpy and Cython via Python's pip command.
+You can easily install the latest Numpy, Scipy and Cython via Python's pip command.
 
 ::
-        
-  $ pip install --upgrade numpy Cython
+
+  $ pip install --upgrade numpy scipy Cython
     
 Build
 =====

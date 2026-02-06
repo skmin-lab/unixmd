@@ -106,6 +106,6 @@ def test_mqc_case(args, case_id):
         if args.md != 5:    # not CT
             _compare_file(case_id / "md" / tg, REF_ROOT / case_id / "md" / tg, tg)
         else:    # CT
-            _compare_file(case_id / "TRAJ.1" / "md" / tg, REF_ROOT / case_id / "TRAJ.1" / "md" / tg, tg)
-            _compare_file(case_id / "TRAJ.2" / "md" / tg, REF_ROOT / case_id / "TRAJ.2" / "md" / tg, tg)
+            _compare_file(case_id / "TRAJ_1" / "md" / tg, REF_ROOT / case_id / "TRAJ_1" / "md" / tg, tg)
+            _compare_file(case_id / "TRAJ_2" / "md" / tg, REF_ROOT / case_id / "TRAJ_2" / "md" / tg, tg)
 

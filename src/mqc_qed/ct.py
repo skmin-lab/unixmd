@@ -1,7 +1,7 @@
 from __future__ import division
 from lib.libctmqc import el_run
 from mqc_qed.mqc import MQC_QED
-from misc import eps, au_to_K, au_to_A, call_name, typewriter, gaussian1d
+from misc import eps, au_to_K, au_to_A, call_name, typewriter, gaussian1d, close_files
 import os, shutil, textwrap
 import numpy as np
 import pickle
@@ -225,6 +225,10 @@ class CT(MQC_QED):
             with open(restart_file, 'wb') as f:
                 pickle.dump({'qm':qm, 'md':self}, f)
 
+        # Close open file handles for all trajectory directories
+        for itraj in range(self.ntrajs):
+            close_files(unixmd_dirs[itraj])
+
         # Delete scratch directory
         if (not l_save_scr):
             for itraj in range(self.ntrajs):
@@ -362,42 +366,48 @@ class CT(MQC_QED):
 
             :param integer istep: Current MD step
         """
-        threshold = self.dist_parameter * self.min_sigma #/ self.ntrajs
-        cutoff = np.ones((self.ntrajs, self.nat_qm, self.ndim))
+        threshold = self.dist_parameter * self.min_sigma
+
+        # Build position array for all trajectories: (ntrajs, nat_qm, ndim)
+        all_pos = np.array([self.mols[jtraj].pos[0:self.nat_qm] for jtraj in range(self.ntrajs)])
+
         for itraj in range(self.ntrajs):
-            if (self.const_dist_cutoff == None):
-                if (istep == -1):
-                    cutoff *= threshold
+            # Determine cutoff for this trajectory
+            if self.const_dist_cutoff is None:
+                if istep == -1:
+                    cutoff = threshold * np.ones((self.nat_qm, self.ndim))
                 else:
-                    cutoff[itraj] = self.dist_parameter * self.sigma_lk[itraj, 0] 
+                    cutoff = self.dist_parameter * self.sigma_lk[itraj, 0]
             else:
-                cutoff = self.const_dist_cutoff * np.ones((self.ntrajs, self.nat_qm, self.ndim))
+                cutoff = self.const_dist_cutoff * np.ones((self.nat_qm, self.ndim))
 
-            # Variable to determine how many trajecories are in cutoff.
-            self.count_ntrajs[itraj] = np.zeros((self.nat_qm, self.ndim)) 
+            # Vectorized: compute distance from itraj to all trajectories
+            # pos_diff shape: (ntrajs, nat_qm, ndim)
+            pos_diff = np.abs(all_pos - self.mols[itraj].pos[0:self.nat_qm])
 
-            R2_tmp = np.zeros((self.nat_qm, self.ndim)) # Temporary variable for R**2
-            R_tmp = np.zeros((self.nat_qm, self.ndim))  # Temporary variable for R
+            # Create mask where distance <= cutoff: (ntrajs, nat_qm, ndim)
+            mask = pos_diff <= cutoff
 
-            for jtraj in range(self.ntrajs):
-                pos_diff = self.mols[jtraj].pos - self.mols[itraj].pos # Dimension = (self.nat_qm, self.ndim)
-                for iat in range(self.nat_qm):
-                    for idim in range(self.ndim):
-                        distance = abs(pos_diff[iat, idim]) # Distance between i-th dimenstion of i-th atom in itraj and jtraj
-                        if (distance <= cutoff[itraj, iat, idim]):
-                            R_tmp[iat, idim] += self.mols[jtraj].pos[iat, idim] # Dimension = (self.nat_qm, self.ndim)
-                            R2_tmp[iat, idim] += self.mols[jtraj].pos[iat, idim] * self.mols[jtraj].pos[iat, idim] # Dimension = (self.nat_qm, self.ndim)
-                            self.count_ntrajs[itraj, iat, idim] += 1
+            # Count trajectories within cutoff for each (atom, dim)
+            self.count_ntrajs[itraj] = np.sum(mask, axis=0).astype(np.float64)
 
-            for iat in range(self.nat_qm):
-                for idim in range(self.ndim):
-                    avg_R = R_tmp[iat, idim] / self.count_ntrajs[itraj, iat, idim]
-                    avg_R2 = R2_tmp[iat, idim] / self.count_ntrajs[itraj, iat, idim]
+            # Accumulate R and R² using mask
+            R_tmp = np.sum(np.where(mask, all_pos, 0.), axis=0)
+            R2_tmp = np.sum(np.where(mask, all_pos ** 2, 0.), axis=0)
 
-                    self.sigma_lk[itraj, 0, iat, idim] = np.sqrt((avg_R2 - avg_R ** 2)) \
-                        / np.sqrt(np.sqrt(self.count_ntrajs[itraj, iat, idim])) # / np.sqrt(np.sqrt(count_ntrajs)) is artifact to modulate sigma.
-                    if (self.sigma_lk[itraj, 0, iat, idim] <= self.min_sigma or self.count_ntrajs[itraj, iat, idim] == 1):
-                        self.sigma_lk[itraj, 0, iat, idim] = self.min_sigma
+            # Compute averages and sigma (vectorized)
+            avg_R = R_tmp / self.count_ntrajs[itraj]
+            avg_R2 = R2_tmp / self.count_ntrajs[itraj]
+
+            variance = avg_R2 - avg_R ** 2
+            # Handle numerical issues where variance might be slightly negative
+            variance = np.maximum(variance, 0.)
+
+            self.sigma_lk[itraj, 0] = np.sqrt(variance) / np.sqrt(np.sqrt(self.count_ntrajs[itraj]))
+
+            # Apply minimum sigma threshold
+            min_mask = (self.sigma_lk[itraj, 0] <= self.min_sigma) | (self.count_ntrajs[itraj] == 1)
+            self.sigma_lk[itraj, 0] = np.where(min_mask, self.min_sigma, self.sigma_lk[itraj, 0])
 
     def calculate_slope(self):
         """ Routine to calculate slope
@@ -405,147 +415,167 @@ class CT(MQC_QED):
         # (2-1) Calculate w_ij
         # g_i means nuclear density at the position of i-th classical trajectory.
         # prod_g_i is to multiply gaussians with respect to atoms and spaces.
-        self.g_i = np.zeros((self.ntrajs)) 
-        self.prod_g_i = np.ones((self.ntrajs, self.ntrajs))
-        for itraj in range(self.ntrajs):
-            for jtraj in range(self.ntrajs):
-                for iat in range(self.nat_qm):
-                    for idim in range(self.ndim):
-                        # gaussian1d(x, pre-factor, sigma, mean)
-                        # gaussian1d(R^{itraj}, 1.0, sigma^{jtraj}, R^{jtraj})
-                        self.prod_g_i[itraj, jtraj] *= gaussian1d(self.mols[itraj].pos[iat, idim], 1., \
-                            self.sigma_lk[jtraj, 0, iat, idim], self.mols[jtraj].pos[iat, idim])
-                self.g_i[itraj] += self.prod_g_i[itraj, jtraj]
 
-        # w_ij is defined as W_IJ in SI of J. Phys. Chem. Lett., 2017, 8, 3048-3055.
-        w_ij = np.zeros((self.ntrajs, self.ntrajs, self.nat_qm, self.ndim))
-        for itraj in range(self.ntrajs):
-            for jtraj in range(self.ntrajs):
-                for iat in range(self.nat_qm):
-                    for idim in range(self.ndim):
-                        w_ij[itraj, jtraj, iat, idim] = self.prod_g_i[itraj, jtraj] /\
-                        (2. * self.sigma_lk[jtraj, 0, iat, idim] ** 2 * self.g_i[itraj])
+        # Build position array for all trajectories: (ntrajs, nat_qm, ndim)
+        all_pos = np.array([self.mols[jtraj].pos[0:self.nat_qm] for jtraj in range(self.ntrajs)])
 
-        # Smoothing 
-        self.w_k = np.zeros((self.ntrajs, self.nst))
-        rho = np.zeros((self.ntrajs, self.nst))
-        for itraj in range(self.ntrajs):
-            for jtraj in range(self.ntrajs):
-                for ist in range(self.nst):
-                    self.w_k[itraj, ist] += self.prod_g_i[itraj, jtraj] * self.mols[jtraj].rho.real[ist, ist] / self.g_i[itraj]
+        # sigma_lk[:, 0] has shape (ntrajs, nat_qm, ndim)
+        sigma = self.sigma_lk[:, 0, :, :]  # (ntrajs, nat_qm, ndim)
 
-            index_lk = -1
+        # Vectorized Gaussian calculation:
+        # For each (itraj, jtraj), compute product of 1D Gaussians over all (iat, idim)
+        # gaussian1d(x, 1, sigma, x0) = 1/(sigma*sqrt(2*pi)) * exp(-(x-x0)^2 / (2*sigma^2))
+
+        # pos_i[itraj, iat, idim] - pos_j[jtraj, iat, idim] for all pairs
+        # Shape: (ntrajs, ntrajs, nat_qm, ndim) where [i,j] = pos[i] - pos[j]
+        pos_diff = all_pos[:, np.newaxis, :, :] - all_pos[np.newaxis, :, :, :]
+
+        # sigma[jtraj, iat, idim] for the Gaussian centered at jtraj
+        # Shape for broadcasting: (1, ntrajs, nat_qm, ndim)
+        sigma_j = sigma[np.newaxis, :, :, :]
+
+        # Compute log of Gaussian to avoid underflow, then sum and exp
+        # log(gaussian) = -log(sigma) - 0.5*log(2*pi) - (x-x0)^2 / (2*sigma^2)
+        log_gauss = -np.log(sigma_j) - 0.5 * np.log(2. * np.pi) - pos_diff ** 2 / (2. * sigma_j ** 2)
+
+        # Sum over atoms and dimensions, then exp to get product of Gaussians
+        # Shape: (ntrajs, ntrajs)
+        self.prod_g_i = np.exp(np.sum(log_gauss, axis=(2, 3)))
+
+        # g_i[itraj] = sum over jtraj of prod_g_i[itraj, jtraj]
+        self.g_i = np.sum(self.prod_g_i, axis=1)
+
+        # w_ij[itraj, jtraj, iat, idim] = prod_g_i[itraj, jtraj] / (2 * sigma[jtraj, iat, idim]^2 * g_i[itraj])
+        # Shape: (ntrajs, ntrajs, nat_qm, ndim)
+        w_ij = (self.prod_g_i[:, :, np.newaxis, np.newaxis] /
+                (2. * sigma_j ** 2 * self.g_i[:, np.newaxis, np.newaxis, np.newaxis]))
+
+        # Smoothing: calculate w_k (weighted population)
+        # Build rho array: (ntrajs, nst)
+        rho_diag = np.array([self.mols[jtraj].rho.real.diagonal() for jtraj in range(self.ntrajs)])
+
+        # w_k[itraj, ist] = sum_jtraj(prod_g_i[itraj, jtraj] * rho[jtraj, ist]) / g_i[itraj]
+        # Shape: (ntrajs, nst)
+        self.w_k = np.einsum('ij,jk->ik', self.prod_g_i, rho_diag) / self.g_i[:, np.newaxis]
+
+        # Apply smoothing: zero phase where w_k is outside threshold
+        for itraj in range(self.ntrajs):
             for ist in range(self.nst):
                 for jst in range(ist + 1, self.nst):
-                    index_lk += 1
-
-                    l_smooth = ((self.w_k[itraj, ist] < self.lower_th) or (self.w_k[itraj, ist] > self.upper_th) 
+                    l_smooth = ((self.w_k[itraj, ist] < self.lower_th) or (self.w_k[itraj, ist] > self.upper_th)
                         or (self.w_k[itraj, jst] < self.lower_th) or (self.w_k[itraj, jst] > self.upper_th))
-
-                    if (l_smooth):
-                        self.phase[itraj, ist] = np.zeros((self.nat_qm, self.ndim))
-                        self.phase[itraj, jst] = np.zeros((self.nat_qm, self.ndim))
+                    if l_smooth:
+                        self.phase[itraj, ist, :, :] = 0.
+                        self.phase[itraj, jst, :, :] = 0.
 
         # (2-2) Calculate slope_i
-        # the slope is calculated as a sum over j of w_ij
-        self.slope_i = np.zeros((self.ntrajs, self.nat_qm, self.ndim))
-        for itraj in range(self.ntrajs):
-            for jtraj in range(self.ntrajs):
-                self.slope_i[itraj] -= w_ij[itraj, jtraj]
+        # slope_i[itraj] = -sum_jtraj(w_ij[itraj, jtraj])
+        self.slope_i = -np.sum(w_ij, axis=1)
 
     def calculate_center(self):
         """ Routine to calculate center of quantum momentum
         """
-        rho = np.zeros((self.ntrajs, self.nst))
-        for itraj in range(self.ntrajs):
-            for ist in range(self.nst):
-                rho[itraj, ist] = self.mols[itraj].rho[ist, ist].real
+        # Build rho array: (ntrajs, nst)
+        rho = np.array([self.mols[itraj].rho.real.diagonal() for itraj in range(self.ntrajs)])
+
+        # Build position array: (ntrajs, nat_qm, ndim)
+        all_pos = np.array([self.mols[itraj].pos[0:self.nat_qm] for itraj in range(self.ntrajs)])
+
+        # Build state pair indices
+        ist_indices = []
+        jst_indices = []
+        for ist in range(self.nst):
+            for jst in range(ist + 1, self.nst):
+                ist_indices.append(ist)
+                jst_indices.append(jst)
+        ist_arr = np.array(ist_indices)
+        jst_arr = np.array(jst_indices)
 
         # (3-1) Compute denominator
-        deno_lk = np.zeros((self.nst_pair, self.nat_qm, self.ndim)) # denominator
-        for itraj in range(self.ntrajs):
-            index_lk = -1
-            for ist in range(self.nst):
-                for jst in range(ist + 1, self.nst):  
-                    index_lk += 1
-                    for iat in range(self.nat_qm):
-                        for idim in range(self.ndim):
-                            deno_lk[index_lk, iat, idim] += rho[itraj, ist] * rho[itraj, jst] * \
-                                (self.phase[itraj, ist, iat, idim] - self.phase[itraj, jst, iat, idim]) * self.slope_i[itraj, iat, idim]
+        # deno_lk[index_lk, iat, idim] = sum_itraj(rho[itraj,ist] * rho[itraj,jst] * phase_diff * slope_i)
+        # phase_diff = phase[itraj, ist] - phase[itraj, jst]
+        # Shape: (ntrajs, nst_pair, nat_qm, ndim)
+        phase_diff = self.phase[:, ist_arr, :, :] - self.phase[:, jst_arr, :, :]
 
-        # (3-2) Compute numerator
-        ratio_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim)) # numerator / denominator
-        numer_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim)) # numerator
-        for itraj in range(self.ntrajs):
-            index_lk = -1
-            for ist in range(self.nst):
-                for jst in range(ist + 1, self.nst):
-                    index_lk += 1
-                    for iat in range(self.nat_qm):
-                        for idim in range(self.ndim):
-                            numer_lk[itraj, index_lk, iat, idim] = rho[itraj, ist] * rho[itraj, jst] * self.mols[itraj].pos[iat, idim] * \
-                                (self.phase[itraj, ist, iat, idim] - self.phase[itraj, jst, iat, idim]) * self.slope_i[itraj, iat, idim]
-                            if (abs(deno_lk[index_lk, iat, idim]) <= self.small):
-                                ratio_lk[itraj, index_lk, iat, idim] = 0.
-                            else:
-                                ratio_lk[itraj, index_lk, iat, idim] = numer_lk[itraj, index_lk, iat, idim] / \
-                                    deno_lk[index_lk, iat, idim]
+        # rho_prod[itraj, index_lk] = rho[itraj, ist] * rho[itraj, jst]
+        rho_prod = rho[:, ist_arr] * rho[:, jst_arr]  # (ntrajs, nst_pair)
 
-        # Center of quantum momentum is calculated by Eq.(S28) of J. Phys. Chem. Lett., 2017, 8, 3048-3055.
-        center_old_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim))
-        for itraj in range(self.ntrajs):
-            index_lk = -1
-            for ist in range(self.nst):
-                for jst in range(ist + 1, self.nst):
-                    index_lk += 1
-                    for iat in range(self.nat_qm):
-                        for idim in range(self.ndim):
-                            for jtraj in range(self.ntrajs):
-                                center_old_lk[itraj, index_lk, iat, idim] += ratio_lk[jtraj, index_lk, iat, idim]
-                            if ((abs(self.slope_i[itraj, iat, idim]) <= self.small) or (center_old_lk[itraj, index_lk, iat, idim] == 0.)):
-                                center_old_lk[itraj, index_lk, iat, idim] = self.mols[itraj].pos[iat, idim]
+        # Expand for broadcasting: (ntrajs, nst_pair, nat_qm, ndim)
+        rho_prod_expanded = rho_prod[:, :, np.newaxis, np.newaxis]
+        slope_expanded = self.slope_i[:, np.newaxis, :, :]
 
-        # Center of quantum momentum is calculated by Eq.(S21) of J. Phys. Chem. Lett., 2017, 8, 3048-3055.
-        center_new_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim))
-        for itraj in range(self.ntrajs):
-            index_lk = -1
-            for ist in range(self.nst):
-                for jst in range(ist + 1, self.nst):
-                    index_lk += 1
-                    for iat in range(self.nat_qm):
-                        for idim in range(self.ndim):
-                            if (abs(self.slope_i[itraj, iat, idim]) <= self.small):
-                                center_new_lk[itraj, index_lk, iat, idim] = self.mols[itraj].pos[iat, idim]
-                            else:
-                                for jtraj in range(self.ntrajs):
-                                    center_new_lk[itraj, index_lk, iat, idim] += self.mols[jtraj].pos[iat, idim] * self.prod_g_i[itraj, jtraj] /\
-                                        (2. * self.sigma_lk[jtraj, 0, iat, idim] ** 2 * self.g_i[itraj] * (- self.slope_i[itraj, iat, idim]))
+        # deno_lk: sum over trajectories
+        deno_lk = np.sum(rho_prod_expanded * phase_diff * slope_expanded, axis=0)  # (nst_pair, nat_qm, ndim)
 
-        # (3-3) Determine qauntum momentum center TODO: atomistic flag
-        self.center_lk = np.zeros((self.ntrajs, self.nst_pair, self.nat_qm, self.ndim)) # Finally, qmom_center
-        for itraj in range(self.ntrajs):
-            index_lk = -1
-            for ist in range(self.nst):
-                for jst in range(ist + 1, self.nst):
-                    index_lk += 1
-                    for iat in range(self.nat_qm):
-                        for idim in range(self.ndim):
-                            # test how far calculated center of quantum momentum is from current atomic position.
-                            # tmp_var is deviation between position of classical trajectory and quantum momentum center.
-                            tmp_var = center_old_lk[itraj, index_lk, iat, idim] - self.mols[itraj].pos[iat, idim]
-                            if (self.const_center_cutoff == None):
-                                cutoff = self.dist_parameter * self.sigma_lk[itraj, 0, iat, idim]
-                            else:
-                                cutoff = self.const_center_cutoff
+        # (3-2) Compute numerator and ratio
+        # numer_lk[itraj, index_lk, iat, idim] = rho_prod * pos * phase_diff * slope_i
+        numer_lk = rho_prod_expanded * all_pos[:, np.newaxis, :, :] * phase_diff * slope_expanded
 
-                            if (abs(tmp_var) > cutoff): 
-                                tmp_var = center_new_lk[itraj, index_lk, iat, idim] - self.mols[itraj].pos[iat, idim]
-                                if (abs(tmp_var) > cutoff): 
-                                    self.center_lk[itraj, index_lk, iat, idim] = self.mols[itraj].pos[iat, idim]
-                                else:
-                                    self.center_lk[itraj, index_lk, iat, idim] = center_new_lk[itraj, index_lk, iat, idim]
-                            else: 
-                                self.center_lk[itraj, index_lk, iat, idim] = center_old_lk[itraj, index_lk, iat, idim]
+        # ratio_lk = numer_lk / deno_lk (with protection for small denominators)
+        ratio_lk = np.where(np.abs(deno_lk) <= self.small, 0., numer_lk / np.where(np.abs(deno_lk) <= self.small, 1., deno_lk))
+
+        # Center old: sum of ratio_lk over all trajectories (the innermost loop in original)
+        # center_old_lk[itraj, index_lk, iat, idim] = sum_jtraj(ratio_lk[jtraj, ...])
+        ratio_sum = np.sum(ratio_lk, axis=0)  # (nst_pair, nat_qm, ndim)
+
+        # Broadcast to all trajectories
+        center_old_lk = np.broadcast_to(ratio_sum, (self.ntrajs, self.nst_pair, self.nat_qm, self.ndim))
+
+        # Apply fallback where slope is small or center is zero
+        slope_small = np.abs(self.slope_i) <= self.small  # (ntrajs, nat_qm, ndim)
+        slope_small_expanded = slope_small[:, np.newaxis, :, :]  # (ntrajs, nst_pair, nat_qm, ndim)
+
+        fallback_mask = slope_small_expanded | (center_old_lk == 0.)
+        pos_expanded = all_pos[:, np.newaxis, :, :]  # (ntrajs, nst_pair, nat_qm, ndim)
+        center_old_lk = np.where(fallback_mask, pos_expanded, center_old_lk)
+
+        # Center new: Eq.(S21)
+        # center_new[itraj] = sum_jtraj(pos[jtraj] * prod_g_i[itraj,jtraj] / (2*sigma[jtraj]^2 * g_i[itraj] * (-slope_i[itraj])))
+        sigma = self.sigma_lk[:, 0, :, :]  # (ntrajs, nat_qm, ndim)
+
+        # Compute the weight for center_new: (ntrajs_i, ntrajs_j, nat_qm, ndim)
+        # weight[i,j,iat,idim] = prod_g_i[i,j] / (2 * sigma[j,iat,idim]^2 * g_i[i] * (-slope_i[i,iat,idim]))
+        neg_slope = -self.slope_i  # (ntrajs, nat_qm, ndim)
+
+        # Protect against division by zero for slope
+        safe_neg_slope = np.where(np.abs(neg_slope) <= self.small, 1., neg_slope)
+
+        # weight shape: (ntrajs, ntrajs, nat_qm, ndim)
+        weight = (self.prod_g_i[:, :, np.newaxis, np.newaxis] /
+                  (2. * sigma[np.newaxis, :, :, :] ** 2 *
+                   self.g_i[:, np.newaxis, np.newaxis, np.newaxis] *
+                   safe_neg_slope[:, np.newaxis, :, :]))
+
+        # center_new_base[itraj, iat, idim] = sum_jtraj(pos[jtraj] * weight[itraj, jtraj])
+        center_new_base = np.einsum('ijad,jad->iad', weight, all_pos)  # (ntrajs, nat_qm, ndim)
+
+        # Expand to all state pairs (center_new is independent of state pair)
+        center_new_lk = np.broadcast_to(center_new_base[:, np.newaxis, :, :],
+                                         (self.ntrajs, self.nst_pair, self.nat_qm, self.ndim))
+
+        # Apply fallback where slope is small
+        center_new_lk = np.where(slope_small_expanded, pos_expanded, center_new_lk)
+
+        # (3-3) Determine quantum momentum center
+        # Compute cutoff
+        if self.const_center_cutoff is None:
+            # cutoff[itraj, iat, idim] = dist_parameter * sigma[itraj, 0, iat, idim]
+            cutoff = self.dist_parameter * sigma  # (ntrajs, nat_qm, ndim)
+            cutoff_expanded = cutoff[:, np.newaxis, :, :]  # (ntrajs, nst_pair, nat_qm, ndim)
+        else:
+            cutoff_expanded = self.const_center_cutoff
+
+        # Compute deviations from current position
+        tmp_var_old = center_old_lk - pos_expanded
+        tmp_var_new = center_new_lk - pos_expanded
+
+        # Determine which center to use based on cutoff criteria
+        use_old = np.abs(tmp_var_old) <= cutoff_expanded
+        use_new = (~use_old) & (np.abs(tmp_var_new) <= cutoff_expanded)
+        use_pos = (~use_old) & (~use_new)
+
+        self.center_lk = np.where(use_old, center_old_lk,
+                                   np.where(use_new, center_new_lk, pos_expanded))
 
     def check_istates(self):
         """ Routine to check istates and init_coefs

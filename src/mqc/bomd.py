@@ -1,6 +1,6 @@
 from __future__ import division
 from mqc.mqc import MQC
-from misc import au_to_K, call_name
+from misc import au_to_K, call_name, close_files
 import os, shutil, textwrap
 import numpy as np
 import pickle
@@ -118,6 +118,9 @@ class BOMD(MQC):
             restart_file = os.path.join(base_dir, "RESTART.bin")
             with open(restart_file, 'wb') as f:
                 pickle.dump({'qm':qm, 'md':self}, f)
+
+        # Close open file handles for this directory
+        close_files(unixmd_dir)
 
         # Delete scratch directory
         if (not l_save_scr):
