@@ -1,0 +1,78 @@
+--------------------------------------------------------------------
+
+                      PyUNIxMD version 20.1
+
+                          < Developers >
+    Seung Kyu Min,  In Seong Lee,  Jong-Kwon Ha,  Daeho Han,
+    Kicheol Kim,  Tae In Kim,  Sung Wook Moon
+
+--------------------------------------------------------------------
+
+    Please cite PyUNIxMD as follows:
+    I. S. Lee, J.-K. Ha, D. Han, T. I. Kim, S. W. Moon, & S. K. Min.
+    PyUNIxMD: A Python-based excited state molecular dynamics package.
+    Journal of Computational Chemistry, 42:1755-1766. 2021
+
+    T. I. Kim, J.-K. Ha, & S. K. Min.
+    Coupled- and independent-trajectory approaches based on the exact
+    factorization using the PyUNIxMD package.
+    Topics in Current Chemistry, 380:153-179. 2022
+
+    PyUNIxMD begins on 2026-02-04 15:26:48
+
+--------------------------------------------------------------------
+                      Initial Coordinate (au)
+--------------------------------------------------------------------
+               X              Y              Z            Mass
+  X1     -2.00000000     1836.00000
+
+--------------------------------------------------------------------
+                       Initial Velocity (au)
+--------------------------------------------------------------------
+               X              Y              Z
+  X1      0.02000000
+
+--------------------------------------------------------------------
+                       Molecule Information
+--------------------------------------------------------------------
+  Number of Atoms (QM)     =                1
+  Degrees of Freedom       =                1
+  Charge                   =                0
+  Number of Electrons      =                0
+  Number of States         =                2
+
+--------------------------------------------------------------------
+                       Dynamics Information
+--------------------------------------------------------------------
+  QM Program               =            model
+  QM Method                =       Shin_Metiu
+
+  MQC Method               =               Eh
+  Time Interval (fs)       =         0.120944
+  Initial State (0:GS)     =                1
+  Nuclear Step             =               10
+  Electronic Step          =               20
+  Electronic Propagator    =              rk4
+  Propagation Scheme       =          density
+
+  Output Frequency         =                1
+  Verbosity Level          =                0
+
+  No Thermostat: Total energy is conserved!
+
+
+----------------------------------------------------------------------------------------------------------------------
+                                                   Start Dynamics
+----------------------------------------------------------------------------------------------------------------------
+ #INFO    STEP     Kinetic(H)   Potential(H)     Total(H)   Temperature(K)   Norm.
+ INFO        0     0.36720000    -0.22281728     0.14438272231904.900022    1.00000
+ INFO        1     0.36821749    -0.22404800     0.14416948232547.493153    1.00000
+ INFO        2     0.36918710    -0.22522084     0.14396626233159.852616    1.00000
+ INFO        3     0.37016917    -0.22637138     0.14379779233780.075016    1.00000
+ INFO        4     0.37116844    -0.22748939     0.14367904234411.164592    1.00000
+ INFO        5     0.37216468    -0.22856468     0.14359999235040.337641    1.00000
+ INFO        6     0.37314209    -0.22959519     0.14354690235657.625802    1.00000
+ INFO        7     0.37409140    -0.23058085     0.14351056236257.160589    1.00000
+ INFO        8     0.37500701    -0.23152149     0.14348552236835.408648    1.00000
+ INFO        9     0.37588512    -0.23241652     0.14346860237389.981993    1.00000
+ INFO       10     0.37672281    -0.23326492     0.14345789237919.023220    1.00000

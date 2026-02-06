@@ -1,0 +1,88 @@
+--------------------------------------------------------------------
+
+                      PyUNIxMD version 20.1
+
+                          < Developers >
+    Seung Kyu Min,  In Seong Lee,  Jong-Kwon Ha,  Daeho Han,
+    Kicheol Kim,  Tae In Kim,  Sung Wook Moon
+
+--------------------------------------------------------------------
+
+    Please cite PyUNIxMD as follows:
+    I. S. Lee, J.-K. Ha, D. Han, T. I. Kim, S. W. Moon, & S. K. Min.
+    PyUNIxMD: A Python-based excited state molecular dynamics package.
+    Journal of Computational Chemistry, 42:1755-1766. 2021
+
+    T. I. Kim, J.-K. Ha, & S. K. Min.
+    Coupled- and independent-trajectory approaches based on the exact
+    factorization using the PyUNIxMD package.
+    Topics in Current Chemistry, 380:153-179. 2022
+
+    PyUNIxMD begins on 2026-02-04 15:27:31
+
+--------------------------------------------------------------------
+                      Initial Coordinate (au)
+--------------------------------------------------------------------
+               X              Y              Z            Mass
+  X1     -2.00000000     1836.00000
+
+--------------------------------------------------------------------
+                       Initial Velocity (au)
+--------------------------------------------------------------------
+               X              Y              Z
+  X1      0.02000000
+
+--------------------------------------------------------------------
+                       Molecule Information
+--------------------------------------------------------------------
+  Number of Atoms (QM)     =                1
+  Degrees of Freedom       =                1
+  Charge                   =                0
+  Number of Electrons      =                0
+  Number of States         =                2
+
+--------------------------------------------------------------------
+                       Dynamics Information
+--------------------------------------------------------------------
+  QM Program               =            model
+  QM Method                =       Shin_Metiu
+
+  MQC Method               =             SHXF
+  Time Interval (fs)       =         0.120944
+  Initial State (0:GS)     =                1
+  Nuclear Step             =               10
+  Electronic Step          =                1
+  Electronic Propagator    =              rk4
+  Propagation Scheme       =          density
+
+  Rescaling after Hop      =         velocity
+  Rescaling after Reject   =             keep
+
+  Density Threshold        =         0.010000
+  Aux. Total E             =     Real Total E
+
+  Output Frequency         =                1
+  Verbosity Level          =                0
+
+  No Thermostat: Total energy is conserved!
+
+
+----------------------------------------------------------------------------------------------------------------------
+                                                   Start Dynamics
+----------------------------------------------------------------------------------------------------------------------
+ #INFO    STEP  State    Kinetic(H)   Potential(H)     Total(H)   Temperature(K)   Norm.
+ INFO        0    1      0.36720000    -0.22281728     0.14438272231904.900022    1.00000
+ INFO        1    1      0.36821749    -0.22384211     0.14437538232547.493153    1.00000
+ DECO        1  Generate auxiliary trajectory on 0, 1 state
+ INFO        2    0      0.37408722    -0.22969962     0.14438760236254.519883    1.00000
+ HOP        2  Accept hopping: hop 1 -> 0
+ DECO        2  Destroy auxiliary trajectories: hopping occurs
+ DECO        2  Generate auxiliary trajectory on 0, 1 state
+ INFO        3    0      0.37551218    -0.23113763     0.14437455237154.450276    1.00000
+ INFO        4    0      0.37708595    -0.23271834     0.14436761238148.367789    1.00000
+ INFO        5    0      0.37871963    -0.23435530     0.14436433239180.117305    1.00000
+ INFO        6    0      0.38036956    -0.23600683     0.14436273240222.125238    1.00000
+ INFO        7    0      0.38201450    -0.23765261     0.14436189241260.989681    1.00000
+ INFO        8    0      0.38364358    -0.23928214     0.14436143242289.830131    1.00000
+ INFO        9    0      0.38525083    -0.24088966     0.14436117243304.888954    1.00000
+ INFO       10    0      0.38683282    -0.24247182     0.14436101244303.995352    1.00000
