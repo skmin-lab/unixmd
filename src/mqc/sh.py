@@ -235,8 +235,8 @@ class SH(MQC):
         # Reset surface hopping variables
         self.rstate_old = self.rstate
 
-        self.prob = np.zeros(self.mol.nst)
-        self.acc_prob = np.zeros(self.mol.nst + 1)
+        self.prob.fill(0.)
+        self.acc_prob.fill(0.)
 
         self.l_hop = False
 
@@ -283,20 +283,22 @@ class SH(MQC):
             a = 1.
             b = 1.
             det = 1.
+            nac = self.mol.nac[self.rstate_old, self.rstate]
+            vel = self.mol.vel[0:self.mol.nat_qm]
+            mass = self.mol.mass[0:self.mol.nat_qm]
             if (self.hop_rescale == "velocity"):
-                a = np.sum(self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
-                b = 2. * np.sum(self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] \
-                    * self.mol.vel[0:self.mol.nat_qm], axis=1))
+                a = np.einsum('i,ij->', mass, nac ** 2)
+                b = 2. * np.einsum('i,ij,ij->', mass, nac, vel)
                 c = 2. * pot_diff
                 det = b ** 2. - 4. * a * c
             elif (self.hop_rescale == "momentum"):
-                a = np.sum(1. / self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
-                b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel[0:self.mol.nat_qm], axis=1))
+                a = np.einsum('i,ij->', 1. / mass, nac ** 2)
+                b = 2. * np.einsum('ij,ij->', nac, vel)
                 c = 2. * pot_diff
                 det = b ** 2. - 4. * a * c
             elif (self.hop_rescale == "augment"):
-                a = np.sum(1. / self.mol.mass[0:self.mol.nat_qm] * np.sum(self.mol.nac[self.rstate_old, self.rstate] ** 2., axis=1))
-                b = 2. * np.sum(np.sum(self.mol.nac[self.rstate_old, self.rstate] * self.mol.vel[0:self.mol.nat_qm], axis=1))
+                a = np.einsum('i,ij->', 1. / mass, nac ** 2)
+                b = 2. * np.einsum('ij,ij->', nac, vel)
                 c = 2. * pot_diff
                 det = b ** 2. - 4. * a * c
 

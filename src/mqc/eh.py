@@ -137,7 +137,7 @@ class Eh(MQC):
     def calculate_force(self):
         """ Calculate the Ehrenfest force
         """
-        self.rforce = np.zeros((self.mol.nat, self.mol.ndim))
+        self.rforce.fill(0.)
 
         for ist, istate in enumerate(self.mol.states):
             self.rforce += istate.force * self.mol.rho.real[ist, ist]

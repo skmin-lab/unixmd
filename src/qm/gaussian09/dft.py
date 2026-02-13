@@ -377,12 +377,10 @@ class DFT(Gaussian09):
         tmp = [float(x.replace('D', 'e')) for x in tmp]
  
         tmp_ovr = np.zeros((self.nbasis * 2, self.nbasis * 2))
- 
-        cnt = 0
-        for ibasis in range(self.nbasis * 2):
-            for jbasis in range(ibasis + 1):
-                tmp_ovr[ibasis, jbasis] = tmp[cnt]
-                cnt += 1
+
+        # Vectorized: fill lower triangle directly using tril_indices
+        tril_idx = np.tril_indices(self.nbasis * 2)
+        tmp_ovr[tril_idx] = tmp
 
         tmp_ovr += np.transpose(tmp_ovr) - np.diag(np.diag(tmp_ovr))
 

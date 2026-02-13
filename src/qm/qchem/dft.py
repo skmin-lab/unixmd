@@ -265,11 +265,11 @@ class DFT(QChem):
             nac = re.findall(tmp_nac, log)
             nac = np.array(nac, dtype=np.float64)
 
-            kst = 0
-            for ist in range(molecule.nst):
-                for jst in range(ist + 1, molecule.nst):
-                    molecule.nac[ist, jst] = nac[kst].reshape(molecule.nat_qm, 3, order='C')
-                    molecule.nac[jst, ist] = - molecule.nac[ist, jst]
-                    kst += 1
+            # Vectorized: get upper triangular indices and assign all at once
+            triu_idx = np.triu_indices(molecule.nst, k=1)
+            num_pairs = len(triu_idx[0])
+            nac_data = nac[:num_pairs].reshape(num_pairs, molecule.nat_qm, 3)
+            molecule.nac[triu_idx] = nac_data
+            molecule.nac[triu_idx[1], triu_idx[0]] = -nac_data
 
 

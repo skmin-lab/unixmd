@@ -258,8 +258,8 @@ class EhXF(MQC):
         # Reset surface hopping variables
         self.rstate_old = self.rstate
 
-        self.prob = np.zeros(self.mol.nst)
-        self.acc_prob = np.zeros(self.mol.nst + 1)
+        self.prob.fill(0.)
+        self.acc_prob.fill(0.)
 
         self.l_hop = False
         self.force_hop = False
@@ -311,7 +311,7 @@ class EhXF(MQC):
     def calculate_force(self):
         """ Calculate the Ehrenfest force
         """
-        self.rforce = np.zeros((self.mol.nat, self.mol.ndim))
+        self.rforce.fill(0.)
 
         for ist, istate in enumerate(self.mol.states):
             self.rforce += istate.force * self.mol.rho.real[ist, ist]

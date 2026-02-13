@@ -153,13 +153,9 @@ class DFTB(DFTBplus):
                 raise NotImplementedError (f"( {self.qm_method}.{call_name()} ) {error_message} ( {error_vars} )")
 
         # Set new variable to decide the position of atoms in terms of basis functions
-        self.check_basis = []
-        for ibasis in range(self.nbasis):
-            for iat in range(molecule.nat_qm):
-                ind_a = self.check_atom[iat] + 1
-                ind_b = self.check_atom[iat + 1]
-                if (ibasis + 1 >= ind_a and ibasis + 1 <= ind_b):
-                    self.check_basis.append(iat + 1)
+        # Vectorized: use searchsorted to find which atom each basis function belongs to
+        basis_indices = np.arange(1, self.nbasis + 1)
+        self.check_basis = list(np.searchsorted(self.check_atom[1:], basis_indices, side='left') + 1)
 
         # Initialize NACME variables
         # There is no core orbitals in TDDFTB (fixed occupations)

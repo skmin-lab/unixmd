@@ -598,63 +598,35 @@ class SSR(DFTBplus):
             tmp_c = 'non-adiabatic coupling' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
             tmp_c = re.findall(tmp_c, log_out)
 
-            kst = 0
-            for ist in range(molecule.nst):
-                for jst in range(ist + 1, molecule.nst):
-                    nac = np.array(tmp_c[kst], dtype=np.float64)
-                    nac = nac.reshape(molecule.nat_qm, 3, order='C')
-                    molecule.nac[ist, jst] = nac
-                    molecule.nac[jst, ist] = - nac
-                    kst += 1
+            # Vectorized: get upper triangular indices and assign all at once
+            triu_idx = np.triu_indices(molecule.nst, k=1)
+            num_pairs = len(triu_idx[0])
+            nac_data = np.array(tmp_c, dtype=np.float64).reshape(num_pairs, molecule.nat_qm, 3)
+            molecule.nac[triu_idx] = nac_data
+            molecule.nac[triu_idx[1], triu_idx[0]] = -nac_data
 
         # TDP
         if (not calc_force_only and self.calc_tdp):
-            kst = 0
-            for ist in range(molecule.nst):
-                for jst in range(ist + 1, molecule.nst):
-                    tmp_tdp = 'Transition Dipole moment \(au\)    :' + '\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)'
-                    tdp = re.findall(tmp_tdp, tdp_dat)
-                    tdp = np.array(tdp[kst], dtype=np.float64)
-                    molecule.tdp[ist, jst] = tdp
-                    molecule.tdp[jst, ist] = tdp
-                    kst += 1
+            tmp_tdp = 'Transition Dipole moment \(au\)    :' + '\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)'
+            tdp = re.findall(tmp_tdp, tdp_dat)
+            # Vectorized: get upper triangular indices and assign all at once
+            triu_idx = np.triu_indices(molecule.nst, k=1)
+            num_pairs = len(triu_idx[0])
+            tdp_data = np.array(tdp[:num_pairs], dtype=np.float64)
+            molecule.tdp[triu_idx] = tdp_data
+            molecule.tdp[triu_idx[1], triu_idx[0]] = tdp_data
 
         # TDP gradient
         if (not calc_force_only and self.calc_tdp_grad):
-            tmp_tdp_grad = 'mu_x gradient \(au\) :' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-            tmp_tdp_grad = re.findall(tmp_tdp_grad, tdp_grad_dat)
+            triu_idx = np.triu_indices(molecule.nst, k=1)
+            num_pairs = len(triu_idx[0])
 
-            kst = 0
-            for ist in range(molecule.nst):
-                for jst in range(ist + 1, molecule.nst):
-                    tdp_grad = np.array(tmp_tdp_grad[kst], dtype=np.float64)
-                    tdp_grad = tdp_grad.reshape(molecule.nat_qm, 3, order='C')
-                    molecule.tdp_grad[ist, jst, 0] = tdp_grad
-                    molecule.tdp_grad[jst, ist, 0] = tdp_grad
-                    kst += 1
-
-            tmp_tdp_grad = 'mu_y gradient \(au\) :' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-            tmp_tdp_grad = re.findall(tmp_tdp_grad, tdp_grad_dat)
-
-            kst = 0
-            for ist in range(molecule.nst):
-                for jst in range(ist + 1, molecule.nst):
-                    tdp_grad = np.array(tmp_tdp_grad[kst], dtype=np.float64)
-                    tdp_grad = tdp_grad.reshape(molecule.nat_qm, 3, order='C')
-                    molecule.tdp_grad[ist, jst, 1] = tdp_grad
-                    molecule.tdp_grad[jst, ist, 1] = tdp_grad
-                    kst += 1
-
-            tmp_tdp_grad = 'mu_z gradient \(au\) :' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
-            tmp_tdp_grad = re.findall(tmp_tdp_grad, tdp_grad_dat)
-
-            kst = 0
-            for ist in range(molecule.nst):
-                for jst in range(ist + 1, molecule.nst):
-                    tdp_grad = np.array(tmp_tdp_grad[kst], dtype=np.float64)
-                    tdp_grad = tdp_grad.reshape(molecule.nat_qm, 3, order='C')
-                    molecule.tdp_grad[ist, jst, 2] = tdp_grad
-                    molecule.tdp_grad[jst, ist, 2] = tdp_grad
-                    kst += 1
+            # Vectorized for each component (x, y, z)
+            for icomp, mu_label in enumerate(['mu_x', 'mu_y', 'mu_z']):
+                tmp_tdp_grad = f'{mu_label} gradient \\(au\\) :' + '\n\s+([-]*\S+)\s+([-]*\S+)\s+([-]*\S+)' * molecule.nat_qm
+                tmp_tdp_grad = re.findall(tmp_tdp_grad, tdp_grad_dat)
+                tdp_grad_data = np.array(tmp_tdp_grad, dtype=np.float64).reshape(num_pairs, molecule.nat_qm, 3)
+                molecule.tdp_grad[triu_idx[0], triu_idx[1], icomp] = tdp_grad_data
+                molecule.tdp_grad[triu_idx[1], triu_idx[0], icomp] = tdp_grad_data
 
 

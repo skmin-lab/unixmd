@@ -1,5 +1,5 @@
 from functools import wraps
-import sys, time, os
+import sys, time, os, atexit
 import numpy as np
 
 # Atomic weight
@@ -74,7 +74,38 @@ class FileManager:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance._handles = {}
+            cls._instance._validated_paths = {}
+            # Register cleanup on program exit
+            atexit.register(cls._instance.close_all)
         return cls._instance
+
+    def _validate_path(self, dir_name, filename):
+        """ Validate and construct safe file path
+
+            :param string dir_name: Directory of output file
+            :param string filename: Filename of output file
+            :returns: Validated absolute path
+            :raises ValueError: If path traversal is detected
+        """
+        # Resolve directory first to ensure cache key is consistent
+        # regardless of relative paths or current working directory
+        abs_dir = os.path.realpath(dir_name)
+
+        # Check cache using resolved path as key
+        key = (abs_dir, filename)
+        if key in self._validated_paths:
+            return self._validated_paths[key]
+
+        # Resolve symlinks and get canonical path for file
+        tmp_name = os.path.realpath(os.path.join(abs_dir, filename))
+
+        # Security check: ensure the resulting path is within the target directory
+        if not tmp_name.startswith(abs_dir + os.sep) and tmp_name != abs_dir:
+            raise ValueError(f"Path traversal or symlink attack detected: {filename} escapes {dir_name}")
+
+        # Cache the validated path
+        self._validated_paths[key] = tmp_name
+        return tmp_name
 
     def write(self, string, dir_name, filename, mode):
         """ Write string to file using persistent handle
@@ -84,7 +115,7 @@ class FileManager:
             :param string filename: Filename of output file
             :param string mode: Fileopen mode ('w' or 'a')
         """
-        tmp_name = os.path.join(dir_name, filename)
+        tmp_name = self._validate_path(dir_name, filename)
 
         # For write mode, close existing handle if any and create new file
         if mode == "w":
@@ -105,7 +136,10 @@ class FileManager:
     def close_all(self):
         """ Close all open file handles """
         for handle in self._handles.values():
-            handle.close()
+            try:
+                handle.close()
+            except Exception:
+                pass  # Ignore errors during cleanup
         self._handles.clear()
 
     def close_dir(self, dir_name):
@@ -113,9 +147,17 @@ class FileManager:
 
             :param string dir_name: Directory path
         """
-        to_close = [path for path in self._handles if path.startswith(dir_name)]
+        # Resolve symlinks and ensure proper matching with trailing separator
+        abs_dir = os.path.realpath(dir_name)
+        dir_prefix = abs_dir + os.sep
+
+        to_close = [path for path in self._handles
+                    if path.startswith(dir_prefix) or path == abs_dir]
         for path in to_close:
-            self._handles[path].close()
+            try:
+                self._handles[path].close()
+            except Exception:
+                pass  # Ignore errors during cleanup
             del self._handles[path]
 
 # Global file manager instance

@@ -247,21 +247,25 @@ class CT(MQC_QED):
         for ist, istate in enumerate(self.mols[itrajectory].states):
             self.rforce += istate.force * self.mol.rho.real[ist, ist]
 
-        # Non-adiabatic forces 
-        for ist in range(self.nst):
-            for jst in range(ist + 1, self.nst):
-                self.rforce += 2. * self.mol.nac[ist, jst] * self.mol.rho.real[ist, jst] \
-                    * (self.mol.states[ist].energy - self.mol.states[jst].energy)
+        # Non-adiabatic forces (vectorized)
+        energies = np.array([st.energy for st in self.mol.states])
+        triu_idx = np.triu_indices(self.nst, k=1)
+        energy_diff = energies[triu_idx[0]] - energies[triu_idx[1]]  # E_i - E_j
+        rho_ij = self.mol.rho.real[triu_idx]
+        # nac shape: (nst, nst, nat_qm, ndim), sum over upper triangle pairs
+        self.rforce += np.einsum('k,k,kab->ab', energy_diff, rho_ij, 2. * self.mol.nac[triu_idx])
 
-        # CT forces
-        ctforce = np.zeros((self.nat_qm, self.ndim))
-        for ist in range(self.nst):
-            for jst in range(self.nst):
-                ctforce += 0.5 * self.K_lk[itrajectory, ist, jst] * \
-                    (self.phase[itrajectory, jst] - self.phase[itrajectory, ist]) * \
-                    self.mol.rho.real[ist, ist] * self.mol.rho.real[jst, jst] * \
-                    (self.mol.rho.real[ist, ist] + self.mol.rho.real[jst, jst])
-        ctforce /= self.nst - 1
+        # CT forces (vectorized)
+        # phase shape: (ntrajs, nst, nat_qm, ndim)
+        phase = self.phase[itrajectory]  # (nst, nat_qm, ndim)
+        # phase_diff[i,j] = phase[j] - phase[i], shape: (nst, nst, nat_qm, ndim)
+        phase_diff = phase[np.newaxis, :, :, :] - phase[:, np.newaxis, :, :]
+        rho_diag = np.diag(self.mol.rho.real)  # (nst,)
+        K = self.K_lk[itrajectory]  # (nst, nst)
+        rho_prod = rho_diag[:, np.newaxis] * rho_diag[np.newaxis, :]  # (nst, nst)
+        rho_sum = rho_diag[:, np.newaxis] + rho_diag[np.newaxis, :]  # (nst, nst)
+        weight = 0.5 * K * rho_prod * rho_sum  # (nst, nst)
+        ctforce = np.einsum('ij,ijab->ab', weight, phase_diff) / (self.nst - 1)
 
         # Finally, force is Ehrenfest force + CT force
         self.rforce += ctforce

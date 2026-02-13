@@ -265,87 +265,71 @@ class Polariton(object):
         self.vel = np.array(self.vel) * fac_vel
 
     def adjust_nac(self):
-        """ Adjust phase of nonadiabatic couplings
+        """ Adjust phase of nonadiabatic couplings (vectorized)
         """
-        for ist in range(self.nst):
-            for jst in range(ist, self.nst):
-                ovlp = 0.
-                snac_old = 0.
-                snac = 0.
-
-                snac_old = np.sum(self.nac_old[ist, jst] ** 2)
-                snac = np.sum(self.nac[ist, jst] ** 2)
-
-                snac_old = np.sqrt(snac_old)
-                snac = np.sqrt(snac)
-
-                if (np.sqrt(snac * snac_old) < eps):
-                    ovlp = 1.
-                else:
-                    dot_nac = 0.
-                    dot_nac = np.sum(self.nac_old[ist, jst] * self.nac[ist, jst])
-                    ovlp = dot_nac / snac / snac_old
-
-                if (ovlp < 0.):
-                    self.nac[ist, jst] = - self.nac[ist, jst]
-                    self.nac[jst, ist] = - self.nac[jst, ist]
+        # Compute norms for all state pairs: sum over atom and coordinate axes
+        snac_old = np.sqrt(np.sum(self.nac_old ** 2, axis=(2, 3)))  # (nst, nst)
+        snac = np.sqrt(np.sum(self.nac ** 2, axis=(2, 3)))  # (nst, nst)
+        # Compute dot products for all state pairs
+        dot_nac = np.sum(self.nac_old * self.nac, axis=(2, 3))  # (nst, nst)
+        # Compute overlap, avoiding division by zero
+        norm_prod = snac * snac_old
+        ovlp = np.where(norm_prod < eps, 1., dot_nac / np.maximum(norm_prod, eps))
+        # Create sign matrix: -1 where overlap < 0, +1 otherwise (upper triangle)
+        sign_upper = np.where(np.triu(ovlp, k=0) < 0., -1., 1.)
+        # Symmetrize the sign matrix
+        sign_matrix = np.triu(sign_upper, k=1) + np.triu(sign_upper, k=1).T + np.diag(np.diag(sign_upper))
+        # Apply sign flip
+        self.nac *= sign_matrix[:, :, np.newaxis, np.newaxis]
 
     def adjust_tdp(self):
-        """ Adjust phase of transition dipole moments
+        """ Adjust phase of transition dipole moments (vectorized)
         """
-        for ist in range(self.nst):
-            for jst in range(ist, self.nst):
-                ovlp = 0.
-                stdp_old = 0.
-                stdp = 0.
-
-                stdp_old = np.sum(self.tdp_old[ist, jst] ** 2)
-                stdp = np.sum(self.tdp[ist, jst] ** 2)
-
-                stdp_old = np.sqrt(stdp_old)
-                stdp = np.sqrt(stdp)
-
-                if (np.sqrt(stdp * stdp_old) < eps):
-                    ovlp = 1.
-                else:
-                    dot_tdp = 0.
-                    dot_tdp = np.sum(self.tdp_old[ist, jst] * self.tdp[ist, jst])
-                    ovlp = dot_tdp / stdp / stdp_old
-
-                if (ovlp < 0.):
-                    self.tdp[ist, jst] = - self.tdp[ist, jst]
-                    self.tdp[jst, ist] = - self.tdp[jst, ist]
-                    self.tdp_grad[ist, jst, 0] = - self.tdp_grad[ist, jst, 0]
-                    self.tdp_grad[ist, jst, 1] = - self.tdp_grad[ist, jst, 1]
-                    self.tdp_grad[ist, jst, 2] = - self.tdp_grad[ist, jst, 2]
-                    self.tdp_grad[jst, ist, 0] = - self.tdp_grad[jst, ist, 0]
-                    self.tdp_grad[jst, ist, 1] = - self.tdp_grad[jst, ist, 1]
-                    self.tdp_grad[jst, ist, 2] = - self.tdp_grad[jst, ist, 2]
+        # Compute norms for all state pairs: sum over coordinate axis
+        stdp_old = np.sqrt(np.sum(self.tdp_old ** 2, axis=2))  # (nst, nst)
+        stdp = np.sqrt(np.sum(self.tdp ** 2, axis=2))  # (nst, nst)
+        # Compute dot products for all state pairs
+        dot_tdp = np.sum(self.tdp_old * self.tdp, axis=2)  # (nst, nst)
+        # Compute overlap, avoiding division by zero
+        norm_prod = stdp * stdp_old
+        ovlp = np.where(norm_prod < eps, 1., dot_tdp / np.maximum(norm_prod, eps))
+        # Create sign matrix: -1 where overlap < 0, +1 otherwise (upper triangle)
+        sign_upper = np.where(np.triu(ovlp, k=0) < 0., -1., 1.)
+        # Symmetrize the sign matrix
+        sign_matrix = np.triu(sign_upper, k=1) + np.triu(sign_upper, k=1).T + np.diag(np.diag(sign_upper))
+        # Apply sign flip to tdp
+        self.tdp *= sign_matrix[:, :, np.newaxis]
+        # Apply sign flip to tdp_grad
+        self.tdp_grad *= sign_matrix[:, :, np.newaxis, np.newaxis, np.newaxis]
 
     def get_nacme(self):
         """ Get NACME from nonadiabatic couplings
         """
-        for ist in range(self.nst):
-            for jst in range(ist + 1, self.nst):
-                self.nacme[ist, jst] = np.sum(self.nac[ist, jst] * self.vel[0:self.nat_qm])
-                self.nacme[jst, ist] = - self.nacme[ist, jst]
+        # Vectorized: contract nac with velocity over atom and coordinate indices
+        vel_qm = self.vel[0:self.nat_qm]
+        nacme_full = np.tensordot(self.nac, vel_qm, axes=([2, 3], [0, 1]))
+        # Enforce antisymmetry: nacme[i,j] = -nacme[j,i], diagonal = 0
+        self.nacme = np.triu(nacme_full, k=1)
+        self.nacme -= self.nacme.T
 
     def get_pnacme(self):
         """ Get pNACME from polaritonic nonadiabatic couplings
         """
-        for ist in range(self.pst):
-            for jst in range(ist + 1, self.pst):
-                self.pnacme[ist, jst] = np.sum(self.pnac[ist, jst] * self.vel[0:self.nat_qm])
-                self.pnacme[jst, ist] = - self.pnacme[ist, jst]
+        # Vectorized: contract pnac with velocity over atom and coordinate indices
+        vel_qm = self.vel[0:self.nat_qm]
+        pnacme_full = np.tensordot(self.pnac, vel_qm, axes=([2, 3], [0, 1]))
+        # Enforce antisymmetry: pnacme[i,j] = -pnacme[j,i], diagonal = 0
+        self.pnacme = np.triu(pnacme_full, k=1)
+        self.pnacme -= self.pnacme.T
 
     def update_kinetic(self):
         """ Get kinetic energy
         """
-        self.ekin = np.sum(0.5 * self.mass * np.sum(self.vel ** 2, axis=1))
+        self.ekin = 0.5 * np.einsum('i,ij->', self.mass, self.vel ** 2)
 
         if (self.l_qmmm):
             # Calculate the kinetic energy for QM atoms
-            self.ekin_qm = np.sum(0.5 * self.mass[0:self.nat_qm] * np.sum(self.vel[0:self.nat_qm] ** 2, axis=1))
+            self.ekin_qm = 0.5 * np.einsum('i,ij->', self.mass[0:self.nat_qm], self.vel[0:self.nat_qm] ** 2)
         else:
             self.ekin_qm = self.ekin
 

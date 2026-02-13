@@ -48,11 +48,11 @@ class Jaynes_Cummings(QED_calculator):
         self.get_d_ind = np.zeros((polariton.pst, 2), dtype=np.int32)
         self.cur_d_ind = np.zeros((polariton.pst, 2), dtype=np.int32)
 
-        kst = 0
-        for ist in range(polariton.nst):
-            for jst in range(polariton.nphotons + 1):
-                self.get_d_ind[kst] = [ist, jst]
-                kst += 1
+        # Vectorized: create index mapping using meshgrid
+        ist_grid, jst_grid = np.meshgrid(np.arange(polariton.nst),
+                                          np.arange(polariton.nphotons + 1), indexing='ij')
+        self.get_d_ind[:, 0] = ist_grid.ravel()
+        self.get_d_ind[:, 1] = jst_grid.ravel()
 
         # Initialize diabatic Hamiltonian matrix
         self.ham_d = np.zeros((polariton.pst, polariton.pst)) 
@@ -100,47 +100,40 @@ class Jaynes_Cummings(QED_calculator):
 
             :param object polariton: Polariton object
         """
-        self.ham_d = np.zeros((polariton.pst, polariton.pst)) 
+        self.ham_d = np.zeros((polariton.pst, polariton.pst))
 
-        # Molecule part: Only diagonal elements exist
-        tmp_ham = np.zeros((polariton.pst, polariton.pst)) 
-        for ist in range(polariton.pst):
-            ind_mol1 = self.get_d_ind[ist, 0]
-            tmp_ham[ist, ist] = polariton.states[ind_mol1].energy
+        # Molecule part: Only diagonal elements exist (vectorized)
+        ind_mol = self.get_d_ind[:, 0]
+        mol_energies = np.array([polariton.states[i].energy for i in ind_mol])
+        np.fill_diagonal(self.ham_d, mol_energies)
 
-        self.ham_d += tmp_ham
+        # Cavity part: Only diagonal elements exist (vectorized)
+        ind_photon = self.get_d_ind[:, 1]
+        photon_energies = polariton.photon_freq * (ind_photon + 0.5)
+        self.ham_d[np.diag_indices(polariton.pst)] += photon_energies
 
-        # Cavity part: Only diagonal elements exist
-        tmp_ham = np.zeros((polariton.pst, polariton.pst)) 
-        for ist in range(polariton.pst):
-            ind_photon1 = self.get_d_ind[ist, 1]
-            tmp_ham[ist, ist] = polariton.photon_freq * (ind_photon1 + 0.5)
+        # Interaction part: Only off-diagonal elements exist for JC Hamiltonian (vectorized)
+        ind_mol1 = self.get_d_ind[:, 0][:, np.newaxis]  # (pst, 1)
+        ind_mol2 = self.get_d_ind[:, 0][np.newaxis, :]  # (1, pst)
+        ind_photon1 = self.get_d_ind[:, 1][:, np.newaxis]  # (pst, 1)
+        ind_photon2 = self.get_d_ind[:, 1][np.newaxis, :]  # (1, pst)
 
-        self.ham_d += tmp_ham
+        # Rotating-wave terms
+        cond1 = (ind_mol2 == ind_mol1 + 1) & (ind_photon2 == ind_photon1 - 1)
+        cond2 = (ind_mol2 == ind_mol1 - 1) & (ind_photon2 == ind_photon1 + 1)
+        off_term = (cond1 | cond2).astype(float)
 
-        # Interaction part: Only off-diagonal elements exist for JC Hamiltonian
-        tmp_ham = np.zeros((polariton.pst, polariton.pst)) 
-        for ist in range(polariton.pst):
-            ind_mol1 = self.get_d_ind[ist, 0]
-            ind_photon1 = self.get_d_ind[ist, 1]
-            for jst in range(polariton.pst):
-                ind_mol2 = self.get_d_ind[jst, 0]
-                ind_photon2 = self.get_d_ind[jst, 1]
-                off_term = 0.
-                if (ind_mol2 == ind_mol1 + 1 and ind_photon2 == ind_photon1 - 1):
-                    off_term = 1.
-                elif (ind_mol2 == ind_mol1 - 1 and ind_photon2 == ind_photon1 + 1):
-                    off_term = 1.
-                # For extended JC Hamiltonian, the counter-rotating terms are included
-                if (self.l_crt):
-                    if (ind_mol2 == ind_mol1 + 1 and ind_photon2 == ind_photon1 + 1):
-                        off_term = 1.
-                    elif (ind_mol2 == ind_mol1 - 1 and ind_photon2 == ind_photon1 - 1):
-                        off_term = 1.
-                polarization = sum(polariton.field_pol_vec * polariton.tdp[ind_mol1, ind_mol2])
-                tmp_ham[ist, jst] = polarization * self.coup_str * off_term
+        # Counter-rotating terms (for extended JC)
+        if (self.l_crt):
+            cond3 = (ind_mol2 == ind_mol1 + 1) & (ind_photon2 == ind_photon1 + 1)
+            cond4 = (ind_mol2 == ind_mol1 - 1) & (ind_photon2 == ind_photon1 - 1)
+            off_term += (cond3 | cond4).astype(float)
 
-        self.ham_d += tmp_ham
+        # Compute polarization for all pairs: tdp[ind_mol1[i], ind_mol2[j]]
+        polarization = np.einsum('k,ijk->ij', polariton.field_pol_vec,
+                                  polariton.tdp[ind_mol1.ravel()[:, np.newaxis],
+                                               ind_mol2.ravel()[np.newaxis, :]])
+        self.ham_d += polarization * self.coup_str * off_term
 
         # Write 'ham_d.dat' file; Hamiltonian matrix elements in uncoupled basis
         ham_d_row = ""
